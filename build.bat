@@ -22,6 +22,6 @@ if exist *.pdb (
 @REM     cl /c %RootDir%\code\precompiled.cpp -O2 -nologo -I%RootDir%\include -MD
 @REM )
 
-cl %RootDir%\code\win32_main.c  %MSVCFlags% %LinkerFlags%
+cl %RootDir%\code\win32_main.cpp  %MSVCFlags% %LinkerFlags%
 
 popd
