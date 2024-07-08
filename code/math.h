@@ -23,6 +23,21 @@ union v3 {
 	float e[3];
 };
 
+v3 V3(float x)
+{
+	return v3{x, x, x};
+}
+
+v3 V3(float x, float y, float z)
+{
+	v3 result;
+
+	result.x = x;
+	result.y = y;
+	result.z = z;
+	return result;
+}
+
 v3 operator+(v3 a, v3 b)
 {
 	return v3{a.x + b.x, a.y + b.y, a.z + b.z};
@@ -364,25 +379,41 @@ mat4 perspective_projection(float znear, float zfar, float width_fov_degree, flo
 	float width = 2 * znear * tanf(degree_to_radians(width_fov_degree / 2));
 	float height = width * height_over_width;
 	
-	/*
-		g(-n) = 0
-		g(-f) = f
-
-		-n * a + b = 0
-		-f * a + b = f
-
-		a * (-f + n) = f
-
-		a = f / (n - f)
-
-		b = n 
-	*/
 	return {
 		znear * 2 / width, 0, 0, 0,
 		0, znear * 2 / height, 0, 0,
 		0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar),
 		0, 0, -1, 0
 	};
+}
+
+mat4 orthographic_projection(float znear, float zfar, float width, float height)
+{
+	//
+	return {
+		2.f / width, 0, 0, 0,
+		0, 2.f / height, 0, 0,
+		0, 0, 1.f / (znear-zfar), znear / (znear-zfar),
+		0, 0, 0, 1	
+	};
+}
+
+mat4 lookat(v3 position, v3 dir, v3 up)
+{
+	v3 z_axis = normalize(-dir);
+	//if (fabsf(dot(normalize(dir), normalize(up))) > 0.95)
+	//	assert(0);
+	v3 x_axis = normalize(cross(up, z_axis));
+	v3 y_axis = normalize(cross(z_axis, x_axis));
+
+	mat4 transform = {
+		x_axis.x, x_axis.y, x_axis.z, 0,
+		y_axis.x, y_axis.y, y_axis.z, 0,
+		z_axis.x, z_axis.y, z_axis.z, 0,
+		0, 0, 0, 1
+	};
+
+	return transform * translate(-position);
 }
 
 using quat = v4;

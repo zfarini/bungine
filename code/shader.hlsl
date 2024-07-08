@@ -4,6 +4,7 @@ cbuffer constants: register(b0)
 	row_major float4x4 projection;
 	row_major float4x4 model;
 	row_major float4x4 normal_transform;
+	row_major float4x4 light_transform;
 	float3 camera_p;
 	float diffuse_factor;
 	float specular_factor;
@@ -14,14 +15,14 @@ cbuffer constants: register(b0)
 struct vs_in {
     float3 position : POSITION;
 	float3 normal : NORMAL;
-	float2 uv : UV;
+	float2 uv : TEXCOORD;
 };
 
 struct vs_out {
     float4 position_clip : SV_POSITION;
 	float3 normal : NORMAL;
 	float3 world_p : POS;
-	float2 uv : UV;
+	float2 uv : TEXCOORD;
 	float3 object_p : OBJECT_POS;
 };
 
@@ -46,10 +47,18 @@ Texture2D specular_tex : register(t1);
 Texture2D normal_tex : register(t2);
 Texture2D specular_exponent_tex : register(t3);
 
+Texture2D shadow_map : register(t4);
+
 SamplerState mysampler : register(s0);
 
 float4 ps_main(vs_out input) : SV_TARGET
 {
+	//return shadow_map.Sample(mysampler, input.uv);
+	float2 uv = input.position_clip.xy / input.position_clip.w;
+	float R = (1 + uv.x) * 0.5f;
+	float G = (1 + uv.y) * 0.5f;
+
+	
 	float3 normal;
 
 	if (has_normal_map)
@@ -79,12 +88,16 @@ float4 ps_main(vs_out input) : SV_TARGET
 	else
 		normal = normalize(mul(normal_transform, float4(input.normal, 0)).xyz);
 
-	//return float4(0.5f * (normal + float3(1, 1, 1)), 1);
+	//return pow(float4(0.5f * (normal + float3(1, 1, 1)), 1), 2.2);
 	//return specular_tex.Sample(mysampler, input.uv);
 	//return specular_exponent_tex.Sample(mysampler, input.uv);
 	float shininess_exponenet = max(0.001f, specular_exponent_factor * specular_exponent_tex.Sample(mysampler, input.uv).r);
 	float3 color = diffuse_tex.Sample(mysampler, input.uv).rgb;
-	
+
+	//return float4(color, 1);	
+	return float4(R, G, 0, 1);
+	//return float4(color, 1);
+
 	float3 light_pos[2] = {
 		float3(4, 0, 3),
 		float3(-4, 0, 3)
@@ -93,7 +106,23 @@ float4 ps_main(vs_out input) : SV_TARGET
 
 	float3 to_camera = normalize(camera_p - input.world_p);
 
-	float3 result = 0.1f * color;
+	float3 result = 0;
+	
+	float3 light_dir = normalize(float3(-1, 0, -0.3));
+	{
+		float3 p = mul(light_transform, float4(input.world_p, 1)).xyz;
+		p.xy = 0.5f * (p.xy + float2(1, 1));
+		float z = shadow_map.Sample(mysampler, p.xy).r;
+
+		if (p.z < z + 0.005)
+			result += color * (0, dot(-light_dir, normal));
+
+		//return float4(z, z, z, 1);
+	}
+
+	result = color;
+#if 0
+	result += 0.1f * color;
 	for (int i = 0; i < 2; i++) {
 		float3 to_light = normalize(light_pos[i] - input.world_p);
 		float diffuse = max(0, dot(to_light, normal));
@@ -105,7 +134,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 		//specular *= specular;
 		result += (diffuse_factor*color * diffuse  + specular_factor*specular) * 1.f / length(light_pos[i] - input.world_p) ;
 	}
-
+#endif
 	//result = specular;
 	//color = 0.5f*(normal + float3(1, 1, 1));
 

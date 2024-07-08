@@ -1,7 +1,7 @@
 
 #include "renderer.h"
 
-#define ENABLE_SRGB 
+//#define ENABLE_SRGB 
 
 ID3D11ShaderResourceView *create_texture(RenderContext &rc, void *data, int width, int height, bool srgb = true)
 {
@@ -100,6 +100,31 @@ void init_render_context(RenderContext &rc, HWND window)
 		uint32_t data = 0xffffffff;
 		rc.white_texture = create_texture(rc, &data, 1, 1, false);
 	}
+
+		{
+		ID3D11Texture2D* backbuffer;
+        rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
+		D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
+		#ifdef ENABLE_SRGB
+    	backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    	#else
+		backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM;
+		#endif
+		backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &rc.backbuffer_rtv);
+
+		ID3D11Texture2D *depth_buffer;
+		
+		D3D11_TEXTURE2D_DESC depth_buffer_desc;
+		backbuffer->GetDesc(&depth_buffer_desc);
+		depth_buffer_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depth_buffer_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		rc.device->CreateTexture2D(&depth_buffer_desc, 0, &depth_buffer);
+		rc.device->CreateDepthStencilView(depth_buffer, 0, &rc.depth_stencil_view);
+
+        backbuffer->Release();
+		depth_buffer->Release();
+	}
 	rc.loaded_textures = make_array_max<Texture>(512);
 }
 
@@ -110,8 +135,8 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 {
 	RenderPass rp = {};
 
-	ID3DBlob *vertex_shader_blob;
-	ID3DBlob *pixel_shader_blob;
+	ID3DBlob *vertex_shader_blob = 0;
+	ID3DBlob *pixel_shader_blob = 0;
 	
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 	
@@ -126,17 +151,20 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 		OutputDebugStringA((char *)error_blob->GetBufferPointer());
 		assert(0);
 	}
-	if (FAILED(D3DCompileFromFile(shader_filename, 0,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE, ps_main, "ps_5_0",
-			flags, 0, &pixel_shader_blob, &error_blob))) {
-		OutputDebugStringA((char *)error_blob->GetBufferPointer());
-		assert(0);
+	if (ps_main) {
+		if (FAILED(D3DCompileFromFile(shader_filename, 0,
+				D3D_COMPILE_STANDARD_FILE_INCLUDE, ps_main, "ps_5_0",
+				flags, 0, &pixel_shader_blob, &error_blob))) {
+			OutputDebugStringA((char *)error_blob->GetBufferPointer());
+			assert(0);
+		}
 	}
 
 	rc.device->CreateVertexShader(vertex_shader_blob->GetBufferPointer(), 
 		vertex_shader_blob->GetBufferSize(), 0, &rp.vertex_shader);
-	rc.device->CreatePixelShader(pixel_shader_blob->GetBufferPointer(), 
-		pixel_shader_blob->GetBufferSize(), 0, &rp.pixel_shader);
+	if (ps_main)
+		rc.device->CreatePixelShader(pixel_shader_blob->GetBufferPointer(), 
+			pixel_shader_blob->GetBufferSize(), 0, &rp.pixel_shader);
 
 	rc.device->CreateInputLayout(input_layout_desc, input_layout_count,
 			vertex_shader_blob->GetBufferPointer(), 
@@ -181,41 +209,18 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 
     	rc.device->CreateDepthStencilState(&desc, &rp.depth_stencil_state);
 	}
-	{
-		ID3D11Texture2D* backbuffer;
-        rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
-		D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
-		#ifdef ENABLE_SRGB
-    	backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    	#else
-		backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM;
-		#endif
-		backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &rc.backbuffer_rtv);
 
-		ID3D11Texture2D *depth_buffer;
-		
-		D3D11_TEXTURE2D_DESC depth_buffer_desc;
-		backbuffer->GetDesc(&depth_buffer_desc);
-		depth_buffer_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depth_buffer_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		rc.device->CreateTexture2D(&depth_buffer_desc, 0, &depth_buffer);
-		rc.device->CreateDepthStencilView(depth_buffer, 0, &rp.depth_stencil_view);
-
-        backbuffer->Release();
-		depth_buffer->Release();
-	}
 	vertex_shader_blob->Release();
-	pixel_shader_blob->Release();
+	if (ps_main)
+		pixel_shader_blob->Release();
 
 	return rp;
 }
 
-void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewport, ID3D11RenderTargetView *rtv,
+void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewport,
+	ID3D11RenderTargetView *rtv, ID3D11DepthStencilView *dsv,
 	mat4 view_mat, mat4 projection_mat)
 {
-	rc.context->ClearDepthStencilView(rp.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
 	rc.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	rc.context->IASetInputLayout(rp.input_layout);
 
@@ -229,7 +234,11 @@ void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewpor
 	rc.context->PSSetSamplers(0, 1, &rp.sampler_state);
 	rc.context->PSSetConstantBuffers(0, 1, &rp.cbuffer);
 
-	rc.context->OMSetRenderTargets(1, &rtv, rp.depth_stencil_view);
+	if (rtv)
+		rc.context->OMSetRenderTargets(1, &rtv, dsv);
+	else
+		rc.context->OMSetRenderTargets(0, 0, dsv);
+
 	rc.context->OMSetDepthStencilState(rp.depth_stencil_state, 0);
 
 	rp.view_mat = view_mat;
@@ -245,9 +254,7 @@ void end_render_pass(RenderContext &rc, RenderPass &rp)
 
 void begin_frame(RenderContext &rc)
 {
-	FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
-	rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
-
+	
 }
 
 void end_frame(RenderContext &rc)

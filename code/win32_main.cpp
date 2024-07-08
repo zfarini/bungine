@@ -65,6 +65,7 @@ struct Constants
 	mat4 projection;
 	mat4 model;
 	mat4 normal_transform;
+	mat4 light_transform;
 	v3 camera_p;
 	float diffuse_factor;
 	float specular_factor;
@@ -74,25 +75,43 @@ struct Constants
 };
 
 #include "renderer.cpp"
+#include "debug.cpp"
+
 #include "scene.cpp"
 
+RenderContext g_rc = {};
+
 v3 camera_p;
+
+struct ShadowMap
+{
+	ID3D11DepthStencilView *dsv;
+	ID3D11ShaderResourceView *srv;
+	v3 light_dir;
+	v3 light_p;
+	mat4 view;
+	mat4 projection;
+	int width, height;
+};
+ShadowMap shadow_map = {};
 
 void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
 {
 	RenderPass &rp = *rc.render_pass;
     
+	Constants constants = {};
+	constants.view = rp.view_mat;
+	constants.projection = rp.projection_mat;
+	constants.camera_p = camera_p;
+	constants.light_transform = shadow_map.projection * shadow_map.view;
+	
 	for (usize i = 0; i < scene.meshes.count; i++) {
 			UINT32 stride = sizeof(Vertex);
 			UINT32 offset = 0;
 			rc.context->IASetVertexBuffers(0, 1, &scene.meshes[i].vertex_buffer, &stride, &offset);
 
-			Constants constants;
-			constants.view = rp.view_mat;
-			constants.projection = rp.projection_mat;
 			constants.model = transform * scene.meshes[i].default_transform;
 			constants.normal_transform = inverse(transpose(constants.model));
-			constants.camera_p = camera_p;
 
 				
 
@@ -112,7 +131,7 @@ void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
 					rc.context->PSSetShaderResources(3, 1, &part.material.specular_exponent.data);
 				else
 					rc.context->PSSetShaderResources(3, 1, &rc.white_texture);
-
+				
 				constants.diffuse_factor = part.material.diffuse_factor;
 				constants.specular_factor = part.material.specular_factor;
 				constants.specular_exponent_factor = part.material.specular_exponent_factor;
@@ -151,18 +170,62 @@ int main()
 		assert(window);
 	}
 	
-	RenderContext rc = {};
 
+
+	RenderContext &rc = g_rc;
 	init_render_context(rc, window);
+
+	
+	{
+		shadow_map.width = 2048;
+		shadow_map.height = 2048;
+		shadow_map.light_p = v3{13, 0, 12};
+		shadow_map.light_dir = v3{-1, 0, -0.8};
+
+		shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, v3{0, 0, 1});
+		shadow_map.projection = orthographic_projection(1, 200, 4, 4);
+
+		D3D11_TEXTURE2D_DESC desc = {};
+		desc.Width            = shadow_map.width;
+		desc.Height           = shadow_map.height;
+		desc.MipLevels        = 1;
+		desc.ArraySize        = 1;
+		desc.Format           = DXGI_FORMAT_R32_TYPELESS;
+		desc.SampleDesc.Count = 1;
+		desc.Usage            = D3D11_USAGE_DEFAULT;
+		desc.BindFlags        = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+		ID3D11Texture2D* shadowmapDepthTexture;
+
+		rc.device->CreateTexture2D(&desc, nullptr, &shadowmapDepthTexture);
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC shadowmapDSVdesc = {};
+		shadowmapDSVdesc.Format        = DXGI_FORMAT_D32_FLOAT;
+		shadowmapDSVdesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+		rc.device->CreateDepthStencilView(shadowmapDepthTexture, &shadowmapDSVdesc, &shadow_map.dsv);
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC shadowmapSRVdesc = {};
+		shadowmapSRVdesc.Format              = DXGI_FORMAT_R32_FLOAT;
+		shadowmapSRVdesc.ViewDimension       = D3D11_SRV_DIMENSION_TEXTURE2D;
+		shadowmapSRVdesc.Texture2D.MipLevels = 1;
+
+		rc.device->CreateShaderResourceView(shadowmapDepthTexture, &shadowmapSRVdesc, &shadow_map.srv);
+
+		shadowmapDepthTexture->Release();
+	}
 
 	D3D11_INPUT_ELEMENT_DESC input_layout_desc[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, offsetof(Vertex, normal),   D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT,          0, offsetof(Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,          0, offsetof(Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
 				//{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	RenderPass mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
+		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
+
+	RenderPass shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
 		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
 	v3 camera_rotation = {};
@@ -179,6 +242,7 @@ int main()
 	Scene ch06 = load_scene(rc, "data\\Ch06.fbx");
 	Scene ch15 = load_scene(rc, "data\\Ch15.fbx");
 	Scene sponza = load_scene(rc, "data\\Sponza\\Sponza.fbx");
+	Scene cube = load_scene(rc, "data\\cube.fbx");
 	//while (::ShowCursor(FALSE) >= 0);
 
 	b32 should_close = 0;
@@ -258,21 +322,45 @@ int main()
 		begin_frame(rc);
 		
 		D3D11_VIEWPORT viewport = {};
-
-		viewport.Width = (FLOAT)window_width;
-		viewport.Height = (FLOAT)window_height;
 		viewport.MinDepth = 0;
 		viewport.MaxDepth = 1;
+
+		FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
+		rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
+
+		// viewport.Width = (FLOAT)shadow_map.width;
+		// viewport.Height = (FLOAT)shadow_map.height;
+		// begin_render_pass(rc, shadow_map_render_pass, viewport, 0, shadow_map.dsv, shadow_map.view, shadow_map.projection);
+		// {
+		// 	rc.context->ClearDepthStencilView(shadow_map.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		// 	render_scene(rc, ch43, identity());
+		// 	render_scene(rc, ch06, translate(2, 0, 0));
+		// 	render_scene(rc, ch15, translate(-2, 0, 0));
+		// 	render_scene(rc, sponza, scale(2) * translate(0, 0, 0));
+		// }
+		// end_render_pass(rc, shadow_map_render_pass);
 		
-		begin_render_pass(rc, mesh_render_pass, viewport, rc.backbuffer_rtv, view, projection);
+		viewport.Width = (FLOAT)window_width;
+		viewport.Height = (FLOAT)window_height;
+		begin_render_pass(rc, mesh_render_pass, viewport, rc.backbuffer_rtv, rc.depth_stencil_view, view, projection);
 		{
+			rc.context->PSSetShaderResources(4, 1, &shadow_map.srv);
+
+			
+			rc.context->ClearDepthStencilView(rc.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
 			render_scene(rc, ch43, identity());
 			render_scene(rc, ch06, translate(2, 0, 0));
 			render_scene(rc, ch15, translate(-2, 0, 0));
-			render_scene(rc, sponza, translate(0, 0, 0));
+			render_scene(rc, sponza, scale(2));
+			render_scene(rc, cube, translate(shadow_map.light_p) * scale(0.3));
+			render_scene(rc, cube, translate(shadow_map.light_p + shadow_map.light_dir) * scale(0.1));
+
+			v3 expexted = (translate(shadow_map.light_p) * v4{0, 0, 0, 1}).xyz;
+
+			rc.context->PSSetShaderResources(4, 0, 0);
 		}
 		end_render_pass(rc, mesh_render_pass);
-
 		end_frame(rc);
 
 		last_mouse_p = curr_mouse_p;

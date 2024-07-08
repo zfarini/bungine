@@ -13,7 +13,6 @@ struct RenderPass
 	ID3D11Buffer	  *cbuffer;
 	ID3D11SamplerState *sampler_state;
 	ID3D11DepthStencilState* depth_stencil_state;
-	ID3D11DepthStencilView *depth_stencil_view;
 
 	mat4 view_mat;
 	mat4 projection_mat;
@@ -26,9 +25,10 @@ struct RenderContext
 	IDXGISwapChain *swap_chain;
 	ID3D11RenderTargetView *backbuffer_rtv;
 	RenderPass *render_pass;
+	ID3D11DepthStencilView *depth_stencil_view;
 
 	ID3D11ShaderResourceView *white_texture;
-	
+
 	Array<Texture> loaded_textures;
 };
 
