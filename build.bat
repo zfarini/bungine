@@ -18,10 +18,10 @@ if exist *.pdb (
     del *.pdb
 )
 
-@REM if not exist precompiled.obj (
-@REM     cl /c %RootDir%\code\precompiled.cpp -O2 -nologo -I%RootDir%\include -MD
-@REM )
+if not exist precompiled.obj (
+    cl /c %RootDir%\code\precompiled.cpp -O2 -nologo -I%RootDir%\include -MD
+)
 
-cl %RootDir%\code\win32_main.cpp  %MSVCFlags% %LinkerFlags%
+cl %RootDir%\code\win32_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
 
 popd

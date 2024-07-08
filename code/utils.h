@@ -20,13 +20,13 @@ void swap(T &a, T &b)
 }
 
 template<typename T>
-struct DArray
+struct Array
 {
 	T *data;
 	usize count;
 	usize capacity;
 
-	DArray()
+	Array()
 	{
 		data = 0;
 		count = capacity = 0;
@@ -44,20 +44,10 @@ struct DArray
 		return data[index];
 	}
 
-	void push(T value)
+	void push(const T &value)
 	{
-		if (count == capacity)
-		{
-			capacity = max(2, capacity + (capacity / 2));
-			data = (T *)realloc(data, capacity * sizeof(T));
-		}
+		assert(count < capacity);
 		data[count++] = value;
-	}
-
-	void pop()
-	{
-		assert(count);
-		count--;
 	}
 
 	T &back()
@@ -66,7 +56,7 @@ struct DArray
 		return data[count - 1];
 	}
 
-	~DArray()
+	~Array()
 	{
 		//free(data);
 	}
@@ -74,13 +64,22 @@ struct DArray
 
 
 template<typename T>
-DArray<T> make_darray(usize count, T *data = 0)
+Array<T> make_array_max(usize capacity)
 {
-	DArray<T> result;
+	Array<T> result;
+
+	result.count = 0;
+	result.capacity = capacity;
+	result.data = (T *)malloc(capacity * sizeof(T));
+	return result;
+}
+
+template<typename T>
+Array<T> make_array(usize count, T *data = 0)
+{
+	Array<T> result = make_array_max<T>(count);
 
 	result.count = count;
-	result.capacity = count;
-	result.data = (T *)malloc(count * sizeof(T));
 	if (data)
 		memcpy(result.data, data, count * sizeof(T));
 	return result;
@@ -89,5 +88,44 @@ DArray<T> make_darray(usize count, T *data = 0)
 struct String
 {
 	char 	*data;
-	uint32_t size;
+	usize size;
+
+	String()
+	{
+		size = 0;
+		data = 0;
+	}
+	String(const char *c_str)
+	{
+		data = (char *)c_str;
+		size = 0;
+		while (c_str[size])
+			size++;
+	}
+
+	bool operator==(const String &other)
+	{
+		if (size != other.size)
+			return false;
+		for (usize i = 0; i < size; i++)
+			if (data[i] != other.data[i])
+				return false;
+		return true;
+	}
 };
+
+String StringDup(const char *c_str)
+{
+	String s;
+
+	s.size = 0;
+	while (c_str[s.size])
+		s.size++;
+	s.data = (char *)malloc(s.size);
+	for (usize i = 0; i < s.size; i++)
+		s.data[i] = c_str[i];
+	return s;
+}
+
+#define str_format(s) (int)s.size, s.data
+

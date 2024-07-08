@@ -1,6 +1,60 @@
 
 #include "renderer.h"
 
+#define ENABLE_SRGB 
+
+ID3D11ShaderResourceView *create_texture(RenderContext &rc, void *data, int width, int height, bool srgb = true)
+{
+	bool mipmapping = true;
+
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width              = width;
+	desc.Height             = height;
+	desc.MipLevels          = mipmapping ? 0 : 1;
+	desc.ArraySize          = 1;
+	desc.Format				= DXGI_FORMAT_R8G8B8A8_UNORM;
+	#ifdef ENABLE_SRGB
+	if (srgb)
+		desc.Format         = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	#endif
+	desc.SampleDesc.Count   = 1;
+	desc.Usage              = D3D11_USAGE_IMMUTABLE;
+	desc.BindFlags          = D3D11_BIND_SHADER_RESOURCE;
+
+	if (mipmapping) {
+		desc.Usage = D3D11_USAGE_DEFAULT;
+    	desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+    	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	}
+
+	D3D11_SUBRESOURCE_DATA s_data = {};
+	s_data.pSysMem     = data;
+	s_data.SysMemPitch = width * 4;
+
+	ID3D11Texture2D* texture;
+
+	rc.device->CreateTexture2D(&desc, 0, &texture);
+    rc.context->UpdateSubresource(texture, 0, 0, s_data.pSysMem, s_data.SysMemPitch, 0);
+
+	ID3D11ShaderResourceView *srv;
+	
+	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+	srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	#ifdef ENABLE_SRGB
+	if (srgb)
+		srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	#endif
+	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srv_desc.Texture2D.MipLevels = mipmapping ? (UINT)-1 : 1;
+
+	rc.device->CreateShaderResourceView(texture, &srv_desc, &srv);
+	if (mipmapping)
+        rc.context->GenerateMips(srv);
+
+	texture->Release();
+	return srv;
+}
+
 void init_render_context(RenderContext &rc, HWND window)
 {
 	{
@@ -43,11 +97,10 @@ void init_render_context(RenderContext &rc, HWND window)
 	#endif
 
 	{
-		ID3D11Texture2D* backbuffer;
-        rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
-        rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, NULL, &rc.backbuffer_rtv);
-        backbuffer->Release();
+		uint32_t data = 0xffffffff;
+		rc.white_texture = create_texture(rc, &data, 1, 1, false);
 	}
+	rc.loaded_textures = make_array_max<Texture>(512);
 }
 
 RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
@@ -101,12 +154,57 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 	{
         D3D11_RASTERIZER_DESC desc = {};
         desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_NONE;
-		// TODO: enabling this clip thing that should be in range Idk why
-		desc.DepthClipEnable = FALSE;
+        desc.CullMode = D3D11_CULL_BACK;
+		// NOTE: this seems to be for enabling depth clipping for the range specified in viewport
+		desc.DepthClipEnable = TRUE;
         
         rc.device->CreateRasterizerState(&desc, &rp.rasterizer_state);
     }
+	{
+		D3D11_SAMPLER_DESC desc = {};
+    	desc.Filter         = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    	desc.AddressU       = D3D11_TEXTURE_ADDRESS_WRAP;
+    	desc.AddressV       = D3D11_TEXTURE_ADDRESS_WRAP;
+    	desc.AddressW       = D3D11_TEXTURE_ADDRESS_WRAP;
+    	desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		desc.MipLODBias = 0.0f;
+        desc.MaxAnisotropy = 1;
+        desc.MinLOD = 0;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+    	rc.device->CreateSamplerState(&desc, &rp.sampler_state);
+	}
+	{
+		D3D11_DEPTH_STENCIL_DESC desc = {};
+    	desc.DepthEnable    = TRUE;
+    	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    	desc.DepthFunc      = D3D11_COMPARISON_LESS;
+
+    	rc.device->CreateDepthStencilState(&desc, &rp.depth_stencil_state);
+	}
+	{
+		ID3D11Texture2D* backbuffer;
+        rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
+		D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
+		#ifdef ENABLE_SRGB
+    	backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    	#else
+		backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM;
+		#endif
+		backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &rc.backbuffer_rtv);
+
+		ID3D11Texture2D *depth_buffer;
+		
+		D3D11_TEXTURE2D_DESC depth_buffer_desc;
+		backbuffer->GetDesc(&depth_buffer_desc);
+		depth_buffer_desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		depth_buffer_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		rc.device->CreateTexture2D(&depth_buffer_desc, 0, &depth_buffer);
+		rc.device->CreateDepthStencilView(depth_buffer, 0, &rp.depth_stencil_view);
+
+        backbuffer->Release();
+		depth_buffer->Release();
+	}
 	vertex_shader_blob->Release();
 	pixel_shader_blob->Release();
 
@@ -116,6 +214,8 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewport, ID3D11RenderTargetView *rtv,
 	mat4 view_mat, mat4 projection_mat)
 {
+	rc.context->ClearDepthStencilView(rp.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
 	rc.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	rc.context->IASetInputLayout(rp.input_layout);
 
@@ -126,8 +226,11 @@ void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewpor
 	rc.context->VSSetConstantBuffers(0, 1, &rp.cbuffer);
 
 	rc.context->PSSetShader(rp.pixel_shader, 0, 0);
-	
-	rc.context->OMSetRenderTargets(1, &rtv, 0);
+	rc.context->PSSetSamplers(0, 1, &rp.sampler_state);
+	rc.context->PSSetConstantBuffers(0, 1, &rp.cbuffer);
+
+	rc.context->OMSetRenderTargets(1, &rtv, rp.depth_stencil_view);
+	rc.context->OMSetDepthStencilState(rp.depth_stencil_state, 0);
 
 	rp.view_mat = view_mat;
 	rp.projection_mat = projection_mat;

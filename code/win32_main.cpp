@@ -12,8 +12,8 @@
 #undef near
 #undef swap
 
-#define UFBX_IMPLEMENTATION
 #include <ufbx.h>
+#include <stb_image.h>
 
 #pragma comment(lib, "user32")
 #pragma comment(lib, "d3d11")
@@ -57,20 +57,31 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 
 #include "utils.h"
 
+
+
 struct Constants
 {
 	mat4 view;
 	mat4 projection;
 	mat4 model;
+	mat4 normal_transform;
+	v3 camera_p;
+	float diffuse_factor;
+	float specular_factor;
+	float specular_exponent_factor;
+	int has_normal_map;
+	float tmp[4 * 4 - 7];
 };
 
 #include "renderer.cpp"
 #include "scene.cpp"
 
+v3 camera_p;
+
 void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
 {
 	RenderPass &rp = *rc.render_pass;
-
+    
 	for (usize i = 0; i < scene.meshes.count; i++) {
 			UINT32 stride = sizeof(Vertex);
 			UINT32 offset = 0;
@@ -80,11 +91,35 @@ void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
 			constants.view = rp.view_mat;
 			constants.projection = rp.projection_mat;
 			constants.model = transform * scene.meshes[i].default_transform;
+			constants.normal_transform = inverse(transpose(constants.model));
+			constants.camera_p = camera_p;
 
-			copy_constants_to_gpu(rc, rp.cbuffer, &constants, sizeof(constants));		
+				
 
 			for (usize j = 0; j < scene.meshes[i].parts.count; j++) {
-				rc.context->Draw((UINT)scene.meshes[i].parts[j].vertices_count, (UINT)scene.meshes[i].parts[j].offset);
+				MeshPart &part = scene.meshes[i].parts[j];
+
+				if (part.material.diffuse.data)
+					rc.context->PSSetShaderResources(0, 1, &part.material.diffuse.data);
+				else
+					rc.context->PSSetShaderResources(0, 1, &rc.white_texture);
+				if (part.material.specular.data)
+					rc.context->PSSetShaderResources(1, 1, &part.material.specular.data);
+				else
+					rc.context->PSSetShaderResources(1, 1, &rc.white_texture);
+				rc.context->PSSetShaderResources(2, 1, &part.material.normal_map.data);
+				if (part.material.specular_exponent.data)
+					rc.context->PSSetShaderResources(3, 1, &part.material.specular_exponent.data);
+				else
+					rc.context->PSSetShaderResources(3, 1, &rc.white_texture);
+
+				constants.diffuse_factor = part.material.diffuse_factor;
+				constants.specular_factor = part.material.specular_factor;
+				constants.specular_exponent_factor = part.material.specular_exponent_factor;
+				constants.has_normal_map = part.material.normal_map.data != 0;
+
+				copy_constants_to_gpu(rc, rp.cbuffer, &constants, sizeof(constants));	
+				rc.context->Draw((UINT)part.vertices_count, (UINT)part.offset);
 			}
 	}
 }
@@ -130,7 +165,6 @@ int main()
 	RenderPass mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
 		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
-	v3 camera_p = {};
 	v3 camera_rotation = {};
 	v2 last_mouse_p = {};
 	{
@@ -144,6 +178,7 @@ int main()
 	Scene ch43 = load_scene(rc, "data\\Ch43.fbx");
 	Scene ch06 = load_scene(rc, "data\\Ch06.fbx");
 	Scene ch15 = load_scene(rc, "data\\Ch15.fbx");
+	Scene sponza = load_scene(rc, "data\\Sponza\\Sponza.fbx");
 	//while (::ShowCursor(FALSE) >= 0);
 
 	b32 should_close = 0;
@@ -234,6 +269,7 @@ int main()
 			render_scene(rc, ch43, identity());
 			render_scene(rc, ch06, translate(2, 0, 0));
 			render_scene(rc, ch15, translate(-2, 0, 0));
+			render_scene(rc, sponza, translate(0, 0, 0));
 		}
 		end_render_pass(rc, mesh_render_pass);
 

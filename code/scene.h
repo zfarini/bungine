@@ -10,17 +10,17 @@ struct Vertex
 	//float weights[MAX_BONE_WEIGHTS];
 };
 
-struct Texture
-{
-	ID3D11Texture2D *data;
-};
-
 struct Material
 {
 	Texture diffuse;
 	Texture normal_map;
 	Texture specular;
 	Texture ambient;
+	Texture specular_exponent;
+
+	float diffuse_factor;
+	float specular_factor;
+	float specular_exponent_factor;
 };
 
 struct MeshPart
@@ -38,10 +38,10 @@ struct Bone
 
 struct Mesh
 {
-	DArray<MeshPart> parts;
+	Array<MeshPart> parts;
 	ID3D11Buffer *vertex_buffer;
 
-	DArray<Bone> bones;
+	Array<Bone> bones;
 
 	mat4 default_transform;
 };
@@ -57,11 +57,11 @@ struct Animation
 	v3 *scale;
 	quat *rotation;
 
-	DArray<String> bone_names; 
+	Array<String> bone_names; 
 };
 
 struct Scene
 {
-	DArray<Mesh> meshes;
-	DArray<Animation> animations;
+	Array<Mesh> meshes;
+	Array<Animation> animations;
 };
