@@ -371,4 +371,7 @@ mat4 perspective_projection(float znear, float zfar, float width_fov_degree, flo
 	};
 }
 
+using quat = v4;
+
+
 #endif

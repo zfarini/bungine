@@ -7,6 +7,14 @@
 #include <assert.h>
 #include <stdint.h>
 
+#undef min
+#undef max
+#undef near
+#undef swap
+
+#define UFBX_IMPLEMENTATION
+#include <ufbx.h>
+
 #pragma comment(lib, "user32")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
@@ -26,6 +34,7 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 typedef i32 b32;
+typedef size_t usize;
 
 #include "math.h"
 
@@ -45,11 +54,22 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 	return result;
 }
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+
+ID3D11Device *g_device;
+ID3D11DeviceContext *g_device_context;
+
+#include "utils.h"
+#include "scene.cpp"
+
+
+//int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int main()
 {
+	load_scene("data\\Ch43.fbx");
+
 	WNDCLASSA window_class = {};
 
-	window_class.hInstance = hInstance;
+	window_class.hInstance = 0;
 	window_class.lpfnWndProc = win32_window_callback;
 	window_class.lpszClassName = "main window class name";
 	
@@ -66,7 +86,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		assert(AdjustWindowRect(&rect, window_style, 0));
 
 		window = CreateWindowExA(0, window_class.lpszClassName, "Game", window_style,
-			0, 0, rect.right - rect.left, rect.bottom - rect.top, 0, 0, hInstance, 0);
+			0, 0, rect.right - rect.left, rect.bottom - rect.top, 0, 0, 0, 0);
 		assert(window);
 	}
 
@@ -93,6 +113,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		assert(SUCCEEDED(D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, flags, 0, 0, D3D11_SDK_VERSION,
 			&desc, &swap_chain, &device, 0, &device_context)));
 	}
+
+	g_device = device;
+	g_device_context = device_context;
+	
 	#ifdef DIRECT3D_DEBUG
     {
         ID3D11InfoQueue* info;
@@ -265,7 +289,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				camera_rotation.x += -mouse_dp.y * dt;
 				camera_rotation.z += -mouse_dp.x * dt;
 			}
-			
+
 			{
 				v3 camera_dp = {};
 				if (GetAsyncKeyState('W') & 0x8000)
