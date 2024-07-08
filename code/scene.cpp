@@ -1,68 +1,4 @@
-#define MAX_BONE_WEIGHTS 4
-
-// TODO: send indices/weights in another buffer?
-struct Vertex
-{
-	v3 position;
-	v3 normal;
-	v2 uv;
-	u32 indices[MAX_BONE_WEIGHTS];
-	float weights[MAX_BONE_WEIGHTS];
-};
-
-struct Texture
-{
-	ID3D11Texture2D *data;
-};
-
-struct Material
-{
-	Texture diffuse;
-	Texture normal_map;
-	Texture specular;
-	Texture ambient;
-};
-
-struct MeshPart
-{
-	Material material;
-	usize vertices_count;
-	usize offset;
-};
-
-struct Bone
-{
-	String name;	
-	mat4 transform;
-};
-
-struct Mesh
-{
-	DArray<MeshPart> parts;
-	ID3D11Buffer *vertex_buffer;
-
-	DArray<Bone> bones;
-};
-
-struct Animation
-{
-	float timebegin;
-	float framerate;
-
-	u32 frame_count;
-
-	v3 *position;
-	v3 *scale;
-	quat *rotation;
-
-	DArray<String> bone_names; 
-};
-
-struct Scene
-{
-	DArray<Mesh> meshes;
-	DArray<Animation> animations;
-};
+#include "scene.h"
 
 v3 ufbx_vec3_to_v3(ufbx_vec3 v)
 {
@@ -74,29 +10,28 @@ v2 ufbx_vec2_to_v2(ufbx_vec2 v)
 	return v2{(float)v.x, (float)v.y};
 }
 
-ID3D11Buffer *create_vertex_buffer(usize size, void *data = 0)
+mat4 ufbx_to_mat4(ufbx_matrix m)
 {
-	ID3D11Buffer *buffer;
+	mat4 result = {};
 
-	D3D11_BUFFER_DESC desc = {};
-	desc.ByteWidth = (UINT)size;
-	desc.Usage = D3D11_USAGE_IMMUTABLE;
-	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-
-	if (data) {
-		D3D11_SUBRESOURCE_DATA initial = {};
-		initial.pSysMem = data;
-		g_device->CreateBuffer(&desc, &initial, &buffer);
+	for (int i = 0; i < 4; i++) {
+		result.e[0][i] = m.cols[i].x;
+		result.e[1][i] = m.cols[i].y;
+		result.e[2][i] = m.cols[i].z;
 	}
-	else
-		g_device->CreateBuffer(&desc, 0, &buffer);
-	return buffer;
+
+	result.e[3][3] = 1;
+
+	return (result);
 }
 
-Mesh load_mesh(ufbx_mesh *umesh)
+Mesh load_mesh(RenderContext &rc, ufbx_node *unode)
 {
+	ufbx_mesh *umesh = unode->mesh;
+
 	Mesh mesh = {};
 
+	mesh.default_transform = ufbx_to_mat4(unode->geometry_to_world);
 	mesh.parts = make_darray<MeshPart>(umesh->material_parts.count);
 
     DArray<uint32_t> tri_indices = make_darray<uint32_t>(umesh->max_face_triangles * 3);
@@ -129,16 +64,22 @@ Mesh load_mesh(ufbx_mesh *umesh)
 		part.vertices_count = vertices_count - part.offset;
 	}
 
-	mesh.vertex_buffer = create_vertex_buffer(vertices_count * sizeof(Vertex), vertices.data);
+	mesh.vertex_buffer = create_vertex_buffer(rc, vertices_count * sizeof(Vertex), vertices.data);
 
 	return mesh;
 }
 
-Scene load_scene(const char *filename)
+Scene load_scene(RenderContext &rc, const char *filename)
 {
 	Scene scene = {};
 
 	ufbx_load_opts opts = {};
+
+	opts.target_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+	opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+	opts.target_unit_meters = 1;
+		
 	ufbx_error error;
 	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
 	if (!uscene) {
@@ -147,9 +88,15 @@ Scene load_scene(const char *filename)
 	}
 
 	scene.meshes = make_darray<Mesh>(uscene->meshes.count);
+	int mesh_idx = 0;
 
-	for (usize i = 0; i < uscene->meshes.count; i++) {
-		scene.meshes[i] = load_mesh(uscene->meshes.data[i]);
+	for (size_t i = 0; i < uscene->nodes.count; i++) {
+		ufbx_node *unode = uscene->nodes.data[i];
+		if (unode->is_root) continue;
+
+		if (unode->mesh) {
+			scene.meshes[mesh_idx++] = load_mesh(rc, unode);
+		}
 	}
 
 	ufbx_free_scene(uscene);

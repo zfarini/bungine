@@ -2,10 +2,13 @@ cbuffer constants: register(b0)
 {
 	row_major float4x4 view;
 	row_major float4x4 projection;
+	row_major float4x4 model;
 };
 
 struct vs_in {
     float3 position : POSITION;
+	float3 normal : NORMAL;
+	float2 uv : UV;
 };
 
 struct vs_out {
@@ -16,7 +19,9 @@ struct vs_out {
 vs_out vs_main(vs_in input)
 {
 	vs_out output;
-	output.position_clip = mul(projection, mul(view, float4(input.position, 1)));
+
+	float4 world_p = mul(model, float4(input.position, 1));
+	output.position_clip = mul(projection, mul(view, world_p));
 	return output;
 }
 

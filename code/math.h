@@ -269,8 +269,9 @@ mat4 scale(float a)
 {
 	mat4 S = {};
 
-	S.e[0][0] = S.e[1][1] = S.e[2][2] = S.e[3][3] = a;
-	return S;
+	S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
+	S.e[3][3] = 1;
+ 	return S;
 }
 
 mat4 scale(float x, float y, float z)

@@ -55,17 +55,43 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 }
 
 
-ID3D11Device *g_device;
-ID3D11DeviceContext *g_device_context;
-
 #include "utils.h"
+
+struct Constants
+{
+	mat4 view;
+	mat4 projection;
+	mat4 model;
+};
+
+#include "renderer.cpp"
 #include "scene.cpp"
 
+void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
+{
+	RenderPass &rp = *rc.render_pass;
+
+	for (usize i = 0; i < scene.meshes.count; i++) {
+			UINT32 stride = sizeof(Vertex);
+			UINT32 offset = 0;
+			rc.context->IASetVertexBuffers(0, 1, &scene.meshes[i].vertex_buffer, &stride, &offset);
+
+			Constants constants;
+			constants.view = rp.view_mat;
+			constants.projection = rp.projection_mat;
+			constants.model = transform * scene.meshes[i].default_transform;
+
+			copy_constants_to_gpu(rc, rp.cbuffer, &constants, sizeof(constants));		
+
+			for (usize j = 0; j < scene.meshes[i].parts.count; j++) {
+				rc.context->Draw((UINT)scene.meshes[i].parts[j].vertices_count, (UINT)scene.meshes[i].parts[j].offset);
+			}
+	}
+}
 
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 int main()
 {
-	load_scene("data\\Ch43.fbx");
 
 	WNDCLASSA window_class = {};
 
@@ -89,150 +115,20 @@ int main()
 			0, 0, rect.right - rect.left, rect.bottom - rect.top, 0, 0, 0, 0);
 		assert(window);
 	}
-
-	IDXGISwapChain *swap_chain;
-	ID3D11Device *device;
-	ID3D11DeviceContext *device_context;
-	{
-		u32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
-		
-		#ifdef DIRECT3D_DEBUG
-			flags |= D3D11_CREATE_DEVICE_DEBUG;
-		#endif
-
-		DXGI_SWAP_CHAIN_DESC desc = {};
-		desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.BufferCount = 2;
-		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		desc.OutputWindow = window;
-		desc.SampleDesc.Count = 1;
-		desc.Windowed = 1;
-		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-
-		assert(SUCCEEDED(D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, flags, 0, 0, D3D11_SDK_VERSION,
-			&desc, &swap_chain, &device, 0, &device_context)));
-	}
-
-	g_device = device;
-	g_device_context = device_context;
 	
-	#ifdef DIRECT3D_DEBUG
-    {
-        ID3D11InfoQueue* info;
-        device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&info);
-        info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
-        info->Release();
-    }
+	RenderContext rc = {};
 
-    // enable debug break for DXGI too
-    {
-        IDXGIInfoQueue* dxgiInfo;
-        DXGIGetDebugInterface1(0, __uuidof(IDXGIInfoQueue), (void**)&dxgiInfo);
-        dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
-        dxgiInfo->Release();
-    }
-	#endif
+	init_render_context(rc, window);
 
-	ID3D11RenderTargetView *backbuffer_rtv;
-	{
-		ID3D11Texture2D* backbuffer;
-        swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
-        device->CreateRenderTargetView((ID3D11Resource*)backbuffer, NULL, &backbuffer_rtv);
-        backbuffer->Release();
-	}
-
-	ID3D11VertexShader *vertex_shader;
-	ID3D11PixelShader *pixel_shader;
-	ID3DBlob *vertex_shader_blob;
-	ID3DBlob *pixel_shader_blob;
-	{
-		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-		
-		#ifdef DIRECT3D_DEBUG
-		flags |= D3DCOMPILE_DEBUG;
-		#endif
-
-		ID3DBlob *error_blob;
-		if (FAILED(D3DCompileFromFile(L"code\\shader.hlsl", 0,
-				D3D_COMPILE_STANDARD_FILE_INCLUDE, "vs_main", "vs_5_0",
-				flags, 0, &vertex_shader_blob, &error_blob))) {
-			OutputDebugStringA((char *)error_blob->GetBufferPointer());
-			assert(0);
-		}
-		if (FAILED(D3DCompileFromFile(L"code\\shader.hlsl", 0,
-				D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", "ps_5_0",
-				flags, 0, &pixel_shader_blob, &error_blob))) {
-			OutputDebugStringA((char *)error_blob->GetBufferPointer());
-			assert(0);
-		}
-
-		device->CreateVertexShader(vertex_shader_blob->GetBufferPointer(), 
-			vertex_shader_blob->GetBufferSize(), 0, &vertex_shader);
-		device->CreatePixelShader(pixel_shader_blob->GetBufferPointer(), 
-			pixel_shader_blob->GetBufferSize(), 0, &pixel_shader);
-	}
-
-	ID3D11RasterizerState* rasterizer_state;
-    {
-        D3D11_RASTERIZER_DESC desc = {};
-        desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_NONE;
-		// TODO: enabling this clip thing that should be in range Idk why
-		desc.DepthClipEnable = FALSE;
-        
-        device->CreateRasterizerState(&desc, &rasterizer_state);
-    }
-
-	ID3D11Buffer* vertex_buffer;
-    {
-        f32 data[] = {
-           -1, 5, 0,
-		   1, 5, 0,
-		   0, 5, 1
-        };
-
-        D3D11_BUFFER_DESC desc = {};
-		desc.ByteWidth = sizeof(data);
-        desc.Usage = D3D11_USAGE_IMMUTABLE;
-        desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        
-
-        D3D11_SUBRESOURCE_DATA initial = {};
-		initial.pSysMem = data;
-        device->CreateBuffer(&desc, &initial, &vertex_buffer);
-    }
-
-	ID3D11InputLayout *input_layout;
-	{
-		D3D11_INPUT_ELEMENT_DESC desc[] = {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            //{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, offsetof(struct Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            //{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        };
-
-		device->CreateInputLayout(desc, ARRAYSIZE(desc),
-			vertex_shader_blob->GetBufferPointer(), vertex_shader_blob->GetBufferSize(), &input_layout);
-	}
-
-	struct Constants
-	{
-		mat4 view;
-		mat4 projection;
+	D3D11_INPUT_ELEMENT_DESC input_layout_desc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, offsetof(Vertex, normal),   D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT,          0, offsetof(Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				//{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	ID3D11Buffer* constant_buffer;
-    {
-        D3D11_BUFFER_DESC desc = {};
-		desc.ByteWidth = sizeof(Constants);
-        desc.Usage = D3D11_USAGE_DYNAMIC;
-        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-        device->CreateBuffer(&desc, 0, &constant_buffer);
-    }
+	RenderPass mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
+		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
 	v3 camera_p = {};
 	v3 camera_rotation = {};
@@ -242,8 +138,12 @@ int main()
 		GetCursorPos(&cursor);
 		last_mouse_p = v2{(float)cursor.x, (float)cursor.y};
 	}
+
 	float dt = 1.f / 60;
 	
+	Scene ch43 = load_scene(rc, "data\\Ch43.fbx");
+	Scene ch06 = load_scene(rc, "data\\Ch06.fbx");
+	Scene ch15 = load_scene(rc, "data\\Ch15.fbx");
 	//while (::ShowCursor(FALSE) >= 0);
 
 	b32 should_close = 0;
@@ -252,7 +152,7 @@ int main()
 		if (PeekMessageA(&message, 0, 0, 0, PM_REMOVE)) {
 			if (message.message == WM_QUIT)
 				break ;
-			if (message.message == WM_KEYDOWN) {
+			if (message.message == WM_KEYDOWN || message.message == WM_KEYUP) {
 				if (message.wParam == VK_ESCAPE)
 					should_close = 1;
 			}
@@ -276,14 +176,15 @@ int main()
 		GetCursorPos(&cursor_p);
 		v2 curr_mouse_p = {(float)cursor_p.x, (float)cursor_p.y};
 
+		mat4 view, projection;
 		{
-			mat4 camera_transform = zrotation(camera_rotation.z) * xrotation(camera_rotation.x);
+			mat4 camera_transform =  zrotation(camera_rotation.z) * xrotation(camera_rotation.x);
 
 			v3 camera_x = (camera_transform * v4{1, 0, 0, 0}).xyz;
 			v3 camera_y = (camera_transform * v4{0, 0, 1, 0}).xyz;
 			v3 camera_z = (camera_transform * v4{0, -1, 0, 0}).xyz;
 
-			v2 mouse_dp = (curr_mouse_p - last_mouse_p) * 0.1f;
+			v2 mouse_dp = (curr_mouse_p - last_mouse_p) * 0.2f;
 
 			if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
 				camera_rotation.x += -mouse_dp.y * dt;
@@ -315,48 +216,28 @@ int main()
 				0, 0, 0, 1
 			};
 
-			Constants constants;
-
-			constants.view = rotation * translate(-camera_p);
-			constants.projection = perspective_projection(0.1, 100, 90, (float)window_height / window_width);
-
-			D3D11_MAPPED_SUBRESOURCE constant_buffer_msr;
-			device_context->Map(constant_buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constant_buffer_msr);
-			memcpy(constant_buffer_msr.pData, &constants, sizeof(constants));
-			device_context->Unmap(constant_buffer, 0);
+			view = rotation * translate(-camera_p);
+			projection = perspective_projection(0.1, 100, 90, (float)window_height / window_width);
 		}
 
-		FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
-        device_context->ClearRenderTargetView(backbuffer_rtv, color);
-
-		device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		begin_frame(rc);
 		
-		UINT32 stride = 3 * sizeof(f32);
-		UINT32 offset = 0;
-		device_context->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
-
-		device_context->IASetInputLayout(input_layout);
-
 		D3D11_VIEWPORT viewport = {};
 
 		viewport.Width = (FLOAT)window_width;
 		viewport.Height = (FLOAT)window_height;
 		viewport.MinDepth = 0;
 		viewport.MaxDepth = 1;
-	
-		device_context->RSSetState(rasterizer_state);
-		device_context->RSSetViewports(1, &viewport);
+		
+		begin_render_pass(rc, mesh_render_pass, viewport, rc.backbuffer_rtv, view, projection);
+		{
+			render_scene(rc, ch43, identity());
+			render_scene(rc, ch06, translate(2, 0, 0));
+			render_scene(rc, ch15, translate(-2, 0, 0));
+		}
+		end_render_pass(rc, mesh_render_pass);
 
-		device_context->VSSetShader(vertex_shader, 0, 0);
-		device_context->VSSetConstantBuffers(0, 1, &constant_buffer);
-
-		device_context->PSSetShader(pixel_shader, 0, 0);
-
-		device_context->OMSetRenderTargets(1, &backbuffer_rtv, 0);
-
-		device_context->Draw(3, 0);
-
-		swap_chain->Present(1, 0);
+		end_frame(rc);
 
 		last_mouse_p = curr_mouse_p;
 	}
