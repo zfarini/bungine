@@ -183,7 +183,7 @@ int main()
 		shadow_map.light_dir = v3{-1, 0, -0.8};
 
 		shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, v3{0, 0, 1});
-		shadow_map.projection = orthographic_projection(1, 200, 4, 4);
+		shadow_map.projection = orthographic_projection(1, 100, 30, 30);
 
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width            = shadow_map.width;
@@ -225,7 +225,7 @@ int main()
 	RenderPass mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
 		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
-	RenderPass shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
+	RenderPass shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", 0,
 		input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
 	v3 camera_rotation = {};
@@ -328,30 +328,32 @@ int main()
 		FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
 		rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
 
-		// viewport.Width = (FLOAT)shadow_map.width;
-		// viewport.Height = (FLOAT)shadow_map.height;
-		// begin_render_pass(rc, shadow_map_render_pass, viewport, 0, shadow_map.dsv, shadow_map.view, shadow_map.projection);
-		// {
-		// 	rc.context->ClearDepthStencilView(shadow_map.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		viewport.Width = (FLOAT)shadow_map.width;
+		viewport.Height = (FLOAT)shadow_map.height;
+		begin_render_pass(rc, shadow_map_render_pass, viewport, 0, shadow_map.dsv, shadow_map.view, shadow_map.projection);
+		{
+			rc.context->ClearDepthStencilView(shadow_map.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		// 	render_scene(rc, ch43, identity());
-		// 	render_scene(rc, ch06, translate(2, 0, 0));
-		// 	render_scene(rc, ch15, translate(-2, 0, 0));
-		// 	render_scene(rc, sponza, scale(2) * translate(0, 0, 0));
-		// }
-		// end_render_pass(rc, shadow_map_render_pass);
+			render_scene(rc, ch43, zrotation(PI/2));
+			//render_scene(rc, ch06, translate(2, 0, 0));
+			//render_scene(rc, ch15, translate(-2, 0, 0));
+			render_scene(rc, sponza, scale(2) * translate(0, 0, 0));
+		}
+		end_render_pass(rc, shadow_map_render_pass);
 		
 		viewport.Width = (FLOAT)window_width;
 		viewport.Height = (FLOAT)window_height;
+		
 		begin_render_pass(rc, mesh_render_pass, viewport, rc.backbuffer_rtv, rc.depth_stencil_view, view, projection);
 		{
+			
 			rc.context->PSSetShaderResources(4, 1, &shadow_map.srv);
 
 			
 			rc.context->ClearDepthStencilView(rc.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-			render_scene(rc, ch43, identity());
-			render_scene(rc, ch06, translate(2, 0, 0));
-			render_scene(rc, ch15, translate(-2, 0, 0));
+			render_scene(rc, ch43, zrotation(PI/2));
+			//render_scene(rc, ch06, translate(2, 0, 0));
+			//render_scene(rc, ch15, translate(-2, 0, 0));
 			render_scene(rc, sponza, scale(2));
 			render_scene(rc, cube, translate(shadow_map.light_p) * scale(0.3));
 			render_scene(rc, cube, translate(shadow_map.light_p + shadow_map.light_dir) * scale(0.1));

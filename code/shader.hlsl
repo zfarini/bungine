@@ -47,16 +47,16 @@ Texture2D specular_tex : register(t1);
 Texture2D normal_tex : register(t2);
 Texture2D specular_exponent_tex : register(t3);
 
-Texture2D shadow_map : register(t4);
+Texture2D<float> shadow_map : register(t4);
 
 SamplerState mysampler : register(s0);
 
 float4 ps_main(vs_out input) : SV_TARGET
 {
-	//return shadow_map.Sample(mysampler, input.uv);
-	float2 uv = input.position_clip.xy / input.position_clip.w;
-	float R = (1 + uv.x) * 0.5f;
-	float G = (1 + uv.y) * 0.5f;
+	//float2 uv = input.position_clip.xy / float2(1280, 720);
+	//return shadow_map.Sample(mysampler, uv);
+	
+	//return float4(uv, 0, 1);
 
 	
 	float3 normal;
@@ -95,7 +95,6 @@ float4 ps_main(vs_out input) : SV_TARGET
 	float3 color = diffuse_tex.Sample(mysampler, input.uv).rgb;
 
 	//return float4(color, 1);	
-	return float4(R, G, 0, 1);
 	//return float4(color, 1);
 
 	float3 light_pos[2] = {
@@ -108,20 +107,23 @@ float4 ps_main(vs_out input) : SV_TARGET
 
 	float3 result = 0;
 	
-	float3 light_dir = normalize(float3(-1, 0, -0.3));
+	float3 light_dir = normalize(float3(-1, 0, -0.8));
 	{
 		float3 p = mul(light_transform, float4(input.world_p, 1)).xyz;
+		p.y *= -1;
 		p.xy = 0.5f * (p.xy + float2(1, 1));
+	
 		float z = shadow_map.Sample(mysampler, p.xy).r;
+		//float z = shadow_map[p.xy];
 
 		if (p.z < z + 0.005)
 			result += color * (0, dot(-light_dir, normal));
 
-		//return float4(z, z, z, 1);
 	}
+	result *= 0.3;
 
-	result = color;
-#if 0
+	//result = color;
+#if 1
 	result += 0.1f * color;
 	for (int i = 0; i < 2; i++) {
 		float3 to_light = normalize(light_pos[i] - input.world_p);
