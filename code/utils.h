@@ -2,7 +2,6 @@
 #define Megabyte(x) (1024ULL * Kilobyte(x))
 #define GigaByte(x) (1024ULL * Megabyte(x))
 
-
 template<typename T>
 T min(T a, T b)
 {

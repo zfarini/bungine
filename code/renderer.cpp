@@ -219,7 +219,7 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 
 void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewport,
 	ID3D11RenderTargetView *rtv, ID3D11DepthStencilView *dsv,
-	mat4 view_mat, mat4 projection_mat)
+	mat4 view_mat, mat4 projection_mat, v3 camera_p)
 {
 	rc.context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	rc.context->IASetInputLayout(rp.input_layout);
@@ -243,6 +243,7 @@ void begin_render_pass(RenderContext &rc, RenderPass &rp, D3D11_VIEWPORT viewpor
 
 	rp.view_mat = view_mat;
 	rp.projection_mat = projection_mat;
+	rp.camera_p = camera_p;
 
 	rc.render_pass = &rp;
 }
@@ -259,7 +260,6 @@ void begin_frame(RenderContext &rc)
 
 void end_frame(RenderContext &rc)
 {
-	rc.swap_chain->Present(1, 0);
 }
 
 void copy_constants_to_gpu(RenderContext &rc, ID3D11Buffer *cbuffer, void *data, usize size)
@@ -287,4 +287,47 @@ ID3D11Buffer *create_vertex_buffer(RenderContext &rc, usize size, void *data = 0
 	else
 		rc.device->CreateBuffer(&desc, 0, &buffer);
 	return buffer;
+}
+
+ShadowMap create_shadow_map(RenderContext &rc, 
+	int texture_width, int texture_height,
+	v3 light_p, v3 light_dir, mat4 projection)
+{
+	ShadowMap shadow_map = {};
+
+	shadow_map.width = texture_width;
+	shadow_map.height = texture_height;
+	shadow_map.light_p = light_p;
+	shadow_map.light_dir = light_dir;
+
+	shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, v3{0, 0, 1});
+	shadow_map.projection = projection;
+
+	D3D11_TEXTURE2D_DESC desc = {};
+	desc.Width            = shadow_map.width;
+	desc.Height           = shadow_map.height;
+	desc.MipLevels        = 1;
+	desc.ArraySize        = 1;
+	desc.Format           = DXGI_FORMAT_R32_TYPELESS;
+	desc.SampleDesc.Count = 1;
+	desc.Usage            = D3D11_USAGE_DEFAULT;
+	desc.BindFlags        = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+	ID3D11Texture2D* shadowmapDepthTexture;
+	rc.device->CreateTexture2D(&desc, nullptr, &shadowmapDepthTexture);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowmapDSVdesc = {};
+	shadowmapDSVdesc.Format        = DXGI_FORMAT_D32_FLOAT;
+	shadowmapDSVdesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	rc.device->CreateDepthStencilView(shadowmapDepthTexture, &shadowmapDSVdesc, &shadow_map.dsv);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadowmapSRVdesc = {};
+	shadowmapSRVdesc.Format              = DXGI_FORMAT_R32_FLOAT;
+	shadowmapSRVdesc.ViewDimension       = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shadowmapSRVdesc.Texture2D.MipLevels = 1;
+	rc.device->CreateShaderResourceView(shadowmapDepthTexture, &shadowmapSRVdesc, &shadow_map.srv);
+
+	shadowmapDepthTexture->Release();
+
+	return shadow_map;
 }

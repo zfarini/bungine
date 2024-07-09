@@ -4,11 +4,8 @@
 #include <math.h>
 
 #define PI 3.14159265359f
+#define DEG2RAD (PI / 180.f)
 
-float degree_to_radians(float a)
-{
-	return a * (PI / 180);
-}
 // ~ v3
 union v3 {
 	struct {
@@ -376,7 +373,7 @@ mat4 yrotation(float a)
 
 mat4 perspective_projection(float znear, float zfar, float width_fov_degree, float height_over_width)
 {
-	float width = 2 * znear * tanf(degree_to_radians(width_fov_degree / 2));
+	float width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
 	float height = width * height_over_width;
 	
 	return {

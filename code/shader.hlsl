@@ -118,6 +118,8 @@ float4 ps_main(vs_out input) : SV_TARGET
 		float z = shadow_map.Sample(mysampler, p.xy).r;
 		//float z = shadow_map[p.xy];
 
+		// TODO: maybe use a sampler with a black border
+		// or check some of the other sampling functions
 		if (p.z < z + 0.005
 		&& p.x >= 0 && p.x < 1 &&
 		p.y >= 0 && p.y < 1

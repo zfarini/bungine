@@ -4,6 +4,17 @@ struct Texture
 	String name;
 };
 
+struct ShadowMap
+{
+	ID3D11DepthStencilView *dsv;
+	ID3D11ShaderResourceView *srv;
+	v3 light_dir;
+	v3 light_p;
+	mat4 view;
+	mat4 projection;
+	int width, height;
+};
+
 struct RenderPass
 {
 	ID3D11VertexShader *vertex_shader;
@@ -16,6 +27,7 @@ struct RenderPass
 
 	mat4 view_mat;
 	mat4 projection_mat;
+	v3 camera_p;
 };
 
 struct RenderContext
@@ -30,5 +42,7 @@ struct RenderContext
 	ID3D11ShaderResourceView *white_texture;
 
 	Array<Texture> loaded_textures;
+
+	ShadowMap shadow_map;
 };
 
