@@ -55,7 +55,7 @@ ID3D11ShaderResourceView *create_texture(RenderContext &rc, void *data, int widt
 	return srv;
 }
 
-void init_render_context(RenderContext &rc, HWND window)
+void init_render_context(Arena *arena, RenderContext &rc, HWND window)
 {
 	{
 		u32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
@@ -125,7 +125,7 @@ void init_render_context(RenderContext &rc, HWND window)
         backbuffer->Release();
 		depth_buffer->Release();
 	}
-	rc.loaded_textures = make_array_max<Texture>(512);
+	rc.loaded_textures = make_array_max<Texture>(arena, 512);
 }
 
 RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,

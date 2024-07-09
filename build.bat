@@ -22,6 +22,6 @@ if not exist precompiled.obj (
     cl /c %RootDir%\code\precompiled.cpp -O2 -nologo -I%RootDir%\include -MD
 )
 
-cl %RootDir%\code\win32_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
+cl %RootDir%\code\win32_main.cpp  %MSVCFlags% %LinkerFlags%
 
 popd

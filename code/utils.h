@@ -1,3 +1,8 @@
+#define Kilobyte(x) (1024ULL * x)
+#define Megabyte(x) (1024ULL * Kilobyte(x))
+#define GigaByte(x) (1024ULL * Megabyte(x))
+
+
 template<typename T>
 T min(T a, T b)
 {
@@ -64,20 +69,20 @@ struct Array
 
 
 template<typename T>
-Array<T> make_array_max(usize capacity)
+Array<T> make_array_max(Arena *arena, usize capacity)
 {
 	Array<T> result;
 
 	result.count = 0;
 	result.capacity = capacity;
-	result.data = (T *)malloc(capacity * sizeof(T));
+	result.data = (T *)arena_alloc(arena, capacity * sizeof(T));
 	return result;
 }
 
 template<typename T>
-Array<T> make_array(usize count, T *data = 0)
+Array<T> make_array(Arena *arena, usize count, T *data = 0)
 {
-	Array<T> result = make_array_max<T>(count);
+	Array<T> result = make_array_max<T>(arena, count);
 
 	result.count = count;
 	if (data)

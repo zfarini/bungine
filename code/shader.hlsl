@@ -107,18 +107,27 @@ float4 ps_main(vs_out input) : SV_TARGET
 
 	float3 result = 0;
 	
-	float3 light_dir = normalize(float3(-1, 0, -0.8));
 	{
-		float3 p = mul(light_transform, float4(input.world_p, 1)).xyz;
+		float3 to_light = -normalize(float3(-1, 0, -0.8));
+		float4 p = mul(light_transform, float4(input.world_p, 1));
+		p.xyz /= p.w;
+		// TODO: I really don't understand why we have to do this?
 		p.y *= -1;
 		p.xy = 0.5f * (p.xy + float2(1, 1));
 	
 		float z = shadow_map.Sample(mysampler, p.xy).r;
 		//float z = shadow_map[p.xy];
 
-		if (p.z < z + 0.005)
-			result += color * (0, dot(-light_dir, normal));
-
+		if (p.z < z + 0.005
+		&& p.x >= 0 && p.x < 1 &&
+		p.y >= 0 && p.y < 1
+		&& p.z >= 0)
+		{
+			float diffuse = max(0, dot(to_light, normal));
+		
+			float3 specular = specular_color * pow(max(0, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
+			result += diffuse_factor*color * diffuse  + specular_factor*specular;
+		}
 	}
 	result *= 0.3;
 

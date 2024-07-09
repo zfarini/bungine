@@ -12,9 +12,6 @@
 #undef near
 #undef swap
 
-#include <ufbx.h>
-#include <stb_image.h>
-
 #pragma comment(lib, "user32")
 #pragma comment(lib, "d3d11")
 #pragma comment(lib, "d3dcompiler")
@@ -36,6 +33,8 @@ typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
 
+
+#include <cstdio>
 #include "math.h"
 
 LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
@@ -54,9 +53,33 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 	return result;
 }
 
-
+#include "arena.h"
 #include "utils.h"
 
+
+Arena *g_stb_image_arena;
+
+
+void *stb_arena_realloc(void *ptr, usize prevsize, usize newsize)
+{
+	void *data = arena_alloc(g_stb_image_arena, newsize);
+
+	if (prevsize > newsize)
+		prevsize = newsize;
+	if (ptr)
+		memcpy(data, ptr, prevsize);
+	return data;
+}
+
+#define STBI_MALLOC(size) arena_alloc(g_stb_image_arena, size)
+#define STBI_FREE(ptr) (void)ptr
+#define STBI_REALLOC_SIZED(ptr, prevsize, newsize) stb_arena_realloc(ptr, prevsize, newsize)
+
+
+#define UFBX_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include <ufbx.h>
+#include <stb_image.h>
 
 
 struct Constants
@@ -146,6 +169,15 @@ void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 int main()
 {
+	Arena memory_arena;
+	{
+		usize game_memory_size = GigaByte(6);
+		void *data = VirtualAlloc(0, game_memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+		assert(data);
+		memory_arena = make_arena(data, game_memory_size);
+	}
+
+	Arena asset_arena = make_arena(arena_alloc(&memory_arena, GigaByte(4)), GigaByte(4));
 
 	WNDCLASSA window_class = {};
 
@@ -173,17 +205,19 @@ int main()
 
 
 	RenderContext &rc = g_rc;
-	init_render_context(rc, window);
+	init_render_context(&asset_arena, rc, window);
 
 	
 	{
 		shadow_map.width = 2048;
 		shadow_map.height = 2048;
-		shadow_map.light_p = v3{13, 0, 12};
+		shadow_map.light_p = v3{8, 0, 7};
 		shadow_map.light_dir = v3{-1, 0, -0.8};
 
 		shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, v3{0, 0, 1});
 		shadow_map.projection = orthographic_projection(1, 100, 30, 30);
+
+		mat4 M = shadow_map.projection * shadow_map.view;
 
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width            = shadow_map.width;
@@ -238,11 +272,11 @@ int main()
 
 	float dt = 1.f / 60;
 	
-	Scene ch43 = load_scene(rc, "data\\Ch43.fbx");
-	Scene ch06 = load_scene(rc, "data\\Ch06.fbx");
-	Scene ch15 = load_scene(rc, "data\\Ch15.fbx");
-	Scene sponza = load_scene(rc, "data\\Sponza\\Sponza.fbx");
-	Scene cube = load_scene(rc, "data\\cube.fbx");
+	Scene ch43		= load_scene(&asset_arena, rc, "data\\Ch43.fbx");
+	Scene ch06		= load_scene(&asset_arena, rc, "data\\Ch06.fbx");
+	Scene ch15		= load_scene(&asset_arena, rc, "data\\Ch15.fbx");
+	Scene sponza	= load_scene(&asset_arena, rc, "data\\Sponza\\Sponza.fbx");
+	Scene cube		= load_scene(&asset_arena, rc, "data\\cube.fbx");
 	//while (::ShowCursor(FALSE) >= 0);
 
 	b32 should_close = 0;
@@ -337,7 +371,7 @@ int main()
 			render_scene(rc, ch43, zrotation(PI/2));
 			//render_scene(rc, ch06, translate(2, 0, 0));
 			//render_scene(rc, ch15, translate(-2, 0, 0));
-			render_scene(rc, sponza, scale(2) * translate(0, 0, 0));
+			render_scene(rc, sponza, identity());
 		}
 		end_render_pass(rc, shadow_map_render_pass);
 		
@@ -354,7 +388,7 @@ int main()
 			render_scene(rc, ch43, zrotation(PI/2));
 			//render_scene(rc, ch06, translate(2, 0, 0));
 			//render_scene(rc, ch15, translate(-2, 0, 0));
-			render_scene(rc, sponza, scale(2));
+			render_scene(rc, sponza, identity());
 			render_scene(rc, cube, translate(shadow_map.light_p) * scale(0.3));
 			render_scene(rc, cube, translate(shadow_map.light_p + shadow_map.light_dir) * scale(0.1));
 
