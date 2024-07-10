@@ -44,5 +44,30 @@ struct RenderContext
 	Array<Texture> loaded_textures;
 
 	ShadowMap shadow_map;
+
+	Array<v3> lines;
+	ID3D11Buffer *lines_vertex_buffer; 
+	RenderPass lines_render_pass;
+	
+
+	D3D11_VIEWPORT window_viewport;
+	mat4 view;
+	mat4 projection;
 };
 
+struct Constants
+{
+	mat4 view;
+	mat4 projection;
+	mat4 model;
+	mat4 normal_transform;
+	mat4 light_transform;
+	mat4 bones[96];
+	v3 camera_p;
+	float diffuse_factor;
+	float specular_factor;
+	float specular_exponent_factor;
+	int skinned;
+	int has_normal_map;
+	float tmp[4 * 4 - 8];
+};

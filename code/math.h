@@ -218,10 +218,27 @@ v4 operator*(v4 a, float b)
 {
 	return v4{a.x * b, a.y * b, a.z * b, a.w * b};
 }
+
+float dot(v4 a, v4 b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+v4 operator-(v4 a)
+{
+	return v4{-a.x, -a.y, -a.z, -a.w};
+}
+
+float length(v4 a)
+{
+	return sqrtf(dot(a, a));
+}
+
 // ~ mat4
-struct mat4
+union mat4
 {
 	float e[4][4]; // row-major
+	float v[16];
 };
 
 mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3)
@@ -415,6 +432,65 @@ mat4 lookat(v3 position, v3 dir, v3 up)
 
 using quat = v4;
 
+mat4 quat_to_mat(quat a)
+{
+	float x = a.x;
+	float y = a.y;
+	float z = a.z;
+	float w = a.w;
+
+	mat4 matrix;
+
+	float wx, wy, wz, xx, yy, yz, xy, xz, zz;
+	// adapted from Shoemake
+	xx = x * x;
+	xy = x * y;
+	xz = x * z;
+	yy = y * y;
+	zz = z * z;
+	yz = y * z;
+
+	wx = w * x;
+	wy = w * y;
+	wz = w * z;
+
+	matrix.v[0] = 1.0f - 2.0f*(yy + zz);
+	matrix.v[4] = 2.0f*(xy - wz);
+	matrix.v[8] = 2.0f*(xz + wy);
+	matrix.v[12] = 0.0;
+
+	matrix.v[1] = 2.0f*(xy + wz);
+	matrix.v[5] = 1.0f - 2.0f*(xx + zz);
+	matrix.v[9] = 2.0f*(yz - wx);
+	matrix.v[13] = 0.0;
+
+	matrix.v[2] = 2.0f*(xz - wy);
+	matrix.v[6] = 2.0f*(yz + wx);
+	matrix.v[10] = 1.0f - 2.0f*(xx + yy);
+	matrix.v[14] = 0.0;
+
+	matrix.v[3] = 0;
+	matrix.v[7] = 0;
+	matrix.v[11] = 0;
+	matrix.v[15] = 1;
+
+	return transpose(matrix);
+}
+
+quat quat_lerp(quat a, quat b, float t)
+{
+	float l2 = dot(a, b);
+	if(l2 < 0.0f) 
+		b = -b;
+	v4 c;
+	// c = a + t(b - a)  -->   c = a - t(a - b)
+	// the latter is slightly better on x64
+	c.x = a.x - t*(a.x - b.x);
+	c.y = a.y - t*(a.y - b.y);
+	c.z = a.z - t*(a.z - b.z);
+	c.w = a.w - t*(a.w - b.w);
+	return c * (1.f / length(c));
+}
 
 mat4 inverse(mat4 matrix) {
     const float *m = (float *)matrix.e;
@@ -490,4 +566,9 @@ mat4 inverse(mat4 matrix) {
     return out_matrix;
 }
 
+template<typename T>
+T lerp(const T a, const T b, float t)
+{
+	return (1 - t) * a + t * b;
+}
 #endif

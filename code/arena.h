@@ -45,13 +45,13 @@ struct TempArena {
 
 global TempArena g_temp_arena;
 
-Arena *begin_temp_memory()
+function Arena *begin_temp_memory()
 {
 	g_temp_arena.last_used = g_temp_arena.arena.used;	
 	return &g_temp_arena.arena;
 }
 
-void end_temp_memory()
+function void end_temp_memory()
 {
 	g_temp_arena.arena.used = g_temp_arena.last_used;
 }

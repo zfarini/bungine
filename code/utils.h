@@ -79,7 +79,7 @@ Array<T> make_array_max(Arena *arena, usize capacity)
 }
 
 template<typename T>
-Array<T> make_array(Arena *arena, usize count, T *data = 0)
+Array<T> make_array(Arena *arena, usize count, const T *data = 0)
 {
 	Array<T> result = make_array_max<T>(arena, count);
 
@@ -89,47 +89,53 @@ Array<T> make_array(Arena *arena, usize count, T *data = 0)
 	return result;
 }
 
-struct String
+template<typename T>
+Array<T> make_zero_array(Arena *arena, usize count)
 {
-	char 	*data;
-	usize size;
-
-	String()
-	{
-		size = 0;
-		data = 0;
-	}
-	String(const char *c_str)
-	{
-		data = (char *)c_str;
-		size = 0;
-		while (c_str[size])
-			size++;
-	}
-
-	bool operator==(const String &other)
-	{
-		if (size != other.size)
-			return false;
-		for (usize i = 0; i < size; i++)
-			if (data[i] != other.data[i])
-				return false;
-		return true;
-	}
-};
-
-String StringDup(const char *c_str)
-{
-	String s;
-
-	s.size = 0;
-	while (c_str[s.size])
-		s.size++;
-	s.data = (char *)malloc(s.size);
-	for (usize i = 0; i < s.size; i++)
-		s.data[i] = c_str[i];
-	return s;
+	Array<T> result = make_array<T>(arena, count);
+	memset(result.data, 0, sizeof(T) * count);
+	return result;
 }
 
-#define str_format(s) (int)s.size, s.data
+// TODO: what if we have an array of strings?
+template<typename T>
+Array<T> clone_array(Arena *arena, Array<T> &array)
+{
+	Array<T> result;
 
+	result.data = (T *)arena_alloc(arena, array.capacity * sizeof(T));
+	memcpy(result.data, array.data, sizeof(T) * array.count);
+	result.count = array.count;
+	result.capacity = array.capacity;
+	return result;
+}
+
+
+
+// template<>
+// bool operator==(const Array<char> &a, const Array<char> &b)
+// {
+// 	return true;
+// }
+
+using String = Array<char>;
+String make_string(Arena *arena, usize count, const char *data = 0) {return make_array<char>(arena, count, data);}
+b32 strings_equal(const String &a, const String &b)
+{
+	if (a.count != b.count)
+		return false;
+	for (usize i = 0; i < a.count; i++)
+		if (a.data[i] != b.data[i])
+			return false;
+	return true;
+}
+
+String concact_string(Arena *arena, String a, String b)
+{
+	String result = make_string(arena, a.count + b.count);
+
+	memcpy(result.data, a.data, a.count);
+	memcpy(result.data + a.count, b.data, b.count);
+	return result;
+}
+#define str_format(str) (int)str.count, str.data

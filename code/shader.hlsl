@@ -5,10 +5,12 @@ cbuffer constants: register(b0)
 	row_major float4x4 model;
 	row_major float4x4 normal_transform;
 	row_major float4x4 light_transform;
+	row_major float4x4 bones[96];
 	float3 camera_p;
 	float diffuse_factor;
 	float specular_factor;
 	float specular_exponent_factor;
+	int skinned;
 	int has_normal_map;
 };
 
@@ -16,22 +18,35 @@ struct vs_in {
     float3 position : POSITION;
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD;
+	int4 indices : BLENDINDICES;
+	float4 weights : BLENDWEIGHT;
 };
 
 struct vs_out {
     float4 position_clip : SV_POSITION;
 	float3 normal : NORMAL;
-	float3 world_p : POS;
 	float2 uv : TEXCOORD;
-	float3 object_p : OBJECT_POS;
+
+	float3 world_p : POS;
+	float3 object_p : OBJECTP;
 };
 
 vs_out vs_main(vs_in input)
 {
 	vs_out output;
 
-	float4 world_p = mul(model, float4(input.position, 1));
-	output.world_p = world_p;
+	float4x4 transform;
+	if (skinned) {
+		transform = 
+			(mul(input.weights.x, bones[input.indices.x]) +
+			 mul(input.weights.y, bones[input.indices.y]) +
+			 mul(input.weights.z, bones[input.indices.z]) +
+			 mul(input.weights.w, bones[input.indices.w]));
+	}
+	else
+		transform = model;
+	float4 world_p = mul(transform, float4(input.position, 1));
+	output.world_p = world_p.xyz;
 	output.position_clip = mul(projection, mul(view, world_p));
 	output.uv = input.uv;
 
@@ -101,7 +116,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 		float3(4, 0, 3),
 		float3(-4, 0, 3)
 	};
-	float3 specular_color = specular_tex.Sample(mysampler, input.uv);
+	float3 specular_color = specular_tex.Sample(mysampler, input.uv).rgb;
 
 	float3 to_camera = normalize(camera_p - input.world_p);
 
@@ -152,4 +167,28 @@ float4 ps_main(vs_out input) : SV_TARGET
 	//color = 0.5f*(normal + float3(1, 1, 1));
 
 	return float4(result, 1);
+}
+
+struct lines_vs_in {
+	float3 position : POSITION;
+	float3 color : COLOR;
+};
+
+struct lines_vs_out {
+	float4 position : SV_POSITION;
+	float3 color : COLOR;
+};
+
+lines_vs_out lines_vs_main(lines_vs_in input)
+{
+	lines_vs_out output;
+
+	output.position = mul(projection, mul(view, float4(input.position, 1)));
+	output.color = input.color;
+	return output;
+}
+
+float4 lines_ps_main(lines_vs_out input) : SV_TARGET0
+{
+	return float4(input.color, 1);
 }
