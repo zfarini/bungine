@@ -141,6 +141,15 @@ union v2 {
 	float e[2];
 };
 
+v2 V2(float x)
+{
+	return v2{x, x};
+}
+v2 V2(float x, float y)
+{
+	return v2{x, y};
+}
+
 v2 operator+(v2 a, v2 b)
 {
 	return v2{a.x + b.x, a.y + b.y};
@@ -571,4 +580,11 @@ T lerp(const T a, const T b, float t)
 {
 	return (1 - t) * a + t * b;
 }
+
+struct Transform {
+	quat rotation;
+	v3 translation;
+	v3 scale;
+};
+
 #endif

@@ -6,8 +6,8 @@ struct Vertex
 	v3 position;
 	v3 normal;
 	v2 uv;
-	int indices[MAX_BONE_WEIGHTS];
 	float weights[MAX_BONE_WEIGHTS];
+	int indices;//[MAX_BONE_WEIGHTS];
 };
 
 struct Material
@@ -78,6 +78,8 @@ struct SceneNode
 	Mesh *mesh;
 	mat4 local_transform;
 	mat4 geometry_transform;
+	int id;
+	b32 skip_render;
 };
 
 struct Scene

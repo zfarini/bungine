@@ -2,8 +2,17 @@
 #include "debug.cpp"
 #include "game.h"
 
-Animation test_anim;
-float anim_time = 0;
+Entity *make_entity(Game &game, v3 position, Scene *scene, mat4 scene_transform = identity())
+{
+	Entity e = {};
+
+	e.position = position;
+	e.scene = scene;
+	e.scene_transform = scene_transform;
+
+	game.entities.push(e);
+	return &game.entities[game.entities.count - 1];
+}
 
 void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 {
@@ -14,7 +23,7 @@ void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 	computed[i] = true;
 }
 
-void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform)
+void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
 {
 	if (bones.count == 0)
 		return ;
@@ -23,20 +32,18 @@ void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform)
 
 	Array<Bone> anim_bones = clone_array(temp, bones);
 
-	for (usize i = 0; i < bones.count; i++) {
-		int index = -1;
-		for (usize j = 0; j < test_anim.nodes.count; j++) {
-			if (strings_equal(test_anim.nodes[j].name, anim_bones[i].name)) {
-				index = (int)j;
-				break ;
+	if (anim) {
+		for (usize i = 0; i < bones.count; i++) {
+			int index = -1;
+			for (usize j = 0; j < anim->nodes.count; j++) {
+				if (strings_equal(anim->nodes[j].name, anim_bones[i].name)) {
+					index = (int)j;
+					break ;
+				}
 			}
+			if (index != -1) 
+				anim_bones[i].transform = get_animated_node_transform(*anim, anim->nodes[index], anim_time);
 		}
-		if (index != -1) {
-			float t = fmod(anim_time, test_anim.duration);
-			anim_bones[i].transform = get_animated_node_transform(test_anim, test_anim.nodes[index], t);
-		}
-		//anim_bones[i].transform = inverse(bones[i].transform);
-		//anim_bones[i].transform = transform * anim_bones[i].transform;
 	}
 
 	Array<bool> computed = make_array<bool>(temp, anim_bones.count);
@@ -59,7 +66,7 @@ void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform)
 	end_temp_memory();
 }
 
-Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, Animation *anim, float time, mat4 transform)
+Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
 {
 	Array<Bone> anim_bones = clone_array(arena, bones);
 
@@ -72,8 +79,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, Animation *anim,
 			}
 		}
 		if (index != -1) {
-			float t = fmod(time, anim->duration);
-			anim_bones[i].transform = get_animated_node_transform(*anim, anim->nodes[index], t);
+			anim_bones[i].transform = get_animated_node_transform(*anim, anim->nodes[index], anim_time);
 		}
 		//anim_bones[i].transform = inverse(bones[i].transform);
 		//anim_bones[i].transform = transform * anim_bones[i].transform;
@@ -87,14 +93,23 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, Animation *anim,
 	return anim_bones;
 }
 
-void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_transform, mat4 node_transform)
+void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_transform, mat4 node_transform,
+	Animation *anim, float anim_time)
 {
-	float t = fmod(anim_time, test_anim.duration);
+	if (node->skip_render)
+		return ;
+
 	mat4 local_transform = node->local_transform;
-	for (usize j = 0; j < test_anim.nodes.count; j++) {
-		if (strings_equal(test_anim.nodes[j].name, node->name)) {
-			local_transform = get_animated_node_transform(test_anim, test_anim.nodes[j], t);
-			break ;
+	if (anim) {
+		//assert(anim->nodes.count == scene.nodes.count);
+		//local_transform = ;
+		//local_transform = get_animated_node_transform(*anim, anim->nodes[node->id], anim_time);
+
+		for (usize j = 0; j < anim->nodes.count; j++) {
+			if (strings_equal(anim->nodes[j].name, node->name)) {
+				local_transform = get_animated_node_transform(*anim, anim->nodes[j], anim_time);
+				break ;
+			}
 		}
 	}
 	node_transform = node_transform * local_transform;
@@ -111,18 +126,18 @@ void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_t
 			
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
-		render_bones(rc, mesh.bones, mesh_transform);
+		render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
 
 		UINT32 stride = sizeof(Vertex);
 		UINT32 offset = 0;
 		rc.context->IASetVertexBuffers(0, 1, &mesh.vertex_buffer, &stride, &offset);
 
 		constants.model = mesh_transform;
-		constants.normal_transform = inverse(transpose(constants.model));
+		//constants.normal_transform = inverse(transpose(constants.model));
 		if (mesh.bones.count) {
 			constants.skinned = 1;
 			Arena *temp  = begin_temp_memory();
-			Array<Bone> bones = get_animated_bones(temp, mesh.bones, &test_anim, t, mesh_transform);
+			Array<Bone> bones = get_animated_bones(temp, mesh.bones, mesh_transform, anim, anim_time);
 			for (usize j = 0; j < bones.count; j++)
 				constants.bones[j] = bones[j].transform * bones[j].inv_bind;
 			end_temp_memory();
@@ -156,12 +171,25 @@ void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_t
 	}
 
 	for (usize i = 0; i < node->childs.count; i++)
-		render_scene(rc, scene, node->childs[i], scene_transform, node_transform);
+		render_scene(rc, scene, node->childs[i], scene_transform, node_transform, anim, anim_time);
 }
 
-void render_scene(RenderContext &rc, Scene &scene, mat4 transform)
+void render_scene(RenderContext &rc, Scene &scene, mat4 transform = identity(), Animation *anim = 0, float anim_time = 0)
 {
-	render_scene(rc, scene, scene.root, transform, identity());
+	if (anim)
+		anim_time = fmod(anim_time, anim->duration);
+	render_scene(rc, scene, scene.root, transform, identity(), anim, anim_time);
+}
+
+void render_entities(RenderContext &rc, Game &game)
+{
+	for (usize i = 0; i < game.entities.count; i++) {
+		Entity &e = game.entities[i];
+		if (!e.scene)
+			continue ;
+		mat4 transform = translate(e.position);
+		render_scene(rc, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
+	}
 }
 
 void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameInput &input, float dt)
@@ -175,8 +203,8 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, offsetof(Vertex, normal),   D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,          0, offsetof(Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_SINT,          0, offsetof(Vertex, indices),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,          0, offsetof(Vertex, weights),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "BLENDINDICES", 0, DXGI_FORMAT_R32_SINT,          0, offsetof(Vertex, indices),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
 
 					//{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
@@ -194,21 +222,25 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", 0,
 			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
-		//game.ch43		= load_scene(&game.asset_arena, rc, "data\\Ch15.fbx");
+		game.ch43		= load_scene(&game.asset_arena, rc, "data\\Ch43.fbx");
 		//Scene ch06		= load_scene(&asset_arena, rc, "data\\Ch06.fbx");
 		//Scene ch15		= load_scene(&asset_arena, rc, "data\\Ch15.fbx");
 		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
-		game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
-
+		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
 		game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
 		game.cube		= load_scene(&game.asset_arena, rc, "data\\cube.fbx");
 		
+		//game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
+		game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
 
-		printf("GUN ANIMATION COUNT: %zd\n", game.ch43.animations.count);
-		test_anim = game.ch43.animations[0];
+		game.entities = make_array_max<Entity>(memory, 4096);
 
-		game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
-		//test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run2.fbx").animations[0];
+
+		Entity *player = make_entity(game, V3(0), &game.ch43);
+		player->animation = &game.test_anim;
+
+		Entity *sponza = make_entity(game, V3(0), &game.sponza);
+			
 		game.is_initialized = 1;
 	}
 
@@ -224,11 +256,16 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 	mat4 view, projection;
 	{
-		v2 mouse_dp = (input.mouse_p - input.last_mouse_p) * 0.2f;
-		if (IsDown(input, BUTTON_MOUSE_LEFT)) {
-			game.camera_rotation.x += -mouse_dp.y * dt;
-			game.camera_rotation.z += -mouse_dp.x * dt;
-		}
+	//	if (IsDown(input, BUTTON_MOUSE_LEFT)) {
+			game.camera_rotation.x += -input.mouse_dp.y * dt * 0.2f;
+			game.camera_rotation.z += -input.mouse_dp.x * dt * 0.2f;
+	//	}
+		// avoid gimbal lock
+		if (game.camera_rotation.x > PI / 2 - 0.001f)
+			game.camera_rotation.x = PI / 2 - 0.001f;
+		if (game.camera_rotation.x < -PI / 2 + 0.001f)
+			game.camera_rotation.x = -PI / 2 + 0.001f;
+		
 		mat4 camera_transform =  zrotation(game.camera_rotation.z) * xrotation(game.camera_rotation.x);
 
 		v3 camera_x = (camera_transform * v4{1, 0, 0, 0}).xyz;
@@ -263,13 +300,14 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		projection = perspective_projection(0.1, 100, 90, (float)window_height / window_width);
 	}
 
+	for (usize i = 0; i < game.entities.count; i++)
+		game.entities[i].anim_time = game.time;
+
 	begin_frame(rc, view, projection);
 	
 	push_line(rc, V3(0), V3(5, 0, 0), V3(1, 0, 0));
 	push_line(rc, V3(0), V3(0, 5, 0), V3(0, 1, 0));
 	push_line(rc, V3(0), V3(0, 0, 5), V3(0, 0, 1));
-
-	push_cube_outline(rc, V3(5, 0, 3), V3(0.5), V3(1, 1, 0));
 
 	FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
 	rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
@@ -280,33 +318,22 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	viewport.Width = (FLOAT)rc.shadow_map.width;
 	viewport.Height = (FLOAT)rc.shadow_map.height;
 
-	ID3D11RenderTargetView *null_rtv = 0;
-	ID3D11DepthStencilView *null_dsv = 0;
 
 	begin_render_pass(rc, game.shadow_map_render_pass, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 
 		viewport, 0, rc.shadow_map.dsv, rc.shadow_map.view, rc.shadow_map.projection, rc.shadow_map.light_p);
 	{
 		rc.context->ClearDepthStencilView(rc.shadow_map.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-		render_scene(rc, game.ch43, zrotation(PI/2));
-		//render_scene(rc, ch06, translate(2, 0, 0));
-		//render_scene(rc, ch15, translate(-2, 0, 0));
-		render_scene(rc, game.sponza, identity());
+		render_entities(rc, game);
 	}
 	end_render_pass(rc);
-		
+#if 1
 	begin_render_pass(rc, game.mesh_render_pass, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
 		rc.window_viewport, rc.backbuffer_rtv, rc.depth_stencil_view, view, projection, game.camera_p);
 	{
 		rc.context->PSSetShaderResources(4, 1, &rc.shadow_map.srv);
 
 		rc.context->ClearDepthStencilView(rc.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-		render_scene(rc, game.ch43, zrotation(PI/2));
-		//render_scene(rc, ch06, translate(2, 0, 0));
-		//render_scene(rc, ch15, translate(-2, 0, 0));
-		render_scene(rc, game.sponza, identity());
-		render_scene(rc, game.cube, translate(rc.shadow_map.light_p) * scale(0.3));
-		render_scene(rc, game.cube, translate(rc.shadow_map.light_p + rc.shadow_map.light_dir) * scale(0.1));
+		render_entities(rc, game);
 
 		v3 expexted = (translate(rc.shadow_map.light_p) * v4{0, 0, 0, 1}).xyz;
 
@@ -314,6 +341,12 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		rc.context->PSSetShaderResources(4, 1, &null_srv);
 	}
 	end_render_pass(rc);
+	#endif
+
+	push_cube_outline(rc, rc.shadow_map.light_p, V3(0.3));
+	push_line(rc, rc.shadow_map.light_p, rc.shadow_map.light_p + 0.5 * rc.shadow_map.light_dir);
+
 	end_frame(rc);
-	anim_time += dt;
+
+	game.time += dt;
 }

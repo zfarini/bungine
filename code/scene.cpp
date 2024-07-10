@@ -125,7 +125,7 @@ Vertex get_ufbx_vertex(ufbx_mesh *umesh, ufbx_skin_deformer *skin, int index)
 		float total_weight = 0.0f;
 		for (size_t i = 0; i < num_weights; i++) {
 			ufbx_skin_weight skin_weight = skin->weights.data[skin_vertex.weight_begin + i];
-			v.indices[i] = skin_weight.cluster_index;
+			v.indices |= skin_weight.cluster_index << (8 * i);
 			v.weights[i] = (float)skin_weight.weight;
 			total_weight += (float)skin_weight.weight;
 		}
@@ -276,12 +276,6 @@ mat4 get_animated_node_transform(Animation &anim, NodeAnimation &node, float ani
 		rotation = quat_lerp(node.rotation[frame], node.rotation[next_frame], t);
 	if (node.scale.count)
 		s = lerp(node.scale[frame], node.scale[next_frame], t);
-	// if (node.position.count)
-	// position = node.position[0];
-	// if (node.rotation.count)
-	// rotation = node.rotation[0];
-	// if (node.scale.count)
-	// s = node.scale[0];
 	return translate(position) * quat_to_mat(rotation) * scale(s);	
 }
 
@@ -408,19 +402,32 @@ Scene load_scene(Arena *arena, RenderContext &rc, const char *filename)
 		ufbx_node *unode = uscene->nodes.data[i];
 		assert(unode->typed_id == i);
 
-		if (unode->mesh) {
-			scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, rc, unode);
-			scene.nodes[i].mesh = &scene.meshes[(int)unode->mesh->typed_id];
-		}
-		if (unode->parent)
-			scene.nodes[i].parent = &scene.nodes[(int)unode->parent->typed_id];
+		scene.nodes[i].id = (int)i;
 		scene.nodes[i].local_transform = ufbx_to_mat4(unode->node_to_parent);	
 		scene.nodes[i].geometry_transform = ufbx_to_mat4(unode->geometry_to_node);
 		scene.nodes[i].name = make_string(arena, unode->name.length, unode->name.data);
+
+		if (unode->parent)
+			scene.nodes[i].parent = &scene.nodes[(int)unode->parent->typed_id];
+
+		if (unode->parent)
+			assert(unode->parent->typed_id < i);
+
+		if (scene.nodes[i].parent)
+			scene.nodes[i].skip_render |= scene.nodes[i].parent->skip_render;
+
+		if (unode->light || unode->bone || unode->camera)
+			scene.nodes[i].skip_render = true;
+
+		if (unode->mesh) {
+			scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, rc, unode);
+			scene.nodes[i].mesh = &scene.meshes[(int)unode->mesh->typed_id];
+			assert(!scene.nodes[i].skip_render);
+		}
 		scene.nodes[i].childs = make_array<SceneNode *>(arena, unode->children.count);
+
 		for (usize j = 0; j < unode->children.count; j++)
 			scene.nodes[i].childs[j] = &scene.nodes[(int)unode->children.data[j]->typed_id];
-		assert(unode->inherit_mode == UFBX_INHERIT_MODE_NORMAL);
 	}
 
 	scene.animations = make_array_max<Animation>(arena, uscene->anim_stacks.count);

@@ -46,7 +46,7 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 	return result;
 }
 
-void update_game_input(GameInput &input)
+void update_game_input(HWND window, GameInput &input, int frame)
 {
 	UINT button_vkcode[BUTTON_COUNT] = {};
 
@@ -69,12 +69,25 @@ void update_game_input(GameInput &input)
 			input.buttons[i].is_down = 0;
 	}
 
-	input.last_mouse_p = input.mouse_p;
-	POINT cursor;
-	GetCursorPos(&cursor);
-	input.mouse_p = v2{(float)cursor.x, (float)cursor.y};
+	if (frame > 3) {
+		POINT cursor;
+		GetCursorPos(&cursor);
+		v2 screen_center;
+		RECT rect;
+		GetClientRect(window, &rect);
+		screen_center = V2(rect.left + (rect.right - rect.left) / 2, 
+					rect.top + (rect.bottom - rect.top) / 2);
+		input.mouse_dp = V2(cursor.x, cursor.y) - screen_center;
+	}
 }
 
+void move_cursor_to_window_center(HWND window)
+{
+	RECT rect;
+	GetClientRect(window, &rect);
+	SetCursorPos(rect.left + (rect.right - rect.left) / 2, 
+				 rect.top + (rect.bottom - rect.top) / 2);
+}
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 int main()
 {
@@ -114,15 +127,15 @@ int main()
 	
 	GameInput game_input = {};
 
-	{
-		POINT cursor;
-		GetCursorPos(&cursor);
-		game_input.mouse_p = game_input.last_mouse_p = v2{(float)cursor.x, (float)cursor.y};
-	}
+	while (ShowCursor(FALSE) >= 0)
+		;
+	move_cursor_to_window_center(window);
 
 	float dt = 1.f / 60;
 	
 	b32 should_close = 0;
+	int frame = 0;
+
 	while (!should_close) {
 		MSG message;
 		if (PeekMessageA(&message, 0, 0, 0, PM_REMOVE)) {
@@ -137,10 +150,12 @@ int main()
 			continue;
 		}
 
-		update_game_input(game_input);
+		update_game_input(window, game_input, frame);
+		move_cursor_to_window_center(window);
 		
 		game_update_and_render(*game, rc, &game_memory, game_input, dt);
 		
 		rc.swap_chain->Present(1, 0);
+		frame++;
 	}
 }

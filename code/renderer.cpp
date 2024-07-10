@@ -1,7 +1,7 @@
 
 #include "renderer.h"
 
-//#define ENABLE_SRGB 
+#define ENABLE_SRGB 
 
 ID3D11ShaderResourceView *create_texture(RenderContext &rc, void *data, int width, int height, bool srgb = true)
 {
@@ -109,7 +109,7 @@ RenderPass create_render_pass(RenderContext &rc, LPCWSTR shader_filename,
 	{
         D3D11_RASTERIZER_DESC desc = {};
         desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_NONE;
+        desc.CullMode = D3D11_CULL_BACK;
 		// NOTE: this seems to be for enabling depth clipping for the range specified in viewport
 		desc.DepthClipEnable = TRUE;
         

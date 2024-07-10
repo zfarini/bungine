@@ -60,7 +60,7 @@ struct Constants
 	mat4 view;
 	mat4 projection;
 	mat4 model;
-	mat4 normal_transform;
+	//mat4 normal_transform;
 	mat4 light_transform;
 	mat4 bones[96];
 	v3 camera_p;

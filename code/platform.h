@@ -20,8 +20,8 @@ struct GameButton
 struct GameInput
 {
 	GameButton buttons[BUTTON_COUNT];
-	v2 mouse_p;
-	v2 last_mouse_p;
+	v2 mouse_dp;
+	//v2 last_mouse_p;
 };
 
 #define IsDown(input, button) (input.buttons[button].is_down)
