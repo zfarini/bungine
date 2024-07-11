@@ -23,6 +23,7 @@ struct Entity
 	b32 can_jump;
 	b32 on_ground;
 
+
 	Scene *scene;
 	mat4 scene_transform;
 
@@ -54,12 +55,14 @@ struct Game
 
 	Arena asset_arena;
 	b32 is_initialized;
+	int frame;
 
 	Animation test_anim;
 
 	float time;
 
 	b32 camera_free_mode;
+	b32 debug_collision;
 	v3 last_camera_free_p;
 
 	Animation animations[ANIMATION_COUNT];

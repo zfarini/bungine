@@ -66,7 +66,7 @@ void update_game_input(HWND window, GameInput &input, int frame)
 	button_vkcode[BUTTON_PLAYER_JUMP]		= VK_SPACE;
 	button_vkcode[BUTTON_LEFT_SHIFT]			= VK_LSHIFT;
 	button_vkcode[BUTTON_F1] = 'C';
-//	button_vkcode[BUTTON_F2] = 0x31;
+	button_vkcode[BUTTON_F2] = 'V';
 
 	for (int i = 0; i < BUTTON_COUNT; i++)
 		input.buttons[i].was_down = input.buttons[i].is_down;

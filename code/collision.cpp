@@ -149,5 +149,29 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 		e.dp.y = 0;
 	if (fabsf(e.position.z - start_p.z) < eps)
 		e.dp.z = 0;
+
+	float height_above_ground = 1000;
+	for (usize i = 0; i < game.entities.count; i++) {
+		Entity &test = game.entities[i];
+
+		if (test.id == e.id)
+			continue;
+		v3 radius = e.collision_box + test.collision_box;
+
+		float d = (e.position.z - e.collision_box.z) - (test.position.z + test.collision_box.z) + 0.001f;
+		if (d >= 0 && 
+			(e.position.x >= test.position.x - radius.x && e.position.x <= test.position.x + radius.x)
+		&&  (e.position.y >= test.position.y - radius.y && e.position.y <= test.position.y + radius.y)
+		&& d < height_above_ground) {
+			height_above_ground = d;
+		}
+	}
+	if (height_above_ground > 0.6)
+		e.can_jump = false;
+	if (height_above_ground < 0.2)
+		e.can_jump = true;
+	e.on_ground = height_above_ground < 0.2;
+
+	printf("%d -> %f %d\n", e.can_jump, height_above_ground, game.frame);
 	end_temp_memory();
 }

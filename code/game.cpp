@@ -131,7 +131,7 @@ void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, 
 
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
-		render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
+		//render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
 
 		UINT32 stride = sizeof(Vertex);
 		UINT32 offset = 0;
@@ -194,8 +194,8 @@ void render_entities(RenderContext &rc, Game &game)
 			continue ;
 		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
 		render_scene(rc, game, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
-
-		push_cube_outline(rc, e.position, e.collision_box);
+		if (game.debug_collision)
+			push_cube_outline(rc, e.position, e.collision_box);
 	}
 }
 
@@ -300,6 +300,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			game.camera_p = game.last_camera_free_p;
 		game.camera_free_mode = !game.camera_free_mode;
 	}
+	if (IsDownFirstTime(input, BUTTON_F2)) {
+		game.debug_collision = !game.debug_collision;
+	}
 
 	begin_frame(rc, rc.view, rc.projection);
 	
@@ -345,10 +348,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
             a = a * 2;
             a += 25 * player_up;
         }
-		player.on_ground = true;
 		//if (!player.on_ground)
        	a += -4 * player_up;
-        a = a * (player.run ? 22 : 12);
+        a = a * (player.run ? 52 : 12);
 
         a -= player.dp * 3;
 
@@ -356,7 +358,6 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
 			move_entity(game, player, delta_p);
 			player.dp += a * dt;
-			player.can_jump = true;
 			/*
 				p' = 0.5*dt*dt*a + dt * v + p
 				v' = a * dt +  v
@@ -398,16 +399,24 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 	{
 		Entity &e = game.entities[1];
-		PathFindResult result = find_shorthest_path(game, e, game.entities[0].position);
+		PathFindResult result = find_shorthest_path(game, e, game.entities[0]);
 		
 		v3 dir = result.best_p - e.position;
 
 		if (length(dir) > 1)
 			dir = normalize(dir);
 
-		v3 a = 24 * dir;
-		a.z = -10;
-		a -= e.dp * 5;
+		v3 a = normalize(V3(dir.x, dir.y, 0));
+
+		if (dir.z > 0 && e.can_jump) {
+			a = a * 2;
+			a += 25 * V3(0, 0, 1);
+		}
+
+		a += -4 * V3(0, 0, 1);
+		a = a * 10;
+		
+		a -= e.dp * 3;
 
 		v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
 
@@ -415,7 +424,10 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		
 		e.dp += a * dt;
 
-		e.animation = &game.animations[ANIMATION_RUN];
+		if (!e.on_ground)
+			e.animation = &game.animations[ANIMATION_JUMP];
+		else
+			e.animation = &game.animations[ANIMATION_RUN];
 
 		e.rotation.z = atan2(dir.y, dir.x);
 		e.anim_time += dt;
@@ -553,4 +565,5 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	end_frame(rc);
 
 	game.time += dt;
+	game.frame++;
 }
