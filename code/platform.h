@@ -8,6 +8,12 @@ enum GameButtonType
 	BUTTON_CAMERA_DOWN,
 	BUTTON_MOUSE_LEFT,
 	BUTTON_MOUSE_RIGHT,
+	BUTTON_PLAYER_FORWARD,
+	BUTTON_PLAYER_BACKWARD,
+	BUTTON_PLAYER_JUMP,
+	BUTTON_LEFT_SHIFT,
+
+	BUTTON_F1, BUTTON_F2,
 	BUTTON_COUNT
 };
 
@@ -25,3 +31,5 @@ struct GameInput
 };
 
 #define IsDown(input, button) (input.buttons[button].is_down)
+#define WasDown(input, button) (input.buttons[button].was_down)
+#define IsDownFirstTime(input, button) (IsDown(input, button) && !WasDown(input, button))

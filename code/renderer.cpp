@@ -335,7 +335,9 @@ void init_render_context(Arena *arena, RenderContext &rc, HWND window)
 
 		DXGI_SWAP_CHAIN_DESC desc = {};
 		desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.BufferCount = 2;
+		// TODO: running on vsync with 2 buffers lags a lot
+		// I don't know why yet
+		desc.BufferCount = 3;
 		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		desc.OutputWindow = window;
 		desc.SampleDesc.Count = 1;
@@ -398,7 +400,7 @@ void init_render_context(Arena *arena, RenderContext &rc, HWND window)
 	rc.loaded_textures = make_array_max<Texture>(arena, 512);
 
 	{
-		rc.lines = make_array_max<v3>(arena, 3 * 10000);
+		rc.lines = make_array_max<v3>(arena, 3 * 100000);
 		{
 			D3D11_BUFFER_DESC desc = {};
 			desc.ByteWidth = (UINT)(rc.lines.capacity * sizeof(*rc.lines.data));

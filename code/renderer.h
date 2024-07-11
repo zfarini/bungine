@@ -55,7 +55,9 @@ struct RenderContext
 	mat4 projection;
 };
 
-struct Constants
+// a type can't span 16 byte boundary!!
+//https://maraneshi.github.io/HLSL-ConstantBufferLayoutVisualizer/
+struct __declspec(align(16)) Constants
 {
 	mat4 view;
 	mat4 projection;
@@ -63,11 +65,16 @@ struct Constants
 	//mat4 normal_transform;
 	mat4 light_transform;
 	mat4 bones[96];
+
 	v3 camera_p;
+	float _t1;
+	v3 player_p;
 	float diffuse_factor;
+
 	float specular_factor;
 	float specular_exponent_factor;
 	int skinned;
 	int has_normal_map;
-	float tmp[4 * 4 - 8];
+
+	//float __m[];
 };

@@ -1,15 +1,19 @@
-#include "scene.cpp"
 #include "debug.cpp"
+#include "scene.cpp"
 #include "game.h"
+#include "collision.cpp"
+#include "ai.cpp"
 
-Entity *make_entity(Game &game, v3 position, Scene *scene, mat4 scene_transform = identity())
+Entity *make_entity(Game &game, int type, Scene *scene, v3 position, v3 collision_box, mat4 scene_transform = identity())
 {
 	Entity e = {};
 
+	e.id = (int)game.entities.count;
+	e.type = type;
 	e.position = position;
 	e.scene = scene;
 	e.scene_transform = scene_transform;
-
+	e.collision_box = collision_box;
 	game.entities.push(e);
 	return &game.entities[game.entities.count - 1];
 }
@@ -93,7 +97,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 	return anim_bones;
 }
 
-void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_transform, mat4 node_transform,
+void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, mat4 scene_transform, mat4 node_transform,
 	Animation *anim, float anim_time)
 {
 	if (node->skip_render)
@@ -123,7 +127,8 @@ void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_t
 		constants.projection = rp.projection_mat;
 		constants.camera_p = rp.camera_p;
 		constants.light_transform = rc.shadow_map.projection * rc.shadow_map.view;
-			
+		constants.player_p = game.entities[0].position;
+
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
 		render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
@@ -134,7 +139,7 @@ void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_t
 
 		constants.model = mesh_transform;
 		//constants.normal_transform = inverse(transpose(constants.model));
-		if (mesh.bones.count) {
+		if (mesh.bones.count && anim) {
 			constants.skinned = 1;
 			Arena *temp  = begin_temp_memory();
 			Array<Bone> bones = get_animated_bones(temp, mesh.bones, mesh_transform, anim, anim_time);
@@ -171,14 +176,14 @@ void render_scene(RenderContext &rc, Scene &scene, SceneNode *node, mat4 scene_t
 	}
 
 	for (usize i = 0; i < node->childs.count; i++)
-		render_scene(rc, scene, node->childs[i], scene_transform, node_transform, anim, anim_time);
+		render_scene(rc, game, scene, node->childs[i], scene_transform, node_transform, anim, anim_time);
 }
 
-void render_scene(RenderContext &rc, Scene &scene, mat4 transform = identity(), Animation *anim = 0, float anim_time = 0)
+void render_scene(RenderContext &rc, Game &game, Scene &scene, mat4 transform = identity(), Animation *anim = 0, float anim_time = 0)
 {
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
-	render_scene(rc, scene, scene.root, transform, identity(), anim, anim_time);
+	render_scene(rc, game, scene, scene.root, transform, identity(), anim, anim_time);
 }
 
 void render_entities(RenderContext &rc, Game &game)
@@ -187,8 +192,10 @@ void render_entities(RenderContext &rc, Game &game)
 		Entity &e = game.entities[i];
 		if (!e.scene)
 			continue ;
-		mat4 transform = translate(e.position);
-		render_scene(rc, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
+		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
+		render_scene(rc, game, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
+
+		push_cube_outline(rc, e.position, e.collision_box);
 	}
 }
 
@@ -212,9 +219,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		g_temp_arena.arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
 		game.asset_arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
 
-		rc.shadow_map = create_shadow_map(rc, 2048, 2048, 
-			v3{8, 0, 7}, v3{-1, 0, -0.8},
-			orthographic_projection(1, 100, 30, 30));
+		rc.shadow_map = create_shadow_map(rc, 4096, 4096, 
+			v3{24, 0, 24}, v3{-1, 0, -1},
+			orthographic_projection(1, 75, 50, 40));
 
 		game.mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
 			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
@@ -222,28 +229,60 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", 0,
 			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
+
 		game.ch43		= load_scene(&game.asset_arena, rc, "data\\Ch43.fbx");
 		//Scene ch06		= load_scene(&asset_arena, rc, "data\\Ch06.fbx");
 		//Scene ch15		= load_scene(&asset_arena, rc, "data\\Ch15.fbx");
 		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
 		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
-		game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
-		game.cube		= load_scene(&game.asset_arena, rc, "data\\cube.fbx");
+		//game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
+		game.cube_asset		= load_scene(&game.asset_arena, rc, "data\\cube.fbx");
 		
 		//game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
-		game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
+		//game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
 
 		game.entities = make_array_max<Entity>(memory, 4096);
 
 
-		Entity *player = make_entity(game, V3(0), &game.ch43);
-		player->animation = &game.test_anim;
+		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
 
-		Entity *sponza = make_entity(game, V3(0), &game.sponza);
-			
+		player->scene_transform =  translate(0, 0, -player->collision_box.z) * zrotation(PI/2 + PI);
+		
+		Entity *enemy = make_entity(game, EntityType_Player, &game.ch43, V3(0, 3, 0.8), player->collision_box);
+		enemy->scene_transform = player->scene_transform;
+
+		//player->rotation.x = -PI/8;
+
+		//Entity *sponza = make_entity(game, V3(0), &game.sponza);
+
+
+		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, rc, "data\\jump.fbx").animations[0];
+		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, rc, "data\\shoot.fbx").animations[0];
+		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, rc, "data\\run.fbx").animations[0];
+		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, rc, "data\\forward_gun_walk.fbx").animations[0];
+		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, rc, "data\\backward_gun_walk.fbx").animations[0];
+		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, rc, "data\\gun_idle.fbx").animations[0];
+
+
+		Entity *boxes[] = {
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), (V3(25, 25, 0.5))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 25, 0), (V3(25, 0.5, 25))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1), (V3(5, 5.8, 0.3))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), (V3(2.5, 2.5, 0.3))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), (V3(1.25, 1.25, 0.3))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), (V3(7, 7, 0.3))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  (V3(4, 1, 2))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1), (V3(4, 4, 0.3))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), (V3(2, 2, 0.3))),
+		};
+		for (int i = 0; i < ARRAY_SIZE(boxes); i++)
+			boxes[i]->scene_transform = scale(boxes[i]->collision_box);
+		
+		game.last_camera_free_p = V3(0, 0, 3);
 		game.is_initialized = 1;
-	}
 
+	}
+	//assert(0 && "render player in rest pose and check if shadow is correct");
 	int window_width, window_height;
 	{
 		ID3D11Texture2D* backbuffer;
@@ -254,24 +293,191 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		window_height = desc.Height;
 	}
 
+	if (IsDownFirstTime(input, BUTTON_F1)) {
+		if (game.camera_free_mode)
+			game.last_camera_free_p = game.camera_p;
+		else
+			game.camera_p = game.last_camera_free_p;
+		game.camera_free_mode = !game.camera_free_mode;
+	}
+
+	begin_frame(rc, rc.view, rc.projection);
+	
+	// update player
+	b32 camera_shoot_mode = false;
+	b32 walk_backward = false;
+	Entity &player = game.entities[0];
+	{
+        v3 player_forward = normalize(V3(cosf(player.rotation.z), sinf(player.rotation.z), 0));
+        v3 player_up = V3(0, 0, 1);
+        v3 player_right = normalize(cross(player_forward, player_up));
+        v3 a = {};
+
+        bool forward = false;
+
+        if (IsDown(input, BUTTON_PLAYER_FORWARD))
+		{
+            a += player_forward;
+            forward = true;
+        }
+		if (IsDown(input, BUTTON_PLAYER_BACKWARD))
+        {
+            a -= player_forward;
+            walk_backward = true;
+        }
+        a = normalize(a);
+
+        player.moved = forward;
+        player.run = input.buttons[BUTTON_LEFT_SHIFT].is_down && forward;
+        if (!IsDown(input, BUTTON_MOUSE_LEFT) || player.run || player.moved)
+            player.shooting = false;
+        else
+        {
+            player.shooting = true;
+            player.run = false;
+            player.moved = false;
+            a = {};
+
+        }
+      
+        if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
+        {
+            a = a * 2;
+            a += 25 * player_up;
+        }
+		player.on_ground = true;
+		//if (!player.on_ground)
+       	a += -4 * player_up;
+        a = a * (player.run ? 22 : 12);
+
+        a -= player.dp * 3;
+
+		{
+			v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
+			move_entity(game, player, delta_p);
+			player.dp += a * dt;
+			player.can_jump = true;
+			/*
+				p' = 0.5*dt*dt*a + dt * v + p
+				v' = a * dt +  v
+				a
+			*/
+		}
+
+
+		if (!game.camera_free_mode)
+        {
+            v3 camera_target_p = player.position - player_forward * 2 + player_up * 0.9 + player_right * 0.5;
+            game.camera_p += 15 * dt * (camera_target_p - game.camera_p);
+        }
+		{
+			Animation *new_anim;
+
+			if (!player.on_ground)
+				new_anim = &game.animations[ANIMATION_JUMP];
+			else if (player.shooting)
+				new_anim = &game.animations[ANIMATION_SHOOT];
+			else if (player.run)
+				new_anim = &game.animations[ANIMATION_RUN];
+			else if (walk_backward)
+				new_anim = &game.animations[ANIMATION_BACKWARD_GUN_WALK];
+			else if (player.moved)
+				new_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
+			else 
+				new_anim = &game.animations[ANIMATION_GUN_IDLE];
+			if (player.animation != new_anim) {
+				player.anim_time = 0;
+				player.animation = new_anim;
+			}
+			else 
+				player.anim_time += dt;
+		}
+
+		//push_cylinder(game.renderer, player.position, 0.3, 1, V3(1, 0, 0));
+	}
+
+	{
+		Entity &e = game.entities[1];
+		PathFindResult result = find_shorthest_path(game, e, game.entities[0].position);
+		
+		v3 dir = result.best_p - e.position;
+
+		if (length(dir) > 1)
+			dir = normalize(dir);
+
+		v3 a = 24 * dir;
+		a.z = -10;
+		a -= e.dp * 5;
+
+		v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
+
+		move_entity(game, e, delta_p);
+		
+		e.dp += a * dt;
+
+		e.animation = &game.animations[ANIMATION_RUN];
+
+		e.rotation.z = atan2(dir.y, dir.x);
+		e.anim_time += dt;
+	}
+
 	mat4 view, projection;
 	{
-	//	if (IsDown(input, BUTTON_MOUSE_LEFT)) {
+		v3 camera_rot;
+		if (game.camera_free_mode) {
 			game.camera_rotation.x += -input.mouse_dp.y * dt * 0.2f;
 			game.camera_rotation.z += -input.mouse_dp.x * dt * 0.2f;
-	//	}
-		// avoid gimbal lock
-		if (game.camera_rotation.x > PI / 2 - 0.001f)
-			game.camera_rotation.x = PI / 2 - 0.001f;
-		if (game.camera_rotation.x < -PI / 2 + 0.001f)
-			game.camera_rotation.x = -PI / 2 + 0.001f;
-		
-		mat4 camera_transform =  zrotation(game.camera_rotation.z) * xrotation(game.camera_rotation.x);
+
+			// avoid gimbal lock
+			if (game.camera_rotation.x > PI / 2 - 0.001f)
+				game.camera_rotation.x = PI / 2 - 0.001f;
+			if (game.camera_rotation.x < -PI / 2 + 0.001f)
+				game.camera_rotation.x = -PI / 2 + 0.001f;
+			camera_rot = game.camera_rotation;
+		}
+		else {
+			v2 mouse_dp = (input.mouse_dp) * 0.1f;
+			v3 a = {};
+
+			a.z = -mouse_dp.x;
+			a.x = -mouse_dp.y;
+
+			// p' = 1/2*a*t*t + v*t + p
+			// v' = a*t + v
+			// a' = a
+
+			a.z *= 12;
+			if (camera_shoot_mode)
+				a.x *= 8;
+			else
+				a.x *= 4;
+
+			a -= player.drotation * 6;
+
+			player.rotation += 0.5 * a * dt * dt + player.drotation * dt;
+			player.drotation += a * dt;
+
+			
+			{
+				float l1 = PI / 6;
+				float l2 = PI / 8;
+				if (camera_shoot_mode)	
+					l1 = PI / 3, l2 = PI / 4;
+				if (player.rotation.x > l1)
+					player.rotation.x = l1 - 0.001;
+				if (player.rotation.x < -l2)
+					player.rotation.x = -l2 + 0.001;
+			}
+			camera_rot = player.rotation;
+			camera_rot.z -= PI / 2;
+		}	
+		mat4 camera_transform =  zrotation(camera_rot.z) * xrotation(camera_rot.x);
 
 		v3 camera_x = (camera_transform * v4{1, 0, 0, 0}).xyz;
 		v3 camera_y = (camera_transform * v4{0, 0, 1, 0}).xyz;
 		v3 camera_z = (camera_transform * v4{0, -1, 0, 0}).xyz;
 
+		if (game.camera_free_mode)
 		{
 			v3 camera_dp = {};
 			if (IsDown(input, BUTTON_CAMERA_FORWARD))
@@ -299,11 +505,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		view = rotation * translate(-game.camera_p);
 		projection = perspective_projection(0.1, 100, 90, (float)window_height / window_width);
 	}
+	rc.view = view;
+	rc.projection = projection;
 
-	for (usize i = 0; i < game.entities.count; i++)
-		game.entities[i].anim_time = game.time;
-
-	begin_frame(rc, view, projection);
 	
 	push_line(rc, V3(0), V3(5, 0, 0), V3(1, 0, 0));
 	push_line(rc, V3(0), V3(0, 5, 0), V3(0, 1, 0));

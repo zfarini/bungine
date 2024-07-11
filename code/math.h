@@ -6,6 +6,13 @@
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
 
+int sign(float x)
+{
+	if (x < 0) return -1;
+	else if (x > 0) return 1;
+	return 0;
+}
+
 // ~ v3
 union v3 {
 	struct {
@@ -128,6 +135,54 @@ v3 cross(v3 a, v3 b)
 		a.z * b.x - a.x * b.z,
 		a.x * b.y - a.y * b.x
 	};
+}
+
+union v3i
+{
+	struct {
+		int x, y, z;
+	};
+	int e[3];
+};
+
+v3i V3i(int x, int y, int z)
+{
+	return v3i{x, y, z};
+}
+
+v3i V3i(int x)
+{
+	return v3i{x, x, x};
+}
+
+v3 V3(v3i v)
+{
+	return v3{(float)v.x, (float)v.y, (float)v.z};
+}
+
+v3i operator+(v3i a, v3i b)
+{
+	return  v3i{a.x + b.x, a.y + b.y, a.z + b.z};
+}
+
+v3i operator-(v3i a, v3i b)
+{
+	return v3i{a.x - b.x, a.y - b.y, a.z - b.z};
+}
+
+v3i operator-(v3i a)
+{
+	return v3i{-a.x, -a.y, -a.z};
+}
+
+v3i max(v3i a, v3i b)
+{
+	return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
+}
+
+v3i min(v3i a, v3i b)
+{
+	return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 }
 
 // ~ V2

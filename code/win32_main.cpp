@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <cstdio>
+#include <float.h>
 
 #undef min
 #undef max
@@ -22,12 +23,14 @@
 #include <ufbx.h>
 #include <stb_image.h>
 #include "common.h"
-#include "math.h"
 #include "arena.h"
 #include "utils.h"
+#include "math.h"
 #include "platform.h"
 #define DIRECT3D_DEBUG
 #include "renderer.cpp"
+global RenderContext g_rc;
+
 #include "game.cpp"
 
 LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
@@ -58,6 +61,12 @@ void update_game_input(HWND window, GameInput &input, int frame)
 	button_vkcode[BUTTON_CAMERA_DOWN] 		= 'E';
 	button_vkcode[BUTTON_MOUSE_LEFT]		= VK_LBUTTON;
 	button_vkcode[BUTTON_MOUSE_RIGHT]		= VK_RBUTTON;
+	button_vkcode[BUTTON_PLAYER_FORWARD] 	= 'F';
+	button_vkcode[BUTTON_PLAYER_BACKWARD] 	= 'G';
+	button_vkcode[BUTTON_PLAYER_JUMP]		= VK_SPACE;
+	button_vkcode[BUTTON_LEFT_SHIFT]			= VK_LSHIFT;
+	button_vkcode[BUTTON_F1] = 'C';
+//	button_vkcode[BUTTON_F2] = 0x31;
 
 	for (int i = 0; i < BUTTON_COUNT; i++)
 		input.buttons[i].was_down = input.buttons[i].is_down;
@@ -119,7 +128,7 @@ int main()
 		assert(window);
 	}
 
-	RenderContext rc = {};
+	RenderContext &rc = g_rc;
 
 	Game *game = (Game *)arena_alloc(&game_memory, sizeof(*game));
 	

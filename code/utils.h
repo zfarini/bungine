@@ -94,6 +94,7 @@ Array<T> make_zero_array(Arena *arena, usize count)
 {
 	Array<T> result = make_array<T>(arena, count);
 	memset(result.data, 0, sizeof(T) * count);
+
 	return result;
 }
 

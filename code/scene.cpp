@@ -221,10 +221,9 @@ Mesh load_mesh(Arena *arena, Scene &scene, RenderContext &rc, ufbx_node *unode)
 		part.vertices_count = vertices.count - part.offset;
 	}
 
-	end_temp_memory();
-
 	mesh.vertex_buffer = create_vertex_buffer(rc, vertices.count * sizeof(Vertex), vertices.data);
 
+	end_temp_memory();
 	return mesh;
 }
 

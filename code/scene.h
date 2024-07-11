@@ -1,3 +1,6 @@
+#ifndef SCENE_H
+#define SCENE_H
+
 #define MAX_BONE_WEIGHTS 4
 
 // TODO: send indices/weights in another buffer?
@@ -91,3 +94,5 @@ struct Scene
 	Array<Animation> animations;
 	String path;
 };
+
+#endif

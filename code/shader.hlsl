@@ -12,6 +12,7 @@ cbuffer constants: register(b0)
 	float4x4 bones[96];
 
 	float3 camera_p;
+	float3 player_p;
 	float diffuse_factor;
 	float specular_factor;
 	float specular_exponent_factor;
@@ -211,10 +212,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 	//return float4(color, 1);	
 	//return float4(color, 1);
 
-	float3 light_pos[2] = {
-		float3(4, 0, 3),
-		float3(-4, 0, 3)
-	};
+	
 	float3 specular_color = specular_tex.Sample(mysampler, input.uv).rgb;
 
 	float3 to_camera = normalize(camera_p - input.world_p);
@@ -222,7 +220,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 	float3 result = 0;
 	
 	{
-		float3 to_light = -normalize(float3(-1, 0, -0.8));
+		float3 to_light = -normalize(float3(-1, 0, -1));
 		float4 p = mul(light_transform, float4(input.world_p, 1));
 		p.xyz /= p.w;
 		// TODO: I really don't understand why we have to do this?
@@ -250,6 +248,14 @@ float4 ps_main(vs_out input) : SV_TARGET
 	//result = color;
 	result += 0.2f * color;
 #if 1
+	float3 light_pos[2] = {
+			player_p,
+			float3(0, 2, 4)
+	};
+	float3 light_color[2] = {
+		float3(0.8, 0.2, 0.3),
+		float3(0.1, 0.9, 0.4)
+	};
 	for (int i = 0; i < 2; i++) {
 		float3 to_light = normalize(light_pos[i] - input.world_p);
 		float diffuse = max(0, dot(to_light, normal));
@@ -259,7 +265,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 		//specular = 0;	
 		//diffuse = 0;
 		//specular *= specular;
-		result += (diffuse_factor*color * diffuse  + specular_factor*specular) * 1.f / length(light_pos[i] - input.world_p) ;
+		result += light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * 1.f / length(light_pos[i] - input.world_p) ;
 	}
 #endif
 	//result = specular;
