@@ -268,6 +268,14 @@ union v4 {
 	float e[4];
 };
 
+v4 V4(float x, float y, float z, float w)
+{
+	v4 v;
+
+	v.x = x, v.y = y, v.z = z, v.w = w;
+	return v;
+}
+
 v4 V4(v3 xyz, float w)
 {
 	v4 v;

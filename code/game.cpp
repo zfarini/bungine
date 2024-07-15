@@ -465,7 +465,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			// a' = a
 
 			a.z *= 20;
-			a.x *= 5;
+			a.x *= 8;
 			if (camera_shoot_mode)
 				a.x *= 8;
 			else
@@ -502,76 +502,62 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		v3 camera_p = player.position + (rotate_around_axis(player_right, camera_rot.x + game.rot) * V4(game.camera_p - player.position, 0)).xyz;
 
 		{
-			v3 p0 = player.position - player_forward * 2; 
-			v3 p2 = player.position + V3(0, 0, player.collision_box.z*3);
-			v3 p1 = player.position - V3(0, 0, player.collision_box.z-0.1);
-
-			v3 a, b, c;
-
-			float T = PI / 2;
-			c = p0;
-			a = (p1 + p2 - 2 * p0) / (2 * T * T);
-			b = (p1-p2) / (2 * T);
-
 			float o = camera_rot.x + game.rot;
-
-			//o = T;
 			
-			//o = fmod(o + PI/2, PI) - PI/2;
+			float t[4] = {-PI/2, 0, PI/2.5, PI/2};
+			v3 v[4] = {
+					   player.position + V3(0, 0, player.collision_box.z*3),
+						player.position - player_forward * 3 + V3(0, 0, player.collision_box.z * 0.5),
+						player.position - player_forward * 1.5
+					   	+ V3(0, 0, -player.collision_box.z +0.2),
+						player.position - V3(0, 0, player.collision_box.z-0.1),
+					   
+			};
 
+			//for (int i = 0; i < 4; i++)
+			//	push_cube_outline(rc, v[i], V3(0.3));
+			
+			mat4 M;
+			mat4 V;
+
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					M.e[i][j] = 1;
+					for (int k = 0; k < 3 - i; k++)
+						M.e[i][j] *= t[j];
+
+					if (i == 3)
+						V.e[i][j] = 0;
+					else
+						V.e[i][j] = v[j].e[i];
+				}
+			}
+			
+			M = inverse(M);
+
+			mat4 A = V * M;
+
+			camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
+			float T = PI / 2;
 			float dO = 0.1f;
 			for (float O = -T; O <= T; O += dO) {
 				float lO = O - dO;
 
-				v3 v0 = a*lO*lO + b * lO + c;
-				v3 v1 = a*O*O + b * O  + c;
+				v3 v0 = (A * V4(lO*lO*lO, lO*lO, lO, 1)).xyz;
+				v3 v1 = (A * V4(O*O*O, O*O, O, 1)).xyz;
+
 				push_line(rc, v0, v1, V3((O + T) / (T*2), 0, 0));
 			}
-			camera_p = a*o*o + b * o + c;
 
-			/*
-				f(0) = p0
-				f(PI/2) = p1
-				f(-PI/2) = p2
-
-				f(x) = a*x^2+b*x+p0x
-
-				a*T^2+b*T+p0x = p1x
-				a*T^2-b*T+p0x = p2x
-
-
-
-				2*b*T = p1x - p2x
-
-				b = (p1x - p2x) / (2*T)
-
-				a  = (p1x + p2x - 2* p0x) / (2 * T^2)
-
-
-				c = p0
-			*/
 		}
-		//v3 camera_p = player.position - player_forward * 2 + player_up * 0.9 + player_right * 0.5;
-
-
-		// if (game.camera_free_mode && IsDown(input, BUTTON_LEFT_SHIFT)) {
-		// 	game.rot += dt*5;
-		// }
-		
-		//camera_p = game.camera_p + 
-	//	camera_p = xrotation(game.rot) * translate(-player.position);
- 		
-
-       
 		mat4 camera_transform =  
-			//translate(game.camera_p) *
 			zrotation(camera_rot.z) *
 			xrotation(camera_rot.x) *
 			translate(camera_p);
 		
-		push_cube_outline(rc, camera_p, V3(1), V3(1, 0, 0));
+		//push_cube_outline(rc, camera_p, V3(1), V3(1, 0, 0));
 		//push_cube_outline(rc, player.position, V3(1), V3(1, 1, 0));
-		push_line(rc, camera_p, player.position);
+		//push_line(rc, camera_p, player.position);
 		//push_line(rc, player.position, player.position + player_right, V3(0, 0, 1));
 		//push_line(rc, player.position, game.camera_p, V3(0, 1, 0));
 
