@@ -65,6 +65,10 @@ struct Game
 	b32 debug_collision;
 	v3 last_camera_free_p;
 
+	v3 free_camera_p;
+
+	float rot;
+
 	Animation animations[ANIMATION_COUNT];
 };
 

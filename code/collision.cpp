@@ -172,6 +172,5 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 		e.can_jump = true;
 	e.on_ground = height_above_ground < 0.2;
 
-	printf("%d -> %f %d\n", e.can_jump, height_above_ground, game.frame);
 	end_temp_memory();
 }

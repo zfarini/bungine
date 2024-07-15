@@ -295,9 +295,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 	if (IsDownFirstTime(input, BUTTON_F1)) {
 		if (game.camera_free_mode)
-			game.last_camera_free_p = game.camera_p;
+			game.last_camera_free_p = game.free_camera_p;
 		else
-			game.camera_p = game.last_camera_free_p;
+			game.free_camera_p = game.last_camera_free_p;
 		game.camera_free_mode = !game.camera_free_mode;
 	}
 	if (IsDownFirstTime(input, BUTTON_F2)) {
@@ -366,10 +366,14 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		}
 
 
-		if (!game.camera_free_mode)
+		//if (!game.camera_free_mode)
         {
             v3 camera_target_p = player.position - player_forward * 2 + player_up * 0.9 + player_right * 0.5;
-            game.camera_p += 15 * dt * (camera_target_p - game.camera_p);
+		
+			camera_target_p = player.position - player_forward * 2 + player_up;
+			game.camera_p = camera_target_p;
+
+		 //   game.camera_p += 15 * dt * (camera_target_p - game.camera_p);
         }
 		{
 			Animation *new_anim;
@@ -397,6 +401,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		//push_cylinder(game.renderer, player.position, 0.3, 1, V3(1, 0, 0));
 	}
 
+#if 0
 	{
 		Entity &e = game.entities[1];
 		PathFindResult result = find_shorthest_path(game, e, game.entities[0]);
@@ -432,6 +437,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		e.rotation.z = atan2(dir.y, dir.x);
 		e.anim_time += dt;
 	}
+#endif
 
 	mat4 view, projection;
 	{
@@ -458,32 +464,124 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			// v' = a*t + v
 			// a' = a
 
-			a.z *= 12;
+			a.z *= 20;
+			a.x *= 5;
 			if (camera_shoot_mode)
 				a.x *= 8;
 			else
 				a.x *= 4;
 
-			a -= player.drotation * 6;
+			a -= player.drotation * 10;
 
 			player.rotation += 0.5 * a * dt * dt + player.drotation * dt;
 			player.drotation += a * dt;
 
 			
 			{
-				float l1 = PI / 6;
-				float l2 = PI / 8;
-				if (camera_shoot_mode)	
-					l1 = PI / 3, l2 = PI / 4;
-				if (player.rotation.x > l1)
-					player.rotation.x = l1 - 0.001;
-				if (player.rotation.x < -l2)
-					player.rotation.x = -l2 + 0.001;
+				if (player.rotation.x >= PI / 2)
+					player.rotation.x = PI / 2;
+				if (player.rotation.x <= -PI / 2)
+					player.rotation.x = -PI / 2;
 			}
 			camera_rot = player.rotation;
 			camera_rot.z -= PI / 2;
 		}	
-		mat4 camera_transform =  zrotation(camera_rot.z) * xrotation(camera_rot.x);
+		v3 player_forward = normalize(V3(cosf(player.rotation.z), sinf(player.rotation.z), 0));
+        v3 player_up = V3(0, 0, 1);
+        v3 player_right = normalize(cross(player_forward, player_up));
+		player_right = normalize(cross(player_up, game.camera_p - player.position));
+		
+		if (game.camera_free_mode && IsDown(input, BUTTON_MOUSE_LEFT)) {
+			game.rot += dt*5;
+		}
+		if (game.camera_free_mode && IsDown(input, BUTTON_MOUSE_RIGHT)) {
+			game.rot -= dt*5;
+		}
+		printf("%f %d\n", game.rot, game.frame);
+
+		v3 camera_p = player.position + (rotate_around_axis(player_right, camera_rot.x + game.rot) * V4(game.camera_p - player.position, 0)).xyz;
+
+		{
+			v3 p0 = player.position - player_forward * 2; 
+			v3 p2 = player.position + V3(0, 0, player.collision_box.z*3);
+			v3 p1 = player.position - V3(0, 0, player.collision_box.z-0.1);
+
+			v3 a, b, c;
+
+			float T = PI / 2;
+			c = p0;
+			a = (p1 + p2 - 2 * p0) / (2 * T * T);
+			b = (p1-p2) / (2 * T);
+
+			float o = camera_rot.x + game.rot;
+
+			//o = T;
+			
+			//o = fmod(o + PI/2, PI) - PI/2;
+
+			float dO = 0.1f;
+			for (float O = -T; O <= T; O += dO) {
+				float lO = O - dO;
+
+				v3 v0 = a*lO*lO + b * lO + c;
+				v3 v1 = a*O*O + b * O  + c;
+				push_line(rc, v0, v1, V3((O + T) / (T*2), 0, 0));
+			}
+			camera_p = a*o*o + b * o + c;
+
+			/*
+				f(0) = p0
+				f(PI/2) = p1
+				f(-PI/2) = p2
+
+				f(x) = a*x^2+b*x+p0x
+
+				a*T^2+b*T+p0x = p1x
+				a*T^2-b*T+p0x = p2x
+
+
+
+				2*b*T = p1x - p2x
+
+				b = (p1x - p2x) / (2*T)
+
+				a  = (p1x + p2x - 2* p0x) / (2 * T^2)
+
+
+				c = p0
+			*/
+		}
+		//v3 camera_p = player.position - player_forward * 2 + player_up * 0.9 + player_right * 0.5;
+
+
+		// if (game.camera_free_mode && IsDown(input, BUTTON_LEFT_SHIFT)) {
+		// 	game.rot += dt*5;
+		// }
+		
+		//camera_p = game.camera_p + 
+	//	camera_p = xrotation(game.rot) * translate(-player.position);
+ 		
+
+       
+		mat4 camera_transform =  
+			//translate(game.camera_p) *
+			zrotation(camera_rot.z) *
+			xrotation(camera_rot.x) *
+			translate(camera_p);
+		
+		push_cube_outline(rc, camera_p, V3(1), V3(1, 0, 0));
+		//push_cube_outline(rc, player.position, V3(1), V3(1, 1, 0));
+		push_line(rc, camera_p, player.position);
+		//push_line(rc, player.position, player.position + player_right, V3(0, 0, 1));
+		//push_line(rc, player.position, game.camera_p, V3(0, 1, 0));
+
+
+		if (game.camera_free_mode) {
+			camera_transform = translate(game.free_camera_p) * zrotation(camera_rot.z) * xrotation(camera_rot.x);
+		}
+		//camera_transform = identity();
+
+		//view = translate(-camera_p);
 
 		v3 camera_x = (camera_transform * v4{1, 0, 0, 0}).xyz;
 		v3 camera_y = (camera_transform * v4{0, 0, 1, 0}).xyz;
@@ -504,7 +602,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 				camera_dp += camera_y;
 			if (IsDown(input, BUTTON_CAMERA_DOWN))
 				camera_dp -= camera_y;
-			game.camera_p += normalize(camera_dp) * dt * 8;
+			game.free_camera_p += normalize(camera_dp) * dt * 8;
 		}
 
 		mat4 rotation = {
@@ -514,8 +612,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			0, 0, 0, 1
 		};
 
-		view = rotation * translate(-game.camera_p);
-		projection = perspective_projection(0.1, 100, 90, (float)window_height / window_width);
+		v3 p = game.camera_free_mode ? game.free_camera_p : camera_p;
+		view = rotation * translate(-p);
+		projection = perspective_projection(0.1, 100, 120, (float)window_height / window_width);
 	}
 	rc.view = view;
 	rc.projection = projection;

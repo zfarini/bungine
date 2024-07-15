@@ -268,6 +268,15 @@ union v4 {
 	float e[4];
 };
 
+v4 V4(v3 xyz, float w)
+{
+	v4 v;
+
+	v.xyz = xyz;
+	v.w = w;
+	return v;
+}
+
 v4 operator+(v4 a, v4 b)
 {
 	return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
@@ -448,6 +457,20 @@ mat4 yrotation(float a)
 		c, 0, s, 0,
 		0, 1, 0, 0,
 		-s, 0, c, 0,
+		0, 0, 0, 1
+	};
+}
+
+mat4 rotate_around_axis(v3 u, float a)
+{
+	u = normalize(u);
+	float c = cosf(a);
+	float s = sinf(a);
+
+	return {
+		c+u.x*u.x*(1-c), u.x*u.y*(1-c)-u.z*s, u.x*u.z*(1-c)+u.y*s, 0,
+		u.y*u.x*(1-c)+u.z*s, c+u.y*u.y*(1-c), u.y*u.z*(1-c)-u.x*s, 0,
+		u.z*u.x*(1-c)-u.y*s, u.z*u.y*(1-c)+u.x*s, c+u.z*u.z*(1-c), 0,
 		0, 0, 0, 1
 	};
 }
