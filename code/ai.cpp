@@ -1,3 +1,4 @@
+#if 0
 #define AI_GRID_VOXEL_DIM (COLLISION_VOXEL_DIM * 10)
 	
 struct PathFindResult
@@ -163,3 +164,4 @@ PathFindResult find_shorthest_path(Game &game, Entity &e, Entity &target_e)
 	end_temp_memory();
 	return result;
 }
+#endif

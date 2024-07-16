@@ -237,19 +237,26 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
 		//game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
 		game.cube_asset		= load_scene(&game.asset_arena, rc, "data\\cube.fbx");
-		
+		game.sphere_asset	= load_scene(&game.asset_arena, rc, "data\\sphere.fbx");
+
 		//game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
 		//game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
 
 		game.entities = make_array_max<Entity>(memory, 4096);
 
 
-		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
+		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 1.25), V3(0.3, 0.3, 0.8) );
 
+		player->scene = &game.sphere_asset;
 		player->scene_transform =  translate(0, 0, -player->collision_box.z) * zrotation(PI/2 + PI);
 		
-		Entity *enemy = make_entity(game, EntityType_Player, &game.ch43, V3(0, 3, 0.8), player->collision_box);
-		enemy->scene_transform = player->scene_transform;
+		//Entity *sh = make_entity(game, EntityType_Player, &game.sphere_asset, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
+		
+		// Entity *enemy = make_entity(game, EntityType_Player, &game.ch43, V3(0, 3, 0.8), player->collision_box);
+		// enemy->scene_transform = player->scene_transform;
+		// enemy->scene = 0;
+
+
 
 		//player->rotation.x = -PI/8;
 
@@ -264,21 +271,53 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, rc, "data\\gun_idle.fbx").animations[0];
 
 
-		Entity *boxes[] = {
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), (V3(25, 25, 0.5))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 25, 0), (V3(25, 0.5, 25))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1), (V3(5, 5.8, 0.3))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), (V3(2.5, 2.5, 0.3))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), (V3(1.25, 1.25, 0.3))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), (V3(7, 7, 0.3))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  (V3(4, 1, 2))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1), (V3(4, 4, 0.3))),
-        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), (V3(2, 2, 0.3))),
-		};
-		for (int i = 0; i < ARRAY_SIZE(boxes); i++)
-			boxes[i]->scene_transform = scale(boxes[i]->collision_box);
+		// Entity *boxes[] = {
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), (V3(25, 25, 0.5))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 25, 0), (V3(25, 0.5, 25))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1), (V3(5, 5.8, 0.3))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), (V3(2.5, 2.5, 0.3))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), (V3(1.25, 1.25, 0.3))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), (V3(7, 7, 0.3))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  (V3(4, 1, 2))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1), (V3(4, 4, 0.3))),
+        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), (V3(2, 2, 0.3))),
+
+		// 	make_entity(game, EntityType_Static, &game.cube_asset, V3(7, -7, 0.1), (V3(3, 3, 0.1))),
+
+		// };
+		// for (int i = 0; i < ARRAY_SIZE(boxes); i++)
+		// 	boxes[i]->scene_transform = scale(boxes[i]->collision_box);
 		
 		game.last_camera_free_p = V3(0, 0, 3);
+
+		{
+			const int w = 16;
+			const int h = 16;
+			ground = make_array_max<Triangle>(memory, (2*w)*(2*h)*2);
+
+			float height[2 * w + 1][2 * h + 1];
+			for (int x = -w; x <= w; x++) {
+				for (int y = -h; y <= h; y++)
+					height[x + w][y + h] = ((float)rand() / RAND_MAX) * 2 - 1;
+			}
+			float W = 8;
+			float H = 8;
+			float D = 16;
+			v3 offset = V3(0, 0, -D);
+
+			for (int x = -w; x < w; x++) {
+				for (int y = -h; y < h; y++) {
+					v3 p0 = V3(x * W, y * H, height[x + w][y + h] * D);
+					v3 p1 = V3((x+1) * W, y * H, height[x+1 + w][y + h] * D);
+					v3 p2 = V3((x+1) * W, (y+1) * H, height[x+1 + w][y+1 + h] * D);
+					v3 p3 = V3(x * W, (y+1) * H, height[x + w][y+1 + h] * D);
+					p0 += offset, p1 += offset, p2 += offset, p3 += offset;
+					ground.push(Triangle{p0, p1, p2});
+					ground.push(Triangle{p0, p2, p3});
+				}
+			}
+		}
+
 		game.is_initialized = 1;
 
 	}
@@ -311,6 +350,8 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	b32 walk_backward = false;
 	Entity &player = game.entities[0];
 	{
+		
+
         v3 player_forward = normalize(V3(cosf(player.rotation.z), sinf(player.rotation.z), 0));
         v3 player_up = V3(0, 0, 1);
         v3 player_right = normalize(cross(player_forward, player_up));
@@ -343,19 +384,40 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
         }
       
-        if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
-        {
-            a = a * 2;
-            a += 25 * player_up;
-        }
+        
 		//if (!player.on_ground)
-       	a += -4 * player_up;
-        a = a * (player.run ? 52 : 12);
+       	a += -30 * player_up;
+        a.xy = a.xy * (player.run ? 100 : 50);
+		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
+        {
+           // a = a * 2;
+            a += 200 * player_up;
+			a.xy = a.xy * 0.3f;
+		}
 
         a -= player.dp * 3;
 
 		{
 			v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
+			// {
+			// 	v3 dP = normalize(V3(delta_p.x, delta_p.y, 0)) * length(delta_p);
+
+			// 	v3 ep = player.position;
+			// 	v3 ex = V3(1, 0, 0), ey = V3(0, 1, 0), ez = V3(0, 0, 1);
+
+			// 	v3 t0 = V3(0), t1 = V3(2, 0, 0), t2 = V3(0, 0, 2);
+
+			// 	float t = ellipsoid_intersect_triangle(ep + dP, ep, ex, ey, ez, t0, t1, t2);
+				
+			// 	t = (t == FLT_MAX ? -1 : t);
+			// 	v3 c = t > 0 ? V3(0, 1, 0) : V3(1);
+				
+
+			// 	push_triangle_outline(rc, t0, t1, t2, c);
+
+
+			// 	push_line(rc, player.position, player.position + normalize(dP), V3(1, 0, 0));
+			// }
 			move_entity(game, player, delta_p);
 			player.dp += a * dt;
 			/*
@@ -497,7 +559,6 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		if (game.camera_free_mode && IsDown(input, BUTTON_MOUSE_RIGHT)) {
 			game.rot -= dt*5;
 		}
-		printf("%f %d\n", game.rot, game.frame);
 
 		v3 camera_p = player.position + (rotate_around_axis(player_right, camera_rot.x + game.rot) * V4(game.camera_p - player.position, 0)).xyz;
 
@@ -538,16 +599,16 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			mat4 A = V * M;
 
 			camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
-			float T = PI / 2;
-			float dO = 0.1f;
-			for (float O = -T; O <= T; O += dO) {
-				float lO = O - dO;
+			// float T = PI / 2;
+			// float dO = 0.1f;
+			// for (float O = -T; O <= T; O += dO) {
+			// 	float lO = O - dO;
 
-				v3 v0 = (A * V4(lO*lO*lO, lO*lO, lO, 1)).xyz;
-				v3 v1 = (A * V4(O*O*O, O*O, O, 1)).xyz;
+			// 	v3 v0 = (A * V4(lO*lO*lO, lO*lO, lO, 1)).xyz;
+			// 	v3 v1 = (A * V4(O*O*O, O*O, O, 1)).xyz;
 
-				push_line(rc, v0, v1, V3((O + T) / (T*2), 0, 0));
-			}
+			// 	push_line(rc, v0, v1, V3((O + T) / (T*2), 0, 0));
+			// }
 
 		}
 		mat4 camera_transform =  
@@ -600,15 +661,15 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 		v3 p = game.camera_free_mode ? game.free_camera_p : camera_p;
 		view = rotation * translate(-p);
-		projection = perspective_projection(0.1, 100, 120, (float)window_height / window_width);
+		projection = perspective_projection(0.1, 100, 100, (float)window_height / window_width);
 	}
 	rc.view = view;
 	rc.projection = projection;
 
 	
-	push_line(rc, V3(0), V3(5, 0, 0), V3(1, 0, 0));
-	push_line(rc, V3(0), V3(0, 5, 0), V3(0, 1, 0));
-	push_line(rc, V3(0), V3(0, 0, 5), V3(0, 0, 1));
+	// push_line(rc, V3(0), V3(5, 0, 0), V3(1, 0, 0));
+	// push_line(rc, V3(0), V3(0, 5, 0), V3(0, 1, 0));
+	// push_line(rc, V3(0), V3(0, 0, 5), V3(0, 0, 1));
 
 	FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
 	rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);

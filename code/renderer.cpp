@@ -324,6 +324,38 @@ void push_cube_outline(RenderContext &rc, v3 center, v3 radius, v3 color = V3(1)
 	push_line(rc, p03, p13, color);
 }
 
+void push_triangle_outline(RenderContext &rc, v3 p0, v3 p1, v3 p2, v3 color = V3(1))
+{
+	push_line(rc, p0, p1, color);
+	push_line(rc, p1, p2, color);
+	push_line(rc, p2, p0, color);
+}
+
+void push_ellipsoid_outline(RenderContext &rc, v3 p, v3 x, v3 y, v3 z, v3 color = V3(1))
+{
+	int itr_count = 60;
+	float a = (2 * PI) / itr_count;
+
+	for (int itr = 0; itr < itr_count; itr++)
+	{
+		float a0 = a * itr;
+		float a1 = a * (itr + 1);
+
+		v3 px0 = p + x * cosf(a0) + y * sinf(a0);
+		v3 px1 = p + x * cosf(a1) + y * sinf(a1);
+
+		v3 py0 = p + y * cosf(a0) + z * sinf(a0);
+		v3 py1 = p + y * cosf(a1) + z * sinf(a1);
+
+		v3 pz0 = p + x * cosf(a0) + z * sinf(a0);
+		v3 pz1 = p + x * cosf(a1) + z * sinf(a1);
+
+		push_line(rc, px0, px1, color);
+		push_line(rc, py0, py1, color);
+		push_line(rc, pz0, pz1, color);
+	}
+}
+
 void init_render_context(Arena *arena, RenderContext &rc, HWND window)
 {
 	{

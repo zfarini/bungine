@@ -13,6 +13,79 @@ int sign(float x)
 	return 0;
 }
 
+
+// ~ V2
+union v2 {
+	struct {
+		float x, y;
+	};
+	struct {
+		float u, v;
+	};
+	float e[2];
+};
+
+v2 V2(float x)
+{
+	return v2{x, x};
+}
+v2 V2(float x, float y)
+{
+	return v2{x, y};
+}
+
+v2 operator+(v2 a, v2 b)
+{
+	return v2{a.x + b.x, a.y + b.y};
+}
+
+v2 operator-(v2 a, v2 b)
+{
+	return v2{a.x - b.x, a.y - b.y};
+}
+
+v2 operator*(v2 a, float b)
+{
+	return v2{a.x * b, a.y * b};
+}
+
+v2 operator*(float a, v2 b)
+{
+	return v2{a * b.x, a * b.y};
+}
+
+v2 operator/(v2 a, float b)
+{
+	float inv = 1.f / b;
+	return v2{a.x * inv, a.y * inv};
+}
+
+float dot(v2 a, v2 b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
+float length_sq(v2 a)
+{
+	return dot(a, a);
+}
+
+float length(v2 a)
+{
+	return sqrtf(dot(a, a));
+}
+
+v2 normalize(v2 a)
+{
+	float len = length_sq(a);
+
+	// TODO:
+	if (len < 1e-9)
+		return {};
+	else
+		return a / sqrtf(len);
+}
+
 // ~ v3
 union v3 {
 	struct {
@@ -24,6 +97,7 @@ union v3 {
 	struct {
 		float u, v, w;
 	};
+	v2 xy;
 	float e[3];
 };
 
@@ -185,77 +259,6 @@ v3i min(v3i a, v3i b)
 	return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 }
 
-// ~ V2
-union v2 {
-	struct {
-		float x, y;
-	};
-	struct {
-		float u, v;
-	};
-	float e[2];
-};
-
-v2 V2(float x)
-{
-	return v2{x, x};
-}
-v2 V2(float x, float y)
-{
-	return v2{x, y};
-}
-
-v2 operator+(v2 a, v2 b)
-{
-	return v2{a.x + b.x, a.y + b.y};
-}
-
-v2 operator-(v2 a, v2 b)
-{
-	return v2{a.x - b.x, a.y - b.y};
-}
-
-v2 operator*(v2 a, float b)
-{
-	return v2{a.x * b, a.y * b};
-}
-
-v2 operator*(float a, v2 b)
-{
-	return v2{a * b.x, a * b.y};
-}
-
-v2 operator/(v2 a, float b)
-{
-	float inv = 1.f / b;
-	return v2{a.x * inv, a.y * inv};
-}
-
-float dot(v2 a, v2 b)
-{
-	return a.x * b.x + a.y * b.y;
-}
-
-float length_sq(v2 a)
-{
-	return dot(a, a);
-}
-
-float length(v2 a)
-{
-	return sqrtf(dot(a, a));
-}
-
-v2 normalize(v2 a)
-{
-	float len = length_sq(a);
-
-	// TODO:
-	if (len < 1e-9)
-		return {};
-	else
-		return a / sqrtf(len);
-}
 // ~ v4
 union v4 {
 	struct {
@@ -672,5 +675,6 @@ struct Transform {
 	v3 translation;
 	v3 scale;
 };
+
 
 #endif

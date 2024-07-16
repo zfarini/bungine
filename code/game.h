@@ -49,7 +49,7 @@ struct Game
 	RenderPass mesh_render_pass;
 	RenderPass shadow_map_render_pass;
 
-	Scene ch43, sponza, cube_asset;
+	Scene ch43, sponza, cube_asset, sphere_asset;
 
 	Array<Entity> entities;
 
