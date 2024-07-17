@@ -204,8 +204,55 @@ CollisionInfo ellipsoid_intersect_triangle(v3 targetP, v3 ep, v3 er, v3 v0, v3 v
 	return info;
 }
 
-void move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionTriangle> triangles)
+CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 tr)
 {
+	CollisionInfo info = {};
+
+	info.t = FLT_MAX;
+
+	/*
+		do a Minkowski sum on the 2 ellipsoid resulting in one with the combined radius
+		now the problem is a ray against a ellipsoid
+		bring the ray in the space where the ellipsoid is a sphere with radius 1 and origin at (0,0,0)
+		then just solve the quadratic equation where length(ray_origin + t * ray_dir) = 1
+	*/
+	v3 radius = er + tr;
+
+	mat4 m = translate(tp) * scale(radius);
+	mat4 M = scale(1 / radius) * translate(-tp); // world to ellipsoid space
+
+	v3 ray_origin = (M * V4(ep, 1)).xyz;
+	v3 ray_dir = (M * V4(targetP, 1)).xyz - ray_origin;
+
+	float a = dot(ray_dir, ray_dir);
+	float b = 2 * dot(ray_origin, ray_dir);
+	float c = dot(ray_origin, ray_origin) - 1;
+
+	float delta = b * b - 4 * a * c;
+
+	if (delta < 0)
+		return info;
+
+	delta = sqrtf(delta);
+	float t0 = (-b - delta) / (2 * a);
+	float t1 = (-b + delta) / (2 * a);
+
+	if (t1 >= 0 && t1 < t0)
+		t0 = t1;
+
+	if (t0 >= 0) {
+		info.t = t0;
+		// too lazy to think about this
+		//info.hit_p = ;
+		info.hit_normal = (transpose(M) * V4(ray_origin + t0*ray_dir, 0)).xyz;
+	}
+	return info;
+}
+
+CollisionInfo move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionShape> shapes)
+{
+	CollisionInfo first_hit = {};
+
 	for (int itr = 0; itr < SLIDE_ITERATION_COUNT; itr++) {
 		if (length_sq(delta_p) < SMALLEST_VELOCITY*SMALLEST_VELOCITY)
 			break ;
@@ -213,13 +260,32 @@ void move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionTriangle> tri
 		CollisionInfo hit_info = {};
 		hit_info.t = FLT_MAX;
 
-		for (int i = 0; i < triangles.count; i++) {
-			CollisionInfo info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, 
-				e.shape.ellipsoid_radius, triangles[i].v0, triangles[i].v1, triangles[i].v2);
-			
-			if (info.t < hit_info.t)
-				hit_info = info;
+		for (int i = 0; i < shapes.count; i++) {
+			CollisionInfo info;
+
+			v3 d = shapes[i].offset;
+			if (shapes[i].type == COLLISION_SHAPE_TRIANGLES) {
+				for (int j = 0; j < shapes[i].triangles.count; j++) {
+					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e.shape.ellipsoid_radius,
+											shapes[i].triangles[j].v0 + d,
+											shapes[i].triangles[j].v1 + d,
+											shapes[i].triangles[j].v2 + d);
+					if (info.t < hit_info.t)
+						hit_info = info;
+				}
+			}
+			else if (shapes[i].type == COLLISION_SHAPE_ELLIPSOID) {
+				info = ellipsoid_intersect_ellipsoid(e.position + delta_p, e.position, e.shape.ellipsoid_radius,
+					shapes[i].offset, shapes[i].ellipsoid_radius);
+				if (info.t < hit_info.t)
+					hit_info = info;
+			}
+			else
+				assert(0);
 		}
+
+		if (!itr)
+			first_hit = hit_info;
 
 		// if we can move the full distance we have to check if we will be at least SMALLEST_VELOCITY away from the closest object
 		if (hit_info.t >= 1) {
@@ -239,6 +305,8 @@ void move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionTriangle> tri
 		delta_p *= (1 - hit_info.t);
 		delta_p = delta_p - normal*dot(normal, delta_p)*SLIDE_COEFF;
 	}
+
+	return first_hit;
 }
 
 void move_entity(Game &game, Entity &e, v3 delta_p)
@@ -247,42 +315,62 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 
 	Arena *temp = begin_temp_memory();
 
-	Array<CollisionTriangle> triangles = make_array_max<CollisionTriangle>(temp, game.entities.count * 12 + 64);
+	Array<CollisionShape> shapes = make_array_max<CollisionShape>(temp, game.entities.count + 64);
 
 	for (int i = 0; i < game.entities.count; i++) {
 		Entity &test = game.entities[i];
 
 		if (test.id == e.id)
 			continue ;
-		for (int j = 0; j < test.shape.triangles.count; j++) {
-			CollisionTriangle t;
 
-			t.v0 = test.shape.triangles[j].v0 + test.position;
-			t.v1 = test.shape.triangles[j].v1 + test.position;
-			t.v2 = test.shape.triangles[j].v2 + test.position;
-			
-			triangles.push(t);
-		}
+		CollisionShape shape = test.shape;
+		shape.offset = test.position;
+		
+		shapes.push(shape);
 	}
-	triangles.push({V3(0, 2, 0), V3(2, 2, 0), V3(0,4, 0.5)});
-	triangles.push({V3(2, 2, 0), V3(0, 4, 0.5), V3(2, 4, 0.5)});
-
-	for (int i = 0; i < triangles.count; i++) {
-		push_triangle_outline(g_rc, triangles[i].v0, triangles[i].v1, triangles[i].v2,
-				V3(1, 0, 0));
+	{
+		CollisionShape shape = {};
+		shape.type = COLLISION_SHAPE_ELLIPSOID;
+		shape.ellipsoid_radius = e.shape.ellipsoid_radius;
+		shape.offset = V3(0, 3, 1);
+		shapes.push(shape);
 	}
 
-	move_entity(game, e, V3(delta_p.x, delta_p.y, 0), triangles);
+	v3 old_p = e.position;
+	move_entity(game, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
-	int itr = roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
+	int itr = 1 + roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
+	for (int i = 0; i < itr; i++)
+		move_entity(game, e, V3(0, 0, delta_p.z / itr), shapes);
+	
+	if (fabsf(e.position.x - old_p.x) < 1e-7)
+		e.dp.x = 0;
+	if (fabsf(e.position.y - old_p.y) < 1e-7)
+		e.dp.y = 0;
+	if (fabsf(e.position.z - old_p.z) < 1e-7)
+		e.dp.z = 0;
+	
 
-	for (int i = 0; i < itr; i++)	
-		move_entity(game, e, V3(0, 0, delta_p.z / itr), triangles);
+	v3 save_p = e.position;
+	// try to move down to find the ground of the entity
+	CollisionInfo collision = move_entity(game, e, V3(0, 0, -1), shapes);
+	e.position = save_p;
 
-	e.on_ground = true;
-	e.can_jump = true;
+	// TODO: this could be negative (imagine a sloped wall and I'm sliding its not necesarry that the bottom
+	//	of the ellipsoid will hit first)
+	float height_above_ground = e.position.z - collision.hit_p.z - e.shape.ellipsoid_radius.z
+		- SMALLEST_VELOCITY;
+	if (collision.t < 0 || collision.t == FLT_MAX)
+		height_above_ground = 10000;
+	if (height_above_ground < 0)
+		height_above_ground = 0;
+	e.height_above_ground = height_above_ground;
 
-	push_ellipsoid_outline(g_rc, e.position, e.shape.ellipsoid_radius);
+	if (e.height_above_ground > 0.6)
+		e.can_jump = false;
+	if (e.height_above_ground < 0.2)
+		e.can_jump = true;
+	e.on_ground = e.height_above_ground < 0.2;
 
 	end_temp_memory();
 }

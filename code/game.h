@@ -4,6 +4,7 @@
 enum EntityType
 {
 	EntityType_Player,
+	EntityType_Enemy,
 	EntityType_Static
 };
 
@@ -23,7 +24,9 @@ struct CollisionShape
 	int type;
 	Array<CollisionTriangle> triangles;
 	v3 ellipsoid_radius;
+	// TODO: both of these are bad
 	v3 box_radius;
+	v3 offset;
 };
 
 struct Entity
@@ -49,6 +52,10 @@ struct Entity
 
 	Animation *animation;
 	float anim_time;
+
+	float speed;
+	
+	float height_above_ground;
 };
 
 enum AnimationType {
@@ -82,7 +89,7 @@ struct Game
 	float time;
 
 	b32 camera_free_mode;
-	b32 debug_collision;
+	bool debug_collision;
 	v3 last_camera_free_p;
 
 	v3 free_camera_p;

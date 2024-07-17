@@ -196,6 +196,20 @@ void render_entities(RenderContext &rc, Game &game)
 			continue ;
 		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
 		render_scene(rc, game, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
+		if (game.debug_collision) {
+			v3 d = e.position;
+			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
+				for (int j = 0; j < e.shape.triangles.count; j++) {
+					push_triangle_outline(g_rc, e.shape.triangles[j].v0 + d,
+											e.shape.triangles[j].v1 + d,
+											e.shape.triangles[j].v2 + d, V3(1, 0, 0));
+				}
+			}
+			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
+				push_ellipsoid_outline(g_rc, d, e.shape.ellipsoid_radius, V3(1, 0, 0));
+			}
+			
+		}
 	}
 }
 
@@ -246,18 +260,21 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 
 		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.6f, 0.6f, 0.9f)));
-		player->scene = &game.sphere_asset;
+		//player->scene = &game.sphere_asset;
 		//player->scene = 0;
-		player->scene_transform =  scale(player->shape.ellipsoid_radius);
-		//player->scene_transform =  translate(0, 0, -length(ez)) * zrotation(PI/2 + PI) * player->scene_transform;
+		//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
+		//player->scene_transform =  scale(player->shape.ellipsoid_radius);
+		player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2);
 
 		
 		//Entity *sh = make_entity(game, EntityType_Player, &game.sphere_asset, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
 		
-		// Entity *enemy = make_entity(game, EntityType_Player, &game.ch43, V3(0, 3, 0.8), player->collision_box);
-		// enemy->scene_transform = player->scene_transform;
-		// enemy->scene = 0;
-
+		for (int i = 0; i < 2; i++)
+			for (int j = 0; j < 2; j++) {
+			Entity *enemy = make_entity(game, EntityType_Enemy, &game.ch43, V3(i * 2, j * 2, 6), player->shape);
+			enemy->scene_transform = player->scene_transform;
+			enemy->speed = ((float)rand() / RAND_MAX)*50 + 20;
+		}
 
 		//player->rotation.x = -PI/8;
 
@@ -387,13 +404,15 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
         
 		//if (!player.on_ground)
        	a += -40 * player_up;
-        a.xy = a.xy * (player.run ? 100 : 40);
+        a.xy = a.xy * (player.run ? 50 : 30);
 		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
         {
            // a = a * 2;
             a += 200 * player_up;
-			a.xy = a.xy * 0.3f;
+			a.xy = {};
 		}
+		//if (!player.on_ground)
+		//	a.xy *= 0.7f;
 
         a -= player.dp * 3;
 
@@ -420,6 +439,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			// }
 			move_entity(game, player, delta_p);
 			player.dp += a * dt;
+			
 			/*
 				p' = 0.5*dt*dt*a + dt * v + p
 				v' = a * dt +  v
@@ -463,31 +483,36 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		//push_cylinder(game.renderer, player.position, 0.3, 1, V3(1, 0, 0));
 	}
 
-#if 0
+#if 1
+	for (int i = 0; i < game.entities.count; i++)
 	{
-		Entity &e = game.entities[1];
-		PathFindResult result = find_shorthest_path(game, e, game.entities[0]);
-		
-		v3 dir = result.best_p - e.position;
+		Entity &e = game.entities[i];
+
+		if (e.type != EntityType_Enemy)
+			continue;
+
+
+		v3 dir = game.entities[0].position - e.position;
 
 		if (length(dir) > 1)
 			dir = normalize(dir);
 
 		v3 a = normalize(V3(dir.x, dir.y, 0));
 
+		a += -40 * V3(0, 0, 1);
+		a.xy = a.xy * e.speed;
+
 		if (dir.z > 0 && e.can_jump) {
-			a = a * 2;
-			a += 25 * V3(0, 0, 1);
+			a += 200 * V3(0, 0, 1);
+			a.xy *= 0.3f;
 		}
 
-		a += -4 * V3(0, 0, 1);
-		a = a * 10;
-		
 		a -= e.dp * 3;
 
 		v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
 
 		move_entity(game, e, delta_p);
+
 		
 		e.dp += a * dt;
 
@@ -710,10 +735,18 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 	{
 		ImGuiIO &io = ImGui::GetIO();
-		ImGui::Begin("test");
+		ImGui::Begin("debug");
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-
+		ImGui::Checkbox("debug collission", &game.debug_collision);
         ImGui::End();
+	}
+	{
+		ImGui::Begin("shadowMap");
+		ImVec2 texSize(256, 256);
+
+    	// Render the texture
+    	ImGui::Image((void*)rc.shadow_map.srv, texSize);
+		ImGui::End();
 	}
 	end_frame(rc);
 

@@ -1,6 +1,60 @@
 #if 0
-#define AI_GRID_VOXEL_DIM (COLLISION_VOXEL_DIM * 10)
 	
+struct VoxelBox
+{
+	v3i min;
+	v3i max;
+};
+
+#define COLLISION_VOXEL_DIM (0.125f * 0.5f)
+#define COLLISION_VOXEL_COUNT 3
+#define AI_GRID_VOXEL_DIM (COLLISION_VOXEL_DIM* 10)
+
+v3i get_position_voxel(v3 p)
+{
+	v3i v;
+
+	v.x = roundf(p.x / COLLISION_VOXEL_DIM);
+	v.y = roundf(p.y / COLLISION_VOXEL_DIM);
+	v.z = roundf(p.z / COLLISION_VOXEL_DIM);
+
+	return v;
+}
+
+
+v3 get_closest_to_box(v3 box_min, v3 box_max, v3 p)
+{
+	v3 result;
+
+	result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x : 
+			   (p.x <= box_min.x ? box_min.x : box_max.x));
+	result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y : 
+			   (p.y <= box_min.y ? box_min.y : box_max.y));
+	result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z : 
+			   (p.z <= box_min.z ? box_min.z : box_max.z));
+	return result;
+}
+
+b32 can_move(Entity &e, v3 p, Array<VoxelBox> colliders)
+{
+	VoxelBox box;
+
+	box.min = get_position_voxel(p - e.collision_box);
+	box.max = get_position_voxel(p + e.collision_box);
+
+	for (usize i = 0; i < colliders.count; i++) {
+		VoxelBox test = colliders[i];
+		if (!(box.max.x < test.min.x ||
+			  box.min.x > test.max.x ||
+			  box.max.y < test.min.y ||
+			  box.min.y > test.max.y ||
+			  box.max.z < test.min.z ||
+			  box.min.z > test.max.z))
+			return 0;
+	}
+	return 1;
+}
+
 struct PathFindResult
 {
 	v3 best_p;
