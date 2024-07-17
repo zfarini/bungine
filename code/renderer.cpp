@@ -331,8 +331,12 @@ void push_triangle_outline(RenderContext &rc, v3 p0, v3 p1, v3 p2, v3 color = V3
 	push_line(rc, p2, p0, color);
 }
 
-void push_ellipsoid_outline(RenderContext &rc, v3 p, v3 x, v3 y, v3 z, v3 color = V3(1))
+void push_ellipsoid_outline(RenderContext &rc, v3 p, v3 r, v3 color = V3(1))
 {
+	v3 x = V3(r.x, 0, 0);
+	v3 y = V3(0, r.y, 0);
+	v3 z = V3(0, 0, r.z);
+	
 	int itr_count = 60;
 	float a = (2 * PI) / itr_count;
 

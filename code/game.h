@@ -1,9 +1,29 @@
 #ifndef GAME_H
 #define GAME_H
+
 enum EntityType
 {
 	EntityType_Player,
 	EntityType_Static
+};
+
+enum CollisionShapeType
+{
+	COLLISION_SHAPE_TRIANGLES,
+	COLLISION_SHAPE_ELLIPSOID,
+};
+
+struct CollisionTriangle
+{
+	v3 v0, v1, v2;
+};
+
+struct CollisionShape
+{
+	int type;
+	Array<CollisionTriangle> triangles;
+	v3 ellipsoid_radius;
+	v3 box_radius;
 };
 
 struct Entity
@@ -15,7 +35,6 @@ struct Entity
 	v3 rotation;
 	v3 drotation;
 
-	v3 collision_box;
 
 	b32 moved;
 	b32 run;
@@ -23,6 +42,7 @@ struct Entity
 	b32 can_jump;
 	b32 on_ground;
 
+	CollisionShape shape;
 
 	Scene *scene;
 	mat4 scene_transform;

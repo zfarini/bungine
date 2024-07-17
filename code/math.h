@@ -54,10 +54,40 @@ v2 operator*(float a, v2 b)
 	return v2{a * b.x, a * b.y};
 }
 
+v2 operator*(v2 a, v2 b)
+{
+	return v2{a.x * b.x, a.y * b.y};
+}
+
 v2 operator/(v2 a, float b)
 {
 	float inv = 1.f / b;
 	return v2{a.x * inv, a.y * inv};
+}
+
+v2 &operator+=(v2 &a, v2 b)
+{
+	return a = a + b;
+}
+
+v2 &operator-=(v2 &a, v2 b)
+{
+	return a = a - b;
+}
+
+v2 &operator*=(v2 &a, v2 b)
+{
+	return a = a * b;
+}
+
+v2 &operator*=(v2 &a, float b)
+{
+	return a = a * b;
+}
+
+v2 &operator/=(v2 &a, float b)
+{
+	return a = a / b;
 }
 
 float dot(v2 a, v2 b)
@@ -172,9 +202,14 @@ v3 &operator*=(v3 &a, float b)
 	return a = a * b;
 }
 
-v3 &operator/=(v3 a, float b)
+v3 &operator/=(v3 &a, float b)
 {
 	return a = a / b;
+}
+
+v3 operator/(float a, v3 b)
+{
+	return v3{a / b.x, a / b.y, a / b.z};
 }
 
 float dot(v3 a, v3 b)
@@ -370,11 +405,13 @@ mat4 operator*(mat4 a, mat4 b)
 
 v4 operator*(mat4 a, v4 b)
 {
-	v4 c = {};
+	v4 c;
 
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			c.e[i] += a.e[i][j] * b.e[j];
+	c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] + a.e[0][3] * b.e[3];
+	c.e[1] = a.e[1][0] * b.e[0] + a.e[1][1] * b.e[1] + a.e[1][2] * b.e[2] + a.e[1][3] * b.e[3];
+	c.e[2] = a.e[2][0] * b.e[0] + a.e[2][1] * b.e[1] + a.e[2][2] * b.e[2] + a.e[2][3] * b.e[3];
+	c.e[3] = a.e[3][0] * b.e[0] + a.e[3][1] * b.e[1] + a.e[3][2] * b.e[2] + a.e[3][3] * b.e[3];
+	
 	return c;
 }
 

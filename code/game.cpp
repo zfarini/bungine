@@ -4,7 +4,7 @@
 #include "collision.cpp"
 #include "ai.cpp"
 
-Entity *make_entity(Game &game, int type, Scene *scene, v3 position, v3 collision_box, mat4 scene_transform = identity())
+Entity *make_entity(Game &game, int type, Scene *scene, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
 	Entity e = {};
 
@@ -13,10 +13,12 @@ Entity *make_entity(Game &game, int type, Scene *scene, v3 position, v3 collisio
 	e.position = position;
 	e.scene = scene;
 	e.scene_transform = scene_transform;
-	e.collision_box = collision_box;
+	e.shape = shape;
 	game.entities.push(e);
 	return &game.entities[game.entities.count - 1];
 }
+
+
 
 void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 {
@@ -194,8 +196,6 @@ void render_entities(RenderContext &rc, Game &game)
 			continue ;
 		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
 		render_scene(rc, game, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
-		if (game.debug_collision)
-			push_cube_outline(rc, e.position, e.collision_box);
 	}
 }
 
@@ -245,17 +245,18 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.entities = make_array_max<Entity>(memory, 4096);
 
 
-		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 1.25), V3(0.3, 0.3, 0.8) );
-
+		Entity *player = make_entity(game, EntityType_Player, &game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.6f, 0.6f, 0.9f)));
 		player->scene = &game.sphere_asset;
-		player->scene_transform =  translate(0, 0, -player->collision_box.z) * zrotation(PI/2 + PI);
+		//player->scene = 0;
+		player->scene_transform =  scale(player->shape.ellipsoid_radius);
+		//player->scene_transform =  translate(0, 0, -length(ez)) * zrotation(PI/2 + PI) * player->scene_transform;
+
 		
 		//Entity *sh = make_entity(game, EntityType_Player, &game.sphere_asset, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
 		
 		// Entity *enemy = make_entity(game, EntityType_Player, &game.ch43, V3(0, 3, 0.8), player->collision_box);
 		// enemy->scene_transform = player->scene_transform;
 		// enemy->scene = 0;
-
 
 
 		//player->rotation.x = -PI/8;
@@ -271,28 +272,29 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, rc, "data\\gun_idle.fbx").animations[0];
 
 
-		// Entity *boxes[] = {
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), (V3(25, 25, 0.5))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 25, 0), (V3(25, 0.5, 25))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1), (V3(5, 5.8, 0.3))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), (V3(2.5, 2.5, 0.3))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), (V3(1.25, 1.25, 0.3))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), (V3(7, 7, 0.3))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  (V3(4, 1, 2))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1), (V3(4, 4, 0.3))),
-        // 	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), (V3(2, 2, 0.3))),
+		Entity *boxes[] = {
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
+        	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
 
-		// 	make_entity(game, EntityType_Static, &game.cube_asset, V3(7, -7, 0.1), (V3(3, 3, 0.1))),
+			make_entity(game, EntityType_Static, &game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
 
-		// };
-		// for (int i = 0; i < ARRAY_SIZE(boxes); i++)
-		// 	boxes[i]->scene_transform = scale(boxes[i]->collision_box);
+		};
+		for (int i = 0; i < ARRAY_SIZE(boxes); i++)
+			boxes[i]->scene_transform = scale(boxes[i]->shape.box_radius);
 		
 		game.last_camera_free_p = V3(0, 0, 3);
 
+#if 0
 		{
-			const int w = 16;
-			const int h = 16;
+			const int w = 8;
+			const int h = 8;
 			ground = make_array_max<Triangle>(memory, (2*w)*(2*h)*2);
 
 			float height[2 * w + 1][2 * h + 1];
@@ -302,7 +304,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			}
 			float W = 8;
 			float H = 8;
-			float D = 16;
+			float D = 4;
 			v3 offset = V3(0, 0, -D);
 
 			for (int x = -w; x < w; x++) {
@@ -317,6 +319,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 				}
 			}
 		}
+#endif
 
 		game.is_initialized = 1;
 
@@ -386,8 +389,8 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
       
         
 		//if (!player.on_ground)
-       	a += -30 * player_up;
-        a.xy = a.xy * (player.run ? 100 : 50);
+       	a += -40 * player_up;
+        a.xy = a.xy * (player.run ? 100 : 40);
 		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
         {
            // a = a * 2;
@@ -567,11 +570,11 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			
 			float t[4] = {-PI/2, 0, PI/2.5, PI/2};
 			v3 v[4] = {
-					   player.position + V3(0, 0, player.collision_box.z*3),
-						player.position - player_forward * 3 + V3(0, 0, player.collision_box.z * 0.5),
+					   player.position + V3(0, 0, player.shape.ellipsoid_radius.z*3),
+						player.position - player_forward * 3 + V3(0, 0, player.shape.ellipsoid_radius.z * 0.5),
 						player.position - player_forward * 1.5
-					   	+ V3(0, 0, -player.collision_box.z +0.2),
-						player.position - V3(0, 0, player.collision_box.z-0.1),
+					   	+ V3(0, 0, -player.shape.ellipsoid_radius.z +0.2),
+						player.position - V3(0, 0, player.shape.ellipsoid_radius.z-0.1),
 					   
 			};
 
