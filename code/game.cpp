@@ -335,17 +335,14 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		window_height = desc.Height;
 	}
 
-	if (IsDownFirstTime(input, BUTTON_F1)) {
+	if (IsDownFirstTime(input, BUTTON_F2)) {
 		if (game.camera_free_mode)
 			game.last_camera_free_p = game.free_camera_p;
 		else
 			game.free_camera_p = game.last_camera_free_p;
 		game.camera_free_mode = !game.camera_free_mode;
 	}
-	if (IsDownFirstTime(input, BUTTON_F2)) {
-		game.debug_collision = !game.debug_collision;
-	}
-
+	
 	begin_frame(rc, rc.view, rc.projection);
 	
 	// update player
@@ -711,6 +708,13 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	push_cube_outline(rc, rc.shadow_map.light_p, V3(0.3));
 	push_line(rc, rc.shadow_map.light_p, rc.shadow_map.light_p + 0.5 * rc.shadow_map.light_dir);
 
+	{
+		ImGuiIO &io = ImGui::GetIO();
+		ImGui::Begin("test");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+        ImGui::End();
+	}
 	end_frame(rc);
 
 	game.time += dt;

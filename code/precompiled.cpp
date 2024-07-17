@@ -1,3 +1,16 @@
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
+#include "imgui/imgui_demo.cpp"
+#include "imgui/imgui_impl_win32.cpp"
+#include "imgui/imgui_impl_dx11.cpp"
+#include "imgui/imgui.cpp"
+#include "imgui/imgui_tables.cpp"
+#include "imgui/imgui_draw.cpp"
+#include "imgui/imgui_widgets.cpp"
+
+
 #define UFBX_IMPLEMENTATION
 #include <ufbx.h>
 

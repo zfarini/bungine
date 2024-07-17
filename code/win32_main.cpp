@@ -15,6 +15,10 @@
 #include <cstdio>
 #include <float.h>
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
+
 #undef min
 #undef max
 #undef near
@@ -33,8 +37,14 @@ global RenderContext g_rc;
 
 #include "game.cpp"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(window, message, wparam, lparam))
+        return true;
+
 	LRESULT result = 0;
 
 	switch(message) {
@@ -47,6 +57,18 @@ LRESULT win32_window_callback(HWND window, UINT message, WPARAM wparam, LPARAM l
 	}
 
 	return result;
+}
+
+b32 g_hide_mouse = 1;
+
+void move_cursor_to_window_center(HWND window)
+{
+	while (ShowCursor(FALSE) >= 0)
+		;
+	RECT rect;
+	GetClientRect(window, &rect);
+	SetCursorPos(rect.left + (rect.right - rect.left) / 2, 
+				 rect.top + (rect.bottom - rect.top) / 2);
 }
 
 void update_game_input(HWND window, GameInput &input, int frame)
@@ -65,8 +87,8 @@ void update_game_input(HWND window, GameInput &input, int frame)
 	button_vkcode[BUTTON_PLAYER_BACKWARD] 	= 'G';
 	button_vkcode[BUTTON_PLAYER_JUMP]		= VK_SPACE;
 	button_vkcode[BUTTON_LEFT_SHIFT]			= VK_LSHIFT;
-	button_vkcode[BUTTON_F1] = 'C';
-	button_vkcode[BUTTON_F2] = 'V';
+	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
+		button_vkcode[i] = 0x31 + (i-BUTTON_F1);
 
 	for (int i = 0; i < BUTTON_COUNT; i++)
 		input.buttons[i].was_down = input.buttons[i].is_down;
@@ -88,18 +110,34 @@ void update_game_input(HWND window, GameInput &input, int frame)
 					rect.top + (rect.bottom - rect.top) / 2);
 		input.mouse_dp = V2(cursor.x, cursor.y) - screen_center;
 	}
+	if (g_hide_mouse)
+		move_cursor_to_window_center(window);
+	else
+		input.mouse_dp = {};
+	if (IsDownFirstTime(input, BUTTON_F1)) {
+		if (g_hide_mouse) {
+			while (ShowCursor(TRUE) < 0)
+				;
+		}
+		else
+			move_cursor_to_window_center(window);
+		g_hide_mouse = !g_hide_mouse;
+	}
 }
 
-void move_cursor_to_window_center(HWND window)
-{
-	RECT rect;
-	GetClientRect(window, &rect);
-	SetCursorPos(rect.left + (rect.right - rect.left) / 2, 
-				 rect.top + (rect.bottom - rect.top) / 2);
-}
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 int main()
 {
+	{
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGuiIO &io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        
+        ImGui::StyleColorsDark();
+        // ImGui::StyleColorsLight();
+    }
 	Arena game_memory;
 	{
 		usize game_memory_size = GigaByte(3);
@@ -133,12 +171,13 @@ int main()
 	Game *game = (Game *)arena_alloc(&game_memory, sizeof(*game));
 	
 	init_render_context(&game_memory, rc, window);
+
+	{
+        ImGui_ImplWin32_Init(window);
+        ImGui_ImplDX11_Init(rc.device, rc.context);
+    }
 	
 	GameInput game_input = {};
-
-	while (ShowCursor(FALSE) >= 0)
-		;
-	move_cursor_to_window_center(window);
 
 	float dt = 1.f / 60;
 	
@@ -160,11 +199,22 @@ int main()
 		}
 
 		update_game_input(window, game_input, frame);
-		move_cursor_to_window_center(window);
+
+		ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
 		
 		game_update_and_render(*game, rc, &game_memory, game_input, dt);
 		
+		ImGui::Render();
+		rc.context->OMSetRenderTargets(1, &rc.backbuffer_rtv, nullptr);
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 		rc.swap_chain->Present(1, 0);
 		frame++;
 	}
+
+	ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 }
