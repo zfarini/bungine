@@ -1,80 +1,134 @@
 struct Texture
 {
-	ID3D11ShaderResourceView *data;
+	void *handle;
 	String name;
 };
 
-struct ShadowMap
+
+enum ShaderType
 {
-	ID3D11DepthStencilView *dsv;
-	ID3D11ShaderResourceView *srv;
-	v3 light_dir;
-	v3 light_p;
-	mat4 view;
-	mat4 projection;
-	int width, height;
+	SHADER_TYPE_VERTEX,
+	SHADER_TYPE_FRAGMENT,
+};
+
+struct Shader
+{
+	void *handle;
+};
+
+struct ShaderProgram
+{
+	void *handle;
+	Shader vs;
+	Shader fs;
+};
+
+enum InputElementType
+{
+	INPUT_ELEMENT_FLOAT,
+	INPUT_ELEMENT_SIGNED_INT,
+};
+
+struct VertexInputElement
+{
+	int offset;
+	int count;
+	int type;
+	const char *name;
+};
+
+enum PrimitiveType 
+{
+	PRIMITIVE_TRIANGLES,
+	PRIMITIVE_LINES,
+};
+
+struct VertexBuffer
+{
+	void *handle;
 };
 
 struct RenderPass
 {
-	ID3D11VertexShader *vertex_shader;
-	ID3D11PixelShader *pixel_shader;
-	ID3D11InputLayout *input_layout;
-	ID3D11RasterizerState *rasterizer_state;
-	ID3D11Buffer	  *cbuffer;
-	ID3D11SamplerState *sampler_state;
-	ID3D11DepthStencilState* depth_stencil_state;
-
-	mat4 view_mat;
-	mat4 projection_mat;
-	v3 camera_p;
+	int primitive_type;
+	ShaderProgram program;
+	
+	VertexInputElement input_elements[32];
+	int input_element_count;
 };
+
 
 struct RenderContext
 {
-	ID3D11Device *device;
-	ID3D11DeviceContext *context;
-	IDXGISwapChain *swap_chain;
-	ID3D11RenderTargetView *backbuffer_rtv;
-	RenderPass *render_pass;
-	ID3D11DepthStencilView *depth_stencil_view;
+    void *data;
+    Array<Texture> loaded_textures;
 
-	ID3D11ShaderResourceView *white_texture;
-
-	Array<Texture> loaded_textures;
-
-	ShadowMap shadow_map;
-
-	Array<v3> lines;
-	ID3D11Buffer *lines_vertex_buffer; 
-	RenderPass lines_render_pass;
-	
-
-	D3D11_VIEWPORT window_viewport;
-	mat4 view;
-	mat4 projection;
+    RenderPass *render_pass;
 };
 
-// a type can't span 16 byte boundary!!
-//https://maraneshi.github.io/HLSL-ConstantBufferLayoutVisualizer/
-struct __declspec(align(16)) Constants
+
+
+usize get_input_element_size(int type)
 {
-	mat4 view;
-	mat4 projection;
-	mat4 model;
-	//mat4 normal_transform;
-	mat4 light_transform;
-	mat4 bones[96];
+    if (type == INPUT_ELEMENT_FLOAT)
+        return sizeof(float);
+    else if (type == INPUT_ELEMENT_SIGNED_INT)
+        return sizeof(int);
+    else
+        assert(0);
+    return 0;
+}
 
-	v3 camera_p;
-	float _t1;
-	v3 player_p;
-	float diffuse_factor;
-
-	float specular_factor;
-	float specular_exponent_factor;
-	int skinned;
-	int has_normal_map;
-
-	//float __m[];
+enum ConstantBufferElementType
+{
+	CONSTANT_BUFFER_ELEMENT_MAT4,
+	CONSTANT_BUFFER_ELEMENT_VEC4,
+	CONSTANT_BUFFER_ELEMENT_VEC3,
+	CONSTANT_BUFFER_ELEMENT_VEC2,
+	CONSTANT_BUFFER_ELEMENT_FLOAT,
+	CONSTANT_BUFFER_ELEMENT_INT,
+	CONSTANT_BUFFER_ELEMENT_COUNT
 };
+
+struct ConstantBufferElement
+{
+	int type;
+	int array_size;
+};
+
+struct ConstantBuffer
+{
+	void *handle;
+	usize size;
+	ConstantBufferElement elements[64];
+	int element_count;
+};
+
+int get_constant_buffer_element_size(int type)
+{
+	int size[] = {
+		sizeof(mat4),
+		sizeof(v4),
+		sizeof(v3),
+		sizeof(v2),
+		sizeof(float),
+		sizeof(int)
+	};
+	static_assert(ARRAY_SIZE(size) == CONSTANT_BUFFER_ELEMENT_COUNT);
+	return size[type];
+}
+
+
+int get_constant_buffer_element_alignement(int type)
+{ 
+	int align[] = {
+		alignof(mat4),
+		alignof(v4),
+		alignof(v3),
+		alignof(v2),
+		alignof(float),
+		alignof(int)
+	};
+	static_assert(ARRAY_SIZE(align) == CONSTANT_BUFFER_ELEMENT_COUNT);
+	return align[type];
+}

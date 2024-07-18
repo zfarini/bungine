@@ -131,6 +131,18 @@ b32 strings_equal(const String &a, const String &b)
 	return true;
 }
 
+String make_cstring(const char *cstr)
+{
+	usize len = 0;
+	while (cstr[len])
+		len++;
+	String s;
+	s.data = (char *)cstr;
+	s.capacity = len + 1;
+	s.count = len;
+	return s;
+}
+
 String concact_string(Arena *arena, String a, String b)
 {
 	String result = make_string(arena, a.count + b.count);
@@ -140,3 +152,42 @@ String concact_string(Arena *arena, String a, String b)
 	return result;
 }
 #define str_format(str) (int)str.count, str.data
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+
+String load_entire_file(Arena *arena, String filename)
+{
+	assert(
+		filename.count < filename.capacity &&
+		filename.data[filename.count] == 0);
+	String result = {};
+
+	int fd = open(filename.data, O_RDONLY);
+	if (fd < 0) {
+		printf("failed to open file %.*s\n", str_format(filename));
+		assert(0);
+		return result;
+	}
+	usize size = lseek(fd, 0, SEEK_END);
+
+	lseek(fd, 0, SEEK_SET);
+
+	result = make_string(arena, size);
+
+	while (size > 0)
+	{
+		size_t bytes_read = read(fd, result.data, size);	
+		if (bytes_read <= 0)
+			assert(0);
+		size -= bytes_read;
+	}
+	return result;
+}
+
+// returns first multiple of alignement bigger than or equal to x
+int align_to(int x, int alignement)
+{
+	return alignement * ((x + alignement - 1) / alignement);
+}

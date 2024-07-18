@@ -75,7 +75,7 @@ Texture load_texture(Arena *arena, Scene &scene, RenderContext &rc, ufbx_texture
 
 	Texture tex;
 	tex.name = name;
-	tex.data = create_texture(rc, data, width, height, srgb);
+	//tex.data = create_texture(rc, data, width, height, srgb);
 
 	if (name.count)
 		rc.loaded_textures.push(tex);
@@ -221,7 +221,8 @@ Mesh load_mesh(Arena *arena, Scene &scene, RenderContext &rc, ufbx_node *unode)
 		part.vertices_count = vertices.count - part.offset;
 	}
 
-	mesh.vertex_buffer = create_vertex_buffer(rc, vertices.count * sizeof(Vertex), vertices.data);
+	mesh.vertex_buffer = create_vertex_buffer(vertices.count * sizeof(Vertex), vertices.data,
+			sizeof(Vertex), g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
 
 	end_temp_memory();
 	return mesh;

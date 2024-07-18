@@ -97,6 +97,10 @@ struct Game
 	float rot;
 
 	Animation animations[ANIMATION_COUNT];
+
+	mat4 view_mat;
+	mat4 projection_mat;
+	ConstantBuffer constant_buffer;
 };
 
 #endif

@@ -65,7 +65,7 @@ void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform, Animatio
 
 		if (anim_bones[i].parent != -1) {
 			v3 parentP = (anim_bones[anim_bones[i].parent].transform * v4{0, 0, 0, 1}).xyz;
-			push_line(rc, P, parentP);
+			push_line(P, parentP);
 		}
 	}
 
@@ -125,19 +125,19 @@ void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, 
 
 		RenderPass &rp = *rc.render_pass;
 		Constants constants = {};
-		constants.view = rp.view_mat;
-		constants.projection = rp.projection_mat;
-		constants.camera_p = rp.camera_p;
-		constants.light_transform = rc.shadow_map.projection * rc.shadow_map.view;
+		constants.view = game.view_mat;
+		constants.projection = game.projection_mat;
+		constants.camera_p = game.camera_p;
+		//constants.light_transform = rc.shadow_map.projection * rc.shadow_map.view;
 		constants.player_p = game.entities[0].position;
 
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
 		//render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
 
-		UINT32 stride = sizeof(Vertex);
-		UINT32 offset = 0;
-		rc.context->IASetVertexBuffers(0, 1, &mesh.vertex_buffer, &stride, &offset);
+		//UINT32 stride = sizeof(Vertex);
+		//UINT32 offset = 0;
+		//rc.context->IASetVertexBuffers(0, 1, &mesh.vertex_buffer, &stride, &offset);
 
 		constants.model = mesh_transform;
 		//constants.normal_transform = inverse(transpose(constants.model));
@@ -153,27 +153,29 @@ void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, 
 		for (usize j = 0; j < mesh.parts.count; j++) {
 			MeshPart &part = mesh.parts[j];
 
-			if (part.material.diffuse.data)
-				rc.context->PSSetShaderResources(0, 1, &part.material.diffuse.data);
-			else
-				rc.context->PSSetShaderResources(0, 1, &rc.white_texture);
-			if (part.material.specular.data)
-				rc.context->PSSetShaderResources(1, 1, &part.material.specular.data);
-			else
-				rc.context->PSSetShaderResources(1, 1, &rc.white_texture);
-			rc.context->PSSetShaderResources(2, 1, &part.material.normal_map.data);
-			if (part.material.specular_exponent.data)
-				rc.context->PSSetShaderResources(3, 1, &part.material.specular_exponent.data);
-			else
-				rc.context->PSSetShaderResources(3, 1, &rc.white_texture);
+			// if (part.material.diffuse.data)
+			// 	rc.context->PSSetShaderResources(0, 1, &part.material.diffuse.data);
+			// else
+			// 	rc.context->PSSetShaderResources(0, 1, &rc.white_texture);
+			// if (part.material.specular.data)
+			// 	rc.context->PSSetShaderResources(1, 1, &part.material.specular.data);
+			// else
+			// 	rc.context->PSSetShaderResources(1, 1, &rc.white_texture);
+			// rc.context->PSSetShaderResources(2, 1, &part.material.normal_map.data);
+			// if (part.material.specular_exponent.data)
+			// 	rc.context->PSSetShaderResources(3, 1, &part.material.specular_exponent.data);
+			// else
+			// 	rc.context->PSSetShaderResources(3, 1, &rc.white_texture);
 			
-			constants.diffuse_factor = part.material.diffuse_factor;
-			constants.specular_factor = part.material.specular_factor;
-			constants.specular_exponent_factor = part.material.specular_exponent_factor;
-			constants.has_normal_map = part.material.normal_map.data != 0;
+			// constants.diffuse_factor = part.material.diffuse_factor;
+			// constants.specular_factor = part.material.specular_factor;
+			// constants.specular_exponent_factor = part.material.specular_exponent_factor;
+			// constants.has_normal_map = part.material.normal_map.data != 0;
 
-			copy_data_to_gpu_buffer(rc, rp.cbuffer, &constants, sizeof(constants));	
-			rc.context->Draw((UINT)part.vertices_count, (UINT)part.offset);
+			update_constant_buffer(game.constant_buffer, &constants);
+			draw(mesh.vertex_buffer, part.offset, part.vertices_count);
+			//copy_data_to_gpu_buffer(rc, rp.cbuffer, &constants, sizeof(constants));	
+			//rc.context->Draw((UINT)part.vertices_count, (UINT)part.offset);
 		}
 	}
 
@@ -200,13 +202,13 @@ void render_entities(RenderContext &rc, Game &game)
 			v3 d = e.position;
 			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
 				for (int j = 0; j < e.shape.triangles.count; j++) {
-					push_triangle_outline(g_rc, e.shape.triangles[j].v0 + d,
+					push_triangle_outline(e.shape.triangles[j].v0 + d,
 											e.shape.triangles[j].v1 + d,
 											e.shape.triangles[j].v2 + d, V3(1, 0, 0));
 				}
 			}
 			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-				push_ellipsoid_outline(g_rc, d, e.shape.ellipsoid_radius, V3(1, 0, 0));
+				push_ellipsoid_outline(d, e.shape.ellipsoid_radius, V3(1, 0, 0));
 			}
 			
 		}
@@ -220,22 +222,12 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		//memory->used += sizeof(game);
 
 
-		D3D11_INPUT_ELEMENT_DESC input_layout_desc[] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT,   0, offsetof(Vertex, normal),   D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,          0, offsetof(Vertex, uv),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT,          0, offsetof(Vertex, weights),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BLENDINDICES", 0, DXGI_FORMAT_R32_SINT,          0, offsetof(Vertex, indices),       D3D11_INPUT_PER_VERTEX_DATA, 0 },
-
-					//{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-
 		g_temp_arena.arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
 		game.asset_arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
 
-		rc.shadow_map = create_shadow_map(rc, 4096, 4096, 
-			v3{24, 0, 24}, v3{-1, 0, -1},
-			orthographic_projection(1, 75, 50, 40));
+		// rc.shadow_map = create_shadow_map(rc, 4096, 4096, 
+		// 	v3{24, 0, 24}, v3{-1, 0, -1},
+		// 	orthographic_projection(1, 75, 50, 40));
 
 		game.mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
 			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
@@ -243,6 +235,20 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", 0,
 			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
 
+		ConstantBufferElement elems[] = {
+			{CONSTANT_BUFFER_ELEMENT_MAT4},
+			{CONSTANT_BUFFER_ELEMENT_MAT4},
+			{CONSTANT_BUFFER_ELEMENT_MAT4},
+			{CONSTANT_BUFFER_ELEMENT_MAT4, 96},
+			{CONSTANT_BUFFER_ELEMENT_VEC3},
+			{CONSTANT_BUFFER_ELEMENT_VEC3},
+			{CONSTANT_BUFFER_ELEMENT_FLOAT},
+			{CONSTANT_BUFFER_ELEMENT_FLOAT},
+			{CONSTANT_BUFFER_ELEMENT_FLOAT},
+			{CONSTANT_BUFFER_ELEMENT_INT},
+			{CONSTANT_BUFFER_ELEMENT_INT},
+		};
+		game.constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
 
 		game.ch43		= load_scene(&game.asset_arena, rc, "data\\Ch43.fbx");
 		//Scene ch06		= load_scene(&asset_arena, rc, "data\\Ch06.fbx");
@@ -432,10 +438,10 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			// 	v3 c = t > 0 ? V3(0, 1, 0) : V3(1);
 				
 
-			// 	push_triangle_outline(rc, t0, t1, t2, c);
+			// 	push_triangle_outline(t0, t1, t2, c);
 
 
-			// 	push_line(rc, player.position, player.position + normalize(dP), V3(1, 0, 0));
+			// 	push_line(player.position, player.position + normalize(dP), V3(1, 0, 0));
 			// }
 			move_entity(game, player, delta_p);
 			player.dp += a * dt;
@@ -601,7 +607,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			};
 
 			//for (int i = 0; i < 4; i++)
-			//	push_cube_outline(rc, v[i], V3(0.3));
+			//	push_cube_outline(v[i], V3(0.3));
 			
 			mat4 M;
 			mat4 V;
@@ -632,7 +638,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			// 	v3 v0 = (A * V4(lO*lO*lO, lO*lO, lO, 1)).xyz;
 			// 	v3 v1 = (A * V4(O*O*O, O*O, O, 1)).xyz;
 
-			// 	push_line(rc, v0, v1, V3((O + T) / (T*2), 0, 0));
+			// 	push_line(v0, v1, V3((O + T) / (T*2), 0, 0));
 			// }
 
 		}
@@ -641,11 +647,11 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 			xrotation(camera_rot.x) *
 			translate(camera_p);
 		
-		//push_cube_outline(rc, camera_p, V3(1), V3(1, 0, 0));
-		//push_cube_outline(rc, player.position, V3(1), V3(1, 1, 0));
-		//push_line(rc, camera_p, player.position);
-		//push_line(rc, player.position, player.position + player_right, V3(0, 0, 1));
-		//push_line(rc, player.position, game.camera_p, V3(0, 1, 0));
+		//push_cube_outline(camera_p, V3(1), V3(1, 0, 0));
+		//push_cube_outline(player.position, V3(1), V3(1, 1, 0));
+		//push_line(camera_p, player.position);
+		//push_line(player.position, player.position + player_right, V3(0, 0, 1));
+		//push_line(player.position, game.camera_p, V3(0, 1, 0));
 
 
 		if (game.camera_free_mode) {
@@ -692,9 +698,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	rc.projection = projection;
 
 	
-	// push_line(rc, V3(0), V3(5, 0, 0), V3(1, 0, 0));
-	// push_line(rc, V3(0), V3(0, 5, 0), V3(0, 1, 0));
-	// push_line(rc, V3(0), V3(0, 0, 5), V3(0, 0, 1));
+	// push_line(V3(0), V3(5, 0, 0), V3(1, 0, 0));
+	// push_line(V3(0), V3(0, 5, 0), V3(0, 1, 0));
+	// push_line(V3(0), V3(0, 0, 5), V3(0, 0, 1));
 
 	FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
 	rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
@@ -730,8 +736,8 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 	end_render_pass(rc);
 	#endif
 
-	push_cube_outline(rc, rc.shadow_map.light_p, V3(0.3));
-	push_line(rc, rc.shadow_map.light_p, rc.shadow_map.light_p + 0.5 * rc.shadow_map.light_dir);
+	push_cube_outline(rc.shadow_map.light_p, V3(0.3));
+	push_line(rc.shadow_map.light_p, rc.shadow_map.light_p + 0.5 * rc.shadow_map.light_dir);
 
 	{
 		ImGuiIO &io = ImGui::GetIO();

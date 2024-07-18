@@ -13,6 +13,14 @@ struct Vertex
 	int indices;//[MAX_BONE_WEIGHTS];
 };
 
+VertexInputElement g_vertex_input_elements[] = {
+	{offsetof(Vertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
+	{offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
+	{offsetof(Vertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
+	{offsetof(Vertex, weights), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT, "BLENDWEIGHT"},
+	{offsetof(Vertex, indices), 1, INPUT_ELEMENT_SIGNED_INT, "BLENDINDICES"},
+};
+
 struct Material
 {
 	Texture diffuse;
@@ -45,7 +53,7 @@ struct Mesh
 {
 	String name;
 	Array<MeshPart> parts;
-	ID3D11Buffer *vertex_buffer;
+	VertexBuffer vertex_buffer;
 	Array<Bone> bones;
 };
 
