@@ -1,4 +1,4 @@
-Shader load_shader(RenderContext &rc, String filename, ShaderType type, const char *main = "")
+Shader load_shaderString filename, ShaderType type, const char *main = "")
 {
     Shader result = {};
 
@@ -28,7 +28,7 @@ Shader load_shader(RenderContext &rc, String filename, ShaderType type, const ch
     return result;
 }
 
-ShaderProgram create_shader_program(RenderContext &rc, Shader vs, Shader ps)
+ShaderProgram create_shader_programShader vs, Shader ps)
 {
     ShaderProgram result = {};
 

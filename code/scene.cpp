@@ -33,7 +33,7 @@ mat4 ufbx_to_mat4(ufbx_matrix m)
 // TODO: remove this
 Arena *g_stb_image_arena;
 
-Texture load_texture(Arena *arena, Scene &scene, RenderContext &rc, ufbx_texture *utex, bool srgb = true)
+Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
 {
 	assert(utex->type == UFBX_TEXTURE_FILE);
 
@@ -45,9 +45,9 @@ Texture load_texture(Arena *arena, Scene &scene, RenderContext &rc, ufbx_texture
 	String name = make_string(arena, utex->filename.length, utex->filename.data);
 
 	if (name.count) {
-		for (int i = 0; i < rc.loaded_textures.count; i++) {
-			if (strings_equal(rc.loaded_textures[i].name, name))
-				return rc.loaded_textures[i];
+		for (int i = 0; i < g_rc.loaded_textures.count; i++) {
+			if (strings_equal(g_rc.loaded_textures[i].name, name))
+				return g_rc.loaded_textures[i];
 		}
 	}
 	g_stb_image_arena = begin_temp_memory();
@@ -75,29 +75,30 @@ Texture load_texture(Arena *arena, Scene &scene, RenderContext &rc, ufbx_texture
 
 	Texture tex;
 	tex.name = name;
-	//tex.data = create_texture(rc, data, width, height, srgb);
+	tex.handle = create_texture(data, width, height, srgb);
+	tex.valid = true;
 
 	if (name.count)
-		rc.loaded_textures.push(tex);
+		g_rc.loaded_textures.push(tex);
 
 	return tex;
 }
 
-Material load_material(Arena *arena, Scene &scene, RenderContext &rc, ufbx_material *umat)
+Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)
 {
 	Material mat = {};
 	
 	if (umat->fbx.diffuse_color.texture_enabled)
-		mat.diffuse = load_texture(arena, scene, rc, umat->fbx.diffuse_color.texture);
+		mat.diffuse = load_texture(arena, scene, umat->fbx.diffuse_color.texture);
 	if (umat->fbx.specular_color.texture_enabled)
-		mat.specular = load_texture(arena, scene, rc, umat->fbx.specular_color.texture);
+		mat.specular = load_texture(arena, scene, umat->fbx.specular_color.texture);
 	if (umat->fbx.normal_map.texture_enabled)
-		mat.normal_map = load_texture(arena, scene, rc, umat->fbx.normal_map.texture, false);
+		mat.normal_map = load_texture(arena, scene, umat->fbx.normal_map.texture, false);
 	else if (umat->fbx.bump.texture_enabled)
-		mat.normal_map = load_texture(arena, scene, rc, umat->fbx.bump.texture, false);
+		mat.normal_map = load_texture(arena, scene, umat->fbx.bump.texture, false);
 
 	if (umat->fbx.specular_exponent.texture_enabled)
-		mat.specular_exponent = load_texture(arena, scene, rc, umat->fbx.specular_exponent.texture, false);
+		mat.specular_exponent = load_texture(arena, scene, umat->fbx.specular_exponent.texture, false);
 
 	mat.diffuse_factor = umat->fbx.diffuse_factor.has_value ? umat->fbx.diffuse_factor.value_real : 1;
 	mat.specular_factor = umat->fbx.specular_factor.has_value ? umat->fbx.specular_factor.value_real : 1;
@@ -125,7 +126,7 @@ Vertex get_ufbx_vertex(ufbx_mesh *umesh, ufbx_skin_deformer *skin, int index)
 		float total_weight = 0.0f;
 		for (size_t i = 0; i < num_weights; i++) {
 			ufbx_skin_weight skin_weight = skin->weights.data[skin_vertex.weight_begin + i];
-			v.indices |= skin_weight.cluster_index << (8 * i);
+			v.indices[i] = skin_weight.cluster_index;// |= skin_weight.cluster_index << (8 * i);
 			v.weights[i] = (float)skin_weight.weight;
 			total_weight += (float)skin_weight.weight;
 		}
@@ -152,7 +153,7 @@ void make_bones_transform_relative_to_parent(Array<Bone> bones, usize index, Arr
 	computed[index] = true;
 }
 
-Mesh load_mesh(Arena *arena, Scene &scene, RenderContext &rc, ufbx_node *unode)
+Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 {
 	ufbx_mesh *umesh = unode->mesh;
 	Mesh mesh = {};
@@ -214,7 +215,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, RenderContext &rc, ufbx_node *unode)
 		}
 		if (upart.face_indices.count && umesh->face_material.count) {
 			// TODO: make sure this always works
-			part.material = load_material(arena, scene, rc, 
+			part.material = load_material(arena, scene, 
 					umesh->materials.data[umesh->face_material.data[upart.face_indices.data[0]]]);
 		}
 
@@ -236,7 +237,8 @@ void *ufbx_arena_realloc(void *user, void *old_ptr, size_t old_size, size_t new_
 
 	if (old_size > new_size)
 		old_size = new_size;
-	memcpy(data, old_ptr, old_size);
+	if (old_size)
+		memcpy(data, old_ptr, old_size);
 	return data;
 }
 
@@ -358,7 +360,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 	return anim;
 }
 
-Scene load_scene(Arena *arena, RenderContext &rc, const char *filename)
+Scene load_scene(Arena *arena, const char *filename)
 {
 	Arena *temp = begin_temp_memory();
 	Scene scene = {};
@@ -420,7 +422,7 @@ Scene load_scene(Arena *arena, RenderContext &rc, const char *filename)
 			scene.nodes[i].skip_render = true;
 
 		if (unode->mesh) {
-			scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, rc, unode);
+			scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, unode);
 			scene.nodes[i].mesh = &scene.meshes[(int)unode->mesh->typed_id];
 			assert(!scene.nodes[i].skip_render);
 		}

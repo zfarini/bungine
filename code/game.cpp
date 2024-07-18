@@ -4,6 +4,30 @@
 #include "collision.cpp"
 #include "ai.cpp"
 
+ShadowMap create_shadow_map(int texture_width, int texture_height,
+	v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
+{
+	ShadowMap shadow_map = {};
+
+	shadow_map.width = texture_width;
+	shadow_map.height = texture_height;
+	shadow_map.light_p = light_p;
+	shadow_map.light_dir = light_dir;
+
+	shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, up);
+	shadow_map.projection = projection;
+
+	shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
+	
+	shadow_map.framebuffer = create_frame_buffer();
+
+	bind_framebuffer_depthbuffer(shadow_map.framebuffer, shadow_map.depth_texture);
+	// TODO:!!
+	 if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        assert(0);
+	return shadow_map;
+}
+
 Entity *make_entity(Game &game, int type, Scene *scene, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
 	Entity e = {};
@@ -29,7 +53,7 @@ void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 	computed[i] = true;
 }
 
-void render_bones(RenderContext &rc, Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
+void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
 {
 	if (bones.count == 0)
 		return ;
@@ -99,7 +123,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 	return anim_bones;
 }
 
-void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, mat4 scene_transform, mat4 node_transform,
+void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
 	Animation *anim, float anim_time)
 {
 	if (node->skip_render)
@@ -123,17 +147,16 @@ void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, 
 	if (node->mesh) {
 		Mesh &mesh = *node->mesh;
 
-		RenderPass &rp = *rc.render_pass;
 		Constants constants = {};
-		constants.view = game.view_mat;
-		constants.projection = game.projection_mat;
-		constants.camera_p = game.camera_p;
-		//constants.light_transform = rc.shadow_map.projection * rc.shadow_map.view;
+		constants.view = camera.view;
+		constants.projection = camera.projection;
+		constants.camera_p = camera.position;
+		constants.light_transform = game.shadow_map.projection * game.shadow_map.view;
 		constants.player_p = game.entities[0].position;
 
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
-		//render_bones(rc, mesh.bones, mesh_transform, anim, anim_time);
+		//render_bonesmesh.bones, mesh_transform, anim, anim_time);
 
 		//UINT32 stride = sizeof(Vertex);
 		//UINT32 offset = 0;
@@ -153,51 +176,40 @@ void render_scene(RenderContext &rc, Game &game, Scene &scene, SceneNode *node, 
 		for (usize j = 0; j < mesh.parts.count; j++) {
 			MeshPart &part = mesh.parts[j];
 
-			// if (part.material.diffuse.data)
-			// 	rc.context->PSSetShaderResources(0, 1, &part.material.diffuse.data);
-			// else
-			// 	rc.context->PSSetShaderResources(0, 1, &rc.white_texture);
-			// if (part.material.specular.data)
-			// 	rc.context->PSSetShaderResources(1, 1, &part.material.specular.data);
-			// else
-			// 	rc.context->PSSetShaderResources(1, 1, &rc.white_texture);
-			// rc.context->PSSetShaderResources(2, 1, &part.material.normal_map.data);
-			// if (part.material.specular_exponent.data)
-			// 	rc.context->PSSetShaderResources(3, 1, &part.material.specular_exponent.data);
-			// else
-			// 	rc.context->PSSetShaderResources(3, 1, &rc.white_texture);
+			bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc.white_texture);
+			bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc.white_texture);
+			bind_texture(2, part.material.normal_map);
+			bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc.white_texture);
 			
-			// constants.diffuse_factor = part.material.diffuse_factor;
-			// constants.specular_factor = part.material.specular_factor;
-			// constants.specular_exponent_factor = part.material.specular_exponent_factor;
-			// constants.has_normal_map = part.material.normal_map.data != 0;
+			constants.diffuse_factor = part.material.diffuse_factor;
+			constants.specular_factor = part.material.specular_factor;
+			constants.specular_exponent_factor = part.material.specular_exponent_factor;
+			constants.has_normal_map = part.material.normal_map.valid;
 
 			update_constant_buffer(game.constant_buffer, &constants);
 			draw(mesh.vertex_buffer, part.offset, part.vertices_count);
-			//copy_data_to_gpu_buffer(rc, rp.cbuffer, &constants, sizeof(constants));	
-			//rc.context->Draw((UINT)part.vertices_count, (UINT)part.offset);
 		}
 	}
 
 	for (usize i = 0; i < node->childs.count; i++)
-		render_scene(rc, game, scene, node->childs[i], scene_transform, node_transform, anim, anim_time);
+		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time);
 }
 
-void render_scene(RenderContext &rc, Game &game, Scene &scene, mat4 transform = identity(), Animation *anim = 0, float anim_time = 0)
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time)
 {
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
-	render_scene(rc, game, scene, scene.root, transform, identity(), anim, anim_time);
+	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time);
 }
 
-void render_entities(RenderContext &rc, Game &game)
+void render_entities(Game &game, Camera camera)
 {
 	for (usize i = 0; i < game.entities.count; i++) {
 		Entity &e = game.entities[i];
 		if (!e.scene)
 			continue ;
 		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
-		render_scene(rc, game, *e.scene, transform * e.scene_transform, e.animation, e.anim_time);
+		render_scene(game, *e.scene, camera, transform * e.scene_transform, e.animation, e.anim_time);
 		if (game.debug_collision) {
 			v3 d = e.position;
 			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
@@ -210,32 +222,38 @@ void render_entities(RenderContext &rc, Game &game)
 			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
 				push_ellipsoid_outline(d, e.shape.ellipsoid_radius, V3(1, 0, 0));
 			}
-			
 		}
 	}
 }
 
-void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameInput &input, float dt)
+void game_update_and_render(Game &game, Arena *memory, GameInput &input, float dt)
 {
 	if (!game.is_initialized) {
 		arena_alloc(memory, sizeof(game));
 		//memory->used += sizeof(game);
 
 
-		g_temp_arena.arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
-		game.asset_arena = make_arena(arena_alloc(memory, GigaByte(1)), GigaByte(1));
+		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
+		
+		game.mesh_render_pass = create_render_pass(
+			create_shader_program(
+				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT)),
+			g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
 
-		// rc.shadow_map = create_shadow_map(rc, 4096, 4096, 
-		// 	v3{24, 0, 24}, v3{-1, 0, -1},
-		// 	orthographic_projection(1, 75, 50, 40));
-
-		game.mesh_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", "ps_main",
-			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
-
-		game.shadow_map_render_pass = create_render_pass(rc, L"code\\shader.hlsl", "vs_main", 0,
-			input_layout_desc, ARRAYSIZE(input_layout_desc), sizeof(Constants));
+		game.shadow_map_render_pass = create_render_pass(
+			create_shader_program(
+				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT)),
+			g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
+		
+		game.shadow_map = create_shadow_map(4096, 4096, 
+			V3(24, 0, 24), V3(-1, 0, -1),
+			orthographic_projection(1, 75, 50, 40));
+			//perspective_projection(1, 75, 120, 1));
 
 		ConstantBufferElement elems[] = {
+			{CONSTANT_BUFFER_ELEMENT_MAT4},
 			{CONSTANT_BUFFER_ELEMENT_MAT4},
 			{CONSTANT_BUFFER_ELEMENT_MAT4},
 			{CONSTANT_BUFFER_ELEMENT_MAT4},
@@ -250,14 +268,14 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		};
 		game.constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
 
-		game.ch43		= load_scene(&game.asset_arena, rc, "data\\Ch43.fbx");
-		//Scene ch06		= load_scene(&asset_arena, rc, "data\\Ch06.fbx");
-		//Scene ch15		= load_scene(&asset_arena, rc, "data\\Ch15.fbx");
-		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
-		//game.ch43 = load_scene(&game.asset_arena, rc, "data\\animated_pistol\\animated.fbx");
+		game.ch43		= load_scene(&game.asset_arena, "data/Ch43.fbx");
+		//Scene ch06		= load_scene(&asset_arena, "data\\Ch06.fbx");
+		//Scene ch15		= load_scene(&asset_arena, "data\\Ch15.fbx");
+		//game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
+		//game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
 		//game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
-		game.cube_asset		= load_scene(&game.asset_arena, rc, "data\\cube.fbx");
-		game.sphere_asset	= load_scene(&game.asset_arena, rc, "data\\sphere.fbx");
+		game.cube_asset		= load_scene(&game.asset_arena, "data/cube.fbx");
+		game.sphere_asset	= load_scene(&game.asset_arena, "data/sphere.fbx");
 
 		//game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
 		//game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
@@ -287,12 +305,12 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		//Entity *sponza = make_entity(game, V3(0), &game.sponza);
 
 
-		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, rc, "data\\jump.fbx").animations[0];
-		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, rc, "data\\shoot.fbx").animations[0];
-		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, rc, "data\\run.fbx").animations[0];
-		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, rc, "data\\forward_gun_walk.fbx").animations[0];
-		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, rc, "data\\backward_gun_walk.fbx").animations[0];
-		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, rc, "data\\gun_idle.fbx").animations[0];
+		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
+		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
+		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
+		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
+		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
+		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
 
 
 		Entity *boxes[] = {
@@ -348,14 +366,13 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 
 	}
 	//assert(0 && "render player in rest pose and check if shadow is correct");
-	int window_width, window_height;
+	int window_width = g_window_width, window_height = g_window_height;
+	
 	{
-		ID3D11Texture2D* backbuffer;
-		rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
-		D3D11_TEXTURE2D_DESC desc;
-		backbuffer->GetDesc(&desc);
-		window_width = desc.Width;
-		window_height = desc.Height;
+		// @TODO
+		//get_window_framebuffer_dimension(window_width, window_height);
+
+		//glfwGetFramebufferSize(window, &window_width, &window_height);
 	}
 
 	if (IsDownFirstTime(input, BUTTON_F2)) {
@@ -366,7 +383,7 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		game.camera_free_mode = !game.camera_free_mode;
 	}
 	
-	begin_frame(rc, rc.view, rc.projection);
+	//begin_framerc.view, rc.projection);
 	
 	// update player
 	b32 camera_shoot_mode = false;
@@ -694,50 +711,33 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		view = rotation * translate(-p);
 		projection = perspective_projection(0.1, 100, 100, (float)window_height / window_width);
 	}
-	rc.view = view;
-	rc.projection = projection;
 
-	
 	// push_line(V3(0), V3(5, 0, 0), V3(1, 0, 0));
 	// push_line(V3(0), V3(0, 5, 0), V3(0, 1, 0));
 	// push_line(V3(0), V3(0, 0, 5), V3(0, 0, 1));
 
-	FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
-	rc.context->ClearRenderTargetView(rc.backbuffer_rtv, color);
-
-	D3D11_VIEWPORT viewport = {};
-	viewport.MinDepth = 0;
-	viewport.MaxDepth = 1;
-	viewport.Width = (FLOAT)rc.shadow_map.width;
-	viewport.Height = (FLOAT)rc.shadow_map.height;
-
-
-	begin_render_pass(rc, game.shadow_map_render_pass, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, 
-		viewport, 0, rc.shadow_map.dsv, rc.shadow_map.view, rc.shadow_map.projection, rc.shadow_map.light_p);
+	begin_render_pass(game.shadow_map_render_pass);
 	{
-		rc.context->ClearDepthStencilView(rc.shadow_map.dsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
-		render_entities(rc, game);
+		set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
+		bind_frame_buffer(game.shadow_map.framebuffer);
+		clear_depth_buffer(1);
+		render_entities(game, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection});
 	}
-	end_render_pass(rc);
-#if 1
-	begin_render_pass(rc, game.mesh_render_pass, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-		rc.window_viewport, rc.backbuffer_rtv, rc.depth_stencil_view, view, projection, game.camera_p);
+	end_render_pass();
+
+	begin_render_pass(game.mesh_render_pass);
 	{
-		rc.context->PSSetShaderResources(4, 1, &rc.shadow_map.srv);
-
-		rc.context->ClearDepthStencilView(rc.depth_stencil_view, D3D11_CLEAR_DEPTH, 1.0f, 0);
-		render_entities(rc, game);
-
-		v3 expexted = (translate(rc.shadow_map.light_p) * v4{0, 0, 0, 1}).xyz;
-
-		ID3D11ShaderResourceView *null_srv = 0;
-		rc.context->PSSetShaderResources(4, 1, &null_srv);
+		set_viewport(0, 0, window_width, window_height);
+		bind_window_framebuffer();
+		clear_color_buffer(0.392f, 0.584f, 0.929f, 1.f);
+		clear_depth_buffer(1);
+		bind_texture(4, game.shadow_map.depth_texture);
+		render_entities(game, Camera{game.camera_p, view, projection});
 	}
-	end_render_pass(rc);
-	#endif
+	end_render_pass();
 
-	push_cube_outline(rc.shadow_map.light_p, V3(0.3));
-	push_line(rc.shadow_map.light_p, rc.shadow_map.light_p + 0.5 * rc.shadow_map.light_dir);
+	push_cube_outline(game.shadow_map.light_p, V3(0.3));
+	push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
 
 	{
 		ImGuiIO &io = ImGui::GetIO();
@@ -751,10 +751,9 @@ void game_update_and_render(Game &game, RenderContext &rc, Arena *memory, GameIn
 		ImVec2 texSize(256, 256);
 
     	// Render the texture
-    	ImGui::Image((void*)rc.shadow_map.srv, texSize);
+    	//ImGui::Image((void*)rc.shadow_map.srv, texSize);
 		ImGui::End();
 	}
-	end_frame(rc);
 
 	game.time += dt;
 	game.frame++;

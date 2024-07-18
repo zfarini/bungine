@@ -9,8 +9,9 @@ struct Vertex
 	v3 position;
 	v3 normal;
 	v2 uv;
+	//v4 weights;
 	float weights[MAX_BONE_WEIGHTS];
-	int indices;//[MAX_BONE_WEIGHTS];
+	float indices[MAX_BONE_WEIGHTS];//[MAX_BONE_WEIGHTS];
 };
 
 VertexInputElement g_vertex_input_elements[] = {
@@ -18,7 +19,7 @@ VertexInputElement g_vertex_input_elements[] = {
 	{offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
 	{offsetof(Vertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
 	{offsetof(Vertex, weights), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT, "BLENDWEIGHT"},
-	{offsetof(Vertex, indices), 1, INPUT_ELEMENT_SIGNED_INT, "BLENDINDICES"},
+	{offsetof(Vertex, indices), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT, "BLENDINDICES"},
 };
 
 struct Material

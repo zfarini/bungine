@@ -531,19 +531,26 @@ mat4 perspective_projection(float znear, float zfar, float width_fov_degree, flo
 	return {
 		znear * 2 / width, 0, 0, 0,
 		0, znear * 2 / height, 0, 0,
+		#ifdef RENDERER_DX11
 		0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar),
+		#else
+		0, 0, (zfar + znear) / (znear - zfar), 2 * znear * zfar / (znear - zfar),
+		#endif
 		0, 0, -1, 0
 	};
 }
 
 mat4 orthographic_projection(float znear, float zfar, float width, float height)
 {
-	//
 	return {
 		2.f / width, 0, 0, 0,
 		0, 2.f / height, 0, 0,
+		#ifdef RENDERER_DX11
 		0, 0, 1.f / (znear-zfar), znear / (znear-zfar),
-		0, 0, 0, 1	
+		#else
+		0, 0, -2.f / (zfar-znear), (-znear-zfar) / (zfar-znear),
+		#endif
+		0, 0, 0, 1
 	};
 }
 

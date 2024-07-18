@@ -68,8 +68,27 @@ enum AnimationType {
 	ANIMATION_COUNT
 };
 
+struct ShadowMap {
+	FrameBuffer framebuffer;
+	v3 light_dir;
+	v3 light_p;
+	mat4 view;
+	mat4 projection;
+	int width, height;
+	Texture depth_texture;
+};
+
+struct Camera
+{
+	v3 position;
+	mat4 view;
+	mat4 projection;
+};
+
 struct Game
 {
+	ShadowMap shadow_map;
+
 	v3 camera_p;
 	v3 camera_rotation;
 
@@ -98,8 +117,6 @@ struct Game
 
 	Animation animations[ANIMATION_COUNT];
 
-	mat4 view_mat;
-	mat4 projection_mat;
 	ConstantBuffer constant_buffer;
 };
 

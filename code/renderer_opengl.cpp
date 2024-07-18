@@ -1,3 +1,39 @@
+void *create_texture(void *data, int width, int height, bool srgb)
+{
+	uint32_t internal_format, format;
+
+#ifdef ENABLE_SRGB
+	if (srgb)
+		internal_format = GL_SRGB_ALPHA;
+	else
+#endif
+		internal_format = GL_RGBA;
+
+	format = GL_RGBA;
+
+    bool mipmap = true;
+
+	uint32_t tex;
+	glGenTextures(1, &tex);
+
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	if (mipmap)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+				GL_LINEAR_MIPMAP_LINEAR);
+	else
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+				GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
+			GL_UNSIGNED_BYTE, data);
+    if (mipmap)
+	    glGenerateMipmap(GL_TEXTURE_2D);
+	return (void *)tex;
+}
+
 void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id,
 		GLenum severity, GLsizei length,
 		const char *message, const void *userParam) {
@@ -39,7 +75,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id,
 	printf("\n\n");
 }
 
-void init_render_context(RenderContext &rc)
+void init_render_context(Arena *arena, RenderContext &rc)
 {
     {
 		int flags;
@@ -55,6 +91,15 @@ void init_render_context(RenderContext &rc)
 	}
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+    #ifdef ENABLE_SRGB
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    #endif
+
+    rc.loaded_textures = make_array_max<Texture>(arena, 256);
+
+    uint32_t white_color = 0xffffffff;
+    rc.white_texture.handle = create_texture(&white_color, 1, 1, true);
+    rc.white_texture.valid = true;
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -151,7 +196,6 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
     glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-    
     assert(input_element_count > 0);
 
     for (int i = 0; i < input_element_count; i++) {
@@ -168,7 +212,7 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
         glEnableVertexAttribArray(i);
     }
 
-    VertexBuffer result;
+    VertexBuffer result = {};
     result.handle = (void *)vao;
     return result;
 }
@@ -185,6 +229,73 @@ void end_render_pass()
     g_rc.render_pass = 0;
 }
 
+Texture create_depth_texture(int width, int height)
+{
+    Texture result = {};
+
+    uint32_t texture;
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    result.handle = (void *)texture;
+    return result;
+}
+
+void bind_frame_buffer(FrameBuffer &framebuffer)
+{
+    if (g_rc.active_framebuffer_id != (intptr_t)framebuffer.handle) {
+        glBindFramebuffer(GL_FRAMEBUFFER, (intptr_t)framebuffer.handle);
+        g_rc.active_framebuffer_id = (intptr_t)framebuffer.handle;
+    }
+}
+
+FrameBuffer create_frame_buffer()
+{
+    FrameBuffer result = {};
+    uint32_t fbo;
+
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, g_rc.active_framebuffer_id);
+
+    result.handle = (void *)fbo;
+    return result;
+}
+
+void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
+{
+    auto save = g_rc.active_framebuffer_id;
+
+    bind_frame_buffer(framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+            (uintptr_t)texture.handle, 0);
+    if (save != (uintptr_t)framebuffer.handle) {
+        glBindFramebuffer(GL_FRAMEBUFFER, save);
+        g_rc.active_framebuffer_id = save;
+    }
+}
+
+void set_viewport(int x, int y, int width, int height)
+{
+    glViewport(x, y, width, height);
+}
+
+void bind_window_framebuffer()
+{
+    g_rc.active_framebuffer_id = 0;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void clear_color_buffer(float r, float g, float b, float a)
 {
     glClearColor(r, g, b, a);
@@ -199,6 +310,7 @@ void clear_depth_buffer(float z)
 
 void draw(VertexBuffer &vb, int offset, int count)
 {
+    glBindVertexArray((uintptr_t)vb.handle);
     int mode = 0;
     if (g_rc.render_pass->primitive_type == PRIMITIVE_TRIANGLES)
         mode = GL_TRIANGLES;
@@ -228,6 +340,7 @@ static int get_type_alignement(ConstantBufferElement e)
 
 static int get_type_size(ConstantBufferElement e)
 {
+    return get_constant_buffer_element_size(e.type);
     int elem_size = 0;
 
     if (e.type == CONSTANT_BUFFER_ELEMENT_MAT4)
@@ -246,9 +359,11 @@ ConstantBuffer create_constant_buffer(int index, ConstantBufferElement *elements
 
     for (int i = 0; i < element_count; i++) {
         result.elements[i] = elements[i];
+ 
         result.size = align_to(result.size, get_type_alignement(elements[i]))
             + get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
     }
+    //exit(0);
 
     uint32_t ubo;
     glGenBuffers(1, &ubo);
@@ -286,8 +401,17 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
             cstruct_offset += get_constant_buffer_element_size(e.type);
         }
     }
+    //memcpy(dest, data, sizeof(Constants));
 
     glBindBuffer(GL_UNIFORM_BUFFER, (uintptr_t)buffer.handle);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
     end_temp_memory();
+}
+
+
+
+void bind_texture(int index, Texture texture)
+{
+    glActiveTexture(GL_TEXTURE0 + index);
+    glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.handle);
 }

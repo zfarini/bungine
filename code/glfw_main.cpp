@@ -21,14 +21,34 @@
 #undef min
 #undef max
 
+int g_window_width, g_window_height;
+
 #include "common.h"
 #include "arena.h"
 #include "utils.h"
 #include "math.h"
 #include "platform.h"
+#define ENABLE_SRGB
 #include "renderer.h"
 
 RenderContext g_rc;
+struct Constants
+{
+	mat4 view;
+	mat4 projection;
+	mat4 model;
+	mat4 light_transform;
+	mat4 bones[96];
+
+	v3 camera_p;
+	v3 player_p;
+	float diffuse_factor;
+
+	float specular_factor;
+	float specular_exponent_factor;
+	int skinned;
+	int has_normal_map;
+};
 
 #include "renderer_opengl.cpp"
 #include "renderer.cpp"
@@ -43,6 +63,41 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
+v2 last_mouse_p;
+
+void update_game_input(GLFWwindow *window, GameInput &input, int frame)
+{
+	int button_map[BUTTON_COUNT] = {};
+
+	button_map[BUTTON_CAMERA_FORWARD] 	= GLFW_KEY_W;
+	button_map[BUTTON_CAMERA_BACKWARD] 	= GLFW_KEY_S;
+	button_map[BUTTON_CAMERA_LEFT] 		= GLFW_KEY_A;
+	button_map[BUTTON_CAMERA_RIGHT]  	= GLFW_KEY_D;
+	button_map[BUTTON_CAMERA_UP] 		= GLFW_KEY_Q;
+	button_map[BUTTON_CAMERA_DOWN] 		= GLFW_KEY_E;
+	button_map[BUTTON_PLAYER_FORWARD] 	= GLFW_KEY_F;
+	button_map[BUTTON_PLAYER_BACKWARD] 	= GLFW_KEY_G;
+	button_map[BUTTON_PLAYER_JUMP]		= GLFW_KEY_SPACE;
+	button_map[BUTTON_LEFT_SHIFT]		= GLFW_KEY_LEFT_SHIFT;
+
+	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
+		button_map[i] = GLFW_KEY_F1 + (i - BUTTON_F1);
+
+	for (int i = 0; i < BUTTON_COUNT; i++) {
+		input.buttons[i].was_down = input.buttons[i].is_down;
+		input.buttons[i].is_down = glfwGetKey(window, button_map[i]) == GLFW_PRESS;
+	}
+
+	input.buttons[BUTTON_MOUSE_LEFT].is_down = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+	input.buttons[BUTTON_MOUSE_RIGHT].is_down = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+
+	double mouse_x, mouse_y;
+	glfwGetCursorPos(window, &mouse_x, &mouse_y);
+	if (frame > 3)
+		input.mouse_dp = V2(mouse_x, mouse_y) - last_mouse_p;
+	last_mouse_p = V2((float)mouse_x, (float)mouse_y);
+}
+
 int main()
 {
 	if (!glfwInit())
@@ -53,6 +108,9 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_SAMPLES, 4);
+	#ifdef ENABLE_SRGB
+	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+	#endif
 
 	GLFWwindow *window = glfwCreateWindow(600, 400, "game", 0, 0);
 	if (!window)
@@ -77,13 +135,15 @@ int main()
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    usize memory_size = Megabyte(128);
+    usize memory_size = GigaByte(1);
     Arena memory = make_arena(malloc(memory_size), memory_size);
 
-	usize temp_arena_size = Megabyte(16);
+	usize temp_arena_size = Megabyte(128);
 	g_temp_arena.arena = make_arena(arena_alloc(&memory, temp_arena_size), temp_arena_size);
 
-	init_render_context(g_rc);
+	init_render_context(&memory, g_rc);
+	Game *game = (Game *)arena_alloc(&memory, sizeof(*game));
+
 
     Shader vertex_shader = load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX);
 	Shader fragment_shader = load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT);
@@ -103,20 +163,27 @@ int main()
 		{CONSTANT_BUFFER_ELEMENT_MAT4},
 	};
 
-	// ConstantBuffer constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
+	GameInput game_input = {};
 
+	// ConstantBuffer constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	
+	int frame = 0;
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			break ;
+		update_game_input(window, game_input, frame);
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		clear_color_buffer(0.2f, 0.5f, 0.7f, 1.f);
-		clear_depth_buffer(1.f);
-		//game_update_and_render(game, game_input, dt, window);
+		glfwGetFramebufferSize(window, &g_window_width, &g_window_height);
+		game_update_and_render(*game, &memory, game_input, 1.f / 60);
         // begin_render_pass(render_pass);
 		// {
 		// 	Constants constants = {};
@@ -131,6 +198,7 @@ int main()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
+		frame++;
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();

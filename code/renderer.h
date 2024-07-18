@@ -2,6 +2,7 @@ struct Texture
 {
 	void *handle;
 	String name;
+	b32 valid;
 };
 
 
@@ -48,6 +49,11 @@ struct VertexBuffer
 	void *handle;
 };
 
+struct FrameBuffer
+{
+	void *handle;
+};
+
 struct RenderPass
 {
 	int primitive_type;
@@ -64,9 +70,10 @@ struct RenderContext
     Array<Texture> loaded_textures;
 
     RenderPass *render_pass;
+	Texture white_texture;
+
+	uintptr_t active_framebuffer_id;
 };
-
-
 
 usize get_input_element_size(int type)
 {
