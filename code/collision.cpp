@@ -328,13 +328,13 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 		
 		shapes.push(shape);
 	}
-	{
-		CollisionShape shape = {};
-		shape.type = COLLISION_SHAPE_ELLIPSOID;
-		shape.ellipsoid_radius = e.shape.ellipsoid_radius;
-		shape.offset = V3(0, 3, 1);
-		shapes.push(shape);
-	}
+	// {
+	// 	CollisionShape shape = {};
+	// 	shape.type = COLLISION_SHAPE_ELLIPSOID;
+	// 	shape.ellipsoid_radius = e.shape.ellipsoid_radius;
+	// 	shape.offset = V3(0, 3, 1);
+	// 	shapes.push(shape);
+	// }
 
 	v3 old_p = e.position;
 	move_entity(game, e, V3(delta_p.x, delta_p.y, 0), shapes);

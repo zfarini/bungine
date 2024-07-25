@@ -77,6 +77,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id,
 
 void init_render_context(Arena *arena, RenderContext &rc)
 {
+    #ifndef _WIN32
     {
 		int flags;
 		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -89,13 +90,18 @@ void init_render_context(Arena *arena, RenderContext &rc)
 			                     nullptr, GL_TRUE);
 		}
 	}
+    #endif
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
     #ifdef ENABLE_SRGB
     glEnable(GL_FRAMEBUFFER_SRGB);
     #endif
+    glEnable(GL_MULTISAMPLE);
+    glLineWidth(1.5);
+
 
     rc.loaded_textures = make_array_max<Texture>(arena, 256);
+    rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
 
     uint32_t white_color = 0xffffffff;
     rc.white_texture.handle = create_texture(&white_color, 1, 1, true);
@@ -195,7 +201,8 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
     uint32_t vbo;
     glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    if (data)
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
     assert(input_element_count > 0);
 
     for (int i = 0; i < input_element_count; i++) {
@@ -214,7 +221,15 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
 
     VertexBuffer result = {};
     result.handle = (void *)vao;
+    result.handle2 = (void *)vbo;
     return result;
+}
+
+void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
+{
+    glBindVertexArray((uintptr_t)vb.handle);
+    glBindBuffer(GL_ARRAY_BUFFER, (uintptr_t)vb.handle2);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 void begin_render_pass(RenderPass &rp)
@@ -408,10 +423,29 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
     end_temp_memory();
 }
 
+void bind_constant_buffer(ConstantBuffer &buffer)
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, (uintptr_t)buffer.handle);
+}
 
 
 void bind_texture(int index, Texture texture)
 {
     glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.handle);
+}
+
+void get_window_framebuffer_dimension(int &width, int &height)
+{
+    glfwGetFramebufferSize(g_rc.window, &width, &height);
+}
+
+void begin_render_frame()
+{
+    g_rc.debug_lines.count = 0;
+}
+
+void end_render_frame()
+{
+
 }

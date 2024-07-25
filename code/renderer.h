@@ -47,6 +47,7 @@ enum PrimitiveType
 struct VertexBuffer
 {
 	void *handle;
+	void *handle2;
 };
 
 struct FrameBuffer
@@ -72,7 +73,11 @@ struct RenderContext
     RenderPass *render_pass;
 	Texture white_texture;
 
+	Array<v3> debug_lines;
+
 	uintptr_t active_framebuffer_id;
+	// TODO:!!!
+	GLFWwindow *window;
 };
 
 usize get_input_element_size(int type)

@@ -21,8 +21,6 @@
 #undef min
 #undef max
 
-int g_window_width, g_window_height;
-
 #include "common.h"
 #include "arena.h"
 #include "utils.h"
@@ -49,6 +47,7 @@ struct Constants
 	int skinned;
 	int has_normal_map;
 };
+bool g_hide_mouse = true;
 
 #include "renderer_opengl.cpp"
 #include "renderer.cpp"
@@ -96,6 +95,15 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	if (frame > 3)
 		input.mouse_dp = V2(mouse_x, mouse_y) - last_mouse_p;
 	last_mouse_p = V2((float)mouse_x, (float)mouse_y);
+	if (IsDownFirstTime(input, BUTTON_F1)) {
+		if (g_hide_mouse) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		g_hide_mouse = !g_hide_mouse;
+	}
 }
 
 int main()
@@ -107,7 +115,8 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
 	#ifdef ENABLE_SRGB
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 	#endif
@@ -142,6 +151,7 @@ int main()
 	g_temp_arena.arena = make_arena(arena_alloc(&memory, temp_arena_size), temp_arena_size);
 
 	init_render_context(&memory, g_rc);
+	g_rc.window = window;
 	Game *game = (Game *)arena_alloc(&memory, sizeof(*game));
 
 
@@ -167,7 +177,7 @@ int main()
 
 	// ConstantBuffer constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	
+
 	int frame = 0;
 
 	while (!glfwWindowShouldClose(window))
@@ -182,7 +192,6 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		glfwGetFramebufferSize(window, &g_window_width, &g_window_height);
 		game_update_and_render(*game, &memory, game_input, 1.f / 60);
         // begin_render_pass(render_pass);
 		// {

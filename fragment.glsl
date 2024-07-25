@@ -63,8 +63,8 @@ void main()
 	else
 		normal = normalize((normal_transform * vec4(inormal, 0)).xyz);
 
-    //outColor = vec4(normal * 0.5f + 0.5f, 1);
-    //return ;
+    // outColor = vec4(normal * 0.5f + 0.5f, 1);
+    // return ;
 
     vec3 color = texture(diffuse_tex, uv).rgb;
 	
@@ -105,11 +105,11 @@ void main()
     //return ;
 #if 1
 	vec3 light_pos[2] = {
-		player_p,
-		vec3(0, 2, 4)
+		vec3(1, 2, 2),
+		vec3(-1, 2, 2)
 	};
 	vec3 light_color[2] = {
-		vec3(0.8, 0.2, 0.3),
+		2*vec3(0.8, 0.2, 0.3),
 		vec3(0.1, 0.9, 0.4)
 	};
 	for (int i = 0; i < 2; i++) {
