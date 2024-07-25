@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stb_image.h>
 #include <ufbx.h>
 #include <glad/glad.h>
@@ -122,7 +123,7 @@ int main()
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 	#endif
 
-	GLFWwindow *window = glfwCreateWindow(600, 400, "game", 0, 0);
+	GLFWwindow *window = glfwCreateWindow(1280, 720, "game", 0, 0);
 	if (!window)
 		assert(0);
 

@@ -9,6 +9,8 @@
 #elif RENDERER_OPENGL
 #include "imgui/imgui_impl_opengl3.cpp"
 #include "imgui/imgui_impl_glfw.cpp"
+#else
+#error "??"
 #endif
 
 #include "imgui/imgui.cpp"

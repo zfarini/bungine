@@ -317,11 +317,13 @@ void update_player(Game &game, GameInput &input, float dt)
 		//if (!player.on_ground)
        	a += -40 * player_up;
         a.xy = a.xy * (player.run ? 50 : 30);
+		bool jumped = false;
 		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
         {
            // a = a * 2;
             a += 200 * player_up;
 			a.xy = {};
+			jumped = true;
 		}
 		//if (!player.on_ground)
 		//	a.xy *= 0.7f;
@@ -348,10 +350,20 @@ void update_player(Game &game, GameInput &input, float dt)
         }
 		{
 			// TODO: !!! jump animation already has translation up?
+			// TODO: there is a problem if we hold space
 			Animation *next_anim = 0;
 
-			if (!player.on_ground)
-				next_anim = &game.animations[ANIMATION_JUMP];
+			if (!player.curr_anim)
+				player.curr_anim = &game.animations[ANIMATION_GUN_IDLE];
+
+			if (!player.on_ground) {
+				if (player.curr_anim != &game.animations[ANIMATION_JUMP]
+					&& player.next_anim != &game.animations[ANIMATION_JUMP]
+					&& !jumped)
+					next_anim = player.next_anim;
+				else
+					next_anim = &game.animations[ANIMATION_JUMP];
+			}
 			else if (player.shooting)
 				next_anim = &game.animations[ANIMATION_SHOOT];
 			else if (player.run)
@@ -362,10 +374,11 @@ void update_player(Game &game, GameInput &input, float dt)
 				next_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
 			else 
 				next_anim = &game.animations[ANIMATION_GUN_IDLE];
-			
 			#if 1
 			if (!player.curr_anim)
 				player.curr_anim = next_anim;
+			else if (!next_anim)
+				;
 			else if (!player.next_anim) {
 				if (player.curr_anim != next_anim) {
 					player.next_anim = next_anim;
@@ -375,14 +388,14 @@ void update_player(Game &game, GameInput &input, float dt)
 			else if (next_anim == player.next_anim)
 				;
 			else if (next_anim != player.curr_anim) {
-				//printf("MULTIPLE ANIMATION BUFFERED (skipping to next_anim) %d\n", game.frame);
-				player.curr_anim = player.next_anim;
-				player.next_anim = next_anim;
-				player.anim_time = player.blend_time;
-				player.blend_time = 0;
+				// player.curr_anim = player.next_anim;
+				// player.next_anim = next_anim;
+				// player.anim_time = player.blend_time;
+				// player.blend_time = 0;
 			}
 			else {
-				player.next_anim = 0;
+				//printf("BAD 2\n");
+				//player.next_anim = 0;
 			}
 			#else
 

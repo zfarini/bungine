@@ -153,9 +153,7 @@ String concact_string(Arena *arena, String a, String b)
 }
 #define str_format(str) (int)str.count, str.data
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include <cstdio>
 
 String load_entire_file(Arena *arena, String filename)
 {
@@ -164,21 +162,21 @@ String load_entire_file(Arena *arena, String filename)
 		filename.data[filename.count] == 0);
 	String result = {};
 
-	int fd = open(filename.data, O_RDONLY);
-	if (fd < 0) {
+	FILE *file = fopen(filename.data, "rb");
+	if (!file) {
 		printf("failed to open file %.*s\n", str_format(filename));
 		assert(0);
 		return result;
 	}
-	usize size = lseek(fd, 0, SEEK_END);
-
-	lseek(fd, 0, SEEK_SET);
+	fseek(file, 0, SEEK_END);
+	usize size = ftell(file);
+	fseek(file, 0, SEEK_SET);
 
 	result = make_string(arena, size);
 
 	while (size > 0)
 	{
-		size_t bytes_read = read(fd, result.data, size);	
+		size_t bytes_read = fread(result.data, 1, size, file);	
 		if (bytes_read <= 0)
 			assert(0);
 		size -= bytes_read;

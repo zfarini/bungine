@@ -83,23 +83,34 @@ void main()
 		//p.y *= -1;
 		p.xyz = 0.5f * (p.xyz + 1);
 	
-		float z = texture(shadow_map_tex, p.xy).r;
+		//float z = texture(shadow_map_tex, p.xy).r;
 
        
 		//float z = shadow_map[p.xy];
 
 		// TODO: maybe use a sampler with a black border
 		// or check some of the other sampling functions
-		if (p.z < z + 0.005
-		&& p.x >= 0 && p.x < 1 &&
-		p.y >= 0 && p.y < 1)
+		// if (p.z < z + 0.005
+		// && p.x >= 0 && p.x < 1 &&
+		// p.y >= 0 && p.y < 1)
 		{
+			vec2 texelSize = 1.0 / textureSize(shadow_map_tex, 0);
+
+			float shadow = 0;
+			float bias = 0.001;
+			for (int dx = -1; dx <= 1; dx++)
+			for (int dy = -1; dy <= 1; dy++)
+			{
+				vec2 offset = vec2(dx, dy) * texelSize;
+			 	shadow += (p.z > texture(shadow_map_tex, p.xy + offset).x + bias) ? 0 : 1;
+			}
+			shadow /= 9;
+
 			float diffuse = max(0, dot(to_light, normal));
 		
 			vec3 specular = specular_color * pow(max(0.f, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
-			result += diffuse_factor*color * diffuse  + specular_factor*specular;
+			result += shadow * 0.3f * (diffuse_factor*color * diffuse  + specular_factor*specular);
 		}
-        result *= 0.3f;
 	}
 
     result += 0.2f * color;
