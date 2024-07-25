@@ -38,6 +38,7 @@ Entity *make_entity(Game &game, int type, Scene *scene, v3 position, CollisionSh
 	e.scene = scene;
 	e.scene_transform = scene_transform;
 	e.shape = shape;
+	e.color = V3(1);
 	game.entities.push(e);
 	return &game.entities[game.entities.count - 1];
 }
@@ -70,7 +71,7 @@ void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim
 				}
 			}
 			if (index != -1) 
-				anim_bones[i].transform = get_animated_node_transform(*anim, anim->nodes[index], anim_time);
+				anim_bones[i].transform = anim->nodes[index].transform;//get_animated_node_transform(*anim, anim->nodes[index], anim_time);
 		}
 	}
 
@@ -107,7 +108,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 			}
 		}
 		if (index != -1) {
-			anim_bones[i].transform = get_animated_node_transform(*anim, anim->nodes[index], anim_time);
+			anim_bones[i].transform = anim->nodes[index].transform;//get_animated_node_transform(*anim, anim->nodes[index], anim_time);
 		}
 	}
 
@@ -120,7 +121,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 }
 
 void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
-	Animation *anim, float anim_time)
+	Animation *anim, float anim_time, v3 color)
 {
 	if (node->skip_render)
 		return ;
@@ -129,7 +130,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 	if (anim) {
 		for (usize j = 0; j < anim->nodes.count; j++) {
 			if (strings_equal(anim->nodes[j].name, node->name)) {
-				local_transform = get_animated_node_transform(*anim, anim->nodes[j], anim_time);
+				local_transform = anim->nodes[j].transform;//get_animated_node_transform(*anim, anim->nodes[j], anim_time);
 				break ;
 			}
 		}
@@ -145,6 +146,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 		constants.camera_p = camera.position;
 		constants.light_transform = game.shadow_map.projection * game.shadow_map.view;
 		constants.player_p = game.entities[0].position;
+		constants.color = color;
 
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
@@ -178,14 +180,14 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 	}
 
 	for (usize i = 0; i < node->childs.count; i++)
-		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time);
+		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time)
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color)
 {
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
-	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time);
+	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
 }
 
 void render_entities(Game &game, Camera camera)
@@ -196,8 +198,56 @@ void render_entities(Game &game, Camera camera)
 		Entity &e = game.entities[i];
 		if (!e.scene)
 			continue ;
+		Arena *temp = begin_temp_memory();
+		Animation *final_anim = 0;
+		Animation anim = {};	
+		if (!i) {
+			int max_nodes_count = e.curr_anim->nodes.count;
+			if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
+				max_nodes_count = e.next_anim->nodes.count;
+
+			anim.nodes = make_array<NodeAnimation>(temp, max_nodes_count);
+
+			float blend_duration = e.next_anim ? e.next_anim->duration : 0;
+			if (e.blend_time > blend_duration && e.next_anim) {
+				e.curr_anim = e.next_anim;
+				e.next_anim = 0;
+			}
+
+			if (!e.next_anim) {
+				assert(e.curr_anim);
+				for (int i = 0; i < e.curr_anim->nodes.count; i++) {
+					anim.nodes[i].name = e.curr_anim->nodes[i].name;
+					anim.nodes[i].transform = get_animated_node_transform(*e.curr_anim, 
+						e.curr_anim->nodes[i], fmod(e.anim_time, e.curr_anim->duration));
+				}
+			} else {
+				float t1 = e.anim_time;
+				float t2 = e.blend_time;
+				float t3 = (e.blend_time) / blend_duration;
+
+				for (int i = 0; i < e.curr_anim->nodes.count; i++) {
+					quat q1, q2;
+					v3 p1, s1, p2, s2;
+
+					get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[i], t1, p1, s1, q1);
+					get_animated_node_transform(*e.next_anim, e.next_anim->nodes[i], t2, p2, s2, q2);
+
+					v3 p = lerp(p1, p2, t3);
+					quat q = quat_lerp(q1, q2, t3);
+					v3 s = lerp(s1, s2, t3);
+
+					anim.nodes[i].transform = translate(p) * quat_to_mat(q) * scale(s);
+				}
+			}
+			final_anim = &anim;
+		}
+		else
+			assert(!final_anim);
+
 		mat4 transform = translate(e.position) * zrotation(e.rotation.z);
-		render_scene(game, *e.scene, camera, transform * e.scene_transform, e.animation, e.anim_time);
+		render_scene(game, *e.scene, camera, transform * e.scene_transform, final_anim, 0, e.color);
+
 		if (game.debug_collision) {
 			v3 d = e.position;
 			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
@@ -214,6 +264,7 @@ void render_entities(Game &game, Camera camera)
 				push_ellipsoid_outline(d, e.shape.ellipsoid_radius, V3(1, 0, 0));
 			}
 		}
+		end_temp_memory();
 	}
 }
 
@@ -291,28 +342,44 @@ void update_player(Game &game, GameInput &input, float dt)
         }
 		{
 			// TODO: !!! jump animation already has translation up?
-			Animation *new_anim;
+			Animation *next_anim = 0;
 
 			if (!player.on_ground)
-				new_anim = &game.animations[ANIMATION_JUMP];
+				next_anim = &game.animations[ANIMATION_JUMP];
 			else if (player.shooting)
-				new_anim = &game.animations[ANIMATION_SHOOT];
+				next_anim = &game.animations[ANIMATION_SHOOT];
 			else if (player.run)
-				new_anim = &game.animations[ANIMATION_RUN];
+				next_anim = &game.animations[ANIMATION_RUN];
 			else if (walk_backward)
-				new_anim = &game.animations[ANIMATION_BACKWARD_GUN_WALK];
+				next_anim = &game.animations[ANIMATION_BACKWARD_GUN_WALK];
 			else if (player.moved)
-				new_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
+				next_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
 			else 
-				new_anim = &game.animations[ANIMATION_GUN_IDLE];
-			if (player.animation != new_anim) {
-				player.anim_time = 0;
-				player.animation = new_anim;
-			}
-			else 
-				player.anim_time += dt;
+				next_anim = &game.animations[ANIMATION_GUN_IDLE];
+			
+			// if (!player.next_anim) {
+			// 	if (player.curr_anim != next_anim) {
+			// 		player.next_anim = next_anim;
+			// 		player.blend_time = 0;
+			// 	}
+			// }
+			// else if (next_anim != player.curr_anim) {
+			// 	printf("BAD %d\n", game.frame);
+			// 	player.curr_anim = player.next_anim;
+			// 	player.next_anim = next_anim;
+			// 	player.blend_time = 0;
+			// }
+			// else {
+			// 	printf("BAD2 %d\n", game.frame);
+			// 	player.next_anim = 0;
+			// }
+
+			// if (!player.curr_anim)
+				player.curr_anim = next_anim;
+
+			player.anim_time += dt;
+			player.blend_time += dt;
 		}
-		//push_cylinder(game.renderer, player.position, 0.3, 1, V3(1, 0, 0));
 	}
 }
 
@@ -555,6 +622,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 			{CONSTANT_BUFFER_ELEMENT_MAT4, 96},
 			{CONSTANT_BUFFER_ELEMENT_VEC3},
 			{CONSTANT_BUFFER_ELEMENT_VEC3},
+			{CONSTANT_BUFFER_ELEMENT_VEC3},
 			{CONSTANT_BUFFER_ELEMENT_FLOAT},
 			{CONSTANT_BUFFER_ELEMENT_FLOAT},
 			{CONSTANT_BUFFER_ELEMENT_FLOAT},
@@ -584,7 +652,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
 		//player->scene_transform =  scale(player->shape.ellipsoid_radius);
 		player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
-
+		player->color = V3(0.2, 0.8, 0.8);
 		
 		//Entity *sh = make_entity(game, EntityType_Player, &game.sphere_asset, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
 		
@@ -607,13 +675,13 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
 		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
 
-		{
-			//@HACK
-			auto &jump = game.animations[ANIMATION_JUMP];
-			auto &node = jump.nodes[0];
-			for (int i = 0; i < node.position.count; i++)
-				node.position[i].y -= 50;
-		}
+		// {
+		// 	//@HACK
+		// 	auto &jump = game.animations[ANIMATION_JUMP];
+		// 	auto &node = jump.nodes[0];
+		// 	for (int i = 0; i < node.position.count; i++)
+		// 		node.position[i].y -= 50;
+		// }
 
 		Entity *boxes[] = {
         	make_entity(game, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),

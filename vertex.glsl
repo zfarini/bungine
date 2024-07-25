@@ -17,6 +17,7 @@ layout (std140, row_major, binding = 0) uniform Constants
 
 	vec3 camera_p;
 	vec3 player_p;
+	vec3 tintColor;
 	float diffuse_factor;
 	float specular_factor;
 	float specular_exponent_factor;

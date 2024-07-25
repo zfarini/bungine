@@ -84,7 +84,7 @@ Array<T> make_array(Arena *arena, usize count, const T *data = 0)
 	Array<T> result = make_array_max<T>(arena, count);
 
 	result.count = count;
-	if (data)
+	if (data && count)
 		memcpy(result.data, data, count * sizeof(T));
 	return result;
 }

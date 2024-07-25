@@ -40,6 +40,7 @@ struct Constants
 
 	v3 camera_p;
 	v3 player_p;
+	v3 color;
 	float diffuse_factor;
 
 	float specular_factor;

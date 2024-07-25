@@ -172,7 +172,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 		assert(umesh->skin_deformers.count == 1);
 		skin = umesh->skin_deformers.data[0];
 		assert(skin->skinning_method == UFBX_SKINNING_METHOD_LINEAR);
-		printf("%s -> bone count: %zd\n", unode->name.data, skin->clusters.count);
+		//printf("%s -> bone count: %zd\n", unode->name.data, skin->clusters.count);
 
 		mesh.bones = make_array<Bone>(arena, skin->clusters.count);
 		for (usize i = 0; i < mesh.bones.count; i++) {
@@ -182,7 +182,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 			mesh.bones[i].parent = -1;
 			mesh.bones[i].name = make_string(arena, cluster->bone_node->name.length,
 				cluster->bone_node->name.data);
-			printf("\tbone name: %.*s\n", str_format(mesh.bones[i].name));
+			//printf("\tbone name: %.*s\n", str_format(mesh.bones[i].name));
 			for (int j = 0; j < mesh.bones.count; j++) {
 				if (cluster->bone_node->parent == skin->clusters.data[j]->bone_node) {
 					mesh.bones[i].parent = j;
@@ -281,6 +281,28 @@ mat4 get_animated_node_transform(Animation &anim, NodeAnimation &node, float ani
 	return translate(position) * quat_to_mat(rotation) * scale(s);	
 }
 
+void get_animated_node_transform(Animation &anim, NodeAnimation &node, float anim_time,
+	v3 &position, v3 &s, quat &rotation)
+{
+	int frame = anim_time / anim.frametime;
+	if (frame >= anim.frame_count)
+		frame = anim.frame_count - 1;
+
+	int next_frame = frame + 1 == anim.frame_count ? frame : frame + 1;
+	float t = (anim_time - frame * anim.frametime) / anim.frametime;
+
+	position = node.const_position;
+	rotation = node.const_rotation;
+	s = node.const_scale;
+
+	if (node.position.count)
+		position = lerp(node.position[frame], node.position[next_frame], t);
+	if (node.rotation.count)
+		rotation = quat_lerp(node.rotation[frame], node.rotation[next_frame], t);
+	if (node.scale.count)
+		s = lerp(node.scale[frame], node.scale[next_frame], t);
+}
+
 Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stack)
 {
 	Arena *temp = begin_temp_memory();
@@ -307,7 +329,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 			continue ;
 		NodeAnimation node_anim = {};
 		node_anim.name = make_string(arena, (usize)node->name.length, (char *)node->name.data);
-		printf("\tanim node name: %.*s\n", str_format(node_anim.name));
+		//printf("\tanim node name: %.*s\n", str_format(node_anim.name));
 		b32 const_position = true;
 		b32 const_scale = true;
 		b32 const_rotation = true;

@@ -68,6 +68,8 @@ struct NodeAnimation
 	v3 const_position;
 	v3 const_scale;
 	quat const_rotation;
+	// TODO:!!! remove this
+	mat4 transform;
 };
 
 struct Animation

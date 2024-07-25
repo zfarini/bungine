@@ -38,6 +38,7 @@ struct Entity
 	v3 rotation;
 	v3 drotation;
 
+	v3 color;
 
 	b32 moved;
 	b32 run;
@@ -50,8 +51,14 @@ struct Entity
 	Scene *scene;
 	mat4 scene_transform;
 
-	Animation *animation;
+	//Animation *animation;
+
+	Animation *curr_anim;
+	Animation *next_anim;
 	float anim_time;
+	float blend_time;
+
+	Animation *animation;
 
 	float speed;
 	
@@ -98,7 +105,7 @@ struct Game
 	RenderPass debug_lines_render_pass;
 	VertexBuffer debug_lines_vertex_buffer;
 	ConstantBuffer debug_lines_constant_buffer;
-	
+
 
 	Scene ch43, sponza, cube_asset, sphere_asset;
 

@@ -10,6 +10,7 @@ layout (std140, row_major, binding = 0) uniform Constants
 
 	vec3 camera_p;
 	vec3 player_p;
+	vec3 tintColor;
 	float diffuse_factor;
 	float specular_factor;
 	float specular_exponent_factor;
@@ -66,7 +67,7 @@ void main()
     // outColor = vec4(normal * 0.5f + 0.5f, 1);
     // return ;
 
-    vec3 color = texture(diffuse_tex, uv).rgb;
+    vec3 color = tintColor * texture(diffuse_tex, uv).rgb;
 	
     float shininess_exponenet = max(0.001f, specular_exponent_factor * texture(specular_exponent_tex, uv).r);
     vec3 specular_color = texture(specular_tex, uv).rgb;
