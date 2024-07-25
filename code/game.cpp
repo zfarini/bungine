@@ -207,13 +207,16 @@ void render_entities(Game &game, Camera camera)
 				max_nodes_count = e.next_anim->nodes.count;
 
 			anim.nodes = make_array<NodeAnimation>(temp, max_nodes_count);
+			if (e.next_anim)
+				assert(e.curr_anim->nodes.count == e.next_anim->nodes.count);
 
-			float blend_duration = e.next_anim ? e.next_anim->duration : 0;
+			float blend_duration = e.next_anim ? e.next_anim->duration*0.2f : 0;
 			if (e.blend_time > blend_duration && e.next_anim) {
 				e.curr_anim = e.next_anim;
+				e.anim_time = e.blend_time;
 				e.next_anim = 0;
 			}
-
+			
 			if (!e.next_anim) {
 				assert(e.curr_anim);
 				for (int i = 0; i < e.curr_anim->nodes.count; i++) {
@@ -229,15 +232,18 @@ void render_entities(Game &game, Camera camera)
 				for (int i = 0; i < e.curr_anim->nodes.count; i++) {
 					quat q1, q2;
 					v3 p1, s1, p2, s2;
-
+					assert(strings_equal(e.curr_anim->nodes[i].name, e.next_anim->nodes[i].name));
 					get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[i], t1, p1, s1, q1);
 					get_animated_node_transform(*e.next_anim, e.next_anim->nodes[i], t2, p2, s2, q2);
 
+					anim.nodes[i].name = e.curr_anim->nodes[i].name;
+					//t3 = 1;
 					v3 p = lerp(p1, p2, t3);
 					quat q = quat_lerp(q1, q2, t3);
 					v3 s = lerp(s1, s2, t3);
 
 					anim.nodes[i].transform = translate(p) * quat_to_mat(q) * scale(s);
+
 				}
 			}
 			final_anim = &anim;
@@ -357,25 +363,34 @@ void update_player(Game &game, GameInput &input, float dt)
 			else 
 				next_anim = &game.animations[ANIMATION_GUN_IDLE];
 			
-			// if (!player.next_anim) {
-			// 	if (player.curr_anim != next_anim) {
-			// 		player.next_anim = next_anim;
-			// 		player.blend_time = 0;
-			// 	}
-			// }
-			// else if (next_anim != player.curr_anim) {
-			// 	printf("BAD %d\n", game.frame);
-			// 	player.curr_anim = player.next_anim;
-			// 	player.next_anim = next_anim;
-			// 	player.blend_time = 0;
-			// }
-			// else {
-			// 	printf("BAD2 %d\n", game.frame);
-			// 	player.next_anim = 0;
-			// }
-
-			// if (!player.curr_anim)
+			#if 1
+			if (!player.curr_anim)
 				player.curr_anim = next_anim;
+			else if (!player.next_anim) {
+				if (player.curr_anim != next_anim) {
+					player.next_anim = next_anim;
+					player.blend_time = 0;
+				}
+			}
+			else if (next_anim == player.next_anim)
+				;
+			else if (next_anim != player.curr_anim) {
+				//printf("MULTIPLE ANIMATION BUFFERED (skipping to next_anim) %d\n", game.frame);
+				player.curr_anim = player.next_anim;
+				player.next_anim = next_anim;
+				player.anim_time = player.blend_time;
+				player.blend_time = 0;
+			}
+			else {
+				player.next_anim = 0;
+			}
+			#else
+
+			if (next_anim != player.curr_anim) {
+				player.anim_time = 0;
+				player.curr_anim = next_anim;
+			}
+			#endif
 
 			player.anim_time += dt;
 			player.blend_time += dt;
