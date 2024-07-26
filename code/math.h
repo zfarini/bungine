@@ -246,6 +246,16 @@ v3 cross(v3 a, v3 b)
 	};
 }
 
+v3 min(v3 a, v3 b)
+{
+	return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
+}
+
+v3 max(v3 a, v3 b)
+{
+	return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
+}
+
 union v3i
 {
 	struct {

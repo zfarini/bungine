@@ -33,6 +33,68 @@ void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
 	push_line(p03, p13, color);
 }
 
+void push_box_outline(v3 center,
+	v3 x_axis, v3 y_axis, v3 z_axis, v3 color = V3(1))
+{
+	// v3 y_axis = normalize(cross(max - min, V3(0, 0, 1)));
+	// v3 x_axis = normalize(cross(y_axis, V3(0, 0, 1)));
+	// v3 z_axis = normalize(cross(x_axis, y_axis));
+
+	// v3 center = (min + max) * 0.5f;
+	// v3 radius = (max - min) * 0.5f;
+
+
+	// push_line(center, center + x_axis*fabsf(radius.x), V3(1, 0, 0));
+	// push_line(center, center + y_axis*fabsf(radius.y), V3(0, 1, 0));
+	// push_line(center, center + z_axis*fabsf(radius.z), V3(0, 0, 1));
+
+	v3 p[8];
+	int i = 0;
+	/*
+		-1 -1 -1
+		1, -1 -1
+		-1 1 -1
+		1 1 -1
+	*/
+	for (int dz = -1; dz <= 1; dz++) {
+		for (int dy = -1; dy <= 1; dy++) {
+			for (int dx = -1; dx <= 1; dx++) {
+				if (dx && dy && dz) {
+					p[i++] = center + x_axis * dx
+									+ y_axis * dy
+									+ z_axis * dz;
+				}
+			}
+		}
+	}
+
+	v3 p00 = p[0];
+	v3 p01 = p[1];
+	v3 p02 = p[3];
+	v3 p03 = p[2];
+
+	v3 p10 = p[4];
+	v3 p11 = p[5];
+	v3 p12 = p[7];
+	v3 p13 = p[6]; 
+
+
+	push_line(p00, p01, color);
+	push_line(p01, p02, color);
+	push_line(p02, p03, color);
+	push_line(p03, p00, color);
+
+	push_line(p10, p11, color);
+	push_line(p11, p12, color);
+	push_line(p12, p13, color);
+	push_line(p13, p10, color);
+
+	push_line(p00, p10, color);
+	push_line(p01, p11, color);
+	push_line(p02, p12, color);
+	push_line(p03, p13, color);
+}
+
 void push_triangle_outline(v3 p0, v3 p1, v3 p2, v3 color = V3(1))
 {
 	push_line(p0, p1, color);

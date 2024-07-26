@@ -56,6 +56,9 @@ struct Mesh
 	Array<MeshPart> parts;
 	VertexBuffer vertex_buffer;
 	Array<Bone> bones;
+	v3 box_min;
+	v3 box_max;
+	mat4 transform;
 };
 
 struct NodeAnimation

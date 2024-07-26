@@ -27,6 +27,7 @@ struct GameInput
 {
 	GameButton buttons[BUTTON_COUNT];
 	v2 mouse_dp;
+	v2 mouse_p;
 	//v2 last_mouse_p;
 };
 

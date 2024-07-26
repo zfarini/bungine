@@ -99,6 +99,7 @@ void init_render_context(Arena *arena, RenderContext &rc)
     glEnable(GL_MULTISAMPLE);
     glLineWidth(1.5);
 
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     rc.loaded_textures = make_array_max<Texture>(arena, 256);
     rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
@@ -115,7 +116,7 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
     Arena *temp = begin_temp_memory();
 
     String content = load_entire_file(temp, filename);
-    int gl_type;
+    int gl_type = 0;
     if (type == SHADER_TYPE_VERTEX)
         gl_type = GL_VERTEX_SHADER;
     else if (type == SHADER_TYPE_FRAGMENT)
@@ -206,7 +207,7 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
     assert(input_element_count > 0);
 
     for (int i = 0; i < input_element_count; i++) {
-        int type;
+        int type = 0;
          if (input_elements[i].type == INPUT_ELEMENT_FLOAT)
             type = GL_FLOAT;
         else if (input_elements[i].type == INPUT_ELEMENT_SIGNED_INT)
@@ -215,7 +216,7 @@ VertexBuffer create_vertex_buffer(usize size, void *data,
             assert(0);
 
         glVertexAttribPointer(i, input_elements[i].count,
-            type, GL_FALSE, vertex_size, (void *)input_elements[i].offset);
+            type, GL_FALSE, (GLsizei) vertex_size, (void *)input_elements[i].offset);
         glEnableVertexAttribArray(i);
     }
 
@@ -265,9 +266,9 @@ Texture create_depth_texture(int width, int height)
 
 void bind_frame_buffer(FrameBuffer &framebuffer)
 {
-    if (g_rc.active_framebuffer_id != (intptr_t)framebuffer.handle) {
-        glBindFramebuffer(GL_FRAMEBUFFER, (intptr_t)framebuffer.handle);
-        g_rc.active_framebuffer_id = (intptr_t)framebuffer.handle;
+    if (g_rc.active_framebuffer_id != (uintptr_t)framebuffer.handle) {
+        glBindFramebuffer(GL_FRAMEBUFFER, (uintptr_t)framebuffer.handle);
+        g_rc.active_framebuffer_id = (uintptr_t)framebuffer.handle;
     }
 }
 
@@ -375,7 +376,7 @@ ConstantBuffer create_constant_buffer(int index, ConstantBufferElement *elements
     for (int i = 0; i < element_count; i++) {
         result.elements[i] = elements[i];
  
-        result.size = align_to(result.size, get_type_alignement(elements[i]))
+        result.size = align_to((int)result.size, get_type_alignement(elements[i]))
             + get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
     }
     //exit(0);

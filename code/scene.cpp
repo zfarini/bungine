@@ -221,6 +221,12 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 
 		part.vertices_count = vertices.count - part.offset;
 	}
+	mesh.box_min = V3(FLT_MAX);
+	mesh.box_max = V3(FLT_MIN);
+	for (usize i = 0; i < vertices.count; i++) {
+		mesh.box_min = min(mesh.box_min, vertices[i].position);
+		mesh.box_max = max(mesh.box_max, vertices[i].position);
+	}
 
 	mesh.vertex_buffer = create_vertex_buffer(vertices.count * sizeof(Vertex), vertices.data,
 			sizeof(Vertex), g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
@@ -382,6 +388,15 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 	return anim;
 }
 
+void compute_meshes_transform(Scene &scene, SceneNode *node, mat4 transform)
+{
+	transform = transform * node->local_transform;
+	if (node->mesh)
+		node->mesh->transform = transform * node->geometry_transform;
+	for (usize i = 0; i < node->childs.count; i++)
+		compute_meshes_transform(scene, node->childs[i], transform);
+}
+
 Scene load_scene(Arena *arena, const char *filename)
 {
 	Arena *temp = begin_temp_memory();
@@ -466,6 +481,8 @@ Scene load_scene(Arena *arena, const char *filename)
 		if (!const_anim)
 			scene.animations.push(anim);
 	}
+
+	compute_meshes_transform(scene, scene.root, identity());
 
 	end_temp_memory();
 	return scene;

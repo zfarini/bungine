@@ -249,7 +249,7 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 	return info;
 }
 
-CollisionInfo move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionShape> shapes)
+CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionShape> shapes)
 {
 	CollisionInfo first_hit = {};
 
@@ -309,16 +309,16 @@ CollisionInfo move_entity(Game &game, Entity &e, v3 delta_p, Array<CollisionShap
 	return first_hit;
 }
 
-void move_entity(Game &game, Entity &e, v3 delta_p)
+void move_entity(World &world, Entity &e, v3 delta_p)
 {
 	assert(e.shape.type == COLLISION_SHAPE_ELLIPSOID);
 
 	Arena *temp = begin_temp_memory();
 
-	Array<CollisionShape> shapes = make_array_max<CollisionShape>(temp, game.entities.count + 64);
+	Array<CollisionShape> shapes = make_array_max<CollisionShape>(temp, world.entities.count + 64);
 
-	for (int i = 0; i < game.entities.count; i++) {
-		Entity &test = game.entities[i];
+	for (int i = 0; i < world.entities.count; i++) {
+		Entity &test = world.entities[i];
 
 		if (test.id == e.id)
 			continue ;
@@ -337,11 +337,11 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 	// }
 
 	v3 old_p = e.position;
-	move_entity(game, e, V3(delta_p.x, delta_p.y, 0), shapes);
+	move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
 	int itr = 1 + roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
 	for (int i = 0; i < itr; i++)
-		move_entity(game, e, V3(0, 0, delta_p.z / itr), shapes);
+		move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 	
 	if (fabsf(e.position.x - old_p.x) < 1e-7)
 		e.dp.x = 0;
@@ -353,7 +353,7 @@ void move_entity(Game &game, Entity &e, v3 delta_p)
 
 	v3 save_p = e.position;
 	// try to move down to find the ground of the entity
-	CollisionInfo collision = move_entity(game, e, V3(0, 0, -1), shapes);
+	CollisionInfo collision = move_entity(world, e, V3(0, 0, -1), shapes);
 	e.position = save_p;
 
 	// TODO: this could be negative (imagine a sloped wall and I'm sliding its not necesarry that the bottom

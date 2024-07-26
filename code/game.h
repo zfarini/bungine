@@ -29,9 +29,11 @@ struct CollisionShape
 	v3 offset;
 };
 
+typedef usize entity_id;
+
 struct Entity
 {
-	int id;
+	entity_id id;
 	int type;
 	v3 position; // world position
 	v3 dp;
@@ -90,46 +92,59 @@ struct Camera
 	v3 position;
 	mat4 view;
 	mat4 projection;
+
+	float znear, zfar, width, height;
+	v3 forward, right, up;
+};
+
+
+// TODO: replace this
+#include <unordered_map>
+
+struct World
+{
+	Arena arena;
+	Array<Entity> entities;
+
+	std::unordered_map<entity_id, usize> entities_id_map;
+
+	entity_id next_entity_id;
+
+	v3 camera_p;
+	v3 camera_rotation;
+	v3 last_camera_free_p;
+	v3 free_camera_p;
+
+	entity_id editor_selected_entity;
+	entity_id player_id;
 };
 
 struct Game
 {
-	ShadowMap shadow_map;
+	b32 is_initialized;
 
-	v3 camera_p;
-	v3 camera_rotation;
+	World *world;
+
+	ShadowMap shadow_map;
 
 	RenderPass mesh_render_pass;
 	RenderPass shadow_map_render_pass;
+	ConstantBuffer constant_buffer;
 
 	RenderPass debug_lines_render_pass;
 	VertexBuffer debug_lines_vertex_buffer;
 	ConstantBuffer debug_lines_constant_buffer;
 
-
-	Scene ch43, sponza, cube_asset, sphere_asset;
-
-	Array<Entity> entities;
-
 	Arena asset_arena;
-	b32 is_initialized;
-	int frame;
-
-	Animation test_anim;
-
-	float time;
-
-	b32 camera_free_mode;
-	bool debug_collision;
-	v3 last_camera_free_p;
-
-	v3 free_camera_p;
-
-	float rot;
+	Scene ch43, sponza, cube_asset, sphere_asset;
 
 	Animation animations[ANIMATION_COUNT];
 
-	ConstantBuffer constant_buffer;
+	b32 in_editor;
+	bool debug_collision;
+
+	int frame;
+	float time;
 };
 
 #endif

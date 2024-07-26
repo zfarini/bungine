@@ -49,7 +49,6 @@ struct Constants
 	int skinned;
 	int has_normal_map;
 };
-bool g_hide_mouse = true;
 
 #include "renderer_opengl.cpp"
 #include "renderer.cpp"
@@ -66,7 +65,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 
 v2 last_mouse_p;
 
-void update_game_input(GLFWwindow *window, GameInput &input, int frame)
+void update_game_input(GLFWwindow *window, Game &game, GameInput &input, int frame)
 {
 	int button_map[BUTTON_COUNT] = {};
 
@@ -97,15 +96,12 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	if (frame > 3)
 		input.mouse_dp = V2(mouse_x, mouse_y) - last_mouse_p;
 	last_mouse_p = V2((float)mouse_x, (float)mouse_y);
-	if (IsDownFirstTime(input, BUTTON_F1)) {
-		if (g_hide_mouse) {
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-		else
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (game.in_editor)
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-		g_hide_mouse = !g_hide_mouse;
-	}
+	input.mouse_p = V2(mouse_x, mouse_y);
 }
 
 int main()
@@ -188,7 +184,7 @@ int main()
 		
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			break ;
-		update_game_input(window, game_input, frame);
+		update_game_input(window, *game, game_input, frame);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
