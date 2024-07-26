@@ -26,7 +26,7 @@ struct CollisionShape
 	v3 ellipsoid_radius;
 	// TODO: both of these are bad
 	v3 box_radius;
-	v3 offset;
+	mat4 transform;
 };
 
 typedef usize entity_id;
@@ -37,8 +37,9 @@ struct Entity
 	int type;
 	v3 position; // world position
 	v3 dp;
+
 	v3 rotation;
-	v3 drotation;
+	v3 scale;
 
 	v3 color;
 
@@ -110,10 +111,15 @@ struct World
 
 	entity_id next_entity_id;
 
-	v3 camera_p;
-	v3 camera_rotation;
-	v3 last_camera_free_p;
-	v3 free_camera_p;
+	v3 player_camera_p;
+	v3 player_camera_rotation;
+	v3 player_camera_drotation;
+
+
+	v3 editor_camera_p;
+	v3 editor_camera_rotation;
+
+	//v3 editor_camera_last_p;
 
 	entity_id editor_selected_entity;
 	entity_id player_id;

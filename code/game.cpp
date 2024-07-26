@@ -1,8 +1,7 @@
 #include "debug.cpp"
 #include "scene.cpp"
 #include "game.h"
-#include "collision.cpp"
-#include "ai.cpp"
+
 
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
 	v3 box_yaxis, v3 box_zaxis)
@@ -223,8 +222,15 @@ void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Anima
 	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
 }
 
-#include "world.cpp"
+mat4 get_entity_transform(Entity &e)
+{
+    return translate(e.position) 
+        * zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
+}
 
+#include "collision.cpp"
+#include "world.cpp"
+#include "ai.cpp"
 
 void game_update_and_render(Game &game, Arena *memory, GameInput &input, float dt)
 {
@@ -338,8 +344,8 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		// 	//@HACK
 		// 	auto &jump = game.animations[ANIMATION_JUMP];
 		// 	auto &node = jump.nodes[0];
-		// 	for (int i = 0; i < node.position.count; i++)
-		// 		node.position[i].y -= 50;
+		// 	for (int i = 0; i < (int)(node.position.count*0.7; i++)
+		// 		node.position[i].y -= 30;
 		// }
 
 		Entity *boxes[] = {
@@ -368,7 +374,8 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
 		player->color = V3(0.2, 0.8, 0.8);
 
-		world.last_camera_free_p = V3(0, 0, 3);
+		world.editor_camera_p = V3(0, 0, 3);
+
 
 		game.is_initialized = 1;
 	}
@@ -377,11 +384,6 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 
 	if (IsDownFirstTime(input, BUTTON_F1)) {
 		game.in_editor = !game.in_editor;
-
-		if (game.in_editor)
-			world.free_camera_p = world.last_camera_free_p;
-		else
-			world.last_camera_free_p = world.free_camera_p;
 	}
 
 	begin_render_frame();
@@ -396,13 +398,11 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
     	get_window_framebuffer_dimension(window_width, window_height);
 		v2 mouse_p = (input.mouse_p * V2(1.f / window_width, 1.f / window_height)) * 2 - V2(1);
 		mouse_p.y *= -1;
-		printf("%f %f\n", mouse_p.x, mouse_p.y);
 		v3 ray_origin = game_camera.position;
 		v3 ray_dir = game_camera.forward * game_camera.znear 
 			+ mouse_p.x * game_camera.right * game_camera.width * 0.5f
 			+ mouse_p.y * game_camera.up * game_camera.height * 0.5f;
 
-	
 		entity_id hit_id = 0;
 
 		float min_t = FLT_MAX;
@@ -411,11 +411,10 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 			if (!e.scene)
 				continue ;
 
-			mat4 scene_transform = translate(e.position) * zrotation(e.rotation.z)
-				* e.scene_transform;
+			mat4 transform = get_entity_transform(e) * e.scene_transform;
 			for (usize j = 0; j < e.scene->meshes.count; j++) {
 				Mesh &mesh = e.scene->meshes[j];
-				mat4 mesh_transform = scene_transform * mesh.transform;
+				mat4 mesh_transform = transform * mesh.transform;
 
 				v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
 				v3 y_axis = normalize((mesh_transform * V4(0, 1, 0, 0)).xyz);
@@ -500,11 +499,22 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 
 		if (e) {
 			ImGuiIO &io = ImGui::GetIO();
+
+			v3 r = e->rotation * RAD2DEG;
+			
 			ImGui::Begin("Entity");
 			ImGui::InputFloat("X", &e->position.x);
 			ImGui::InputFloat("Y", &e->position.y);
 			ImGui::InputFloat("Z", &e->position.z);
+			ImGui::InputFloat("RX", &r.x);
+			ImGui::InputFloat("RY", &r.y);
+			ImGui::InputFloat("RZ", &r.z);
+			ImGui::InputFloat("SX", &e->scale.x);
+			ImGui::InputFloat("SY", &e->scale.y);
+			ImGui::InputFloat("SZ", &e->scale.z);
 			ImGui::End();
+
+			e->rotation = r * DEG2RAD;
 		}
 	}
 	end_render_frame();

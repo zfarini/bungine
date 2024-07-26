@@ -5,6 +5,7 @@
 
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
+#define RAD2DEG (180.f / PI)
 
 int sign(float x)
 {
