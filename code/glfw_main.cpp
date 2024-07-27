@@ -149,7 +149,7 @@ int main()
 	g_temp_arena.arena = make_arena(arena_alloc(&memory, temp_arena_size), temp_arena_size);
 
 	init_render_context(&memory, g_rc);
-	g_rc.window = window;
+	g_rc->window = window;
 	Game *game = (Game *)arena_alloc(&memory, sizeof(*game));
 
 

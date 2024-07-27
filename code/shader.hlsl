@@ -7,12 +7,12 @@ cbuffer constants: register(b0)
 	float4x4 view;
 	float4x4 projection;
 	float4x4 model;
-	//row_major float4x4 normal_transform;
 	float4x4 light_transform;
 	float4x4 bones[96];
 
 	float3 camera_p;
 	float3 player_p;
+	float3 tintColor;
 	float diffuse_factor;
 	float specular_factor;
 	float specular_exponent_factor;
@@ -25,7 +25,7 @@ struct vs_in {
 	float3 normal : NORMAL;
 	float2 uv : TEXCOORD;
 	float4 weights : BLENDWEIGHT;
-	int indices : BLENDINDICES;
+	float4 indices : BLENDINDICES;
 };
 
 struct vs_out {
@@ -135,10 +135,11 @@ vs_out vs_main(vs_in input)
 	float4x4 transform;
 	if (skinned) {
 		transform = 
-			(mul(input.weights.x, bones[input.indices & 0xFF]) +
-			 mul(input.weights.y, bones[(input.indices >> 8) & 0xFF]) +
-			 mul(input.weights.z, bones[(input.indices >> 16) & 0xFF]) +
-			 mul(input.weights.w, bones[(input.indices >> 24) & 0xff]));
+			(mul(input.weights.x, bones[int(input.indices.x)]) +
+			 mul(input.weights.y, bones[int(input.indices.y)]) +
+			 mul(input.weights.z, bones[int(input.indices.z)]) +
+			 mul(input.weights.w, bones[int(input.indices.w)]));
+
 	}
 	else
 		transform = model;
@@ -206,7 +207,7 @@ float4 ps_main(vs_out input) : SV_TARGET
 	//return specular_tex.Sample(mysampler, input.uv);
 	//return specular_exponent_tex.Sample(mysampler, input.uv);
 	float shininess_exponenet = max(0.001f, specular_exponent_factor * specular_exponent_tex.Sample(mysampler, input.uv).r);
-	float3 color = diffuse_tex.Sample(mysampler, input.uv).rgb;
+	float3 color = tintColor * diffuse_tex.Sample(mysampler, input.uv).rgb;
 
 	//
 	//return float4(color, 1);	
@@ -232,10 +233,12 @@ float4 ps_main(vs_out input) : SV_TARGET
 
 		// TODO: maybe use a sampler with a black border
 		// or check some of the other sampling functions
-		if (p.z < z + 0.005
-		&& p.x >= 0 && p.x < 1 &&
-		p.y >= 0 && p.y < 1
-		&& p.z >= 0)
+		// @CHECKIN
+		// if (p.z < z + 0.005
+		// && p.x >= 0 && p.x < 1 &&
+		// p.y >= 0 && p.y < 1
+		// && p.z >= 0)
+		if (1)
 		{
 			float diffuse = max(0, dot(to_light, normal));
 		
@@ -249,8 +252,8 @@ float4 ps_main(vs_out input) : SV_TARGET
 	result += 0.2f * color;
 #if 1
 	float3 light_pos[2] = {
-			player_p,
-			float3(0, 2, 4)
+			float3(-3, 2, 3),
+			float3(3, 2, 3)
 	};
 	float3 light_color[2] = {
 		float3(0.8, 0.2, 0.3),
@@ -297,3 +300,4 @@ float4 lines_ps_main(lines_vs_out input) : SV_TARGET0
 {
 	return float4(input.color, 1);
 }
+

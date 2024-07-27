@@ -156,6 +156,29 @@ struct Game
 	bool did_drag;
 	v3 drag_p;
 	v3 drag_org_camera_p;
+
+	RasterizerState default_rasterizer_state;
+	DepthStencilState default_depth_stencil_state;
+	DepthStencilState disable_depth_state;
+};
+
+struct Constants
+{
+	mat4 view;
+	mat4 projection;
+	mat4 model;
+	mat4 light_transform;
+	mat4 bones[96];
+
+	v3 camera_p;
+	v3 player_p;
+	v3 color;
+	float diffuse_factor;
+
+	float specular_factor;
+	float specular_exponent_factor;
+	int skinned;
+	int has_normal_map;
 };
 
 #endif

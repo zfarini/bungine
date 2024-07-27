@@ -1,3 +1,58 @@
+// #include <imgui/imgui.h>
+
+// #include "common.h"
+// #include "arena.h"
+// #include "utils.h"
+// #include "math.h"
+// #include "platform.h"
+// #if 0
+// #define DIRECT3D_DEBUG
+// #include "renderer.cpp"
+// global RenderContext g_rc;
+#pragma comment(lib, "d3d11")
+#pragma comment(lib, "d3dcompiler")
+#pragma comment (lib, "dxgi")
+#pragma comment (lib, "dxguid")
+
+#define _CRT_SECURE_NO_WARNINGS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <d3d11.h>
+#include <dxgi1_3.h>
+#include <d3dcompiler.h>
+#include <dxgidebug.h>
+#undef min
+#undef max
+#undef near
+#undef swap
+#include <assert.h>
+#include <stdint.h>
+#include <cstdio>
+#include <float.h>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
+
+#include <ufbx.h>
+#include <stb_image.h>
+
+#include "common.h"
+#include "arena.h"
+#include "utils.h"
+#include "math.h"
+#include "platform.h"
+
+#include "renderer.h"
+
+global RenderContext *g_rc;
+#ifdef RENDERER_DX11
+#define DIRECT3D_DEBUG
+#include "renderer_dx11.cpp"
+#else
+#include "renderer_opengl.cpp"
+#endif
+#include "renderer.cpp"
+
 #include "debug.cpp"
 #include "scene.cpp"
 #include "game.h"
@@ -72,6 +127,8 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 {
 	ShadowMap shadow_map = {};
 
+// @CHECKIN
+#if 0
 	shadow_map.width = texture_width;
 	shadow_map.height = texture_height;
 	shadow_map.light_p = light_p;
@@ -88,6 +145,7 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 	// TODO:!!
 	 if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         assert(0);
+#endif
 	return shadow_map;
 }
 
@@ -211,10 +269,10 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 		for (usize j = 0; j < mesh.parts.count; j++) {
 			MeshPart &part = mesh.parts[j];
 
-			bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc.white_texture);
-			bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc.white_texture);
+			bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
+			bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
 			bind_texture(2, part.material.normal_map);
-			bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc.white_texture);
+			bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
 			
 			constants.diffuse_factor = part.material.diffuse_factor;
 			constants.specular_factor = part.material.specular_factor;
@@ -222,7 +280,8 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 			constants.has_normal_map = part.material.normal_map.valid;
 
 			update_constant_buffer(game.constant_buffer, &constants);
-			draw(mesh.vertex_buffer, (int)part.offset, (int)part.vertices_count);
+			bind_vertex_buffer(mesh.vertex_buffer);
+			draw((int)part.offset, (int)part.vertices_count);
 		}
 	}
 
@@ -247,10 +306,24 @@ mat4 get_entity_transform(Entity &e)
 #include "world.cpp"
 #include "ai.cpp"
 
-void game_update_and_render(Game &game, Arena *memory, GameInput &input, float dt)
+extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memory, GameInput &input, float dt)
 {
+	g_rc = (RenderContext *)platform_data.render_context;
+	ImGui::SetCurrentContext((ImGuiContext *)platform_data.imgui_context);
+	g_temp_arena = platform_data.temp_arena;
+
+	Game &game = *((Game *)memory->data);
 	if (!game.is_initialized) {
+
+
+		assert(memory->used == 0);
 		arena_alloc(memory, sizeof(game));
+
+		usize temp_arena_size = Megabyte(128);
+		g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
+
+
+		init_render_context(memory, *g_rc);
 		//memory->used += sizeof(game);
 
 		//game.world = (World *)arena_alloc(memory, sizeof(World));
@@ -262,18 +335,28 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 
 		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
 		
-		game.mesh_render_pass = create_render_pass(
-			create_shader_program(
-				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT)),
-			g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
+		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
+		game.default_depth_stencil_state = create_depth_stencil_state(true);
+		game.disable_depth_state = create_depth_stencil_state(false);
 
+		game.mesh_render_pass = create_render_pass(
+			load_shader(make_cstring("code/shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
+			load_shader(make_cstring("code/shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
+			make_array<VertexInputElement>(g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements)),
+			PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state);
+
+		// @CHECKIN
+		#if 0
 		game.shadow_map_render_pass = create_render_pass(
 			create_shader_program(
 				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
 				load_shader(make_cstring("shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT)),
 			g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
 
+		game.shadow_map = create_shadow_map(4096, 4096, 
+			V3(24, 0, 24), V3(-1, 0, -1),
+			orthographic_projection(1, 75, 50, 40));
+		#endif
 		{
 			VertexInputElement input_elements[] = {
 				{0, 3, INPUT_ELEMENT_FLOAT, "POSITION"},
@@ -281,22 +364,20 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 			};
 
 			game.debug_lines_render_pass = create_render_pass(
-				create_shader_program(
-					load_shader(make_cstring("debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
-					load_shader(make_cstring("debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT)),
-				input_elements, ARRAY_SIZE(input_elements));
-			game.debug_lines_vertex_buffer = create_vertex_buffer(g_rc.debug_lines.capacity * sizeof(v3),
-				0, 2 * sizeof(v3), input_elements, ARRAY_SIZE(input_elements));
+				load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
+				load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
+				make_array<VertexInputElement>(input_elements, ARRAY_SIZE(input_elements)),
+				PRIMITIVE_LINES, game.disable_depth_state, game.default_rasterizer_state);
+
+			game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
+				2 * sizeof(v3), g_rc->debug_lines.capacity * sizeof(v3));
 
 			ConstantBufferElement elems[] = {
 				{CONSTANT_BUFFER_ELEMENT_MAT4},
 			};
-			game.debug_lines_constant_buffer = create_constant_buffer(1, elems, ARRAY_SIZE(elems));
+			game.debug_lines_constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
 		}
 
-		game.shadow_map = create_shadow_map(4096, 4096, 
-			V3(24, 0, 24), V3(-1, 0, -1),
-			orthographic_projection(1, 75, 50, 40));
 			//perspective_projection(1, 75, 120, 1));
 
 		ConstantBufferElement elems[] = {
@@ -314,7 +395,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 			{CONSTANT_BUFFER_ELEMENT_INT},
 			{CONSTANT_BUFFER_ELEMENT_INT},
 		};
-		game.constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
+		game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
 
 		game.ch43		= load_scene(&game.asset_arena, "data/YBot.fbx");
 		//Scene ch06		= load_scene(&asset_arena, "data\\Ch06.fbx");
@@ -401,6 +482,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		world.editor_camera_p = V3(0, 0, 3);
 
 
+
 		game.is_initialized = 1;
 	}
 
@@ -420,9 +502,8 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	Camera game_camera = update_camera(game, world, input, dt);
 	if (game.in_editor)
 	{
-   	 	int window_width, window_height;
-    	get_window_framebuffer_dimension(window_width, window_height);
-		v2 mouse_p = (input.mouse_p * V2(1.f / window_width, 1.f / window_height)) * 2 - V2(1);
+
+		v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
 		mouse_p.y *= -1;
 		v3 ray_origin = game_camera.position;
 		v3 ray_dir = game_camera.forward * game_camera.znear 
@@ -561,6 +642,8 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	push_cube_outline(game.shadow_map.light_p, V3(0.3));
 	push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
 
+	// @CHECKIN
+	#if 0
 	begin_render_pass(game.shadow_map_render_pass);
 	{
 		set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
@@ -569,17 +652,17 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection});
 	}
 	end_render_pass();
+	#endif
 
 	begin_render_pass(game.mesh_render_pass);
 	{
-		int window_width, window_height;
-		get_window_framebuffer_dimension(window_width, window_height);
-		set_viewport(0, 0, window_width, window_height);
+		set_viewport(0, 0, g_rc->window_width, g_rc->window_height);
 
-		bind_window_framebuffer();
-		clear_color_buffer(0.392f, 0.584f, 0.929f, 1.f);
-		clear_depth_buffer(1);
-		bind_texture(4, game.shadow_map.depth_texture);
+		bind_framebuffer(g_rc->window_framebuffer);
+		clear_framebuffer_color(g_rc->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
+		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		// @CHECKIN
+		//bind_texture(4, game.shadow_map.depth_texture);
 		render_entities(game, world, game_camera);
 	}
 	end_render_pass();
@@ -587,18 +670,18 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	// push_line(V3(0), V3(5, 0, 0.01), V3(1, 0, 0));
 	// push_line(V3(0), V3(0, 5, 0.01), V3(0, 1, 0));
 	// push_line(V3(0), V3(0, 0, 5), V3(0, 0, 1));
-
+	// @CHECKIN
 	begin_render_pass(game.debug_lines_render_pass);
 	{
-		glDisable(GL_DEPTH_TEST);
-		set_primitive_type(PRIMITIVE_LINES);
-		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc.debug_lines.count * sizeof(v3),
-			g_rc.debug_lines.data);
+		//glDisable(GL_DEPTH_TEST);
+		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
+			g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;
 		bind_constant_buffer(game.debug_lines_constant_buffer);
 		update_constant_buffer(game.debug_lines_constant_buffer, &mvp);
-		draw(game.debug_lines_vertex_buffer, 0, (int)(g_rc.debug_lines.count / 2));
-		glEnable(GL_DEPTH_TEST);
+		bind_vertex_buffer(game.debug_lines_vertex_buffer);;
+		draw(0, (int)(g_rc->debug_lines.count / 2));
+		//glEnable(GL_DEPTH_TEST);
 	}
 	end_render_pass();
 
@@ -607,6 +690,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
         ImGui::End();
 	}
@@ -637,5 +721,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	end_render_frame();
 
 	game.time += dt;
+	if (game.frame == 0)
+		ImGui::SetWindowFocus(NULL);
 	game.frame++;
 }

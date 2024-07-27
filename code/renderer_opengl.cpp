@@ -75,9 +75,8 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, unsigned int id,
 	printf("\n\n");
 }
 
-void init_render_context(Arena *arena, RenderContext &rc)
+void init_render_context_opengl(Arena *arena, RenderContext &rc)
 {
-    #ifndef _WIN32
     {
 		int flags;
 		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -90,7 +89,6 @@ void init_render_context(Arena *arena, RenderContext &rc)
 			                     nullptr, GL_TRUE);
 		}
 	}
-    #endif
     glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
     #ifdef ENABLE_SRGB
@@ -100,13 +98,6 @@ void init_render_context(Arena *arena, RenderContext &rc)
     glLineWidth(1.5);
 
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-
-    rc.loaded_textures = make_array_max<Texture>(arena, 256);
-    rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
-
-    uint32_t white_color = 0xffffffff;
-    rc.white_texture.handle = create_texture(&white_color, 1, 1, true);
-    rc.white_texture.valid = true;
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -174,7 +165,7 @@ ShaderProgram create_shader_program(Shader vs, Shader fs)
 
 void set_primitive_type(int type)
 {
-	g_rc.render_pass->primitive_type = type;
+	g_rc->render_pass->primitive_type = type;
 }
 
 RenderPass create_render_pass(ShaderProgram program,
@@ -235,14 +226,14 @@ void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 
 void begin_render_pass(RenderPass &rp)
 {
-    g_rc.render_pass = &rp;
+    g_rc->render_pass = &rp;
     glUseProgram((uintptr_t)rp.program.handle);
     set_primitive_type(PRIMITIVE_TRIANGLES);
 }
 
 void end_render_pass()
 {
-    g_rc.render_pass = 0;
+    g_rc->render_pass = 0;
 }
 
 Texture create_depth_texture(int width, int height)
@@ -266,9 +257,9 @@ Texture create_depth_texture(int width, int height)
 
 void bind_frame_buffer(FrameBuffer &framebuffer)
 {
-    if (g_rc.active_framebuffer_id != (uintptr_t)framebuffer.handle) {
+    if (g_rc->active_framebuffer_id != (uintptr_t)framebuffer.handle) {
         glBindFramebuffer(GL_FRAMEBUFFER, (uintptr_t)framebuffer.handle);
-        g_rc.active_framebuffer_id = (uintptr_t)framebuffer.handle;
+        g_rc->active_framebuffer_id = (uintptr_t)framebuffer.handle;
     }
 }
 
@@ -282,7 +273,7 @@ FrameBuffer create_frame_buffer()
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, g_rc.active_framebuffer_id);
+    glBindFramebuffer(GL_FRAMEBUFFER, g_rc->active_framebuffer_id);
 
     result.handle = (void *)fbo;
     return result;
@@ -290,14 +281,14 @@ FrameBuffer create_frame_buffer()
 
 void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
 {
-    auto save = g_rc.active_framebuffer_id;
+    auto save = g_rc->active_framebuffer_id;
 
     bind_frame_buffer(framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
             (uintptr_t)texture.handle, 0);
     if (save != (uintptr_t)framebuffer.handle) {
         glBindFramebuffer(GL_FRAMEBUFFER, save);
-        g_rc.active_framebuffer_id = save;
+        g_rc->active_framebuffer_id = save;
     }
 }
 
@@ -308,7 +299,7 @@ void set_viewport(int x, int y, int width, int height)
 
 void bind_window_framebuffer()
 {
-    g_rc.active_framebuffer_id = 0;
+    g_rc->active_framebuffer_id = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -328,9 +319,9 @@ void draw(VertexBuffer &vb, int offset, int count)
 {
     glBindVertexArray((uintptr_t)vb.handle);
     int mode = 0;
-    if (g_rc.render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+    if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
         mode = GL_TRIANGLES;
-    else if (g_rc.render_pass->primitive_type == PRIMITIVE_LINES)
+    else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
         mode = GL_LINES;
     else
         assert(0);
@@ -438,12 +429,12 @@ void bind_texture(int index, Texture texture)
 
 void get_window_framebuffer_dimension(int &width, int &height)
 {
-    glfwGetFramebufferSize(g_rc.window, &width, &height);
+    glfwGetFramebufferSize(g_rc->window, &width, &height);
 }
 
 void begin_render_frame()
 {
-    g_rc.debug_lines.count = 0;
+    g_rc->debug_lines.count = 0;
 }
 
 void end_render_frame()

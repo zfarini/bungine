@@ -44,17 +44,17 @@ struct TempArena {
 	int last_used_count;
 };
 
-global TempArena g_temp_arena;
+global TempArena *g_temp_arena;
 
 function Arena *begin_temp_memory()
 {
-	assert(g_temp_arena.last_used_count < ARRAY_SIZE(g_temp_arena.last_used));
-	g_temp_arena.last_used[g_temp_arena.last_used_count++] = g_temp_arena.arena.used;
-	return &g_temp_arena.arena;
+	assert(g_temp_arena->last_used_count < ARRAY_SIZE(g_temp_arena->last_used));
+	g_temp_arena->last_used[g_temp_arena->last_used_count++] = g_temp_arena->arena.used;
+	return &g_temp_arena->arena;
 }
 
 function void end_temp_memory()
 {
-	assert(g_temp_arena.last_used_count > 0);
-	g_temp_arena.arena.used = g_temp_arena.last_used[--g_temp_arena.last_used_count];
+	assert(g_temp_arena->last_used_count > 0);
+	g_temp_arena->arena.used = g_temp_arena->last_used[--g_temp_arena->last_used_count];
 }

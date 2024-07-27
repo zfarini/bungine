@@ -98,6 +98,16 @@ Array<T> make_zero_array(Arena *arena, usize count)
 	return result;
 }
 
+template<typename T>
+Array<T> make_array(T *data, usize count)
+{
+	Array<T> result;
+
+	result.capacity = result.count = count;
+	result.data = data;
+	return result;
+}
+
 // TODO: what if we have an array of strings?
 template<typename T>
 Array<T> clone_array(Arena *arena, Array<T> &array)

@@ -1,9 +1,9 @@
 void push_line(v3 a, v3 b, v3 color = V3(1))
 {
-    g_rc.debug_lines.push(a);
-    g_rc.debug_lines.push(color);
-    g_rc.debug_lines.push(b);
-    g_rc.debug_lines.push(color);
+    g_rc->debug_lines.push(a);
+    g_rc->debug_lines.push(color);
+    g_rc->debug_lines.push(b);
+    g_rc->debug_lines.push(color);
 }
 
 void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
@@ -131,13 +131,11 @@ void push_ellipsoid_outline(v3 p, v3 r, v3 color = V3(1))
 	}
 }
 
-// void begin_frame(int window_width, int window_height)
-// {
+void init_render_context(Arena *arena, RenderContext &rc)
+{
+	rc.loaded_textures = make_array_max<Texture>(arena, 256);
+    rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
 
-// }
-
-// void end_frame()
-// {
-
-// }
-
+   uint32_t white_color = 0xffffffff;
+    rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);
+}

@@ -34,3 +34,10 @@ struct GameInput
 #define IsDown(input, button) (input.buttons[button].is_down)
 #define WasDown(input, button) (input.buttons[button].was_down)
 #define IsDownFirstTime(input, button) (IsDown(input, button) && !WasDown(input, button))
+
+
+struct PlatformData {
+	void *render_context;
+	void *imgui_context;
+	TempArena *temp_arena;
+};

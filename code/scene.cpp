@@ -45,9 +45,9 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 	String name = make_string(arena, utex->filename.length, utex->filename.data);
 
 	if (name.count) {
-		for (int i = 0; i < g_rc.loaded_textures.count; i++) {
-			if (strings_equal(g_rc.loaded_textures[i].name, name))
-				return g_rc.loaded_textures[i];
+		for (int i = 0; i < g_rc->loaded_textures.count; i++) {
+			if (strings_equal(g_rc->loaded_textures[i].name, name))
+				return g_rc->loaded_textures[i];
 		}
 	}
 	g_stb_image_arena = begin_temp_memory();
@@ -73,15 +73,11 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 	assert(data);
 	end_temp_memory();
 
-	Texture tex;
-	tex.name = name;
-	tex.handle = create_texture(data, width, height, srgb);
-	tex.valid = true;
-
+	Texture texture = create_texture(name, data, width, height, srgb);
 	if (name.count)
-		g_rc.loaded_textures.push(tex);
-
-	return tex;
+		g_rc->loaded_textures.push(texture);
+	
+	return texture;
 }
 
 Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)
@@ -228,8 +224,8 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 		mesh.box_max = max(mesh.box_max, vertices[i].position);
 	}
 
-	mesh.vertex_buffer = create_vertex_buffer(vertices.count * sizeof(Vertex), vertices.data,
-			sizeof(Vertex), g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements));
+	mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
+		sizeof(Vertex), vertices.count * sizeof(Vertex), vertices.data);
 
 	end_temp_memory();
 	return mesh;

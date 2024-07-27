@@ -1,10 +1,11 @@
 struct Texture
 {
-	void *handle;
+	#ifdef RENDERER_DX11
+	ID3D11ShaderResourceView *srv;
+	#endif
 	String name;
 	b32 valid;
 };
-
 
 enum ShaderType
 {
@@ -14,7 +15,16 @@ enum ShaderType
 
 struct Shader
 {
-	void *handle;
+	ShaderType type;
+
+	#ifdef RENDERER_DX11
+	ID3DBlob *blob;
+	union {
+		ID3D11VertexShader *vs;
+		ID3D11PixelShader *ps;
+	};
+	#else
+	#endif
 };
 
 struct ShaderProgram
@@ -34,7 +44,7 @@ struct VertexInputElement
 {
 	int offset;
 	int count;
-	int type;
+	InputElementType type;
 	const char *name;
 };
 
@@ -44,30 +54,93 @@ enum PrimitiveType
 	PRIMITIVE_LINES,
 };
 
+enum VertexBufferUsage
+{
+	VERTEX_BUFFER_IMMUTABLE,
+	VERTEX_BUFFER_DYNAMIC,
+};
+
 struct VertexBuffer
 {
-	void *handle;
-	void *handle2;
+	usize size;
+	VertexBufferUsage usage;
+	usize vertex_size;
+
+	#ifdef RENDERER_DX11
+	ID3D11Buffer *buffer;
+	#endif
 };
 
 struct FrameBuffer
 {
-	void *handle;
+	#ifdef RENDERER_DX11
+	ID3D11RenderTargetView *rtv;
+	ID3D11DepthStencilView *dsv;
+	#endif
+};
+
+struct DepthStencilState
+{
+	bool enable_depth;
+	#ifdef RENDERER_DX11
+	ID3D11DepthStencilState *state;
+	#endif
+};
+
+enum RasterizerFillMode
+{
+	RASTERIZER_FILL_SOLID,
+	RASTERIZER_FILL_WIREFRAME
+};
+
+enum RasterizerCullMode
+{
+	RASTERIZER_CULL_NONE,
+	RASTERIZER_CULL_FRONT,
+	RASTERIZER_CULL_BACK,
+};
+
+struct RasterizerState
+{
+	RasterizerFillMode fillmode;
+	RasterizerCullMode cullmode;
+	#ifdef RENDERER_DX11
+	ID3D11RasterizerState *state;
+	#endif
 };
 
 struct RenderPass
 {
-	int primitive_type;
-	ShaderProgram program;
-	
-	VertexInputElement input_elements[32];
-	int input_element_count;
-};
+	PrimitiveType primitive_type;
 
+	Shader vs;
+	Shader fs;
+	DepthStencilState depth_stencil_state;
+	RasterizerState rasterizer_state;
+	#ifdef RENDERER_DX11
+	ID3D11InputLayout *input_layout;
+	
+	#else
+
+	#endif
+};
 
 struct RenderContext
 {
-    void *data;
+	int window_width;
+	int window_height;
+
+	FrameBuffer window_framebuffer;
+
+	#ifdef RENDERER_DX11
+	HWND window;
+	ID3D11Device *device;
+	ID3D11DeviceContext *context;
+	IDXGISwapChain *swap_chain;
+	#else
+	GLFWwindow *window;
+	#endif
+
     Array<Texture> loaded_textures;
 
     RenderPass *render_pass;
@@ -77,7 +150,7 @@ struct RenderContext
 
 	uintptr_t active_framebuffer_id;
 	// TODO:!!!
-	GLFWwindow *window;
+	//GLFWwindow *window;
 };
 
 usize get_input_element_size(int type)
@@ -102,45 +175,32 @@ enum ConstantBufferElementType
 	CONSTANT_BUFFER_ELEMENT_COUNT
 };
 
+int get_c_type_alignement(ConstantBufferElementType type)
+{
+	switch (type) {
+		case CONSTANT_BUFFER_ELEMENT_MAT4: return alignof(mat4);
+		case CONSTANT_BUFFER_ELEMENT_VEC4: return alignof(v4);
+		case CONSTANT_BUFFER_ELEMENT_VEC3: return alignof(v3);
+		case CONSTANT_BUFFER_ELEMENT_VEC2: return alignof(v2);
+		case CONSTANT_BUFFER_ELEMENT_FLOAT: return alignof(float);
+		case CONSTANT_BUFFER_ELEMENT_INT: return alignof(int);
+		default: assert(0);
+	}
+	return 0;
+}
+
 struct ConstantBufferElement
 {
-	int type;
+	ConstantBufferElementType type;
 	int array_size;
 };
 
 struct ConstantBuffer
 {
-	void *handle;
 	usize size;
 	ConstantBufferElement elements[64];
 	int element_count;
+	#ifdef RENDERER_DX11
+	ID3D11Buffer *buffer;
+	#endif
 };
-
-int get_constant_buffer_element_size(int type)
-{
-	int size[] = {
-		sizeof(mat4),
-		sizeof(v4),
-		sizeof(v3),
-		sizeof(v2),
-		sizeof(float),
-		sizeof(int)
-	};
-	static_assert(ARRAY_SIZE(size) == CONSTANT_BUFFER_ELEMENT_COUNT);
-	return size[type];
-}
-
-
-int get_constant_buffer_element_alignement(int type)
-{ 
-	int align[] = {
-		alignof(mat4),
-		alignof(v4),
-		alignof(v3),
-		alignof(v2),
-		alignof(float),
-		alignof(int)
-	};
-	static_assert(ARRAY_SIZE(align) == CONSTANT_BUFFER_ELEMENT_COUNT);
-	return align[type];
-}

@@ -122,7 +122,6 @@ void render_entities(Game &game, World &world, Camera camera)
 	
 }
 
-
 void update_player(Game &game, World &world, GameInput &input, float dt)
 {
 	// update player
@@ -130,6 +129,8 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (!_player)
         return ;
     Entity &player = *_player;
+
+	player.color = V3(0, 1, 1);
 
 	b32 camera_shoot_mode = false;
 	b32 walk_backward = false;
@@ -342,7 +343,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
         assert(0);
 
 	if (game.in_editor && (ImGui::GetIO().WantCaptureMouse || !IsDown(input, BUTTON_MOUSE_LEFT)))
-        input.mouse_dp = {};
+       input.mouse_dp = {};
 
     v3 camera_rot;
     if (game.in_editor) {
@@ -468,19 +469,17 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     v3 p = game.in_editor ? world.editor_camera_p : world.player_camera_p;
     mat4 view = rotation * translate(-p);
 
-    int window_width, window_height;
-    get_window_framebuffer_dimension(window_width, window_height);
 
 	float fov = 100;
 	camera.znear = 0.1f;
 	camera.zfar = 100;
 	camera.width = 2 * camera.znear * tanf(DEG2RAD * (fov / 2));
-	camera.height = camera.width *  (float)window_height / window_width;
+	camera.height = camera.width *  (float)g_rc->window_height / g_rc->window_width;
 	camera.forward = -camera_z;
 	camera.right = camera_x;
 	camera.up = camera_y;
 
-    mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)window_height / window_width);
+    mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)g_rc->window_height / g_rc->window_width);
 
 	camera.position = p;
 	camera.view = view;
