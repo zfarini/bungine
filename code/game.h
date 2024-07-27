@@ -151,6 +151,11 @@ struct Game
 
 	int frame;
 	float time;
+
+	int dragging_axis;
+	bool did_drag;
+	v3 drag_p;
+	v3 drag_org_camera_p;
 };
 
 #endif

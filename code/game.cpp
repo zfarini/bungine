@@ -3,6 +3,21 @@
 #include "game.h"
 
 
+bool ray_hit_plane(v3 ray_origin, v3 ray_dir, 
+	v3 plane_normal, v3 plane_point, float *hit_t)
+{
+	float denom = dot(ray_dir, plane_normal);
+	if (fabsf(denom) < 1e-5)
+		return false;
+	float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) / denom;
+	if (t >= 0) {
+		if (hit_t)
+			*hit_t = t;
+		return true;
+	}
+	return false;
+}
+
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
 	v3 box_yaxis, v3 box_zaxis)
 {
@@ -362,9 +377,18 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 			make_entity(world, EntityType_Static, &game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
 
 		};
-		for (int i = 0; i < ARRAY_SIZE(boxes); i++)
-			boxes[i]->scene_transform = scale(boxes[i]->shape.box_radius);
-		
+		for (int i = 0; i < ARRAY_SIZE(boxes); i++) {
+			//boxes[i]->scene_transform = scale();
+			boxes[i]->scale = boxes[i]->shape.box_radius;
+			boxes[i]->shape = make_box_shape(memory, V3(1));
+			
+			float r = (float)rand() / RAND_MAX;
+			float g = (float)rand() / RAND_MAX;
+			float b = (float)rand() / RAND_MAX;
+
+			boxes[i]->color = V3(r, g, b);
+
+		}
 		Entity *player = make_entity(world, EntityType_Player, &game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
 		world.player_id = player->id;
 		//player->scene = &game.sphere_asset;
@@ -387,12 +411,14 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	}
 
 	begin_render_frame();
-		
-	update_player(game, world, input, dt);
-	update_enemies(game, world, input, dt);
+	
+	if (!game.in_editor) {
+		update_player(game, world, input, dt);
+		update_enemies(game, world, input, dt);
+	}
 
 	Camera game_camera = update_camera(game, world, input, dt);
-	if (game.in_editor && IsDown(input, BUTTON_MOUSE_RIGHT))
+	if (game.in_editor)
 	{
    	 	int window_width, window_height;
     	get_window_framebuffer_dimension(window_width, window_height);
@@ -440,8 +466,97 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 				//ray_hit_box();
 			}
 		}
-		world.editor_selected_entity = hit_id;
+		bool should_switch = true;
+		{
+			Entity *e = get_entity(world, world.editor_selected_entity);
+			if (e) {
+				mat4 transform = get_entity_transform(*e);
+
+				v3 axis[3];
+
+				for (int i = 0; i < 3; i++) {
+					//axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
+					axis[i] = {};
+					axis[i].e[i] = 1;
+					axis[i] = normalize(axis[i]) * 2;
+				}
+				
+
+
+				if (game.dragging_axis == 0) {
+					game.dragging_axis = 0;
+					game.drag_p = {};
+					game.did_drag = false;
+					game.drag_org_camera_p = game_camera.position;
+
+					float start_t = min_t;
+					min_t = FLT_MAX;
+					int best = 0;
+					for (int i = 0; i < 3; i++) {
+						float t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis[i], 
+							axis[0] * (i == 0 ? 0.5f : 0.25f),
+							axis[1] * (i == 1 ? 0.5f : 0.25f), 
+							axis[2] * (i == 2 ? 0.5f : 0.25f));
+						if (t >= 0 && t < min_t) {
+							best = i + 1;
+							min_t = t;
+						}
+					}
+					if (best)
+						game.dragging_axis = best;
+					if (hit_id != world.editor_selected_entity && min_t < start_t)
+						should_switch = false;
+				}
+				
+
+				if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
+					int a = game.dragging_axis - 1;
+
+					v3 plane_normal = -ray_dir;
+					plane_normal = -cross(axis[a], cross(axis[a], game_camera.position - e->position));
+					//plane_normal = game_camera.position - e->position;
+					float hit_t;
+					if (ray_hit_plane(ray_origin, ray_dir, plane_normal, e->position, &hit_t)) {
+						v3 hit_p = ray_origin + hit_t * ray_dir;
+						//push_cube_outline(hit_p, V3(0.01f), V3(0.2));
+						v3 dp = normalize(axis[a]) * dot(hit_p - e->position, normalize(axis[a]));
+					
+
+						if (!game.did_drag) {
+							game.did_drag = true;
+							game.drag_p = dp;
+						}
+						else
+							e->position += dp - game.drag_p;
+					}
+					//push_line(e->position, e->position + normalize(plane_normal) * 2);
+					
+				}
+				else {
+					game.dragging_axis = 0;
+					game.drag_p = {};
+					game.did_drag = false;
+				}
+
+				for (int i = 0; i < 3; i++) {
+					v3 c = game.dragging_axis == i + 1 ? V3(1, 1, 0) : V3(0);
+					// push_box_outline(e->position + 0.5f * axis[i],
+					// 		axis[0] * (i == 0 ? 0.5f : 0.25f),
+					// 		axis[1] * (i == 1 ? 0.5f : 0.25f), 
+					// 		axis[2] * (i == 2 ? 0.5f : 0.25f)
+					// 		, c);
+					v3 color = {};
+					color.e[i] = 1;
+					if (game.dragging_axis == i + 1)
+						color = V3(1, 0, 1);
+					push_line(e->position, e->position + axis[i], color);
+				}
+			}
+		}
+		if (should_switch && IsDownFirstTime(input, BUTTON_MOUSE_RIGHT))
+			world.editor_selected_entity = hit_id;
 	}
+	
 	
 	push_cube_outline(game.shadow_map.light_p, V3(0.3));
 	push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
@@ -469,12 +584,13 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 	}
 	end_render_pass();
 
-	push_line(V3(0), V3(5, 0, 0.01), V3(1, 0, 0));
-	push_line(V3(0), V3(0, 5, 0.01), V3(0, 1, 0));
-	push_line(V3(0), V3(0, 0, 5), V3(0, 0, 1));
+	// push_line(V3(0), V3(5, 0, 0.01), V3(1, 0, 0));
+	// push_line(V3(0), V3(0, 5, 0.01), V3(0, 1, 0));
+	// push_line(V3(0), V3(0, 0, 5), V3(0, 0, 1));
 
 	begin_render_pass(game.debug_lines_render_pass);
 	{
+		glDisable(GL_DEPTH_TEST);
 		set_primitive_type(PRIMITIVE_LINES);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc.debug_lines.count * sizeof(v3),
 			g_rc.debug_lines.data);
@@ -482,6 +598,7 @@ void game_update_and_render(Game &game, Arena *memory, GameInput &input, float d
 		bind_constant_buffer(game.debug_lines_constant_buffer);
 		update_constant_buffer(game.debug_lines_constant_buffer, &mvp);
 		draw(game.debug_lines_vertex_buffer, 0, (int)(g_rc.debug_lines.count / 2));
+		glEnable(GL_DEPTH_TEST);
 	}
 	end_render_pass();
 

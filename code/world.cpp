@@ -96,13 +96,12 @@ void render_entities(Game &game, World &world, Camera camera)
 		else
 			assert(!final_anim);
 
-		v3 color = e.color;
-		if (e.id == world.editor_selected_entity)
-			color = V3(1, 1, 0.2);
+		
+        //if (e.id != world.editor_selected_entity)
+		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color);
 
-		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, color);
-
-		if (game.debug_collision) {
+		if (game.debug_collision || e.id == world.editor_selected_entity) {
+            v3 color = e.id == world.editor_selected_entity ? V3(1, 1, 0) : V3(1, 0, 0);
 			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
 				for (int j = 0; j < e.shape.triangles.count; j++) {
                     v3 p0 = (entity_transform * V4(e.shape.triangles[j].v0, 1)).xyz;
@@ -111,11 +110,11 @@ void render_entities(Game &game, World &world, Camera camera)
 
 					v3 n = normalize(cross(p1 - p0, p2 - p0));
 					v3 o = n * 0.01f;
-					push_triangle_outline(p0 + o, p1 + o, p2 + o, V3(1, 0, 0));
+					push_triangle_outline(p0 + o, p1 + o, p2 + o, color);
 				}
 			}
 			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-				push_ellipsoid_outline(e.position, e.scale * e.shape.ellipsoid_radius, V3(1, 0, 0));
+				push_ellipsoid_outline(e.position, e.scale * e.shape.ellipsoid_radius, color);
 			}
 		}
 		end_temp_memory();
