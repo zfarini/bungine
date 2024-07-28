@@ -9,32 +9,17 @@
 // #define DIRECT3D_DEBUG
 // #include "renderer.cpp"
 // global RenderContext g_rc;
-#pragma comment(lib, "d3d11")
-#pragma comment(lib, "d3dcompiler")
-#pragma comment (lib, "dxgi")
-#pragma comment (lib, "dxguid")
 
-#define _CRT_SECURE_NO_WARNINGS
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <d3d11.h>
-#include <dxgi1_3.h>
-#include <d3dcompiler.h>
-#include <dxgidebug.h>
-#undef min
-#undef max
-#undef near
-#undef swap
+#if 0
 #include <assert.h>
 #include <stdint.h>
 #include <cstdio>
 #include <float.h>
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
+//#include "imgui/imgui.h"
+//#include "imgui/imgui_impl_win32.h"
+//#include "imgui/imgui_impl_dx11.h"
 
-#include <ufbx.h>
-#include <stb_image.h>
+
 
 #include "common.h"
 #include "arena.h"
@@ -53,10 +38,11 @@ global RenderContext *g_rc;
 #endif
 #include "renderer.cpp"
 
+#endif
+
 #include "debug.cpp"
 #include "scene.cpp"
 #include "game.h"
-
 
 bool ray_hit_plane(v3 ray_origin, v3 ray_dir, 
 	v3 plane_normal, v3 plane_point, float *hit_t)
@@ -306,11 +292,11 @@ mat4 get_entity_transform(Entity &e)
 #include "world.cpp"
 #include "ai.cpp"
 
-extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memory, GameInput &input, float dt)
+extern "C" void game_update_and_render(Platform& platform, Arena *memory, GameInput &input, float dt)
 {
-	g_rc = (RenderContext *)platform_data.render_context;
-	ImGui::SetCurrentContext((ImGuiContext *)platform_data.imgui_context);
-	g_temp_arena = platform_data.temp_arena;
+	g_rc = (RenderContext *)platform.render_context;
+	g_temp_arena = &platform.temp_arena;
+	//ImGui::SetCurrentContext((ImGuiContext *)platform_data.imgui_context);
 
 	Game &game = *((Game *)memory->data);
 	if (!game.is_initialized) {
@@ -339,11 +325,20 @@ extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memor
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
 		game.disable_depth_state = create_depth_stencil_state(false);
 
+
+		VertexInputLayout input_layout = create_vertex_input_layout(g_vertex_input_elements, 
+				ARRAY_SIZE(g_vertex_input_elements), sizeof(Vertex));
+
 		game.mesh_render_pass = create_render_pass(
-			load_shader(make_cstring("code/shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
-			load_shader(make_cstring("code/shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
-			make_array<VertexInputElement>(g_vertex_input_elements, ARRAY_SIZE(g_vertex_input_elements)),
-			PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state);
+#ifdef RENDERER_DX11
+			load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
+			load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
+#else
+			load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
+			load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT),
+#endif
+			PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
+			input_layout);
 
 		// @CHECKIN
 		#if 0
@@ -362,15 +357,22 @@ extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memor
 				{0, 3, INPUT_ELEMENT_FLOAT, "POSITION"},
 				{sizeof(v3), 3, INPUT_ELEMENT_FLOAT, "COLOR"},
 			};
+			VertexInputLayout input_layout = create_vertex_input_layout(input_elements, ARRAY_SIZE(input_elements),
+					sizeof(v3) * 2);
 
 			game.debug_lines_render_pass = create_render_pass(
+#ifdef RENDERER_DX11
 				load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
 				load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
-				make_array<VertexInputElement>(input_elements, ARRAY_SIZE(input_elements)),
-				PRIMITIVE_LINES, game.disable_depth_state, game.default_rasterizer_state);
+#else
+				load_shader(make_cstring("debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
+#endif
+				PRIMITIVE_LINES, game.disable_depth_state, game.default_rasterizer_state,
+				input_layout);
 
 			game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
-				2 * sizeof(v3), g_rc->debug_lines.capacity * sizeof(v3));
+				 g_rc->debug_lines.capacity * sizeof(v3));
 
 			ConstantBufferElement elems[] = {
 				{CONSTANT_BUFFER_ELEMENT_MAT4},
@@ -677,15 +679,16 @@ extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memor
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 			g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;
-		bind_constant_buffer(game.debug_lines_constant_buffer);
+		bind_constant_buffer(game.debug_lines_constant_buffer, 1);
 		update_constant_buffer(game.debug_lines_constant_buffer, &mvp);
-		bind_vertex_buffer(game.debug_lines_vertex_buffer);;
+		bind_vertex_buffer(game.debug_lines_vertex_buffer);
 		draw(0, (int)(g_rc->debug_lines.count / 2));
 		//glEnable(GL_DEPTH_TEST);
 	}
 	end_render_pass();
 
 
+#if 0
 	{
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
@@ -718,10 +721,13 @@ extern "C" void game_update_and_render(PlatformData &platform_data, Arena *memor
 			e->rotation = r * DEG2RAD;
 		}
 	}
+#endif
 	end_render_frame();
 
 	game.time += dt;
+#if 0
 	if (game.frame == 0)
 		ImGui::SetWindowFocus(NULL);
+#endif
 	game.frame++;
 }

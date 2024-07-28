@@ -1,3 +1,20 @@
+#pragma comment(lib, "d3d11")
+#pragma comment(lib, "d3dcompiler")
+#pragma comment (lib, "dxgi")
+#pragma comment (lib, "dxguid")
+
+#define _CRT_SECURE_NO_WARNINGS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <d3d11.h>
+#include <dxgi1_3.h>
+#include <d3dcompiler.h>
+#include <dxgidebug.h>
+#undef min
+#undef max
+#undef near
+#undef swap
+
 Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
 	bool mipmapping = true)
 {
@@ -101,16 +118,6 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 	result.blob = blob;
 
 	return result;
-}
-
-ShaderProgram create_shader_program(Shader vs, Shader fs)
-{
-	ShaderProgram program = {};
-
-	program.vs = vs;
-	program.fs = fs;
-
-	return program;
 }
 
 RasterizerState create_rasterizer_state(RasterizerFillMode fillmode, RasterizerCullMode cullmode)
@@ -553,5 +560,4 @@ void init_render_context_dx11(RenderContext &rc, HWND window)
         backbuffer->Release();
 		depth_buffer->Release();
 	}
-	
 }

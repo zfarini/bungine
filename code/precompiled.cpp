@@ -1,3 +1,4 @@
+#if 0
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
@@ -17,7 +18,7 @@
 #include "imgui/imgui_tables.cpp"
 #include "imgui/imgui_draw.cpp"
 #include "imgui/imgui_widgets.cpp"
-
+#endif
 
 #define UFBX_IMPLEMENTATION
 #include <ufbx.h>

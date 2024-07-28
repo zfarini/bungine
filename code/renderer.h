@@ -2,6 +2,8 @@ struct Texture
 {
 	#ifdef RENDERER_DX11
 	ID3D11ShaderResourceView *srv;
+	#else
+	uint32_t id;
 	#endif
 	String name;
 	b32 valid;
@@ -24,14 +26,8 @@ struct Shader
 		ID3D11PixelShader *ps;
 	};
 	#else
+	uint32_t id;
 	#endif
-};
-
-struct ShaderProgram
-{
-	void *handle;
-	Shader vs;
-	Shader fs;
 };
 
 enum InputElementType
@@ -64,10 +60,12 @@ struct VertexBuffer
 {
 	usize size;
 	VertexBufferUsage usage;
-	usize vertex_size;
 
 	#ifdef RENDERER_DX11
 	ID3D11Buffer *buffer;
+	#else
+	uint32_t vao;
+	uint32_t vbo;
 	#endif
 };
 
@@ -76,6 +74,8 @@ struct FrameBuffer
 	#ifdef RENDERER_DX11
 	ID3D11RenderTargetView *rtv;
 	ID3D11DepthStencilView *dsv;
+	#else
+	uint32_t id;
 	#endif
 };
 
@@ -109,6 +109,16 @@ struct RasterizerState
 	#endif
 };
 
+struct VertexInputLayout
+{
+	VertexInputElement elements[64];
+	int element_count;
+	int vertex_size;
+#ifdef RENDERER_DX11
+	ID3D11InputLayout *input_layout
+#endif
+};
+
 struct RenderPass
 {
 	PrimitiveType primitive_type;
@@ -117,12 +127,9 @@ struct RenderPass
 	Shader fs;
 	DepthStencilState depth_stencil_state;
 	RasterizerState rasterizer_state;
-	#ifdef RENDERER_DX11
-	ID3D11InputLayout *input_layout;
-	
-	#else
+	VertexInputLayout input_layout;
 
-	#endif
+	uint32_t program;
 };
 
 struct RenderContext
@@ -138,7 +145,14 @@ struct RenderContext
 	ID3D11DeviceContext *context;
 	IDXGISwapChain *swap_chain;
 	#else
-	GLFWwindow *window;
+	Window window;
+	EGLSurface surface;
+	EGLContext context;
+	EGLDisplay display;
+	Display *x_display;
+#define X(type, name) type name;
+	GL_FUNCTIONS(X)
+#undef X
 	#endif
 
     Array<Texture> loaded_textures;
@@ -202,5 +216,7 @@ struct ConstantBuffer
 	int element_count;
 	#ifdef RENDERER_DX11
 	ID3D11Buffer *buffer;
+	#else
+	uint32_t id;
 	#endif
 };

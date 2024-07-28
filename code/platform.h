@@ -36,8 +36,68 @@ struct GameInput
 #define IsDownFirstTime(input, button) (IsDown(input, button) && !WasDown(input, button))
 
 
-struct PlatformData {
+#ifdef RENDERER_OPENGL
+#define GL_FUNCTIONS(X) \
+    X(PFNGLENABLEPROC,                   glEnable                   ) \
+    X(PFNGLDISABLEPROC,                  glDisable                  ) \
+    X(PFNGLBLENDFUNCPROC,                glBlendFunc                ) \
+    X(PFNGLVIEWPORTPROC,                 glViewport                 ) \
+    X(PFNGLCLEARCOLORPROC,               glClearColor               ) \
+    X(PFNGLCLEARPROC,                    glClear                    ) \
+    X(PFNGLDRAWARRAYSPROC,               glDrawArrays               ) \
+    X(PFNGLCREATEBUFFERSPROC,            glCreateBuffers            ) \
+    X(PFNGLNAMEDBUFFERSTORAGEPROC,       glNamedBufferStorage       ) \
+    X(PFNGLBINDVERTEXARRAYPROC,          glBindVertexArray          ) \
+    X(PFNGLCREATEVERTEXARRAYSPROC,       glCreateVertexArrays       ) \
+    X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding ) \
+    X(PFNGLVERTEXARRAYVERTEXBUFFERPROC,  glVertexArrayVertexBuffer  ) \
+    X(PFNGLVERTEXARRAYATTRIBFORMATPROC,  glVertexArrayAttribFormat  ) \
+    X(PFNGLENABLEVERTEXARRAYATTRIBPROC,  glEnableVertexArrayAttrib  ) \
+    X(PFNGLCREATESHADERPROGRAMVPROC,     glCreateShaderProgramv     ) \
+    X(PFNGLGETPROGRAMIVPROC,             glGetProgramiv             ) \
+    X(PFNGLGETPROGRAMINFOLOGPROC,        glGetProgramInfoLog        ) \
+    X(PFNGLGENPROGRAMPIPELINESPROC,      glGenProgramPipelines      ) \
+    X(PFNGLUSEPROGRAMSTAGESPROC,         glUseProgramStages         ) \
+    X(PFNGLBINDPROGRAMPIPELINEPROC,      glBindProgramPipeline      ) \
+    X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC,  glProgramUniformMatrix2fv  ) \
+    X(PFNGLBINDTEXTUREUNITPROC,          glBindTextureUnit          ) \
+    X(PFNGLCREATETEXTURESPROC,           glCreateTextures           ) \
+    X(PFNGLTEXTUREPARAMETERIPROC,        glTextureParameteri        ) \
+    X(PFNGLTEXTURESTORAGE2DPROC,         glTextureStorage2D         ) \
+    X(PFNGLTEXTURESUBIMAGE2DPROC,        glTextureSubImage2D        ) \
+    X(PFNGLDEBUGMESSAGECALLBACKPROC,     glDebugMessageCallback     ) \
+    X(PFNGLGETINTEGERVPROC,     		 glGetIntegerv     			) \
+    X(PFNGLDEBUGMESSAGECONTROLPROC,      glDebugMessageControl     	) \
+    X(PFNGLCREATESHADERPROC,      		 glCreateShader     		) \
+    X(PFNGLSHADERSOURCEPROC,      		 glShaderSource     		) \
+    X(PFNGLCOMPILESHADERPROC,      		 glCompileShader     		) \
+    X(PFNGLGETSHADERIVPROC,      		 glGetShaderiv     			) \
+    X(PFNGLGETSHADERINFOLOGPROC,      	 glGetShaderInfoLog     	) \
+    X(PFNGLACTIVETEXTUREPROC,      	 	 glActiveTexture     		) \
+    X(PFNGLBINDTEXTUREPROC,      	 	 glBindTexture     			) \
+    X(PFNGLGENTEXTURESPROC,      	 	 glGenTextures     			) \
+    X(PFNGLTEXIMAGE2DPROC,      	 	 glTexImage2D				) \
+    X(PFNGLGENERATEMIPMAPPROC,      	 glGenerateMipmap			) \
+    X(PFNGLTEXPARAMETERIPROC,      	 	 glTexParameteri     		) \
+    X(PFNGLCLEARDEPTHPROC,      	 	 glClearDepth     			) \
+    X(PFNGLBINDFRAMEBUFFERPROC,      	 glBindFrameBuffer     		) \
+    X(PFNGLCULLFACEPROC,      	 		 glCullFace     			) \
+    X(PFNGLCREATEPROGRAMPROC,      	 	 glCreateProgram     		) \
+    X(PFNGLATTACHSHADERPROC,      	 	 glAttachShader     		) \
+    X(PFNGLLINKPROGRAMPROC,      	 	 glLinkProgram     			) \
+    X(PFNGLUSEPROGRAMPROC,      	 	 glUseProgram     			) \
+    X(PFNGLGENVERTEXARRAYSPROC,      	 glGenVertexArrays     		) \
+	X(PFNGLGENBUFFERSPROC,      	 	 glGenBuffers     			) \
+	X(PFNGLBINDBUFFERPROC,      	 	 glBindBuffer     			) \
+    X(PFNGLBINDBUFFERBASEPROC,      	 glBindBufferBase     		) \
+    X(PFNGLBUFFERDATAPROC,      	 	 glBufferData     			) \
+    X(PFNGLBUFFERSUBDATAPROC,      	 	 glBufferSubData     		) \
+    X(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer     	) \
+    X(PFNGLENABLEVERTEXATTRIBARRAYPROC,  glEnableVertexAttribArray  ) \
+    X(PFNGLPOLYGONMODEPROC,      	 	 glPolygonMode     			) 
+#endif
+
+struct Platform {
 	void *render_context;
-	void *imgui_context;
-	TempArena *temp_arena;
+	TempArena temp_arena;
 };

@@ -225,7 +225,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	}
 
 	mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
-		sizeof(Vertex), vertices.count * sizeof(Vertex), vertices.data);
+		vertices.count * sizeof(Vertex), vertices.data);
 
 	end_temp_memory();
 	return mesh;

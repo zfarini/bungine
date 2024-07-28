@@ -32,7 +32,7 @@ Entity *get_entity(World &world, entity_id id)
 
 void render_entities(Game &game, World &world, Camera camera)
 {
-	bind_constant_buffer(game.constant_buffer);
+	bind_constant_buffer(game.constant_buffer, 0);
 
 	for (usize i = 0; i < world.entities.count; i++) {
 		Entity &e = world.entities[i];
@@ -342,8 +342,13 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     if (!player)
         assert(0);
 
+#if 0
 	if (game.in_editor && (ImGui::GetIO().WantCaptureMouse || !IsDown(input, BUTTON_MOUSE_LEFT)))
        input.mouse_dp = {};
+#else
+	if (game.in_editor && (!IsDown(input, BUTTON_MOUSE_LEFT)))
+		input.mouse_dp = {};
+#endif
 
     v3 camera_rot;
     if (game.in_editor) {
@@ -441,7 +446,11 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     v3 camera_y = (camera_transform * v4{0, 0, 1, 0}).xyz;
     v3 camera_z = (camera_transform * v4{0, -1, 0, 0}).xyz;
 
+#if 0
     if (game.in_editor && !ImGui::GetIO().WantCaptureKeyboard)
+#else
+	if (game.in_editor)
+#endif
     {
         v3 camera_dp = {};
         if (IsDown(input, BUTTON_CAMERA_FORWARD))

@@ -106,6 +106,8 @@ void main()
 			}
 			shadow /= 9;
 
+			shadow = 1;
+
 			float diffuse = max(0, dot(to_light, normal));
 		
 			vec3 specular = specular_color * pow(max(0.f, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
@@ -136,5 +138,6 @@ void main()
 		result += light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * 1.f / length(light_pos[i] - world_p) ;
 	}
 #endif
+	//result = vec3(pow(result.r, 1/2.2), pow(result.g, 1/2.2), pow(result.b, 1/2.2));
     outColor = vec4(result, 1);
 }
