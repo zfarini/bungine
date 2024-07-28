@@ -388,12 +388,6 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 void begin_render_frame()
 {
     glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
-	int width, height;
-	glfwGetWindowSize(g_rc->window, &width, &height);
-	//printf("%d %d %d %d\n", g_rc->window_width, g_rc->window_height, width, height);
-
-	g_rc->window_width = 800;
-	g_rc->window_height = 600;
 	g_rc->debug_lines.count = 0;
 	ImGui_ImplGlfw_NewFrame();
 	ImGui_ImplOpenGL3_NewFrame();

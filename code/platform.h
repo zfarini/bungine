@@ -101,8 +101,7 @@ struct Platform {
 	void *render_context;
 	void *imgui_context;
 	TempArena temp_arena;
-#ifdef RENDERER_OPENGL
-	GLADloadproc glfw_proc_address;
+#if RENDERER_OPENGL
 	GLFWwindow *window;
 #endif
 };

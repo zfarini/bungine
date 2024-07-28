@@ -1,33 +1,15 @@
-// #include <imgui/imgui.h>
-
-// #include "common.h"
-// #include "arena.h"
-// #include "utils.h"
-// #include "math.h"
-// #include "platform.h"
-// #if 0
-// #define DIRECT3D_DEBUG
-// #include "renderer.cpp"
-// global RenderContext g_rc;
-
-#if 1
 #include <stb_image.h>
 #include <ufbx.h>
 #include <float.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glad.c>
 #include <assert.h>
 #include <stdint.h>
 #include <cstdio>
-#include <imgui/imgui.h>
 
 #include "common.h"
 #include "arena.h"
 #include "utils.h"
 #include "math.h"
 #include "platform.h"
-
 #include "renderer.h"
 
 global RenderContext *g_rc;
@@ -40,8 +22,6 @@ global RenderContext *g_rc;
 #endif
 
 #include "renderer.cpp"
-
-#endif
 
 #include "debug.cpp"
 #include "scene.cpp"
@@ -298,15 +278,7 @@ mat4 get_entity_transform(Entity &e)
 extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 {
 	g_rc = (RenderContext *)platform.render_context;
-	if (!glViewport) {
-		glfwInit();
-		glfwMakeContextCurrent(g_rc->window);
-		gladLoadGLLoader((GLADloadproc)platform.glfw_proc_address);
-	//	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	}
-
 	g_temp_arena = &platform.temp_arena;
-
 	ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
 
 	Game &game = *((Game *)memory->data);
@@ -703,7 +675,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-		printf("%f %f\n", io.Framerate, glfwGetTime());
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
         ImGui::End();

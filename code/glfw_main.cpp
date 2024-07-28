@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cassert>
@@ -10,9 +8,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <glad.c>
-#include <dlfcn.h>
-
-#include <dirent.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -21,12 +16,7 @@
 #undef min
 #undef max
 
-#include "common.h"
-#include "arena.h"
-#include "utils.h"
-#include "math.h"
-#include "platform.h"
-#include "renderer.h"
+#include "game.cpp"
 
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 
@@ -72,13 +62,14 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	input.mouse_p = V2(mouse_x, mouse_y);
 }
 
+GAME_UPDATE_AND_RENDER(game_update_and_render);
+
 int main()
 {
 	if (!glfwInit())
 		assert(0);
 
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true); glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -125,23 +116,11 @@ int main()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	Platform platform = {};
-	platform.glfw_proc_address =(GLADloadproc)glfwGetProcAddress;
 	platform.render_context = &rc;
 	platform.window = window;
 	platform.imgui_context = ImGui::GetCurrentContext();
 
-	ImGui_ImplGlfw_NewFrame();
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui::NewFrame();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 	int frame = 0;
-
-	game_update_and_render_fn *update_and_render = 0;
-
-	void *game_lib = 0;
-	char game_lib_name[512] = {};
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -150,56 +129,7 @@ int main()
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			break ;
 		update_game_input(window, game_input, frame);
-
-		{
-			DIR *dir = opendir(".");
-			if (!dir)
-				assert(0);
-			char filename[256] = {};
-			bool multiple = false;
-			struct dirent *file;
-			while ((file = readdir(dir))) {
-				const char *start = "game.so";
-				bool ok = true;
-				for (int i = 0; start[i]; i++) { 
-					if (file->d_name[i] != start[i]) {
-						ok = false;
-						break ;
-					}
-				}
-				if (ok) {
-					if (filename[0] != 0)
-						multiple = true;
-					memcpy(filename, file->d_name, sizeof(file->d_name));
-					break ;
-				}
-			}
-			closedir(dir);
-			if (filename[0] && !multiple) {
-				char new_game_lib[512];
-				snprintf(new_game_lib, sizeof(new_game_lib), "/nfs/homes/zfarini/3dGame/%s", filename);
-				if (strcmp(new_game_lib, game_lib_name))
-				{
-					void *new_lib = dlopen(new_game_lib, RTLD_LAZY);
-
-					if (!new_lib)
-						printf("failed to load library: %s\n", dlerror());
-					else {
-						if (game_lib)
-							dlclose(game_lib);
-						memcpy(game_lib_name, new_game_lib, sizeof(game_lib_name));
-						printf("game dll changed, new file: %s\n", filename);
-
-						game_lib = new_lib;
-						update_and_render = (game_update_and_render_fn *)dlsym(game_lib, "game_update_and_render");
-						assert(update_and_render);
-					}
-				}
-			}
-		}
-
-		if (update_and_render)
-			update_and_render(platform, &memory, game_input, 1.f / 60);
+		game_update_and_render(platform, &memory, game_input, 1.f / 60);
 	
 		glfwSwapBuffers(window);
 		frame++;
