@@ -145,11 +145,7 @@ struct RenderContext
 	ID3D11DeviceContext *context;
 	IDXGISwapChain *swap_chain;
 	#else
-	Window window;
-	EGLSurface surface;
-	EGLContext context;
-	EGLDisplay display;
-	Display *x_display;
+	GLFWwindow *window;
 #define X(type, name) type name;
 	GL_FUNCTIONS(X)
 #undef X

@@ -1,17 +1,25 @@
-#include <ufbx.h>
-#include <stb_image.h>
-#include <float.h>
-#include <cstdio>
-#include <cstdlib>
-#include <X11/Xlib.h>
-#include <EGL/egl.h>
-#include <GL/glcorearb.h>
-#include <unistd.h>
-#include <cassert>
-#include <cstring>
-#include <X11/cursorfont.h>
+#define _CRT_SECURE_NO_WARNINGS
 
-#define OPENGL_DEBUG
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <glad.c>
+#include <dlfcn.h>
+
+#include <dirent.h>
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
+#undef min
+#undef max
 
 #include "common.h"
 #include "arena.h"
@@ -19,263 +27,187 @@
 #include "math.h"
 #include "platform.h"
 #include "renderer.h"
-#include "renderer_opengl.cpp"
-#include "renderer.cpp"
 
-#include "game.cpp"
+extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 
-void fatal_error(const char *message)
+v2 last_mouse_p;
+bool g_hide_mouse = true;
+
+void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 {
-	fprintf(stderr, "%s\n", message);
-    char cmd[1024];
-    snprintf(cmd, sizeof(cmd), "zenity --error --no-wrap --text=\"%s\"", message);
-    system(cmd);
-	exit(1);
+	int button_map[BUTTON_COUNT] = {};
+
+	button_map[BUTTON_CAMERA_FORWARD] 	= GLFW_KEY_W;
+	button_map[BUTTON_CAMERA_BACKWARD] 	= GLFW_KEY_S;
+	button_map[BUTTON_CAMERA_LEFT] 		= GLFW_KEY_A;
+	button_map[BUTTON_CAMERA_RIGHT]  	= GLFW_KEY_D;
+	button_map[BUTTON_CAMERA_UP] 		= GLFW_KEY_Q;
+	button_map[BUTTON_CAMERA_DOWN] 		= GLFW_KEY_E;
+	button_map[BUTTON_PLAYER_FORWARD] 	= GLFW_KEY_F;
+	button_map[BUTTON_PLAYER_BACKWARD] 	= GLFW_KEY_G;
+	button_map[BUTTON_PLAYER_JUMP]		= GLFW_KEY_SPACE;
+	button_map[BUTTON_LEFT_SHIFT]		= GLFW_KEY_LEFT_SHIFT;
+
+	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
+		button_map[i] = GLFW_KEY_F1 + (i - BUTTON_F1);
+
+	for (int i = 0; i < BUTTON_COUNT; i++) {
+		input.buttons[i].was_down = input.buttons[i].is_down;
+		input.buttons[i].is_down = glfwGetKey(window, button_map[i]) == GLFW_PRESS;
+	}
+
+	input.buttons[BUTTON_MOUSE_LEFT].is_down = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+	input.buttons[BUTTON_MOUSE_RIGHT].is_down = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
+
+	double mouse_x, mouse_y;
+	glfwGetCursorPos(window, &mouse_x, &mouse_y);
+	if (frame > 3)
+		input.mouse_dp = V2(mouse_x, mouse_y) - last_mouse_p;
+	last_mouse_p = V2((float)mouse_x, (float)mouse_y);
+	if (IsDownFirstTime(input, BUTTON_F1)) {
+		g_hide_mouse = !g_hide_mouse;
+		glfwSetInputMode(window, GLFW_CURSOR, g_hide_mouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
+
+	input.mouse_p = V2(mouse_x, mouse_y);
 }
 
 int main()
 {
-    Display* x_display = XOpenDisplay(NULL);
-	if (!x_display)
-		fatal_error("Cannot open X display");
+	if (!glfwInit())
+		assert(0);
 
-	XSetWindowAttributes attributes = {};
-	attributes.event_mask = StructureNotifyMask;
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
-    int width = 800;
-    int height = 600;
-    Window window = XCreateWindow(
-        x_display, DefaultRootWindow(x_display),
-        0, 0, width, height, 
-        0, CopyFromParent, InputOutput, CopyFromParent, CWEventMask,
-        &attributes);
+	#ifdef ENABLE_SRGB
+	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+	#endif
+
+	GLFWwindow *window = glfwCreateWindow(800, 600, "game", 0, 0);
 	if (!window)
-		fatal_error("Failed to create X window");
+		assert(0);
 
-	// set title
-    XStoreName(x_display, window, "game");
+	glfwMakeContextCurrent(window);
+	// TODO: test with this, a lot of stuff break (mouse, jump..)
+	//glfwSwapInterval(0);
 
-	Atom WM_PROTOCOLS = XInternAtom(x_display, "WM_PROTOCOLS", False);
-    Atom WM_DELETE_WINDOW = XInternAtom(x_display , "WM_DELETE_WINDOW", False);
-    XSetWMProtocols(x_display, window, &WM_DELETE_WINDOW, 1);
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		assert(0);
 
 
-    EGLDisplay display;
-	{
-        display = eglGetDisplay((NativeDisplayType)x_display);
-		if (display == EGL_NO_DISPLAY)
-			fatal_error("Failed to get EGL display");
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
-		EGLint major, minor;
-        if (!eglInitialize(display, &major, &minor))
-			fatal_error("Failed to initalize EGL display");
-		if (major < 1 || (major == 1 && minor < 5))
-			fatal_error("EGL version 1.5 or higher required");
-		printf("EGL VERSION: %d.%d\n", major, minor);
-	}
+	// Setup Platform/Renderer backends
+	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+	ImGui_ImplOpenGL3_Init();
 
-	if (!eglBindAPI(EGL_OPENGL_API))
-		fatal_error("Failed to select OpenGL API for EGL");
+	//glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	EGLConfig config;
-    {
-        EGLint attr[] = {
-            EGL_SURFACE_TYPE,      EGL_WINDOW_BIT,
-            EGL_CONFORMANT,        EGL_OPENGL_BIT,
-            EGL_RENDERABLE_TYPE,   EGL_OPENGL_BIT,
-            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
-
-            EGL_RED_SIZE,      8,
-            EGL_GREEN_SIZE,    8,
-            EGL_BLUE_SIZE,     8,
-            EGL_DEPTH_SIZE,   24,
-            EGL_STENCIL_SIZE,  8,
-
-            // uncomment for multisampled framebuffer
-            //EGL_SAMPLE_BUFFERS, 1,
-            //EGL_SAMPLES,        4, // 4x MSAA
-
-            EGL_NONE,
-        };
-
-        EGLint count;
-        if (!eglChooseConfig(display, attr, &config, 1, &count) || count != 1)
-            fatal_error("Failed to choose EGL config");
-    }
-
-	EGLSurface surface;
-    {
-        EGLint attr[] = {
-#if 0
-            EGL_GL_COLORSPACE, EGL_GL_COLORSPACE_LINEAR,
-#else
-            EGL_GL_COLORSPACE, EGL_GL_COLORSPACE_SRGB,
-#endif
-			EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-            EGL_NONE,
-        };
-
-        surface = eglCreateWindowSurface(display, config, window, attr);
-        if (surface == EGL_NO_SURFACE)
-            fatal_error("Failed to create EGL surface");
-    }
-
-    // create EGL context
-    EGLContext context;
-    {
-        EGLint attr[] = {
-            EGL_CONTEXT_MAJOR_VERSION, 4,
-            EGL_CONTEXT_MINOR_VERSION, 2,
-            EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-#ifndef OPENGL_DEBUG
-            // ask for debug context for non "Release" builds
-            // this is so we can enable debug callback
-            EGL_CONTEXT_OPENGL_DEBUG, EGL_TRUE,
-#endif
-            EGL_NONE,
-        };
-
-        context = eglCreateContext(display, config, EGL_NO_CONTEXT, attr);
-        if (context == EGL_NO_CONTEXT)
-			fatal_error("Failed to create EGL context, OpenGL 4.2 is possibly not supported");
-    }
-
-    if (!eglMakeCurrent(display, surface, surface, context))
-		fatal_error("Failed to make EGL context current");
-
-	// vsync
-	int vsync = 1;
-	if (!eglSwapInterval(display, vsync)) {
-		// TODO: this shouldn't be fatal
-		fatal_error("Failed to set vsync for EGL");
-		vsync = 0;
-		fprintf(stderr, "failed to enable vsync\n");
-	}
+	// TODO: change to mmap
+    usize memory_size = GigaByte(1);
+    Arena memory = make_arena(calloc(1, memory_size), memory_size);
 
 	RenderContext rc = {};
 
-	rc.x_display = x_display;
-	rc.display = display;
-	rc.surface = surface;
-	rc.context = context;
-	rc.window = window;
-
-#define X(type, name) do {\
-	rc.name = (type)eglGetProcAddress(#name); \
-	if (!rc.name) \
-		fatal_error("Failed to load OpenGL function "#name"\n");\
-} while (0);
-    GL_FUNCTIONS(X)
-#undef X
-
-	init_render_context_opengl(rc);
-
-	XSelectInput(x_display, window, KeyPressMask | KeyReleaseMask
-			|ButtonPressMask|ButtonReleaseMask|PointerMotionMask);
-
-	// show window
-    XMapWindow(x_display, window);
-
-
-	 //XDefineCursor(_glfw.x11.display, window->x11.handle,
-     //                 _glfw.x11.hiddenCursorHandle);
-
-	Platform platform = {};
-	platform.render_context = &rc;
+	//init_render_context_opengl(rc, window);
 
 	GameInput game_input = {};
-	usize game_memory_size = GigaByte(2);
-	// TODO: use mmap
-	Arena game_memory = make_arena(malloc(game_memory_size), game_memory_size);
 
-	int button_xcode[BUTTON_COUNT] = {};
-	button_xcode[BUTTON_CAMERA_FORWARD] 	= 0x19;
-	button_xcode[BUTTON_CAMERA_BACKWARD] 	= 0x27;
-	button_xcode[BUTTON_CAMERA_LEFT] 		= 0x26;
-	button_xcode[BUTTON_CAMERA_RIGHT] 		= 0x28;
-	button_xcode[BUTTON_CAMERA_UP] 			= 0x18;
-	button_xcode[BUTTON_CAMERA_DOWN] 		= 0x1a;
-	button_xcode[BUTTON_PLAYER_FORWARD] 	= 0x29;
-	button_xcode[BUTTON_PLAYER_BACKWARD] 	= 0x2a;
-	button_xcode[BUTTON_PLAYER_JUMP]		= 0x41;
-	button_xcode[BUTTON_LEFT_SHIFT]			= 0x32;
+	// ConstantBuffer constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	//button_vkcode[BUTTON_MOUSE_LEFT]		= VK_LBUTTON;
-	//button_vkcode[BUTTON_MOUSE_RIGHT]		= VK_RBUTTON;
+	Platform platform = {};
+	platform.glfw_proc_address =(GLADloadproc)glfwGetProcAddress;
+	platform.render_context = &rc;
+	platform.window = window;
+	platform.imgui_context = ImGui::GetCurrentContext();
 
-	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
-		button_xcode[i] = 0x43 + (i-BUTTON_F1);
-
-	bool should_close = false;
-
-	v2 last_mouse_p = {};
+	ImGui_ImplGlfw_NewFrame();
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui::NewFrame();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	int frame = 0;
 
-	bool hide_mouse = true;
+	game_update_and_render_fn *update_and_render = 0;
 
-	while (!should_close) {
-		game_input.mouse_dp = {};
-		for (int i = 0; i < BUTTON_COUNT; i++)
-			game_input.buttons[i].was_down = game_input.buttons[i].is_down;
+	void *game_lib = 0;
+	char game_lib_name[512] = {};
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glfwPollEvents();
 		
-		while (XPending(x_display)) {
-			XEvent event;
-			XNextEvent(x_display, &event);
-			if (event.type == ClientMessage) {
-				if (event.xclient.message_type == WM_PROTOCOLS) {
-                    Atom protocol = event.xclient.data.l[0];
-					if (protocol == WM_DELETE_WINDOW)
-						should_close = true;
-				}
-			}
-			else if (event.type == KeyPress || event.type == KeyRelease) {
-				for (int i = 0; i < BUTTON_COUNT; i++)
-					if (button_xcode[i] == event.xkey.keycode) {
-						game_input.buttons[i].is_down = event.type == KeyPress;
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			break ;
+		update_game_input(window, game_input, frame);
+
+		{
+			DIR *dir = opendir(".");
+			if (!dir)
+				assert(0);
+			char filename[256] = {};
+			bool multiple = false;
+			struct dirent *file;
+			while ((file = readdir(dir))) {
+				const char *start = "game.so";
+				bool ok = true;
+				for (int i = 0; start[i]; i++) { 
+					if (file->d_name[i] != start[i]) {
+						ok = false;
 						break ;
 					}
-        	    printf( "KeyPress: %x\n", event.xkey.keycode );
-        	    if (event.xkey.keycode == 0x09)
-					should_close = true;
-        	}
-			else if (event.type == ButtonPress || event.type == ButtonRelease)
-			{
-				if (event.xbutton.button == 1)
-					game_input.buttons[BUTTON_MOUSE_LEFT].is_down = event.type == ButtonPress;
-				else if (event.xbutton.button == 3)
-					game_input.buttons[BUTTON_MOUSE_RIGHT].is_down = event.type == ButtonPress;
-        	    //printf( "Mouse KeyPress: %x\n", event.xbutton.button );
-			}
-			else if (event.type == MotionNotify)
-			{
-				game_input.mouse_p = V2(event.xmotion.x, event.xmotion.y);
-				if (frame > 3) {
-					game_input.mouse_dp = game_input.mouse_p - last_mouse_p;
 				}
-				last_mouse_p = game_input.mouse_p;
-				//printf("mouse p: %d %d\n", event.xmotion.x, event.xmotion.y);
+				if (ok) {
+					if (filename[0] != 0)
+						multiple = true;
+					memcpy(filename, file->d_name, sizeof(file->d_name));
+					break ;
+				}
+			}
+			closedir(dir);
+			if (filename[0] && !multiple) {
+				char new_game_lib[512];
+				snprintf(new_game_lib, sizeof(new_game_lib), "/nfs/homes/zfarini/3dGame/%s", filename);
+				if (strcmp(new_game_lib, game_lib_name))
+				{
+					void *new_lib = dlopen(new_game_lib, RTLD_LAZY);
+
+					if (!new_lib)
+						printf("failed to load library: %s\n", dlerror());
+					else {
+						if (game_lib)
+							dlclose(game_lib);
+						memcpy(game_lib_name, new_game_lib, sizeof(game_lib_name));
+						printf("game dll changed, new file: %s\n", filename);
+
+						game_lib = new_lib;
+						update_and_render = (game_update_and_render_fn *)dlsym(game_lib, "game_update_and_render");
+						assert(update_and_render);
+					}
+				}
 			}
 		}
-		if (game_input.buttons[BUTTON_F1].is_down)
-			hide_mouse = !hide_mouse;
-		if (hide_mouse) {
-		}
-		else {
 
-		}
-
-		XWindowAttributes attr;
-        Status status = XGetWindowAttributes(x_display, window, &attr);
-		width = attr.width;
-		height = attr.height;
-
-		float dt = 1.f / 60;
-		game_update_and_render(platform, &game_memory, game_input, dt);
-
-		// TODO: handle when window is minimized 
-		if (!eglSwapBuffers(display, surface))
-			fatal_error("Failed to swap OpenGL buffers");
+		if (update_and_render)
+			update_and_render(platform, &memory, game_input, 1.f / 60);
+	
+		glfwSwapBuffers(window);
 		frame++;
 	}
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	glfwTerminate();
 }

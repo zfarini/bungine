@@ -10,16 +10,17 @@
 // #include "renderer.cpp"
 // global RenderContext g_rc;
 
-#if 0
+#if 1
+#include <stb_image.h>
+#include <ufbx.h>
+#include <float.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glad.c>
 #include <assert.h>
 #include <stdint.h>
 #include <cstdio>
-#include <float.h>
-//#include "imgui/imgui.h"
-//#include "imgui/imgui_impl_win32.h"
-//#include "imgui/imgui_impl_dx11.h"
-
-
+#include <imgui/imgui.h>
 
 #include "common.h"
 #include "arena.h"
@@ -34,8 +35,10 @@ global RenderContext *g_rc;
 #define DIRECT3D_DEBUG
 #include "renderer_dx11.cpp"
 #else
+#define OPENGL_DEBUG
 #include "renderer_opengl.cpp"
 #endif
+
 #include "renderer.cpp"
 
 #endif
@@ -292,24 +295,32 @@ mat4 get_entity_transform(Entity &e)
 #include "world.cpp"
 #include "ai.cpp"
 
-extern "C" void game_update_and_render(Platform& platform, Arena *memory, GameInput &input, float dt)
+extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 {
 	g_rc = (RenderContext *)platform.render_context;
+	if (!glViewport) {
+		glfwInit();
+		glfwMakeContextCurrent(g_rc->window);
+		gladLoadGLLoader((GLADloadproc)platform.glfw_proc_address);
+	//	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	}
+
 	g_temp_arena = &platform.temp_arena;
-	//ImGui::SetCurrentContext((ImGuiContext *)platform_data.imgui_context);
+
+	ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
 
 	Game &game = *((Game *)memory->data);
 	if (!game.is_initialized) {
 
-
 		assert(memory->used == 0);
-		arena_alloc(memory, sizeof(game));
+		arena_alloc_zero(memory, sizeof(game));
+
+		init_render_context(memory, *g_rc, platform);
 
 		usize temp_arena_size = Megabyte(128);
 		g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
 
 
-		init_render_context(memory, *g_rc);
 		//memory->used += sizeof(game);
 
 		//game.world = (World *)arena_alloc(memory, sizeof(World));
@@ -688,11 +699,11 @@ extern "C" void game_update_and_render(Platform& platform, Arena *memory, GameIn
 	end_render_pass();
 
 
-#if 0
 	{
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		printf("%f %f\n", io.Framerate, glfwGetTime());
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
         ImGui::End();
@@ -721,7 +732,6 @@ extern "C" void game_update_and_render(Platform& platform, Arena *memory, GameIn
 			e->rotation = r * DEG2RAD;
 		}
 	}
-#endif
 	end_render_frame();
 
 	game.time += dt;

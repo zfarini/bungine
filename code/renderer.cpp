@@ -131,8 +131,13 @@ void push_ellipsoid_outline(v3 p, v3 r, v3 color = V3(1))
 	}
 }
 
-void init_render_context(Arena *arena, RenderContext &rc)
+void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 {
+#if RENDERER_OPENGL
+	init_render_context_opengl(rc, platform);
+#else
+	init_render_context_dx11(rc, platform);
+#endif
 	rc.loaded_textures = make_array_max<Texture>(arena, 256);
     rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
 

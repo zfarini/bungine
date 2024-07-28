@@ -38,6 +38,13 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 	return ptr;	
 }
 
+function void *arena_alloc_zero(Arena *arena, usize size)
+{
+	void *mem = arena_alloc(arena, size);
+	memset(mem, 0, size);
+	return mem;
+}
+
 struct TempArena {
 	Arena arena;
 	usize last_used[16];

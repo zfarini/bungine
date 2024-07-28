@@ -1,4 +1,5 @@
-global RenderContext *g_rc;
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
 	bool mipmapping = true)
@@ -18,23 +19,23 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 	format = GL_RGBA;
 
 	uint32_t tex;
-	g_rc->glGenTextures(1, &tex);
+	glGenTextures(1, &tex);
 
-	g_rc->glBindTexture(GL_TEXTURE_2D, tex);
-	g_rc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	g_rc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	if (mipmapping)
-		g_rc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 				GL_LINEAR_MIPMAP_LINEAR);
 	else
-		g_rc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 				GL_LINEAR);
-	g_rc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	g_rc->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
+	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
 			GL_UNSIGNED_BYTE, data);
     if (mipmapping)
-	    g_rc->glGenerateMipmap(GL_TEXTURE_2D);
+	    glGenerateMipmap(GL_TEXTURE_2D);
 
 	texture.id = tex;
 	return texture;
@@ -42,8 +43,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 void bind_texture(int index, Texture &texture)
 {
-    g_rc->glActiveTexture(GL_TEXTURE0 + index);
-    g_rc->glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.id);
+    glActiveTexture(GL_TEXTURE0 + index);
+    glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.id);
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -65,20 +66,20 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
     else
         assert(0);
 
-	uint32_t shader = g_rc->glCreateShader(gl_type);
-	g_rc->glShaderSource(shader, 1, &content.data, (GLint *)&content.count);
+	uint32_t shader = glCreateShader(gl_type);
+	glShaderSource(shader, 1, &content.data, (GLint *)&content.count);
 
     end_temp_memory();
 
-	g_rc->glCompileShader(shader);
+	glCompileShader(shader);
 
 	int success;
-	g_rc->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		printf("OPENGL: failed to compile shader \"%.*s\": ", str_format(filename));
 
 		char info_log[2048];
-		g_rc->glGetShaderInfoLog(shader, sizeof(info_log), 0, info_log);
+		glGetShaderInfoLog(shader, sizeof(info_log), 0, info_log);
 		printf("%s\n", info_log);
 		assert(0);
 	}
@@ -109,28 +110,28 @@ DepthStencilState create_depth_stencil_state(bool enable_depth)
 void bind_rasterizer_state(const RasterizerState &state)
 {
 	if (state.fillmode == RASTERIZER_FILL_SOLID)
-		g_rc->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else if (state.fillmode == RASTERIZER_FILL_WIREFRAME)
-		g_rc->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (state.cullmode == RASTERIZER_CULL_NONE)
-		g_rc->glDisable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
 	else if (state.cullmode == RASTERIZER_CULL_FRONT) {
-		g_rc->glEnable(GL_CULL_FACE);
-		g_rc->glCullFace(GL_FRONT);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 	}
 	else if (state.cullmode == RASTERIZER_CULL_BACK) {
-		g_rc->glEnable(GL_CULL_FACE);
-		g_rc->glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 	}
 }
 
 void bind_depth_stencil_state(const DepthStencilState &state)
 {
 	if (state.enable_depth)
-		g_rc->glEnable(GL_DEPTH_TEST);
+		glEnable(GL_DEPTH_TEST);
 	else
-		g_rc->glDisable(GL_DEPTH_TEST);
+		glDisable(GL_DEPTH_TEST);
 }
 
 VertexInputLayout create_vertex_input_layout(VertexInputElement *elements, int element_count,
@@ -159,17 +160,17 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 	rp.primitive_type = primitive_type;
 	rp.input_layout = input_layout;
 	
-    rp.program = g_rc->glCreateProgram();
+    rp.program = glCreateProgram();
 
-	g_rc->glAttachShader(rp.program, vs.id);
-	g_rc->glAttachShader(rp.program, fs.id);
-	g_rc->glLinkProgram(rp.program);
+	glAttachShader(rp.program, vs.id);
+	glAttachShader(rp.program, fs.id);
+	glLinkProgram(rp.program);
 
 	int success;
-	g_rc->glGetProgramiv(rp.program, GL_LINK_STATUS, &success);
+	glGetProgramiv(rp.program, GL_LINK_STATUS, &success);
 	if (!success) {
 		char info_log[2048];
-		g_rc->glGetProgramInfoLog(rp.program, sizeof(info_log), 0, info_log);
+		glGetProgramInfoLog(rp.program, sizeof(info_log), 0, info_log);
 		printf("failed to link program: %s\n", info_log);
         assert(0);
 	}
@@ -180,7 +181,7 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 void begin_render_pass(RenderPass &rp)
 {
 	g_rc->render_pass = &rp;
-	g_rc->glUseProgram(rp.program);
+	glUseProgram(rp.program);
 	bind_depth_stencil_state(rp.depth_stencil_state);
 	bind_rasterizer_state(rp.rasterizer_state);
 }
@@ -192,27 +193,27 @@ void end_render_pass()
 
 void set_viewport(float top_left_x, float top_left_y, float width, float height)
 {
-	g_rc->glViewport(top_left_x, top_left_y, width, height);
+	glViewport(top_left_x, top_left_y, width, height);
 }
 
 void bind_framebuffer(FrameBuffer &framebuffer)
 {
 	// TODO: only bind if its not the active one (eh maybe opengl already handle this?)
-	g_rc->glBindFrameBuffer(GL_FRAMEBUFFER, framebuffer.id);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.id);
 }
 
 void clear_framebuffer_color(FrameBuffer &framebuffer, v4 color)
 {
 	bind_framebuffer(framebuffer);
-	g_rc->glClearColor(color.x, color.y, color.z, color.w);
-	g_rc->glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(color.x, color.y, color.z, color.w);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
 {
 	bind_framebuffer(framebuffer);
-	g_rc->glClearDepth(depth);
-	g_rc->glClear(GL_DEPTH_BUFFER_BIT);
+	glClearDepth(depth);
+	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize size, void *data = 0)
@@ -222,13 +223,13 @@ VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize size, void *dat
 	result.usage = usage;
 	result.size = size;
 
-	g_rc->glGenVertexArrays(1, &result.vao);
-	g_rc->glBindVertexArray(result.vao);
+	glGenVertexArrays(1, &result.vao);
+	glBindVertexArray(result.vao);
 
-	g_rc->glGenBuffers(1, &result.vbo);
-	g_rc->glBindBuffer(GL_ARRAY_BUFFER, result.vbo);
+	glGenBuffers(1, &result.vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, result.vbo);
 	if (data)
-		g_rc->glBufferData(GL_ARRAY_BUFFER, size, data, usage == VERTEX_BUFFER_IMMUTABLE ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, data, usage == VERTEX_BUFFER_IMMUTABLE ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
 
 	return result;
 }
@@ -236,17 +237,17 @@ VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize size, void *dat
 void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 {
 	assert(vb.usage == VERTEX_BUFFER_DYNAMIC);
-	g_rc->glBindVertexArray(vb.vao); // TODO: do I need this call?
-    g_rc->glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
-    g_rc->glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+	glBindVertexArray(vb.vao); // TODO: do I need this call?
+    glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 void bind_vertex_buffer(VertexBuffer &vb)
 {
 	auto &layout = g_rc->render_pass->input_layout;
 
-	g_rc->glBindVertexArray(vb.vao);
-	g_rc->glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
+	glBindVertexArray(vb.vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
 	// TODO: this doesn't have to be done every frame
 	for (int i = 0; i < layout.element_count; i++) {
         int type = 0;
@@ -257,9 +258,9 @@ void bind_vertex_buffer(VertexBuffer &vb)
         else
             assert(0);
 
-        g_rc->glVertexAttribPointer(i, layout.elements[i].count,
+        glVertexAttribPointer(i, layout.elements[i].count,
             type, GL_FALSE, (GLsizei) layout.vertex_size, (void *)layout.elements[i].offset);
-        g_rc->glEnableVertexAttribArray(i);
+        glEnableVertexAttribArray(i);
     }
 }
 
@@ -272,7 +273,7 @@ void draw(int offset, int vertices_count)
         mode = GL_LINES;
     else
         assert(0);
-	g_rc->glDrawArrays(mode, offset, vertices_count);
+	glDrawArrays(mode, offset, vertices_count);
 }
 
 int get_constant_buffer_element_size(int type)
@@ -342,10 +343,10 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 	result.element_count = elements.count;
 	result.size = offset;
 
-	g_rc->glGenBuffers(1, &result.id);
-    g_rc->glBindBuffer(GL_UNIFORM_BUFFER, result.id);
+	glGenBuffers(1, &result.id);
+    glBindBuffer(GL_UNIFORM_BUFFER, result.id);
 	// TODO: why do we do this?
-    g_rc->glBufferData(GL_UNIFORM_BUFFER, result.size, 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, result.size, 0, GL_DYNAMIC_DRAW);
 
 	return result;
 }
@@ -374,28 +375,36 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
     }
     //memcpy(dest, data, sizeof(Constants));
 
-    g_rc->glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
+    glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
 	// TODO: subData?
-    g_rc->glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
 }
 
 void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 {
-    g_rc->glBindBufferBase(GL_UNIFORM_BUFFER, index, cbuffer.id); 
+    glBindBufferBase(GL_UNIFORM_BUFFER, index, cbuffer.id); 
 }
 
 void begin_render_frame()
 {
-	XWindowAttributes attr;
-    Status status = XGetWindowAttributes(g_rc->x_display, g_rc->window, &attr);
-	g_rc->window_width = attr.width;
-	g_rc->window_height = attr.height;
+    glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
+	int width, height;
+	glfwGetWindowSize(g_rc->window, &width, &height);
+	//printf("%d %d %d %d\n", g_rc->window_width, g_rc->window_height, width, height);
 
+	g_rc->window_width = 800;
+	g_rc->window_height = 600;
 	g_rc->debug_lines.count = 0;
+	ImGui_ImplGlfw_NewFrame();
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui::NewFrame();
 }
 
 void end_render_frame()
 {
+	bind_framebuffer(g_rc->window_framebuffer);
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
@@ -439,19 +448,20 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 	printf("\n\n");
 }
 
-void init_render_context_opengl(RenderContext &rc)
+void init_render_context_opengl(RenderContext &rc, Platform &platform)
 {
+	rc.window = platform.window;
 #ifdef OPENGL_DEBUG
 	int flags;
-	rc.glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-    	rc.glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		rc.glEnable(GL_DEBUG_OUTPUT);
-		rc.glDebugMessageCallback(gl_debug_output, nullptr);
-		rc.glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
+    	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(gl_debug_output, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
 			                     nullptr, GL_TRUE);
 	}
 #endif
 	rc.window_framebuffer.id = 0;
-	rc.glEnable(GL_FRAMEBUFFER_SRGB);
+	glEnable(GL_FRAMEBUFFER_SRGB);
 }

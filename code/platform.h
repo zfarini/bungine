@@ -99,5 +99,13 @@ struct GameInput
 
 struct Platform {
 	void *render_context;
+	void *imgui_context;
 	TempArena temp_arena;
+#ifdef RENDERER_OPENGL
+	GLADloadproc glfw_proc_address;
+	GLFWwindow *window;
+#endif
 };
+
+#define GAME_UPDATE_AND_RENDER(name) void name(Platform &platform, Arena *memory, GameInput &input, float dt)
+typedef GAME_UPDATE_AND_RENDER(game_update_and_render_fn);
