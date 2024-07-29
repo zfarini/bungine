@@ -107,8 +107,8 @@ void render_entities(Game &game, World &world, Camera camera)
 		//if (e.id != world.editor_selected_entity)
 		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color);
 
-		if (game.debug_collision || 
-				(game.in_editor && e.id == world.editor_selected_entity)) {
+		if (game.debug_collision) {
+			//	|| (game.in_editor && e.id == world.editor_selected_entity)) {
 			v3 color = e.id == world.editor_selected_entity ? V3(1, 1, 0) : V3(1, 0, 0);
 			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
 				for (int j = 0; j < e.shape.triangles.count; j++) {
@@ -354,7 +354,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	if (game.in_editor && (ImGui::GetIO().WantCaptureMouse || !IsDown(input, BUTTON_MOUSE_LEFT)))
 		input.mouse_dp = {};
 #else
-	if (game.in_editor && (!IsDown(input, BUTTON_MOUSE_LEFT)))
+	if (game.in_editor && (ImGui::GetIO().WantCaptureMouse || !IsDown(input, BUTTON_MOUSE_LEFT)))
 		input.mouse_dp = {};
 #endif
 
@@ -457,7 +457,8 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 #if 0
 	if (game.in_editor && !ImGui::GetIO().WantCaptureKeyboard)
 #else
-		if (game.in_editor && !IsDown(input, BUTTON_LEFT_CONTROL))
+		if (game.in_editor && !IsDown(input, BUTTON_LEFT_CONTROL)
+				&& !ImGui::GetIO().WantCaptureKeyboard)
 #endif
 		{
 			v3 camera_dp = {};

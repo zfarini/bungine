@@ -1,10 +1,11 @@
+#ifndef DISABLE_PREPROCESSOR
 #include <stb_image.h>
 #include <ufbx.h>
 #include <float.h>
-#include <cassert>
-#include <cstdint>
-#include <cstdio>
-
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#endif
 #include "common.h"
 #include "arena.h"
 #include "utils.h"
@@ -32,6 +33,8 @@ mat4 get_entity_transform(Entity &e);
 #include "world.cpp"
 #include "ai.cpp"
 #include "editor.cpp"
+
+#include "generated.h"
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
 		v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
@@ -318,6 +321,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Checkbox("show normals", &game.show_normals);
 		ImGui::Text("in gizmo: %d, gizmo mode: %d", world.editor.in_gizmo,
 				world.editor.gizmo_mode);
+		if (ImGui::Button("new cube")) {
+			Entity *entity = make_entity(world, EntityType_Static,
+					&game.cube_asset, game_camera.position
+					+ game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
+			world.editor.selected_entity = entity->id;
+		}
+		if (ImGui::Button("new sphere")) {
+			Entity *entity = make_entity(world, EntityType_Static,
+					&game.sphere_asset, game_camera.position
+					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
+			world.editor.selected_entity = entity->id;
+		}
 		ImGui::End();
 	}
 
@@ -330,15 +345,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			v3 r = e->rotation * RAD2DEG;
 
 			ImGui::Begin("Entity");
-			ImGui::InputFloat("X", &e->position.x);
-			ImGui::InputFloat("Y", &e->position.y);
-			ImGui::InputFloat("Z", &e->position.z);
-			ImGui::InputFloat("RX", &r.x);
-			ImGui::InputFloat("RY", &r.y);
-			ImGui::InputFloat("RZ", &r.z);
-			ImGui::InputFloat("SX", &e->scale.x);
-			ImGui::InputFloat("SY", &e->scale.y);
-			ImGui::InputFloat("SZ", &e->scale.z);
+            ImGui::ColorEdit3("color", e->color.e);
+			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
+
+			//ImGui::InputFloat("X", &e->position.x);
+			//ImGui::InputFloat("Y", &e->position.y);
+			//ImGui::InputFloat("Z", &e->position.z);
+			//ImGui::InputFloat("RX", &r.x);
+			//ImGui::InputFloat("RY", &r.y);
+			//ImGui::InputFloat("RZ", &r.z);
+			//ImGui::InputFloat("SX", &e->scale.x);
+			//ImGui::InputFloat("SY", &e->scale.y);
+			//ImGui::InputFloat("SZ", &e->scale.z);
 			ImGui::End();
 
 			e->rotation = r * DEG2RAD;

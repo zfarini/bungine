@@ -26,6 +26,7 @@ struct CollisionShape
 	// TODO: both of these are bad
 	v3 box_radius;
 	mat4 transform;
+	v3 scale;
 };
 
 typedef usize entity_id;
@@ -96,10 +97,6 @@ struct Camera
 	float znear, zfar, width, height;
 	v3 forward, right, up;
 };
-
-
-// TODO: replace this
-#include <unordered_map>
 
 enum GizmoMode
 {

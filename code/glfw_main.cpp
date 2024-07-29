@@ -8,10 +8,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <glad.c>
-
+// TODO: replace this
+#include <unordered_map>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <math.h>
 
 #undef min
 #undef max

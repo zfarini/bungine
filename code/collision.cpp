@@ -278,12 +278,12 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 				}
 			}
 			else if (shapes[i].type == COLLISION_SHAPE_ELLIPSOID) {
-				assert(!"you should multiply shapes[i].ellipsoid_radius by entity.scale");
 				info = ellipsoid_intersect_ellipsoid(e.position + delta_p, e.position, e_radius,
 						V3(shapes[i].transform.e[0][3],
 							shapes[i].transform.e[1][3],
 							shapes[i].transform.e[2][3]), 
-						shapes[i].ellipsoid_radius);
+						shapes[i].ellipsoid_radius
+						* shapes[i].scale);
 				if (info.t < hit_info.t)
 					hit_info = info;
 			}
@@ -332,6 +332,9 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 		CollisionShape shape = test.shape;
 		shape.transform = get_entity_transform(test);
+
+		if (shape.type == COLLISION_SHAPE_ELLIPSOID)
+			shape.scale = test.scale;
 
 		shapes.push(shape);
 	}

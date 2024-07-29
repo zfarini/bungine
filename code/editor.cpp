@@ -191,6 +191,7 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 #endif
 
 
+							// transform that will take to a unit circle in xy plane?
 							mat4 m = inverse(
 									mat4_cols(V4(right_axis, 0),
 										V4(up_axis, 0), V4(axis[editor.dragging_axis], 0),
@@ -203,8 +204,6 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 #if 1
 							float a = atan2(p.y, p.x);
 
-
-
 							if (!editor.r_did_drag) {
 								editor.r_did_drag = true;
 								editor.r_init_drag = a;
@@ -215,8 +214,6 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 									= editor.r_init_rot + (a - editor.r_init_drag);
 							}
 #endif
-							// find some transform that will take us to cirlce with radius 1
-							// in xy plane
 						}
 					}
 				}
@@ -270,4 +267,4 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 
 		world.editor_selected_entity = editor.selected_entity;
 		editor.last_camera_p = camera.position;
-	}
+}

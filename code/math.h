@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)

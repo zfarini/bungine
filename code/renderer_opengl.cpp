@@ -1,6 +1,3 @@
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
-
 Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
 		bool mipmapping = true)
 {
