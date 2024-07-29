@@ -145,6 +145,26 @@ void push_ellipsoid_outline(v3 p, v3 r, v3 color = V3(1))
 	}
 }
 
+void push_circle(v3 p, float r, v3 right_axis, v3 up_axis, v3 color = V3(1))
+{
+	right_axis = normalize(right_axis);
+	up_axis = normalize(up_axis);
+
+	int itr_count = 60;
+	float a = (2 * PI) / itr_count;
+
+	for (int itr = 0; itr < itr_count; itr++)
+	{
+		float a0 = a * itr;
+		float a1 = a * (itr + 1);
+
+		v3 p0 = p + r * (right_axis * cosf(a0) + up_axis * sinf(a0));
+		v3 p1 = p + r * (right_axis * cosf(a1) + up_axis * sinf(a1));
+
+		push_line(p0, p1, color);
+	}
+}
+
 void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 {
 	if (computed[i] || bones[i].parent == -1)

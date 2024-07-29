@@ -125,6 +125,12 @@ struct Editor
 	float s_init_scale;
 	float s_init_drag;
 
+	bool r_did_drag;
+	float r_init_rot;
+	float r_init_drag;
+	v3 r_init_x_axis;
+	v3 r_init_y_axis;
+
 	v3 last_camera_p;
 };
 

@@ -130,7 +130,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					load_shader(make_cstring("debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
 					load_shader(make_cstring("debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
 #endif
-					PRIMITIVE_LINES, game.disable_depth_state, game.default_rasterizer_state,
+					PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
 					input_layout);
 
 			game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
@@ -296,6 +296,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	begin_render_pass(game.debug_lines_render_pass);
 	{
+		// TODO:!!!
+		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 				g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;

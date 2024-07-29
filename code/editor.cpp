@@ -56,14 +56,30 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 		else if (IsDown(input, BUTTON_R)) editor.gizmo_mode = GIZMO_ROTATION;
 		else if (IsDown(input, BUTTON_S)) editor.gizmo_mode = GIZMO_SCALE;
 	}
+	float rotation_inner_radius = 1.5;
+	float rotation_outer_radius = 2;
+	float rotation_circle_radius = 0.5f * (rotation_inner_radius + rotation_outer_radius);
+	v3 axis[3] = {
+		2*V3(1, 0, 0),
+		2*V3(0, 1, 0),
+		2*V3(0, 0, 1)
+	};
+
+	if (editor.gizmo_mode == GIZMO_SCALE) {
+		Entity *e = get_entity(world, editor.selected_entity);
+		if (e) { 
+			mat4 transform = get_entity_transform(*e);
+
+			for (int i = 0; i < 3; i++)
+				axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
+			for (int i = 0; i < 3; i++)
+				axis[i] = 2 * normalize(axis[i]);
+		}
+	}
 
 	if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
 		float min_hit_t;
 		entity_id hit_entity = raycast_to_entities(world, ray_origin, ray_dir, min_hit_t);
-
-		v3 x_axis = 2*V3(1, 0, 0);
-		v3 y_axis = 2*V3(0, 1, 0);
-		v3 z_axis = 2*V3(0, 0, 1);
 
 		if (editor.selected_entity && !editor.in_gizmo) {
 			Entity *e = get_entity(world, editor.selected_entity);
@@ -71,12 +87,26 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 				float min_axis_t = FLT_MAX;
 				int best_axis = -1;
 				for (int i = 0; i < 3; i++) {
-					v3 axis = i == 0 ? x_axis : (i == 1 ? y_axis : z_axis);
 
-					float t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis, 
-							x_axis * (i == 0 ? 0.5f : 0.25f), 
-							y_axis * (i == 1 ? 0.5f : 0.25f), 
-							z_axis * (i == 2 ? 0.5f : 0.25f));
+					float t = -1;
+					if (editor.gizmo_mode == GIZMO_ROTATION) {
+						if (ray_hit_plane(ray_origin, ray_dir, axis[i], e->position, &t)) {
+							v3 p = ray_origin + t * ray_dir;
+
+							if (t >= 0 && 
+								length(p - e->position) > rotation_inner_radius
+							&&  length(p - e->position) < rotation_outer_radius) {
+							}
+							else
+								t = -1;
+						}
+					}
+					else {
+						t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis[i], 
+							axis[0] * (i == 0 ? 0.5f : 0.25f), 
+							axis[1] * (i == 1 ? 0.5f : 0.25f), 
+							axis[2] * (i == 2 ? 0.5f : 0.25f));
+					}
 
 					if (t >= 0 && t < min_axis_t) {
 						min_axis_t = t;
@@ -89,22 +119,25 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 					editor.in_gizmo = true;
 					editor.did_drag = false;
 					editor.s_did_drag = false;
+					editor.r_did_drag = false;
 					editor.dragging_axis = best_axis;
 				}
-				}
 			}
+		}
 
 			if (editor.in_gizmo) {
 
 				Entity *e = get_entity(world, editor.selected_entity);
 				if (e) {
-					v3 axis = editor.dragging_axis == 0 ? x_axis : (editor.dragging_axis == 1 ? y_axis : z_axis);
-
 					if (editor.did_drag && !v3_equal(camera.position, editor.last_camera_p))
 						editor.did_drag = false;
 
 					// TODO: actually think about this (what if the axis and camera.forward are aligned?)
-					v3 plane_normal = cross(axis, cross(axis, camera.forward));
+					v3 plane_normal = cross(axis[editor.dragging_axis], cross(axis[editor.dragging_axis], camera.forward));
+					if (editor.gizmo_mode == GIZMO_ROTATION) {
+					//	plane_normal = cross(axis[editor.dragging_axis], camera.forward);
+						plane_normal = axis[editor.dragging_axis];
+					}
 
 					push_line(e->position, e->position + normalize(plane_normal) * 2,
 							V3(1, 0, 1));
@@ -115,7 +148,7 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 
 						if (editor.gizmo_mode == GIZMO_TRANSLATION) {
 							//push_cube_outline(hit_p, V3(0.01f), V3(0.2));
-							v3 dp = normalize(axis) * dot(hit_p - e->position, normalize(axis));
+							v3 dp = normalize(axis[editor.dragging_axis]) * dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 
 							if (!editor.did_drag) {
 								editor.did_drag = true;
@@ -125,7 +158,7 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 								e->position += dp - editor.drag_p;
 						}
 						else if (editor.gizmo_mode == GIZMO_SCALE) {
-							float ds = dot(hit_p - e->position, normalize(axis));
+							float ds = dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 							//printf("DRAG: %f %f %f\n", ds, editor.s_init_drag, e->scale.e[editor.dragging_axis]);
 
 							if (!editor.s_did_drag) {
@@ -139,6 +172,51 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 								if (e->scale.e[editor.dragging_axis] < 0.01f)
 									e->scale.e[editor.dragging_axis] = 0.01f;
 							}
+						}
+						else if (editor.gizmo_mode == GIZMO_ROTATION) {
+							v3 p = normalize(hit_p - e->position) * rotation_circle_radius;
+
+
+							push_cube_outline(e->position + p, V3(0.1), V3(0));
+#if 1
+							v3 right_axis = axis[(editor.dragging_axis+1)%3];
+							v3 up_axis = axis[(editor.dragging_axis+2)%3];
+#else
+							v3 right_axis = 
+								2*normalize(cross(axis[editor.dragging_axis], camera.forward));
+							v3 up_axis = 
+								2*normalize(cross(right_axis, axis[editor.dragging_axis]));
+
+
+#endif
+
+
+							mat4 m = inverse(
+									mat4_cols(V4(right_axis, 0),
+										V4(up_axis, 0), V4(axis[editor.dragging_axis], 0),
+										V4(0, 0, 0, 1)));
+
+							p = (m * V4(p, 0)).xyz;
+
+							push_line(e->position, e->position + right_axis, V3(1));
+							push_line(e->position, e->position + up_axis, V3(0.2));
+#if 1
+							float a = atan2(p.y, p.x);
+
+
+
+							if (!editor.r_did_drag) {
+								editor.r_did_drag = true;
+								editor.r_init_drag = a;
+								editor.r_init_rot = e->rotation.e[editor.dragging_axis];
+							}
+							else {
+								e->rotation.e[editor.dragging_axis] 
+									= editor.r_init_rot + (a - editor.r_init_drag);
+							}
+#endif
+							// find some transform that will take us to cirlce with radius 1
+							// in xy plane
 						}
 					}
 				}
@@ -155,22 +233,33 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 		}
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) {
-			v3 x_axis = 2*V3(1, 0, 0);
-			v3 y_axis = 2*V3(0, 1, 0);
-			v3 z_axis = 2*V3(0, 0, 1);
+
 			for (int i = 0; i < 3; i++) {
-				v3 axis = i == 0 ? x_axis : (i == 1 ? y_axis : z_axis);
 				v3 color = {};
 				color.e[i] = 1;
 				if (editor.in_gizmo && editor.dragging_axis == i)
 					color = V3(1, 1, 0);
-				push_line(e->position, e->position + axis, color);
 
 				if (editor.gizmo_mode == GIZMO_SCALE) {
-					push_cube_outline(e->position + axis, V3(0.1f), color);
+					push_line(e->position, e->position + axis[i], color);
+					push_cube_outline(e->position + axis[i], V3(0.1f), color);
 				}
 				else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-					push_ellipsoid_outline(e->position + axis, V3(0.1f), color);
+					push_line(e->position, e->position + axis[i], color);
+					push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+				}
+				else {
+#if 0
+					for (int j = 0; j < 36; j++)
+						push_circle(e->position, 
+								lerp(rotation_inner_radius, rotation_outer_radius, j / 36.f)
+								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+#else
+					push_circle(e->position, 
+								rotation_circle_radius
+								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+#endif
+
 				}
 				//push_box_outline(e->position + 0.5f * axis,
 				//		x_axis * (i == 0 ? 0.5f : 0.25f), 
