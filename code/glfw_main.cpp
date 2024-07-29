@@ -27,17 +27,13 @@ bool g_hide_mouse = true;
 void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 {
 	int button_map[BUTTON_COUNT] = {};
+	
+	for (int i = 0; i < 26; i++)
+		button_map[BUTTON_A + i] = GLFW_KEY_A + i;
 
-	button_map[BUTTON_CAMERA_FORWARD] 	= GLFW_KEY_W;
-	button_map[BUTTON_CAMERA_BACKWARD] 	= GLFW_KEY_S;
-	button_map[BUTTON_CAMERA_LEFT] 		= GLFW_KEY_A;
-	button_map[BUTTON_CAMERA_RIGHT]  	= GLFW_KEY_D;
-	button_map[BUTTON_CAMERA_UP] 		= GLFW_KEY_Q;
-	button_map[BUTTON_CAMERA_DOWN] 		= GLFW_KEY_E;
-	button_map[BUTTON_PLAYER_FORWARD] 	= GLFW_KEY_F;
-	button_map[BUTTON_PLAYER_BACKWARD] 	= GLFW_KEY_G;
-	button_map[BUTTON_PLAYER_JUMP]		= GLFW_KEY_SPACE;
-	button_map[BUTTON_LEFT_SHIFT]		= GLFW_KEY_LEFT_SHIFT;
+	button_map[BUTTON_SPACE] = GLFW_KEY_SPACE;
+	button_map[BUTTON_LEFT_SHIFT] = GLFW_KEY_LEFT_SHIFT;
+	button_map[BUTTON_LEFT_CONTROL] = GLFW_KEY_LEFT_CONTROL;
 
 	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
 		button_map[i] = GLFW_KEY_F1 + (i - BUTTON_F1);

@@ -245,14 +245,6 @@ void *ufbx_arena_realloc(void *user, void *old_ptr, size_t old_size, size_t new_
 	return data;
 }
 
-b32 v3_equal(v3 a, v3 b)
-{
-	const float eps = 1e-9;
-	return fabsf(a.x - b.x) < eps &&
-		fabsf(a.y - b.y) < eps &&
-		fabsf(a.z - b.z) < eps;
-}
-
 b32 quat_equal(quat a, quat b)
 {
 	const float eps = 1e-9;

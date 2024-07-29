@@ -457,7 +457,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 #if 0
 	if (game.in_editor && !ImGui::GetIO().WantCaptureKeyboard)
 #else
-		if (game.in_editor)
+		if (game.in_editor && !IsDown(input, BUTTON_LEFT_CONTROL))
 #endif
 		{
 			v3 camera_dp = {};

@@ -101,15 +101,31 @@ struct Camera
 // TODO: replace this
 #include <unordered_map>
 
+enum GizmoMode
+{
+	GIZMO_TRANSLATION,
+	GIZMO_SCALE,
+	GIZMO_ROTATION
+};
+
 struct Editor
 {
 	bool in_gizmo;
 	entity_id selected_entity;
 
+	GizmoMode gizmo_mode;
+
 	int dragging_axis;
 	bool did_drag;
 	v3 drag_p;
-	v3 drag_org_camera_p;
+
+
+	int s_drag_axis;
+	bool s_did_drag;
+	float s_init_scale;
+	float s_init_drag;
+
+	v3 last_camera_p;
 };
 
 struct World

@@ -255,6 +255,13 @@ v3 max(v3 a, v3 b)
 	return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
 }
 
+bool v3_equal(v3 a, v3 b, float eps = 1e-6)
+{
+	return fabsf(a.x - b.x) < eps && 
+		   fabsf(a.y - b.y) < eps &&
+		   fabsf(a.z - b.z) < eps;
+}
+
 union v3i
 {
 	struct {

@@ -314,7 +314,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
 		ImGui::Checkbox("show normals", &game.show_normals);
-		ImGui::Text("in gizmo: %d", world.editor.in_gizmo);
+		ImGui::Text("in gizmo: %d, gizmo mode: %d", world.editor.in_gizmo,
+				world.editor.gizmo_mode);
 		ImGui::End();
 	}
 
