@@ -16,6 +16,7 @@ layout (std140, row_major, binding = 0) uniform Constants
 	float specular_exponent_factor;
 	int skinned;
 	int has_normal_map;
+	int show_normals;
 };
 
 out vec4 outColor;
@@ -64,8 +65,11 @@ void main()
 	else
 		normal = normalize((normal_transform * vec4(inormal, 0)).xyz);
 
-    // outColor = vec4(normal * 0.5f + 0.5f, 1);
-    // return ;
+	if (show_normals != 0) {
+		vec3 color = normal * 0.5f + 0.5f;
+    	outColor = vec4(color, 1);
+    	return ;
+	}
 
     vec3 color = tintColor * texture(diffuse_tex, uv).rgb;
 	
@@ -106,8 +110,6 @@ void main()
 			}
 			shadow /= 9;
 
-			shadow = 1;
-
 			float diffuse = max(0, dot(to_light, normal));
 		
 			vec3 specular = specular_color * pow(max(0.f, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
@@ -118,15 +120,19 @@ void main()
     result += 0.2f * color;
     //return ;
 #if 1
-	vec3 light_pos[2] = {
+	const int light_count = 2;
+
+	vec3 light_pos[light_count] = {
 		vec3(1, 2, 2),
-		vec3(-1, 2, 2)
+		vec3(-1, 2, 2),
+	//	player_p + vec3(0, 0, 2)
 	};
-	vec3 light_color[2] = {
+	vec3 light_color[light_count] = {
 		2*vec3(0.8, 0.2, 0.3),
-		vec3(0.1, 0.9, 0.4)
+		vec3(0.1, 0.9, 0.4),
+		//1.5*vec3(0.8, 0.6, 0.3),
 	};
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < light_count; i++) {
 		vec3 to_light = normalize(light_pos[i] - world_p);
 		float diffuse = max(0.f, dot(to_light, normal));
 		
@@ -135,7 +141,8 @@ void main()
 		//specular = 0;	
 		//diffuse = 0;
 		//specular *= specular;
-		result += light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * 1.f / length(light_pos[i] - world_p) ;
+		float attenuation = 1.f / length(light_pos[i] - world_p);
+		result += light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * attenuation;
 	}
 #endif
 	//result = vec3(pow(result.r, 1/2.2), pow(result.g, 1/2.2), pow(result.b, 1/2.2));

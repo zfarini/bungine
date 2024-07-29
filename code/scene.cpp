@@ -1,5 +1,6 @@
 #include "scene.h"
 
+
 v3 ufbx_to_v3(ufbx_vec3 v)
 {
 	return v3{(float)v.x, (float)v.y, (float)v.z};
@@ -59,8 +60,8 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 		int last_slash = (int)utex->filename.length - 1;
 
 		while (last_slash >= 0 && 
-			(utex->filename.data[last_slash] != '/' &&
-			 utex->filename.data[last_slash] != '\\'))
+				(utex->filename.data[last_slash] != '/' &&
+				 utex->filename.data[last_slash] != '\\'))
 			last_slash--;
 		last_slash++;
 
@@ -76,14 +77,14 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 	Texture texture = create_texture(name, data, width, height, srgb);
 	if (name.count)
 		g_rc->loaded_textures.push(texture);
-	
+
 	return texture;
 }
 
 Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)
 {
 	Material mat = {};
-	
+
 	if (umat->fbx.diffuse_color.texture_enabled)
 		mat.diffuse = load_texture(arena, scene, umat->fbx.diffuse_color.texture);
 	if (umat->fbx.specular_color.texture_enabled)
@@ -118,7 +119,7 @@ Vertex get_ufbx_vertex(ufbx_mesh *umesh, ufbx_skin_deformer *skin, int index)
 		size_t num_weights = skin_vertex.num_weights;
 		if (num_weights > MAX_BONE_WEIGHTS)
 			num_weights = MAX_BONE_WEIGHTS;
-	
+
 		float total_weight = 0.0f;
 		for (size_t i = 0; i < num_weights; i++) {
 			ufbx_skin_weight skin_weight = skin->weights.data[skin_vertex.weight_begin + i];
@@ -159,7 +160,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 
 	Arena *tmp_arena = begin_temp_memory();
 
-    Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
+	Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
 
 	Array<Vertex> vertices = make_array_max<Vertex>(tmp_arena, umesh->num_triangles * 3);
 
@@ -177,7 +178,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 			mesh.bones[i].transform = inverse(mesh.bones[i].inv_bind);
 			mesh.bones[i].parent = -1;
 			mesh.bones[i].name = make_string(arena, cluster->bone_node->name.length,
-				cluster->bone_node->name.data);
+					cluster->bone_node->name.data);
 			//printf("\tbone name: %.*s\n", str_format(mesh.bones[i].name));
 			for (int j = 0; j < mesh.bones.count; j++) {
 				if (cluster->bone_node->parent == skin->clusters.data[j]->bone_node) {
@@ -201,9 +202,9 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 		for (usize face_idx = 0; face_idx < upart.num_faces; face_idx++) {
 			ufbx_face face = umesh->faces.data[upart.face_indices.data[face_idx]];
 			uint32_t num_tris = ufbx_triangulate_face(tri_indices.data, tri_indices.count, umesh, face);
-			
+
 			for (size_t i = 0; i < num_tris * 3; i++) {
-            	uint32_t index = tri_indices[i];
+				uint32_t index = tri_indices[i];
 
 
 				vertices.push(get_ufbx_vertex(umesh, skin, index));
@@ -225,7 +226,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	}
 
 	mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
-		vertices.count * sizeof(Vertex), vertices.data);
+			vertices.count * sizeof(Vertex), vertices.data);
 
 	end_temp_memory();
 	return mesh;
@@ -248,17 +249,17 @@ b32 v3_equal(v3 a, v3 b)
 {
 	const float eps = 1e-9;
 	return fabsf(a.x - b.x) < eps &&
-		   fabsf(a.y - b.y) < eps &&
-		   fabsf(a.z - b.z) < eps;
+		fabsf(a.y - b.y) < eps &&
+		fabsf(a.z - b.z) < eps;
 }
 
 b32 quat_equal(quat a, quat b)
 {
 	const float eps = 1e-9;
 	return	fabsf(a.x - b.x) < eps &&
-		  	fabsf(a.y - b.y) < eps &&
-			fabsf(a.z - b.z) < eps &&
-			fabsf(a.w - b.w) < eps;
+		fabsf(a.y - b.y) < eps &&
+		fabsf(a.z - b.z) < eps &&
+		fabsf(a.w - b.w) < eps;
 }
 
 mat4 get_animated_node_transform(Animation &anim, NodeAnimation &node, float anim_time)
@@ -284,7 +285,7 @@ mat4 get_animated_node_transform(Animation &anim, NodeAnimation &node, float ani
 }
 
 void get_animated_node_transform(Animation &anim, NodeAnimation &node, float anim_time,
-	v3 &position, v3 &s, quat &rotation)
+		v3 &position, v3 &s, quat &rotation)
 {
 	int frame = anim_time / anim.frametime;
 	if (frame >= anim.frame_count)
@@ -350,7 +351,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 				// polarity takes a the longer path, so flip the quaternion if necessary.
 				if (dot(rotation[frame], rotation[frame - 1]) < 0.0f)
 					rotation[frame] = -rotation[frame];
-				
+
 				if (!v3_equal(position[frame - 1], position[frame]))
 					const_position = false;
 				if (!quat_equal(rotation[frame - 1], rotation[frame]))
@@ -358,7 +359,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 				if (!v3_equal(scale[frame - 1], scale[frame]))
 					const_scale = false;
 			}
-			
+
 		}
 		//printf("\tP: %d, R: %d, S: %d\n", const_position ? 1 : 0,
 		//	const_rotation ? 1 : 0, const_scale ? 1 : 0);
@@ -375,7 +376,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 			node_anim.const_scale = scale[0];
 		else
 			node_anim.scale = clone_array(arena, scale);
-		
+
 		anim.nodes.push(node_anim);
 	}
 
@@ -471,8 +472,8 @@ Scene load_scene(Arena *arena, const char *filename)
 		bool const_anim = true;
 		for (usize j = 0; j < anim.nodes.count; j++)
 			if (anim.nodes[j].position.count || 
-				anim.nodes[j].rotation.count ||
-				anim.nodes[j].scale.count)
+					anim.nodes[j].rotation.count ||
+					anim.nodes[j].scale.count)
 				const_anim = false;
 		if (!const_anim)
 			scene.animations.push(anim);

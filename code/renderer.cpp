@@ -1,9 +1,23 @@
+void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
+{
+#if RENDERER_OPENGL
+	init_render_context_opengl(rc, platform);
+#else
+	init_render_context_dx11(rc, platform);
+#endif
+	rc.loaded_textures = make_array_max<Texture>(arena, 256);
+	rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
+
+	uint32_t white_color = 0xffffffff;
+	rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);
+}
+
 void push_line(v3 a, v3 b, v3 color = V3(1))
 {
-    g_rc->debug_lines.push(a);
-    g_rc->debug_lines.push(color);
-    g_rc->debug_lines.push(b);
-    g_rc->debug_lines.push(color);
+	g_rc->debug_lines.push(a);
+	g_rc->debug_lines.push(color);
+	g_rc->debug_lines.push(b);
+	g_rc->debug_lines.push(color);
 }
 
 void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
@@ -34,7 +48,7 @@ void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
 }
 
 void push_box_outline(v3 center,
-	v3 x_axis, v3 y_axis, v3 z_axis, v3 color = V3(1))
+		v3 x_axis, v3 y_axis, v3 z_axis, v3 color = V3(1))
 {
 	// v3 y_axis = normalize(cross(max - min, V3(0, 0, 1)));
 	// v3 x_axis = normalize(cross(y_axis, V3(0, 0, 1)));
@@ -51,18 +65,18 @@ void push_box_outline(v3 center,
 	v3 p[8];
 	int i = 0;
 	/*
-		-1 -1 -1
-		1, -1 -1
-		-1 1 -1
-		1 1 -1
-	*/
+	   -1 -1 -1
+	   1, -1 -1
+	   -1 1 -1
+	   1 1 -1
+	   */
 	for (int dz = -1; dz <= 1; dz++) {
 		for (int dy = -1; dy <= 1; dy++) {
 			for (int dx = -1; dx <= 1; dx++) {
 				if (dx && dy && dz) {
 					p[i++] = center + x_axis * dx
-									+ y_axis * dy
-									+ z_axis * dz;
+						+ y_axis * dy
+						+ z_axis * dz;
 				}
 			}
 		}
@@ -107,7 +121,7 @@ void push_ellipsoid_outline(v3 p, v3 r, v3 color = V3(1))
 	v3 x = V3(r.x, 0, 0);
 	v3 y = V3(0, r.y, 0);
 	v3 z = V3(0, 0, r.z);
-	
+
 	int itr_count = 60;
 	float a = (2 * PI) / itr_count;
 
@@ -131,16 +145,152 @@ void push_ellipsoid_outline(v3 p, v3 r, v3 color = V3(1))
 	}
 }
 
-void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
+void compute_bone_transform(Array<Bone> bones, int i, Array<bool> computed)
 {
-#if RENDERER_OPENGL
-	init_render_context_opengl(rc, platform);
-#else
-	init_render_context_dx11(rc, platform);
-#endif
-	rc.loaded_textures = make_array_max<Texture>(arena, 256);
-    rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
+	if (computed[i] || bones[i].parent == -1)
+		return ;
+	compute_bone_transform(bones, bones[i].parent, computed);
+	bones[i].transform = bones[bones[i].parent].transform *  bones[i].transform;
+	computed[i] = true;
+}
 
-   uint32_t white_color = 0xffffffff;
-    rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);
+void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
+{
+	if (bones.count == 0)
+		return ;
+
+	Arena *temp = begin_temp_memory();
+
+	Array<Bone> anim_bones = clone_array(temp, bones);
+
+	if (anim) {
+		for (usize i = 0; i < bones.count; i++) {
+			int index = -1;
+			for (usize j = 0; j < anim->nodes.count; j++) {
+				if (strings_equal(anim->nodes[j].name, anim_bones[i].name)) {
+					index = (int)j;
+					break ;
+				}
+			}
+			if (index != -1) 
+				anim_bones[i].transform = anim->nodes[index].transform;//get_animated_node_transform(*anim, anim->nodes[index], anim_time);
+		}
+	}
+
+	Array<bool> computed = make_array<bool>(temp, anim_bones.count);
+	for (int i = 0; i < anim_bones.count; i++)
+		computed[i] = false;
+	for (int i = 0; i < anim_bones.count; i++)
+		compute_bone_transform(anim_bones, i, computed);
+	for (int i = 0; i < anim_bones.count; i++)
+		anim_bones[i].transform = translate(-2, 0, 0) * transform * anim_bones[i].transform;
+
+	for (usize i = 0; i < anim_bones.count; i++) {
+		v3 P = (anim_bones[i].transform * v4{0, 0, 0, 1}).xyz;
+
+		if (anim_bones[i].parent != -1) {
+			v3 parentP = (anim_bones[anim_bones[i].parent].transform * v4{0, 0, 0, 1}).xyz;
+			push_line(P, parentP);
+		}
+	}
+
+	end_temp_memory();
+}
+
+Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
+{
+	Array<Bone> anim_bones = clone_array(arena, bones);
+
+	for (usize i = 0; i < bones.count; i++) {
+		int index = -1;
+		for (usize j = 0; j < anim->nodes.count; j++) {
+			if (strings_equal(anim->nodes[j].name, anim_bones[i].name)) {
+				index = (int)j;
+				break ;
+			}
+		}
+		if (index != -1) {
+			anim_bones[i].transform = anim->nodes[index].transform;//get_animated_node_transform(*anim, anim->nodes[index], anim_time);
+		}
+	}
+
+	Array<bool> computed = make_zero_array<bool>(arena, anim_bones.count);
+	for (int i = 0; i < anim_bones.count; i++)
+		compute_bone_transform(anim_bones, i, computed);
+	for (int i = 0; i < anim_bones.count; i++)
+		anim_bones[i].transform = transform * anim_bones[i].transform;
+	return anim_bones;
+}
+
+
+void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
+		Animation *anim, float anim_time, v3 color)
+{
+	if (node->skip_render)
+		return ;
+
+	mat4 local_transform = node->local_transform;
+	if (anim) {
+		for (usize j = 0; j < anim->nodes.count; j++) {
+			if (strings_equal(anim->nodes[j].name, node->name)) {
+				local_transform = anim->nodes[j].transform;//get_animated_node_transform(*anim, anim->nodes[j], anim_time);
+				break ;
+			}
+		}
+	}
+	node_transform = node_transform * local_transform;
+
+	if (node->mesh) {
+		Mesh &mesh = *node->mesh;
+
+		Constants constants = {};
+		constants.view = camera.view;
+		constants.projection = camera.projection;
+		constants.camera_p = camera.position;
+		constants.light_transform = game.shadow_map.projection * game.shadow_map.view;
+		constants.color = color;
+		constants.player_p = get_entity(*game.world, game.world->player_id)->position;
+		constants.show_normals = game.show_normals;
+
+		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
+
+		constants.model = mesh_transform;
+		//constants.normal_transform = inverse(transpose(constants.model));
+		if (mesh.bones.count && anim) {
+			constants.skinned = 1;
+			Arena *temp  = begin_temp_memory();
+			Array<Bone> bones = get_animated_bones(temp, mesh.bones, mesh_transform, anim, anim_time);
+			for (usize j = 0; j < bones.count; j++)
+				constants.bones[j] = bones[j].transform * bones[j].inv_bind;
+			end_temp_memory();
+		}
+
+		for (usize j = 0; j < mesh.parts.count; j++) {
+			MeshPart &part = mesh.parts[j];
+
+			bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
+			bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
+			bind_texture(2, part.material.normal_map);
+			bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
+
+			constants.diffuse_factor = part.material.diffuse_factor;
+			constants.specular_factor = part.material.specular_factor;
+			constants.specular_exponent_factor = part.material.specular_exponent_factor;
+			constants.has_normal_map = part.material.normal_map.valid;
+
+			update_constant_buffer(game.constant_buffer, &constants);
+			bind_vertex_buffer(mesh.vertex_buffer);
+			draw((int)part.offset, (int)part.vertices_count);
+		}
+	}
+
+	for (usize i = 0; i < node->childs.count; i++)
+		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
+}
+
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color)
+{
+	if (anim)
+		anim_time = fmod(anim_time, anim->duration);
+	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
 }

@@ -16,11 +16,12 @@
 #undef min
 #undef max
 
+#define TOGGLE_EDITOR_BUTTON BUTTON_F1
+
 #include "game.cpp"
 
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 
-v2 last_mouse_p;
 bool g_hide_mouse = true;
 
 void update_game_input(GLFWwindow *window, GameInput &input, int frame)
@@ -51,15 +52,16 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 
 	double mouse_x, mouse_y;
 	glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+	input.last_mouse_p = input.mouse_p;
+	input.mouse_p = V2(mouse_x, mouse_y);
 	if (frame > 3)
-		input.mouse_dp = V2(mouse_x, mouse_y) - last_mouse_p;
-	last_mouse_p = V2((float)mouse_x, (float)mouse_y);
-	if (IsDownFirstTime(input, BUTTON_F1)) {
+		input.mouse_dp = input.mouse_p - input.last_mouse_p;
+
+	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON)) {
 		g_hide_mouse = !g_hide_mouse;
 		glfwSetInputMode(window, GLFW_CURSOR, g_hide_mouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	}
-
-	input.mouse_p = V2(mouse_x, mouse_y);
 }
 
 GAME_UPDATE_AND_RENDER(game_update_and_render);
@@ -69,51 +71,50 @@ int main()
 	if (!glfwInit())
 		assert(0);
 
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true); glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+#ifdef RENDERER_DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-
-	#ifdef ENABLE_SRGB
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
-	#endif
 
 	GLFWwindow *window = glfwCreateWindow(800, 600, "game", 0, 0);
 	if (!window)
 		assert(0);
 
 	glfwMakeContextCurrent(window);
-	// TODO: test with this, a lot of stuff break (mouse, jump..)
 	//glfwSwapInterval(0);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		assert(0);
 
-
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 	// Setup Platform/Renderer backends
-	ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+	ImGui_ImplGlfw_InitForOpenGL(window, true);// Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
-	//glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
 	// TODO: change to mmap
-    usize memory_size = GigaByte(1);
-    Arena memory = make_arena(calloc(1, memory_size), memory_size);
+	usize memory_size = GigaByte(1);
+	Arena memory = make_arena(calloc(1, memory_size), memory_size);
 
 	RenderContext rc = {};
 
-	//init_render_context_opengl(rc, window);
-
 	GameInput game_input = {};
+	{
+		double mouse_x, mouse_y;
+		glfwGetCursorPos(window, &mouse_x, &mouse_y);
+		game_input.mouse_p = game_input.last_mouse_p = V2(mouse_x, mouse_y);
+	}
 
-	// ConstantBuffer constant_buffer = create_constant_buffer(0, elems, ARRAY_SIZE(elems));
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (g_hide_mouse)
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	Platform platform = {};
 	platform.render_context = &rc;
@@ -122,15 +123,14 @@ int main()
 
 	int frame = 0;
 
-	while (!glfwWindowShouldClose(window))
-	{
+	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-		
+
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			break ;
 		update_game_input(window, game_input, frame);
 		game_update_and_render(platform, &memory, game_input, 1.f / 60);
-	
+
 		glfwSwapBuffers(window);
 		frame++;
 	}

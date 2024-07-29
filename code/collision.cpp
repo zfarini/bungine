@@ -19,7 +19,7 @@ CollisionShape make_triangles_shape(Array<CollisionTriangle> triangles)
 CollisionShape make_box_shape(Arena *arena, v3 radius)
 {
 	Array<CollisionTriangle> triangles = make_array_max<CollisionTriangle>(arena, 12);
-	
+
 	v3 p00 = V3(-radius.x, -radius.y, -radius.z);
 	v3 p01 = V3(+radius.x, -radius.y, -radius.z);
 	v3 p02 = V3(+radius.x, +radius.y, -radius.z);
@@ -145,12 +145,12 @@ void intersect_triangle_plane(v3 v0, v3 v1, v3 v2, v3 dir, CollisionInfo &info)
 		p = v0 + (p-v0)-dot(p - v0, normal)*normal;
 
 		/*
-			P = A * u + B * v
+		   P = A * u + B * v
 
-			cross(P, u) = B * v * u = - B * n
-			dot(cross(P, u)) = -B * dot(n, n)
-			B = -dot(cross(P, u))/dot(n, n)
-		*/
+		   cross(P, u) = B * v * u = - B * n
+		   dot(cross(P, u)) = -B * dot(n, n)
+		   B = -dot(cross(P, u))/dot(n, n)
+		   */
 		float A = dot(cross(p - v0, v), n) * one_over_length_n_sq;
 		float B = -dot(cross(p - v0, u), n) * one_over_length_n_sq;
 
@@ -186,7 +186,7 @@ CollisionInfo ellipsoid_intersect_triangle(v3 targetP, v3 ep, v3 er, v3 v0, v3 v
 	v3 dir = inv_r * (targetP - ep);
 #endif
 	intersect_triangle_plane(t0, t1, t2, dir, info);
-	
+
 	intersect_vertex(t0, dir, info);
 	intersect_vertex(t1, dir, info);
 	intersect_vertex(t2, dir, info);
@@ -211,11 +211,11 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 	info.t = FLT_MAX;
 
 	/*
-		do a Minkowski sum on the 2 ellipsoid resulting in one with the combined radius
-		now the problem is a ray against a ellipsoid
-		bring the ray in the space where the ellipsoid is a sphere with radius 1 and origin at (0,0,0)
-		then just solve the quadratic equation where length(ray_origin + t * ray_dir) = 1
-	*/
+	   do a Minkowski sum on the 2 ellipsoid resulting in one with the combined radius
+	   now the problem is a ray against a ellipsoid
+	   bring the ray in the space where the ellipsoid is a sphere with radius 1 and origin at (0,0,0)
+	   then just solve the quadratic equation where length(ray_origin + t * ray_dir) = 1
+	   */
 	v3 radius = er + tr;
 
 	mat4 m = translate(tp) * scale(radius);
@@ -258,7 +258,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 	for (int itr = 0; itr < SLIDE_ITERATION_COUNT; itr++) {
 		if (length_sq(delta_p) < SMALLEST_VELOCITY*SMALLEST_VELOCITY)
 			break ;
-		
+
 		CollisionInfo hit_info = {};
 		hit_info.t = FLT_MAX;
 
@@ -272,7 +272,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 					v3 p2 = (shapes[i].transform * V4(shapes[i].triangles[j].v2, 1)).xyz;
 
 					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
-											p0, p1, p2);
+							p0, p1, p2);
 					if (info.t < hit_info.t)
 						hit_info = info;
 				}
@@ -280,10 +280,10 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 			else if (shapes[i].type == COLLISION_SHAPE_ELLIPSOID) {
 				assert(!"you should multiply shapes[i].ellipsoid_radius by entity.scale");
 				info = ellipsoid_intersect_ellipsoid(e.position + delta_p, e.position, e_radius,
-				V3(shapes[i].transform.e[0][3],
-				   shapes[i].transform.e[1][3],
-				   shapes[i].transform.e[2][3]), 
-				   shapes[i].ellipsoid_radius);
+						V3(shapes[i].transform.e[0][3],
+							shapes[i].transform.e[1][3],
+							shapes[i].transform.e[2][3]), 
+						shapes[i].ellipsoid_radius);
 				if (info.t < hit_info.t)
 					hit_info = info;
 			}
@@ -305,7 +305,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 		if (length_sq(delta_p*hit_info.t) >= SMALLEST_VELOCITY*SMALLEST_VELOCITY)
 			e.position += normalize(delta_p) * (length(delta_p)*hit_info.t - SMALLEST_VELOCITY);
-		
+
 		v3 normal = normalize(hit_info.hit_normal);
 
 		v3 old_delta_p = delta_p;
@@ -332,7 +332,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 		CollisionShape shape = test.shape;
 		shape.transform = get_entity_transform(test);
-		
+
 		shapes.push(shape);
 	}
 	// {
@@ -349,14 +349,14 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	int itr = 1 + roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
 	for (int i = 0; i < itr; i++)
 		move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
-	
+
 	if (fabsf(e.position.x - old_p.x) < 1e-7)
 		e.dp.x = 0;
 	if (fabsf(e.position.y - old_p.y) < 1e-7)
 		e.dp.y = 0;
 	if (fabsf(e.position.z - old_p.z) < 1e-7)
 		e.dp.z = 0;
-	
+
 
 	v3 save_p = e.position;
 	// try to move down to find the ground of the entity

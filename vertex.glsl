@@ -23,6 +23,7 @@ layout (std140, row_major, binding = 0) uniform Constants
 	float specular_exponent_factor;
 	int skinned;
 	int has_normal_map;
+	int show_normals;
 };
 
 out vec2 uv;

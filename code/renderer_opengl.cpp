@@ -2,7 +2,7 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
-	bool mipmapping = true)
+		bool mipmapping = true)
 {
 	Texture texture = {};
 
@@ -34,8 +34,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
 			GL_UNSIGNED_BYTE, data);
-    if (mipmapping)
-	    glGenerateMipmap(GL_TEXTURE_2D);
+	if (mipmapping)
+		glGenerateMipmap(GL_TEXTURE_2D);
 
 	texture.id = tex;
 	return texture;
@@ -43,8 +43,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 void bind_texture(int index, Texture &texture)
 {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.id);
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.id);
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -55,21 +55,21 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 
 	result.type = type;
 
-    Arena *temp = begin_temp_memory();
+	Arena *temp = begin_temp_memory();
 
-    String content = load_entire_file(temp, filename);
-    int gl_type = 0;
-    if (type == SHADER_TYPE_VERTEX)
-        gl_type = GL_VERTEX_SHADER;
-    else if (type == SHADER_TYPE_FRAGMENT)
-        gl_type = GL_FRAGMENT_SHADER;
-    else
-        assert(0);
+	String content = load_entire_file(temp, filename);
+	int gl_type = 0;
+	if (type == SHADER_TYPE_VERTEX)
+		gl_type = GL_VERTEX_SHADER;
+	else if (type == SHADER_TYPE_FRAGMENT)
+		gl_type = GL_FRAGMENT_SHADER;
+	else
+		assert(0);
 
 	uint32_t shader = glCreateShader(gl_type);
 	glShaderSource(shader, 1, &content.data, (GLint *)&content.count);
 
-    end_temp_memory();
+	end_temp_memory();
 
 	glCompileShader(shader);
 
@@ -84,8 +84,8 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 		assert(0);
 	}
 
-    result.id = shader;
-    return result;
+	result.id = shader;
+	return result;
 
 }
 
@@ -148,7 +148,7 @@ VertexInputLayout create_vertex_input_layout(VertexInputElement *elements, int e
 }
 
 RenderPass create_render_pass(Shader vs, Shader fs,
-	PrimitiveType primitive_type, const DepthStencilState &depth_stencil_state,
+		PrimitiveType primitive_type, const DepthStencilState &depth_stencil_state,
 		const RasterizerState &rasterizer_state, const VertexInputLayout &input_layout)
 {
 	RenderPass rp = {};
@@ -159,8 +159,8 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 	rp.rasterizer_state = rasterizer_state;
 	rp.primitive_type = primitive_type;
 	rp.input_layout = input_layout;
-	
-    rp.program = glCreateProgram();
+
+	rp.program = glCreateProgram();
 
 	glAttachShader(rp.program, vs.id);
 	glAttachShader(rp.program, fs.id);
@@ -172,7 +172,7 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 		char info_log[2048];
 		glGetProgramInfoLog(rp.program, sizeof(info_log), 0, info_log);
 		printf("failed to link program: %s\n", info_log);
-        assert(0);
+		assert(0);
 	}
 
 	return rp;
@@ -238,8 +238,8 @@ void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 {
 	assert(vb.usage == VERTEX_BUFFER_DYNAMIC);
 	glBindVertexArray(vb.vao); // TODO: do I need this call?
-    glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
-    glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 }
 
 void bind_vertex_buffer(VertexBuffer &vb)
@@ -250,29 +250,29 @@ void bind_vertex_buffer(VertexBuffer &vb)
 	glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
 	// TODO: this doesn't have to be done every frame
 	for (int i = 0; i < layout.element_count; i++) {
-        int type = 0;
-         if (layout.elements[i].type == INPUT_ELEMENT_FLOAT)
-            type = GL_FLOAT;
-        else if (layout.elements[i].type == INPUT_ELEMENT_SIGNED_INT)
-            type = GL_INT;
-        else
-            assert(0);
+		int type = 0;
+		if (layout.elements[i].type == INPUT_ELEMENT_FLOAT)
+			type = GL_FLOAT;
+		else if (layout.elements[i].type == INPUT_ELEMENT_SIGNED_INT)
+			type = GL_INT;
+		else
+			assert(0);
 
-        glVertexAttribPointer(i, layout.elements[i].count,
-            type, GL_FALSE, (GLsizei) layout.vertex_size, (void *)layout.elements[i].offset);
-        glEnableVertexAttribArray(i);
-    }
+		glVertexAttribPointer(i, layout.elements[i].count,
+				type, GL_FALSE, (GLsizei) layout.vertex_size, (void *)layout.elements[i].offset);
+		glEnableVertexAttribArray(i);
+	}
 }
 
 void draw(int offset, int vertices_count)
 {
 	int mode = 0;
-    if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
-        mode = GL_TRIANGLES;
-    else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
-        mode = GL_LINES;
-    else
-        assert(0);
+	if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+		mode = GL_TRIANGLES;
+	else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+		mode = GL_LINES;
+	else
+		assert(0);
 	glDrawArrays(mode, offset, vertices_count);
 }
 
@@ -307,24 +307,24 @@ int get_constant_buffer_element_alignement(int type)
 
 int get_type_alignement(ConstantBufferElement e)
 {
-    int align = 0;
-    if (e.array_size > 0)
-        align = 4 * alignof(float);
-    else if (e.type == CONSTANT_BUFFER_ELEMENT_VEC2)
-        align = 2 * alignof(float);
-    else if (e.type == CONSTANT_BUFFER_ELEMENT_VEC3 || e.type == CONSTANT_BUFFER_ELEMENT_VEC4
-        || e.type == CONSTANT_BUFFER_ELEMENT_MAT4)
-        align = 4 * alignof(float);
-    else if (e.type == CONSTANT_BUFFER_ELEMENT_INT || e.type == CONSTANT_BUFFER_ELEMENT_FLOAT)
-        align = alignof(float);
-    else
-        assert(0);
-    return align;
+	int align = 0;
+	if (e.array_size > 0)
+		align = 4 * alignof(float);
+	else if (e.type == CONSTANT_BUFFER_ELEMENT_VEC2)
+		align = 2 * alignof(float);
+	else if (e.type == CONSTANT_BUFFER_ELEMENT_VEC3 || e.type == CONSTANT_BUFFER_ELEMENT_VEC4
+			|| e.type == CONSTANT_BUFFER_ELEMENT_MAT4)
+		align = 4 * alignof(float);
+	else if (e.type == CONSTANT_BUFFER_ELEMENT_INT || e.type == CONSTANT_BUFFER_ELEMENT_FLOAT)
+		align = alignof(float);
+	else
+		assert(0);
+	return align;
 }
 
 int get_type_size(ConstantBufferElement e)
 {
-    return get_constant_buffer_element_size(e.type);
+	return get_constant_buffer_element_size(e.type);
 }
 
 ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
@@ -333,20 +333,20 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 
 	assert(elements.count < ARRAY_SIZE(result.elements));
 	int offset = 0;
-    for (int i = 0; i < elements.count; i++) {
-        result.elements[i] = elements[i];
- 
-        offset = align_to(offset, get_type_alignement(elements[i]))
-            + get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
-    }
+	for (int i = 0; i < elements.count; i++) {
+		result.elements[i] = elements[i];
+
+		offset = align_to(offset, get_type_alignement(elements[i]))
+			+ get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
+	}
 
 	result.element_count = elements.count;
 	result.size = offset;
 
 	glGenBuffers(1, &result.id);
-    glBindBuffer(GL_UNIFORM_BUFFER, result.id);
+	glBindBuffer(GL_UNIFORM_BUFFER, result.id);
 	// TODO: why do we do this?
-    glBufferData(GL_UNIFORM_BUFFER, result.size, 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, result.size, 0, GL_DYNAMIC_DRAW);
 
 	return result;
 }
@@ -357,37 +357,37 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 
 	assert(buffer.size < sizeof(dest));
 
-    int cstruct_offset = 0;
-    int ubo_offset = 0;
+	int cstruct_offset = 0;
+	int ubo_offset = 0;
 
-    for (int i = 0; i < buffer.element_count; i++) {
-        ConstantBufferElement e = buffer.elements[i];
+	for (int i = 0; i < buffer.element_count; i++) {
+		ConstantBufferElement e = buffer.elements[i];
 
-        ubo_offset = align_to(ubo_offset, get_type_alignement(e));
-        cstruct_offset = align_to(cstruct_offset, get_constant_buffer_element_alignement(e.type));
+		ubo_offset = align_to(ubo_offset, get_type_alignement(e));
+		cstruct_offset = align_to(cstruct_offset, get_constant_buffer_element_alignement(e.type));
 
-        int count = e.array_size ? e.array_size : 1;
-        for (int j = 0; j < count; j++) {
-            memcpy(dest + ubo_offset, (char *)data + cstruct_offset, get_constant_buffer_element_size(e.type));
-            ubo_offset += get_type_size(e);
-            cstruct_offset += get_constant_buffer_element_size(e.type);
-        }
-    }
-    //memcpy(dest, data, sizeof(Constants));
+		int count = e.array_size ? e.array_size : 1;
+		for (int j = 0; j < count; j++) {
+			memcpy(dest + ubo_offset, (char *)data + cstruct_offset, get_constant_buffer_element_size(e.type));
+			ubo_offset += get_type_size(e);
+			cstruct_offset += get_constant_buffer_element_size(e.type);
+		}
+	}
+	//memcpy(dest, data, sizeof(Constants));
 
-    glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
+	glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
 	// TODO: subData?
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
 }
 
 void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 {
-    glBindBufferBase(GL_UNIFORM_BUFFER, index, cbuffer.id); 
+	glBindBufferBase(GL_UNIFORM_BUFFER, index, cbuffer.id); 
 }
 
 void begin_render_frame()
 {
-    glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
+	glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
 	g_rc->debug_lines.count = 0;
 	ImGui_ImplGlfw_NewFrame();
 	ImGui_ImplOpenGL3_NewFrame();
@@ -407,7 +407,7 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 	// ignore non-significant error/warning codes
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
 		return;
-	
+
 	printf("---------------\nOPENGL Debug: (%d): %s\n", id, message);
 	printf("Sorce: ");
 	switch (source) {
@@ -445,17 +445,63 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 void init_render_context_opengl(RenderContext &rc, Platform &platform)
 {
 	rc.window = platform.window;
-#ifdef OPENGL_DEBUG
+#ifdef RENDERER_DEBUG
 	int flags;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-    	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(gl_debug_output, nullptr);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
-			                     nullptr, GL_TRUE);
+				nullptr, GL_TRUE);
 	}
 #endif
 	rc.window_framebuffer.id = 0;
 	glEnable(GL_FRAMEBUFFER_SRGB);
+}
+
+// TODO: merge this with create_texture
+Texture create_depth_texture(int width, int height)
+{
+	Texture result = {};
+
+	uint32_t texture;
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
+			0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	result.id = texture;
+	result.valid = true;
+	result.name = make_cstring("shadow map depth texture");
+	return result;
+}
+
+FrameBuffer create_frame_buffer()
+{
+	FrameBuffer result = {};
+	uint32_t fbo;
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, g_rc.active_framebuffer_id);
+
+	result.id = fbo;
+	return result;
+}
+
+void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
+{
+	bind_framebuffer(framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+			texture.id, 0);
+	glLineWidth(1.5f);
 }

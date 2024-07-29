@@ -1,7 +1,6 @@
-#ifndef MATH_H
-#define MATH_H
+#pragma once
 
-#include <math.h>
+#include <cmath>
 
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
@@ -13,7 +12,6 @@ int sign(float x)
 	else if (x > 0) return 1;
 	return 0;
 }
-
 
 // ~ V2
 union v2 {
@@ -725,11 +723,68 @@ T lerp(const T a, const T b, float t)
 	return (1 - t) * a + t * b;
 }
 
-struct Transform {
-	quat rotation;
-	v3 translation;
-	v3 scale;
-};
+bool ray_hit_plane(v3 ray_origin, v3 ray_dir, 
+	v3 plane_normal, v3 plane_point, float *hit_t)
+{
+	float denom = dot(ray_dir, plane_normal);
+	if (fabsf(denom) < 1e-5)
+		return false;
+	float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) / denom;
+	if (t >= 0) {
+		if (hit_t)
+			*hit_t = t;
+		return true;
+	}
+	return false;
+}
 
+void push_cube_outline(v3 p, v3 r, v3 color);
 
-#endif
+float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
+	v3 box_yaxis, v3 box_zaxis)
+{
+	struct  {
+		v3 normal;
+		v3 p;
+	} planes[6];
+
+	planes[0] = {box_xaxis, box_center + box_xaxis};
+	planes[1] = {-box_xaxis, box_center - box_xaxis};
+	planes[2] = {box_yaxis, box_center + box_yaxis};
+	planes[3] = {-box_yaxis, box_center - box_yaxis};
+	planes[4] = {box_zaxis, box_center + box_zaxis};
+	planes[5] = {-box_zaxis, box_center - box_zaxis};
+
+	float lx = length(box_xaxis);
+	float ly = length(box_yaxis);
+	float lz = length(box_zaxis);
+
+	v3 xaxis = normalize(box_xaxis);
+	v3 yaxis = normalize(box_yaxis);
+	v3 zaxis = normalize(box_zaxis);
+
+	float min_t = FLT_MAX;
+	for (int i = 0; i < 6; i++) {
+		/*
+			dot(O + t * D, normal) = dot(normal, p)
+
+			t * dot(D, normal) = dot(normal, p) - dot(O, normal) / dot(D, normal)
+
+		*/
+		float denom = dot(ray_dir, planes[i].normal);
+		if (fabsf(denom) < 1e-6)
+			continue ;
+		float t = (dot(planes[i].normal, planes[i].p) - dot(ray_origin, planes[i].normal)) / denom;
+		if (t >= 0 && t < min_t) {
+			v3 p = ray_origin + t * ray_dir - box_center;
+			float eps = 1e-4;
+			if (dot(p, xaxis) >= -lx - eps && dot(p, xaxis) <= lx + eps &&
+				dot(p, yaxis) >= -ly - eps && dot(p, yaxis) <= ly + eps &&
+				dot(p, zaxis) >= -lz - eps && dot(p, zaxis) <= lz + eps)
+				min_t = t;
+		}
+	}
+	if (min_t == FLT_MAX)
+		return -1;
+	return min_t;
+}

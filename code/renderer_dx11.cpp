@@ -16,7 +16,7 @@
 #undef swap
 
 Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
-	bool mipmapping = true)
+		bool mipmapping = true)
 {
 	Texture result = {};
 
@@ -34,8 +34,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 	if (mipmapping) {
 		desc.Usage = D3D11_USAGE_DEFAULT;
-    	desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-    	desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+		desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 	}
 
 	D3D11_SUBRESOURCE_DATA s_data = {};
@@ -45,20 +45,20 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 	ID3D11Texture2D* texture;
 
 	g_rc->device->CreateTexture2D(&desc, 0, &texture);
-    g_rc->context->UpdateSubresource(texture, 0, 0, s_data.pSysMem, s_data.SysMemPitch, 0);
+	g_rc->context->UpdateSubresource(texture, 0, 0, s_data.pSysMem, s_data.SysMemPitch, 0);
 
 	ID3D11ShaderResourceView *srv;
-	
+
 	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
 	//srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srv_desc.Texture2D.MipLevels = mipmapping ? (UINT)-1 : 1;
+	srv_desc.Texture2D.MipLevels = mipmapping ? (UINT)-1 : 1;
 
 	g_rc->device->CreateShaderResourceView(texture, &srv_desc, &srv);
 	if (mipmapping)
-        g_rc->context->GenerateMips(srv);
+		g_rc->context->GenerateMips(srv);
 
 	texture->Release();
 
@@ -80,12 +80,12 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 	result.type = type;
 
 	ID3DBlob *blob = 0;
-	
+
 	UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-	
-	#ifdef DIRECT3D_DEBUG
+
+#ifdef RENDERER_DEBUG
 	flags |= D3DCOMPILE_DEBUG;
-	#endif
+#endif
 
 	wchar_t wfilename[4096];  
 	MultiByteToWideChar(CP_ACP, 0, filename.data, (int)filename.count + 1, wfilename, sizeof(wfilename));
@@ -101,17 +101,17 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 
 	ID3DBlob *error_blob;
 	if (FAILED(D3DCompileFromFile(wfilename, 0,
-			D3D_COMPILE_STANDARD_FILE_INCLUDE, main, version,
-			flags, 0, &blob, &error_blob))) {
+					D3D_COMPILE_STANDARD_FILE_INCLUDE, main, version,
+					flags, 0, &blob, &error_blob))) {
 		OutputDebugStringA((char *)error_blob->GetBufferPointer());
 		assert(0);
 	}
 	if (type == SHADER_TYPE_VERTEX)
 		g_rc->device->CreateVertexShader(blob->GetBufferPointer(), 
-			blob->GetBufferSize(), 0, &result.vs);
+				blob->GetBufferSize(), 0, &result.vs);
 	else if (type == SHADER_TYPE_FRAGMENT)
 		g_rc->device->CreatePixelShader(blob->GetBufferPointer(), 
-			blob->GetBufferSize(), 0, &result.ps);
+				blob->GetBufferSize(), 0, &result.ps);
 	else
 		assert(0);
 
@@ -149,7 +149,7 @@ RasterizerState create_rasterizer_state(RasterizerFillMode fillmode, RasterizerC
 }
 
 RenderPass create_render_pass(Shader vs, Shader fs, Array<VertexInputElement> input_elements,
-	PrimitiveType primitive_type, DepthStencilState &depth_stencil_state,
+		PrimitiveType primitive_type, DepthStencilState &depth_stencil_state,
 		RasterizerState &rasterizer_state)
 {
 	RenderPass rp = {};
@@ -208,8 +208,8 @@ DepthStencilState create_depth_stencil_state(bool enable_depth)
 
 	D3D11_DEPTH_STENCIL_DESC desc = {};
 	desc.DepthEnable    = enable_depth;
-    desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    desc.DepthFunc      = D3D11_COMPARISON_LESS;
+	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	desc.DepthFunc      = D3D11_COMPARISON_LESS;
 	g_rc->device->CreateDepthStencilState(&desc, &result.state);
 	return result;
 }
@@ -227,7 +227,7 @@ void begin_render_pass(RenderPass &rp)
 	g_rc->context->IASetInputLayout(rp.input_layout);
 	g_rc->context->VSSetShader(rp.vs.vs, 0, 0);
 	g_rc->context->PSSetShader(rp.fs.ps, 0, 0);
-	
+
 	g_rc->context->OMSetDepthStencilState(rp.depth_stencil_state.state, 0);
 	g_rc->context->RSSetState(rp.rasterizer_state.state);
 }
@@ -283,7 +283,7 @@ VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize vertex_size, us
 	}
 
 	desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	
+
 	if (!data) {
 		assert(usage == VERTEX_BUFFER_DYNAMIC);
 		g_rc->device->CreateBuffer(&desc, 0, &result.buffer);
@@ -374,7 +374,7 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	g_rc->device->CreateBuffer(&desc, 0, &result.buffer);
-	
+
 	return result;
 }
 
@@ -384,7 +384,7 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 
 	void *cdata = arena_alloc(temp, buffer.size);
 	memset(cdata, 0, buffer.size);
-	
+
 	int offset = 0;
 	int data_offset = 0;
 
@@ -431,9 +431,9 @@ void bind_constant_buffer(ConstantBuffer &cbuffer)
 void begin_render_frame()
 {
 	RECT rect;
-    GetClientRect(g_rc->window, &rect);
+	GetClientRect(g_rc->window, &rect);
 	int width = rect.right - rect.left;
-    int height = rect.bottom - rect.top;
+	int height = rect.bottom - rect.top;
 
 	if (width != g_rc->window_width || height != g_rc->window_height) {
 		g_rc->window_width = width;
@@ -449,13 +449,13 @@ void begin_render_frame()
 		if (width != 0 && height != 0) {
 			if (FAILED(g_rc->swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0)))
 				assert(0);
-		
+
 
 			// create RenderTarget view for new backbuffer texture
 			ID3D11Texture2D* backbuffer;
 			g_rc->swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
 			D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
-    		backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 			backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			g_rc->device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &g_rc->window_framebuffer.rtv);
 			backbuffer->Release();
@@ -473,8 +473,8 @@ void begin_render_frame()
 		}
 	}
 	ImGui_ImplDX11_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 	g_rc->debug_lines.count = 0;
 }
 
@@ -492,10 +492,10 @@ void init_render_context_dx11(RenderContext &rc, HWND window)
 
 	{
 		u32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
-		
-		#ifdef DIRECT3D_DEBUG
-			flags |= D3D11_CREATE_DEVICE_DEBUG;
-		#endif
+
+#ifdef RENDERER_DEBUG
+		flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
 		DXGI_SWAP_CHAIN_DESC desc = {};
 		desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -510,36 +510,36 @@ void init_render_context_dx11(RenderContext &rc, HWND window)
 
 
 		assert(SUCCEEDED(D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, flags, 0, 0, D3D11_SDK_VERSION,
-			&desc, &rc.swap_chain, &rc.device, 0, &rc.context)));
+						&desc, &rc.swap_chain, &rc.device, 0, &rc.context)));
 	}
-	#ifdef DIRECT3D_DEBUG
-    {
-        ID3D11InfoQueue* info;
-        rc.device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&info);
-        info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
-        info->Release();
-    }
+#ifdef RENDERER_DEBUG
+	{
+		ID3D11InfoQueue* info;
+		rc.device->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&info);
+		info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+		info->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, TRUE);
+		info->Release();
+	}
 
-    // enable debug break for DXGI too
-    {
-        IDXGIInfoQueue* dxgiInfo;
-        DXGIGetDebugInterface1(0, __uuidof(IDXGIInfoQueue), (void**)&dxgiInfo);
-        dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-        dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
-        dxgiInfo->Release();
-    }
-	#endif
+	// enable debug break for DXGI too
+	{
+		IDXGIInfoQueue* dxgiInfo;
+		DXGIGetDebugInterface1(0, __uuidof(IDXGIInfoQueue), (void**)&dxgiInfo);
+		dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+		dxgiInfo->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, TRUE);
+		dxgiInfo->Release();
+	}
+#endif
 
 	{
 		// TODO: what happens when we have mutiple backbuffers?
 		ID3D11Texture2D* backbuffer;
-        rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
+		rc.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
 		D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
-    	backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, 
-			&rc.window_framebuffer.rtv);
+		rc.device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, 
+				&rc.window_framebuffer.rtv);
 
 		{
 			D3D11_TEXTURE2D_DESC desc;
@@ -549,7 +549,7 @@ void init_render_context_dx11(RenderContext &rc, HWND window)
 		}
 
 		ID3D11Texture2D *depth_buffer;
-		
+
 		D3D11_TEXTURE2D_DESC depth_buffer_desc;
 		backbuffer->GetDesc(&depth_buffer_desc);
 		depth_buffer_desc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -557,7 +557,7 @@ void init_render_context_dx11(RenderContext &rc, HWND window)
 		rc.device->CreateTexture2D(&depth_buffer_desc, 0, &depth_buffer);
 		rc.device->CreateDepthStencilView(depth_buffer, 0,  &rc.window_framebuffer.dsv);
 
-        backbuffer->Release();
+		backbuffer->Release();
 		depth_buffer->Release();
 	}
 }

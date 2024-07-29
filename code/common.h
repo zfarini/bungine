@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #define function static
 #define global static
@@ -17,5 +16,3 @@ typedef float f32;
 typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
 
 #define MAX_BONE_WEIGHTS 4
 
@@ -108,5 +107,3 @@ struct Scene
 	Array<Animation> animations;
 	String path;
 };
-
-#endif

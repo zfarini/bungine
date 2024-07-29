@@ -1,5 +1,4 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 enum EntityType
 {
@@ -64,7 +63,7 @@ struct Entity
 	Animation *animation;
 
 	float speed;
-	
+
 	float height_above_ground;
 };
 
@@ -102,9 +101,23 @@ struct Camera
 // TODO: replace this
 #include <unordered_map>
 
+struct Editor
+{
+	bool in_gizmo;
+	entity_id selected_entity;
+
+	int dragging_axis;
+	bool did_drag;
+	v3 drag_p;
+	v3 drag_org_camera_p;
+};
+
 struct World
 {
 	Arena arena;
+
+	Editor editor;
+
 	Array<Entity> entities;
 
 	std::unordered_map<entity_id, usize> entities_id_map;
@@ -124,6 +137,7 @@ struct World
 	entity_id editor_selected_entity;
 	entity_id player_id;
 };
+
 
 struct Game
 {
@@ -152,14 +166,11 @@ struct Game
 	int frame;
 	float time;
 
-	int dragging_axis;
-	bool did_drag;
-	v3 drag_p;
-	v3 drag_org_camera_p;
-
 	RasterizerState default_rasterizer_state;
 	DepthStencilState default_depth_stencil_state;
 	DepthStencilState disable_depth_state;
+
+	bool show_normals;
 };
 
 struct Constants
@@ -179,6 +190,5 @@ struct Constants
 	float specular_exponent_factor;
 	int skinned;
 	int has_normal_map;
+	int show_normals;
 };
-
-#endif
