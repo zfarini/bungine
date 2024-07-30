@@ -203,7 +203,7 @@ void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim
 	for (int i = 0; i < anim_bones.count; i++)
 		compute_bone_transform(anim_bones, i, computed);
 	for (int i = 0; i < anim_bones.count; i++)
-		anim_bones[i].transform = translate(-2, 0, 0) * transform * anim_bones[i].transform;
+		anim_bones[i].transform =  transform * anim_bones[i].transform;
 
 	for (usize i = 0; i < anim_bones.count; i++) {
 		v3 P = (anim_bones[i].transform * v4{0, 0, 0, 1}).xyz;
@@ -282,6 +282,10 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 			Array<Bone> bones = get_animated_bones(temp, mesh.bones, mesh_transform, anim, anim_time);
 			for (usize j = 0; j < bones.count; j++)
 				constants.bones[j] = bones[j].transform * bones[j].inv_bind;
+
+			if (game.render_bones)
+				render_bones(bones, mesh_transform, anim, anim_time);
+//void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim_time)
 			end_temp_memory();
 		}
 

@@ -36,9 +36,76 @@ mat4 get_entity_transform(Entity &e)
 		* zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
 }
 
+void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
+{
+	mat4 entity_transform = get_entity_transform(e);
+	mat4 scene_transform = entity_transform * e.scene_transform;
+	Arena *temp = begin_temp_memory();
+	Animation *final_anim = 0;
+	Animation anim = {};	
+	if (e.id == world.player_id) {
+		usize max_nodes_count = e.curr_anim->nodes.count;
+		if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
+			max_nodes_count = e.next_anim->nodes.count;
+
+		anim.nodes = make_array<NodeAnimation>(temp, max_nodes_count);
+		if (e.next_anim)
+			assert(e.curr_anim->nodes.count == e.next_anim->nodes.count);
+
+		float blend_duration = e.next_anim ? e.next_anim->duration*0.2f : 0;
+		if (e.blend_time > blend_duration && e.next_anim) {
+			e.curr_anim = e.next_anim;
+			e.anim_time = e.blend_time;
+			e.next_anim = 0;
+		}
+
+		if (!e.next_anim) {
+			assert(e.curr_anim);
+			for (int j = 0; j < e.curr_anim->nodes.count; j++) {
+				anim.nodes[j].name = e.curr_anim->nodes[j].name;
+				anim.nodes[j].transform = get_animated_node_transform(*e.curr_anim, 
+						e.curr_anim->nodes[j], fmod(e.anim_time, e.curr_anim->duration));
+			}
+		} else {
+			float t1 = fmod(e.anim_time, e.curr_anim->duration);
+			float t2 = fmod(e.blend_time, e.next_anim->duration);
+			float t3 = (e.blend_time) / blend_duration;
+
+			// t3 = powf(t3, 2);
+			for (int j = 0; j < e.curr_anim->nodes.count; j++) {
+				quat q1, q2;
+				v3 p1, s1, p2, s2;
+				assert(strings_equal(e.curr_anim->nodes[j].name, e.next_anim->nodes[j].name));
+				get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[j], t1, p1, s1, q1);
+				get_animated_node_transform(*e.next_anim, e.next_anim->nodes[j], t2, p2, s2, q2);
+
+				anim.nodes[j].name = e.curr_anim->nodes[j].name;
+				//t3 = 1;
+				v3 p = lerp(p1, p2, t3);
+				quat q = quat_lerp(q1, q2, t3);
+				v3 s = lerp(s1, s2, t3);
+
+				anim.nodes[j].transform = translate(p) * quat_to_mat(q) * scale(s);
+
+			}
+		}
+		final_anim = &anim;
+	}
+	else
+		assert(!final_anim);
+	bool outline = !shadow_map_pass
+	&& (e.id == world.editor_selected_entity);
+	render_scene(game, 
+	game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+
+
+	end_temp_memory();
+}
+
 void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pass = false)
 {
 	//TODO:
+
 	bind_constant_buffer(game.constant_buffer, 0);
 
 	for (usize i = 0; i < world.entities.count; i++) {
@@ -46,70 +113,21 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 		if (!e.scene_id)
 			continue ;
 
+		if (e.id == world.player_id) {
+			render_player(game, world, camera, e, shadow_map_pass);
+			continue ;
+		}
+
 		mat4 entity_transform = get_entity_transform(e);
 		mat4 scene_transform = entity_transform * e.scene_transform;
 
-		Arena *temp = begin_temp_memory();
-		Animation *final_anim = 0;
-		Animation anim = {};	
-		if (e.id == world.player_id) {
-			usize max_nodes_count = e.curr_anim->nodes.count;
-			if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
-				max_nodes_count = e.next_anim->nodes.count;
-
-			anim.nodes = make_array<NodeAnimation>(temp, max_nodes_count);
-			if (e.next_anim)
-				assert(e.curr_anim->nodes.count == e.next_anim->nodes.count);
-
-			float blend_duration = e.next_anim ? e.next_anim->duration*0.2f : 0;
-			if (e.blend_time > blend_duration && e.next_anim) {
-				e.curr_anim = e.next_anim;
-				e.anim_time = e.blend_time;
-				e.next_anim = 0;
-			}
-
-			if (!e.next_anim) {
-				assert(e.curr_anim);
-				for (int j = 0; j < e.curr_anim->nodes.count; j++) {
-					anim.nodes[j].name = e.curr_anim->nodes[j].name;
-					anim.nodes[j].transform = get_animated_node_transform(*e.curr_anim, 
-							e.curr_anim->nodes[j], fmod(e.anim_time, e.curr_anim->duration));
-				}
-			} else {
-				float t1 = fmod(e.anim_time, e.curr_anim->duration);
-				float t2 = fmod(e.blend_time, e.next_anim->duration);
-				float t3 = (e.blend_time) / blend_duration;
-
-				// t3 = powf(t3, 2);
-				for (int j = 0; j < e.curr_anim->nodes.count; j++) {
-					quat q1, q2;
-					v3 p1, s1, p2, s2;
-					assert(strings_equal(e.curr_anim->nodes[j].name, e.next_anim->nodes[j].name));
-					get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[j], t1, p1, s1, q1);
-					get_animated_node_transform(*e.next_anim, e.next_anim->nodes[j], t2, p2, s2, q2);
-
-					anim.nodes[j].name = e.curr_anim->nodes[j].name;
-					//t3 = 1;
-					v3 p = lerp(p1, p2, t3);
-					quat q = quat_lerp(q1, q2, t3);
-					v3 s = lerp(s1, s2, t3);
-
-					anim.nodes[j].transform = translate(p) * quat_to_mat(q) * scale(s);
-
-				}
-			}
-			final_anim = &anim;
-		}
-		else
-			assert(!final_anim);
-
-
+		
 		//if (e.id != world.editor_selected_entity)
 	
 		bool outline = !shadow_map_pass
 			&& (e.id == world.editor_selected_entity);
 		render_scene(game, 
-			game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+			game.scenes[e.scene_id], camera, scene_transform, 0, 0, e.color, outline);
 
 
 		if (game.debug_collision) {
@@ -130,7 +148,6 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 				push_ellipsoid_outline(e.position, e.scale * e.shape.ellipsoid_radius, color);
 			}
 		}
-		end_temp_memory();
 	}
 
 }

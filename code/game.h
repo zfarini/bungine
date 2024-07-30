@@ -191,6 +191,7 @@ struct Game
 	DepthStencilState disable_depth_state;
 
 	bool show_normals;
+	bool render_bones;
 };
 
 struct Constants

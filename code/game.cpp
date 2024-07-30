@@ -89,7 +89,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
 
-		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
+		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_FRONT);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
 		game.disable_depth_state = create_depth_stencil_state(false);
 
@@ -321,6 +321,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
 		ImGui::Checkbox("show normals", &game.show_normals);
+		ImGui::Checkbox("show bones", &game.render_bones);
 		ImGui::Text("in gizmo: %d, gizmo mode: %d", world.editor.in_gizmo,
 				world.editor.gizmo_mode);
 		if (ImGui::Button("new cube")) {
@@ -344,8 +345,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		if (e) {
 			ImGuiIO &io = ImGui::GetIO();
 
-			v3 r = e->rotation * RAD2DEG;
-
 			ImGui::Begin("Entity");
             ImGui::ColorEdit3("color", e->color.e);
 			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
@@ -353,27 +352,19 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			if (ImGui::Button("delete")) {
 				if (e->id != world.player_id) {
 					int index = world.entities_id_map[e->id];
+					int e_id = e->id;
+					assert(index >= 0 && index < world.entities.count);
+					assert(e == &world.entities[index]);
 					world.entities_id_map.erase(e->id);
-					world.entities[index] = world.entities[world.entities.count - 1];
 
-					world.entities.count--;
-
-					if (world.entities.count)
+					if (index != world.entities.count - 1) {
+						world.entities[index] = world.entities[world.entities.count - 1];
 						world.entities_id_map[world.entities[index].id] = index;
+					}
+					world.entities.count--;
 				}
 			}
-			//ImGui::InputFloat("X", &e->position.x);
-			//ImGui::InputFloat("Y", &e->position.y);
-			//ImGui::InputFloat("Z", &e->position.z);
-			//ImGui::InputFloat("RX", &r.x);
-			//ImGui::InputFloat("RY", &r.y);
-			//ImGui::InputFloat("RZ", &r.z);
-			//ImGui::InputFloat("SX", &e->scale.x);
-			//ImGui::InputFloat("SY", &e->scale.y);
-			//ImGui::InputFloat("SZ", &e->scale.z);
 			ImGui::End();
-
-			e->rotation = r * DEG2RAD;
 		}
 	}
 	end_render_frame();
