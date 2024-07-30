@@ -102,15 +102,21 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
 				load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
 #else
-				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT),
+				load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("shaders/fragment.glsl"), SHADER_TYPE_FRAGMENT),
 #endif
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
+		game.outline_render_pass = create_render_pass(
+				load_shader(make_cstring("shaders/outline_vertex.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("shaders/outline_fragment.glsl"), SHADER_TYPE_FRAGMENT),
+				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
+				input_layout);
+
 		game.shadow_map_render_pass = create_render_pass(
-				load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT),
+				load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
+				load_shader(make_cstring("shaders/shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT),
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
@@ -130,8 +136,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
 					load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
 #else
-					load_shader(make_cstring("debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
-					load_shader(make_cstring("debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
+					load_shader(make_cstring("shaders/debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
+					load_shader(make_cstring("shaders/debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
 #endif
 					PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
 					input_layout);
@@ -169,8 +175,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		//Scene ch06		= load_scene(&asset_arena, "data\\Ch06.fbx");
 		//Scene ch15		= load_scene(&asset_arena, "data\\Ch15.fbx");
 		//game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
-		//game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
-		//game.sponza		= load_scene(&game.asset_arena, rc, "data\\Sponza\\Sponza.fbx");
+	//	game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
+		game.sponza		= load_scene(&game.asset_arena,  "data/Sponza/Sponza.fbx");
 		game.cube_asset		= load_scene(&game.asset_arena, "data/cube.fbx");
 		game.sphere_asset	= load_scene(&game.asset_arena, "data/sphere.fbx");
 
@@ -200,7 +206,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		//player->rotation.x = -PI/8;
 
-		//Entity *sponza = make_entity(game, V3(0), &game.sponza);
 
 
 
@@ -247,6 +252,10 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
 		player->color = V3(0.2, 0.8, 0.8);
 
+		Entity *sponza = make_entity(world, 
+				EntityType_Static, &game.sponza, V3(0), 
+				make_ellipsoid_shape(V3(0.01f)));
+
 		world.editor_camera_p = V3(0, 0, 3);
 
 		game.is_initialized = 1;
@@ -277,7 +286,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
 		bind_framebuffer(game.shadow_map.framebuffer);
 		clear_framebuffer_depth(game.shadow_map.framebuffer, 1);
-		render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection});
+		render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection},
+					true);
 	}
 	end_render_pass();
 
@@ -288,8 +298,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		bind_framebuffer(g_rc->window_framebuffer);
 		clear_framebuffer_color(g_rc->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
 		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+
 		bind_texture(4, game.shadow_map.depth_texture);
-		render_entities(game, world, game_camera);
+		render_entities(game, world, game_camera, false);
 	}
 	end_render_pass();
 

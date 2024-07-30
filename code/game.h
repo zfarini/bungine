@@ -168,6 +168,7 @@ struct Game
 
 	RenderPass mesh_render_pass;
 	RenderPass shadow_map_render_pass;
+	RenderPass outline_render_pass;
 	ConstantBuffer constant_buffer;
 
 	RenderPass debug_lines_render_pass;

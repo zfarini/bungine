@@ -36,7 +36,7 @@ mat4 get_entity_transform(Entity &e)
 		* zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
 }
 
-void render_entities(Game &game, World &world, Camera camera)
+void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pass = false)
 {
 	//TODO:
 	bind_constant_buffer(game.constant_buffer, 0);
@@ -105,7 +105,10 @@ void render_entities(Game &game, World &world, Camera camera)
 
 
 		//if (e.id != world.editor_selected_entity)
-		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color);
+	
+		bool outline = !shadow_map_pass
+			&& (e.id == world.editor_selected_entity);
+		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color, outline);
 
 		if (game.debug_collision) {
 			//	|| (game.in_editor && e.id == world.editor_selected_entity)) {

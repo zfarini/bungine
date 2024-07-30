@@ -308,9 +308,42 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color)
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color,
+		bool outline = false)
 {
+	/*
+		clear stencil
+		render scene (set stencil to some value X)
+		render scene again but scale it along normals and
+			use some static color as fragment shader
+			and only render if the stencil value is not equal to X
+	*/
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
+
+	if (!outline) {
+		render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+		return ;
+	}
+
+	glEnable(GL_STENCIL_TEST);    
+	glStencilMask(0xFF);
+	glClear(GL_STENCIL_BUFFER_BIT);
+
+	glStencilFunc(GL_ALWAYS, 250, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+
+	glStencilFunc(GL_NOTEQUAL, 250, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilMask(0x00);
+	
+	end_render_pass();
+	begin_render_pass(game.outline_render_pass);
+	render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+	end_render_pass();
+	begin_render_pass(game.mesh_render_pass);
+
+	glStencilFunc(GL_ALWAYS, 0, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }

@@ -20,7 +20,6 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
-#define __SANITIZE_ADDRESS__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -6225,6 +6224,7 @@ struct Game
 
  RenderPass mesh_render_pass;
  RenderPass shadow_map_render_pass;
+ RenderPass outline_render_pass;
  ConstantBuffer constant_buffer;
 
  RenderPass debug_lines_render_pass;
@@ -6573,11 +6573,44 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
   render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color)
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color,
+  bool outline = false)
 {
+
+
+
+
+
+
+
  if (anim)
   anim_time = fmod(anim_time, anim->duration);
+
+ if (!outline) {
+  render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+  return ;
+ }
+
+ glEnable(GL_STENCIL_TEST);
+ glStencilMask(0xFF);
+ glClear(GL_STENCIL_BUFFER_BIT);
+
+ glStencilFunc(GL_ALWAYS, 250, 0xFF);
+ glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
  render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+
+ glStencilFunc(GL_NOTEQUAL, 250, 0xFF);
+ glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+ glStencilMask(0x00);
+
+ end_render_pass();
+ begin_render_pass(game.outline_render_pass);
+ render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
+ end_render_pass();
+ begin_render_pass(game.mesh_render_pass);
+
+ glStencilFunc(GL_ALWAYS, 0, 0xFF);
+ glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 # 32 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
@@ -6984,7 +7017,7 @@ mat4 get_entity_transform(Entity &e)
   * zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
 }
 
-void render_entities(Game &game, World &world, Camera camera)
+void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pass = false)
 {
 
  bind_constant_buffer(game.constant_buffer, 0);
@@ -7053,7 +7086,10 @@ void render_entities(Game &game, World &world, Camera camera)
 
 
 
-  render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color);
+
+  bool outline = !shadow_map_pass
+   && (e.id == world.editor_selected_entity);
+  render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color, outline);
 
   if (game.debug_collision) {
 
@@ -7147,7 +7183,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 213 "code/world.cpp"
+# 216 "code/world.cpp"
   {
 
 
@@ -7202,7 +7238,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 275 "code/world.cpp"
+# 278 "code/world.cpp"
    int curr_anim_idx = -1;
    int next_anim_idx = -1;
    for (int i = 0; i < ANIMATION_COUNT; i++) {
@@ -7211,7 +7247,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (player.next_anim == &game.animations[i])
      next_anim_idx = i;
    }
-# 294 "code/world.cpp"
+# 297 "code/world.cpp"
   }
  }
 }
@@ -7350,7 +7386,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    mat4 A = V * M;
 
    world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
-# 442 "code/world.cpp"
+# 445 "code/world.cpp"
   }
  }
 
@@ -7751,15 +7787,21 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
-    load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
-    load_shader(make_cstring("fragment.glsl"), SHADER_TYPE_FRAGMENT),
+    load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
+    load_shader(make_cstring("shaders/fragment.glsl"), SHADER_TYPE_FRAGMENT),
 
     PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
     input_layout);
 
+  game.outline_render_pass = create_render_pass(
+    load_shader(make_cstring("shaders/outline_vertex.glsl"), SHADER_TYPE_VERTEX),
+    load_shader(make_cstring("shaders/outline_fragment.glsl"), SHADER_TYPE_FRAGMENT),
+    PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
+    input_layout);
+
   game.shadow_map_render_pass = create_render_pass(
-    load_shader(make_cstring("vertex.glsl"), SHADER_TYPE_VERTEX),
-    load_shader(make_cstring("shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT),
+    load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
+    load_shader(make_cstring("shaders/shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT),
     PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
     input_layout);
 
@@ -7779,8 +7821,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
-     load_shader(make_cstring("debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
-     load_shader(make_cstring("debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
+     load_shader(make_cstring("shaders/debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
+     load_shader(make_cstring("shaders/debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
 
      PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
      input_layout);
@@ -7819,7 +7861,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
-
+  game.sponza = load_scene(&game.asset_arena, "data/Sponza/Sponza.fbx");
   game.cube_asset = load_scene(&game.asset_arena, "data/cube.fbx");
   game.sphere_asset = load_scene(&game.asset_arena, "data/sphere.fbx");
 
@@ -7834,7 +7876,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
 
   world.entities = make_array_max<Entity>(&world.arena, 4096);
-# 215 "code/game.cpp"
+# 220 "code/game.cpp"
   Entity *boxes[] = {
    make_entity(world, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
    make_entity(world, EntityType_Static, &game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
@@ -7870,6 +7912,10 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
   player->color = V3(0.2, 0.8, 0.8);
 
+  Entity *sponza = make_entity(world,
+    EntityType_Static, &game.sponza, V3(0),
+    make_ellipsoid_shape(V3(0.01f)));
+
   world.editor_camera_p = V3(0, 0, 3);
 
   game.is_initialized = 1;
@@ -7900,7 +7946,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
   bind_framebuffer(game.shadow_map.framebuffer);
   clear_framebuffer_depth(game.shadow_map.framebuffer, 1);
-  render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection});
+  render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection},
+     true);
  }
  end_render_pass();
 
@@ -7911,8 +7958,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   bind_framebuffer(g_rc->window_framebuffer);
   clear_framebuffer_color(g_rc->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
   clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+
   bind_texture(4, game.shadow_map.depth_texture);
-  render_entities(game, world, game_camera);
+  render_entities(game, world, game_camera, false);
  }
  end_render_pass();
 
@@ -7970,7 +8018,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    ImGui::Begin("Entity");
             ImGui::ColorEdit3("color", e->color.e);
    ImGui::Text("type: %s", get_enum_EntityType_str(e->type));
-# 360 "code/game.cpp"
+# 371 "code/game.cpp"
    ImGui::End();
 
    e->rotation = r * (3.14159265359f / 180.f);
@@ -7981,9 +8029,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  game.time += dt;
  if (game.frame == 0)
   ImGui::SetWindowFocus(
-# 369 "code/game.cpp" 3 4
+# 380 "code/game.cpp" 3 4
                        __null
-# 369 "code/game.cpp"
+# 380 "code/game.cpp"
                            );
  game.frame++;
 }
