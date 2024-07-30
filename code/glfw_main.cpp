@@ -14,6 +14,11 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+
 
 #undef min
 #undef max
@@ -33,6 +38,7 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	for (int i = 0; i < 26; i++)
 		button_map[BUTTON_A + i] = GLFW_KEY_A + i;
 
+	button_map[BUTTON_ESCAPE] = GLFW_KEY_ESCAPE;
 	button_map[BUTTON_SPACE] = GLFW_KEY_SPACE;
 	button_map[BUTTON_LEFT_SHIFT] = GLFW_KEY_LEFT_SHIFT;
 	button_map[BUTTON_LEFT_CONTROL] = GLFW_KEY_LEFT_CONTROL;
@@ -124,9 +130,9 @@ int main()
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
-		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-			break ;
 		update_game_input(window, game_input, frame);
+		if (IsDown(game_input, BUTTON_ESCAPE))
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		game_update_and_render(platform, &memory, game_input, 1.f / 60);
 
 		glfwSwapBuffers(window);

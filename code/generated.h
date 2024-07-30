@@ -33,6 +33,7 @@ const char *get_enum_GameButtonType_str(int value)
 		case BUTTON_MOUSE_LEFT: return "BUTTON_MOUSE_LEFT";
 		case BUTTON_MOUSE_RIGHT: return "BUTTON_MOUSE_RIGHT";
 		case BUTTON_SPACE: return "BUTTON_SPACE";
+		case BUTTON_ESCAPE: return "BUTTON_ESCAPE";
 		case BUTTON_F1: return "BUTTON_F1";
 		case BUTTON_F2: return "BUTTON_F2";
 		case BUTTON_F3: return "BUTTON_F3";

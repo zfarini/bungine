@@ -30,6 +30,8 @@ struct CollisionShape
 };
 
 typedef usize entity_id;
+typedef usize SceneID;
+
 
 struct Entity
 {
@@ -51,7 +53,7 @@ struct Entity
 
 	CollisionShape shape;
 
-	Scene *scene;
+	SceneID scene_id;
 	mat4 scene_transform;
 
 	//Animation *animation;
@@ -147,16 +149,12 @@ struct World
 	v3 player_camera_rotation;
 	v3 player_camera_drotation;
 
-
 	v3 editor_camera_p;
 	v3 editor_camera_rotation;
-
-	//v3 editor_camera_last_p;
 
 	entity_id editor_selected_entity;
 	entity_id player_id;
 };
-
 
 struct Game
 {
@@ -176,7 +174,9 @@ struct Game
 	ConstantBuffer debug_lines_constant_buffer;
 
 	Arena asset_arena;
-	Scene ch43, sponza, cube_asset, sphere_asset;
+
+	SceneID ch43, sponza, cube_asset, sphere_asset;
+	Scene scenes[16];
 
 	Animation animations[ANIMATION_COUNT];
 

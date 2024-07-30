@@ -1,11 +1,11 @@
-Entity *make_entity(World &world, int type, Scene *scene, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
 	Entity e = {};
 
 	e.id = ++world.next_entity_id; // skip 0
 	e.type = type;
 	e.position = position;
-	e.scene = scene;
+	e.scene_id = scene_id;
 	e.scene_transform = scene_transform;
 	e.shape = shape;
 	e.color = V3(1);
@@ -43,7 +43,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 
 	for (usize i = 0; i < world.entities.count; i++) {
 		Entity &e = world.entities[i];
-		if (!e.scene)
+		if (!e.scene_id)
 			continue ;
 
 		mat4 entity_transform = get_entity_transform(e);
@@ -108,7 +108,9 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 	
 		bool outline = !shadow_map_pass
 			&& (e.id == world.editor_selected_entity);
-		render_scene(game, *e.scene, camera, scene_transform, final_anim, 0, e.color, outline);
+		render_scene(game, 
+			game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+
 
 		if (game.debug_collision) {
 			//	|| (game.in_editor && e.id == world.editor_selected_entity)) {
@@ -507,3 +509,133 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	camera.projection = projection;
 	return camera;
 }
+
+/*
+struct SerializedWorld
+{
+	int entity_count;
+	Entity *entities;
+	entity_id next_entity_id;
+	v3 player_camera_p;
+	v3 player_camera_rotation;
+	v3 player_camera_drotation;
+	v3 editor_camera_p;
+	v3 editor_camera_rotation;
+	entity_id editor_selected_entity;
+	entity_id player_id;
+};
+*/
+
+//#define S(type) void serialize(int fd, bool w, type &value) \
+//	{ \
+//		if (w) write(fd, &value, sizeof(type)); \
+//		else read(fd, &value, sizeof(type)); \
+//	}
+
+//S(int);
+//S(usize);
+
+#define S(type, fd, w, value) do {\
+	if (w) write(fd, &value, sizeof(type)); \
+	else read(fd, &value, sizeof(type)); \
+	} while (0)
+
+#define serialize_int(...) S(int, __VA_ARGS__)
+#define serialize_b32(...) S(b32, __VA_ARGS__)
+#define serialize_float(...) S(float, __VA_ARGS__)
+#define serialize_usize(...) S(usize, __VA_ARGS__)
+
+
+void serialize(int fd, bool w, v3 &v)
+{
+	serialize_float(fd, w, v.x);
+	serialize_float(fd, w, v.y);
+	serialize_float(fd, w, v.z);
+}
+
+void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
+{
+	if (!w)
+		shape = {};
+
+	serialize_int(fd, w, shape.type);
+	if (w) {
+		serialize_usize(fd, w, shape.triangles.count);
+		for (int i = 0; i < shape.triangles.count; i++) {
+			serialize(fd, w, shape.triangles[i].v0);
+			serialize(fd, w, shape.triangles[i].v1);
+			serialize(fd, w, shape.triangles[i].v2);
+		}
+	}
+	else {
+		usize count;
+		serialize_usize(fd, w, count);
+		shape.triangles = make_array<CollisionTriangle>(arena, count);
+		for (int i = 0; i < count; i++) {
+			CollisionTriangle t;
+			serialize(fd, w, t.v0);
+			serialize(fd, w, t.v1);
+			serialize(fd, w, t.v2);
+			shape.triangles[i] = t;
+		}
+	}
+	serialize(fd, w, shape.ellipsoid_radius);
+}
+
+void serialize(int fd, bool w, mat4 &m)
+{
+	for (int i = 0; i < 16; i++)
+		serialize_float(fd, w, m.e[i/4][i%4]);
+}
+
+void serialize(Arena *arena, int fd, bool w, Entity &e)
+{
+	serialize_usize(fd, w, e.id);
+	serialize_int(fd, w, e.type);
+	serialize(fd, w, e.position);
+	serialize(fd, w, e.dp);
+	serialize(fd, w, e.rotation);
+	serialize(fd, w, e.scale);
+	serialize(fd, w, e.color);
+
+	serialize_b32(fd, w, e.moved);
+	serialize_b32(fd, w, e.run);
+	serialize_b32(fd, w, e.shooting);
+	serialize_b32(fd, w, e.can_jump);
+	serialize_b32(fd, w, e.on_ground);
+
+	serialize(arena, fd, w, e.shape);
+
+	serialize_usize(fd, w, e.scene_id);
+	serialize(fd, w, e.scene_transform);
+	serialize_float(fd, w, e.height_above_ground);
+}
+
+void serialize(int fd, bool w, World &world)
+{
+	if (w) {
+		serialize_usize(fd, w, world.entities.count);
+		for (int i = 0; i < world.entities.count; i++)
+			serialize(&world.arena, fd, w, world.entities[i]);
+	}
+	else {
+		usize count;
+		serialize_usize(fd, w, count);
+		world.entities = make_array_max<Entity>(&world.arena, 4096);
+		for (int i = 0; i < count; i++) {
+			Entity e = {};
+			serialize(&world.arena, fd, w, e);
+			world.entities.push(e);
+		}
+
+	}
+	serialize_usize(fd, w, world.next_entity_id);
+	serialize(fd, w, world.player_camera_p);
+	serialize(fd, w, world.player_camera_rotation);
+	serialize(fd, w, world.player_camera_drotation);
+	serialize(fd, w, world.editor_camera_p);
+	serialize(fd, w, world.editor_camera_rotation);
+	serialize_usize(fd, w, world.player_id);
+}
+
+#undef S

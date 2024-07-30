@@ -171,17 +171,13 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		};
 		game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
 
-		game.ch43		= load_scene(&game.asset_arena, "data/YBot.fbx");
-		//Scene ch06		= load_scene(&asset_arena, "data\\Ch06.fbx");
-		//Scene ch15		= load_scene(&asset_arena, "data\\Ch15.fbx");
-		//game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
-	//	game.ch43 = load_scene(&game.asset_arena, "data\\animated_pistol\\animated.fbx");
-		game.sponza		= load_scene(&game.asset_arena,  "data/Sponza/Sponza.fbx");
-		game.cube_asset		= load_scene(&game.asset_arena, "data/cube.fbx");
-		game.sphere_asset	= load_scene(&game.asset_arena, "data/sphere.fbx");
+		game.scenes[1] = load_scene(&game.asset_arena, "data/YBot.fbx");
+		game.scenes[2] = load_scene(&game.asset_arena, "data/cube.fbx");
+		game.scenes[3] = load_scene(&game.asset_arena, "data/sphere.fbx");
 
-		//game.ch43.root->local_transform = translate(0, 0, 4) * game.ch43.root->local_transform * scale(0.005f);
-		//game.test_anim = load_scene(&game.asset_arena, rc, "data\\Fast Run.fbx").animations[0];
+		game.ch43 = 1;
+		game.cube_asset = 2;
+		game.sphere_asset = 3;
 
 		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
 		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
@@ -190,78 +186,73 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
 		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
 
-		world.entities = make_array_max<Entity>(&world.arena, 4096);
 
 
+		int fd = open("world.bin", O_RDONLY);
+		if (fd < 0) {
+
+			world.entities = make_array_max<Entity>(&world.arena, 4096);
+
+			Entity *boxes[] = {
+				make_entity(world, EntityType_Static, game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
+				make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
+
+				make_entity(world, EntityType_Static, game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
+
+			};
+			for (int i = 0; i < ARRAY_SIZE(boxes); i++) {
+				//boxes[i]->scene_transform = scale();
+				boxes[i]->scale = boxes[i]->shape.box_radius;
+				boxes[i]->shape = make_box_shape(memory, V3(1));
+
+				float r = (float)rand() / RAND_MAX;
+				float g = (float)rand() / RAND_MAX;
+				float b = (float)rand() / RAND_MAX;
+
+				boxes[i]->color = V3(r, g, b);
+
+			}
+			Entity *player = make_entity(world, EntityType_Player, game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
+			world.player_id = player->id;
+			//player->scene = &game.sphere_asset;
+			//player->scene = 0;
+			//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
+			//player->scene_transform =  scale(player->shape.ellipsoid_radius);
+			player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
+			player->color = V3(0.2, 0.8, 0.8);
 
 
-		//Entity *sh = make_entity(game, EntityType_Player, &game.sphere_asset, V3(0, 0, 2), V3(0.3, 0.3, 0.8) );
-
-		// for (int i = 0; i < 2; i++)
-		// 	for (int j = 0; j < 2; j++) {
-		// 	Entity *enemy = make_entity(game, EntityType_Enemy, &game.ch43, V3(i * 2, j * 2, 6), player->shape);
-		// 	enemy->scene_transform = player->scene_transform;
-		// 	enemy->speed = ((float)rand() / RAND_MAX)*50 + 20;
-		// }
-
-		//player->rotation.x = -PI/8;
-
-
-
-
-		// {
-		// 	//@HACK
-		// 	auto &jump = game.animations[ANIMATION_JUMP];
-		// 	auto &node = jump.nodes[0];
-		// 	for (int i = 0; i < (int)(node.position.count*0.7; i++)
-		// 		node.position[i].y -= 30;
-		// }
-
-		Entity *boxes[] = {
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
-
-			make_entity(world, EntityType_Static, &game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
-
-		};
-		for (int i = 0; i < ARRAY_SIZE(boxes); i++) {
-			//boxes[i]->scene_transform = scale();
-			boxes[i]->scale = boxes[i]->shape.box_radius;
-			boxes[i]->shape = make_box_shape(memory, V3(1));
-
-			float r = (float)rand() / RAND_MAX;
-			float g = (float)rand() / RAND_MAX;
-			float b = (float)rand() / RAND_MAX;
-
-			boxes[i]->color = V3(r, g, b);
-
+			world.editor_camera_p = V3(0, 0, 3);
 		}
-		Entity *player = make_entity(world, EntityType_Player, &game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
-		world.player_id = player->id;
-		//player->scene = &game.sphere_asset;
-		//player->scene = 0;
-		//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
-		//player->scene_transform =  scale(player->shape.ellipsoid_radius);
-		player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
-		player->color = V3(0.2, 0.8, 0.8);
-
-		Entity *sponza = make_entity(world, 
-				EntityType_Static, &game.sponza, V3(0), 
-				make_ellipsoid_shape(V3(0.01f)));
-
-		world.editor_camera_p = V3(0, 0, 3);
+		else {
+			serialize(fd, false, world);
+			for (int i = 0; i < world.entities.count; i++)
+				world.entities_id_map[world.entities[i].id] = i;
+			close(fd);
+		}
 
 		game.is_initialized = 1;
 	}
 
 	World &world = *game.world;
+
+	if (IsDown(input, BUTTON_ESCAPE)) {
+		
+		int fd = open("world.bin", O_WRONLY|O_CREAT|O_TRUNC, 0744);
+		if (fd < 0)
+			assert(0);
+		serialize(fd, true, world);
+		close(fd);
+		return ;
+	}
+
 
 	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON))
 		game.in_editor = !game.in_editor;
@@ -276,7 +267,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	Camera game_camera = update_camera(game, world, input, dt);
 
 	if (game.in_editor)
-		update_editor(world, world.editor, input, game_camera);
+		update_editor(game, world, world.editor, input, game_camera);
 
 	push_cube_outline(game.shadow_map.light_p, V3(0.3));
 	push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
@@ -334,13 +325,13 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				world.editor.gizmo_mode);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					&game.cube_asset, game_camera.position
+					2, game_camera.position
 					+ game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					&game.sphere_asset, game_camera.position
+					3, game_camera.position
 					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
@@ -359,6 +350,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
             ImGui::ColorEdit3("color", e->color.e);
 			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
 
+			if (ImGui::Button("delete")) {
+				if (e->id != world.player_id) {
+					int index = world.entities_id_map[e->id];
+					world.entities_id_map.erase(e->id);
+					world.entities[index] = world.entities[world.entities.count - 1];
+
+					world.entities.count--;
+
+					if (world.entities.count)
+						world.entities_id_map[world.entities[index].id] = index;
+				}
+			}
 			//ImGui::InputFloat("X", &e->position.x);
 			//ImGui::InputFloat("Y", &e->position.y);
 			//ImGui::InputFloat("Z", &e->position.z);

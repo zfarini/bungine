@@ -1,4 +1,4 @@
-entity_id raycast_to_entities(World &world, v3 ray_origin, v3 ray_dir,
+entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
 		float &hit_t)
 {
 	entity_id hit_id = 0;
@@ -6,12 +6,13 @@ entity_id raycast_to_entities(World &world, v3 ray_origin, v3 ray_dir,
 
 	for (usize i = 0; i < world.entities.count; i++) {
 		Entity &e = world.entities[i];
-		if (!e.scene)
+		if (!e.scene_id)
 			continue ;
 
+		Scene &scene = game.scenes[e.scene_id];
 		mat4 transform = get_entity_transform(e) * e.scene_transform;
-		for (usize j = 0; j < e.scene->meshes.count; j++) {
-			Mesh &mesh = e.scene->meshes[j];
+		for (usize j = 0; j < scene.meshes.count; j++) {
+			Mesh &mesh = scene.meshes[j];
 			mat4 mesh_transform = transform * mesh.transform;
 
 			v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
@@ -42,7 +43,7 @@ entity_id raycast_to_entities(World &world, v3 ray_origin, v3 ray_dir,
 	return hit_id;
 }
 
-void update_editor(World &world, Editor &editor, GameInput &input, Camera &camera)
+void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
 {
 	v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
 	mouse_p.y *= -1;
@@ -79,7 +80,7 @@ void update_editor(World &world, Editor &editor, GameInput &input, Camera &camer
 
 	if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
 		float min_hit_t;
-		entity_id hit_entity = raycast_to_entities(world, ray_origin, ray_dir, min_hit_t);
+		entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
 
 		if (editor.selected_entity && !editor.in_gizmo) {
 			Entity *e = get_entity(world, editor.selected_entity);
