@@ -43,6 +43,81 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 	return hit_id;
 }
 
+void do_editor_op(World &world, Editor &editor, EditorOp &op)
+{
+	Entity *e = get_entity(world, op.entity);
+	if (e) {
+		if (op.type == EDITOR_OP_TRANSLATE_ENTITY)
+			e->position = op.translate.new_p;
+		else if (op.type == EDITOR_OP_ROTATE_ENTITY)
+			e->rotation = op.rotate.new_rot;
+		else if (op.type == EDITOR_OP_SCALE_ENTITY)
+			e->scale = op.scale.new_scale;
+	}
+	if (op.type == EDITOR_OP_PASTE_ENTITY) {
+		Entity *copy_from = get_entity(world, op.paste.copy_from);
+		if (copy_from) {
+			// NOTE: if op.pase.id is not zero this means we are redoing this operation
+			// the first time we will create then entity with any id but the second 
+			// we should assign the same previous id
+			if (op.paste.id) {
+				Entity p = *copy_from;
+				p.id = op.paste.id;
+				p.position = op.paste.p;
+				world.entities.push(p);
+				world.entities_id_map[p.id] = world.entities.count - 1;
+			}
+			else {
+				Entity *p = make_entity(world);
+				entity_id id = p->id;
+				*p = *copy_from;
+				p->id = id;
+				p->position = op.paste.p;
+				op.paste.id = p->id;
+			}
+		}
+	}
+	else if (op.type == EDITOR_OP_DELETE_ENTITY)
+		remove_entity(world, op.entity);
+
+	editor.ops.push(op);
+}
+
+void redo_editor_op(World &world, Editor &editor)
+{
+	if (!editor.undos.count)
+		return ;
+	EditorOp op = editor.undos[editor.undos.count - 1];
+	editor.undos.count--;
+
+	do_editor_op(world, editor, op);
+}
+
+void undo_editor_op(World &world, Editor &editor)
+{
+	if (!editor.ops.count)
+		return ;
+	EditorOp op = editor.ops[editor.ops.count - 1];
+
+	editor.undos.push(op);
+	editor.ops.count--;
+	Entity *e = get_entity(world, op.entity);
+	if (e) {
+		if (op.type == EDITOR_OP_TRANSLATE_ENTITY)
+			e->position = op.translate.prev_p;
+		else if (op.type == EDITOR_OP_ROTATE_ENTITY)
+			e->rotation = op.rotate.prev_rot;
+		else if (op.type == EDITOR_OP_SCALE_ENTITY)
+			e->scale = op.scale.prev_scale;
+	}
+	if (op.type == EDITOR_OP_PASTE_ENTITY)
+		remove_entity(world, op.paste.id);
+	else if (op.type == EDITOR_OP_DELETE_ENTITY) {
+		world.entities.push(op.del.entity_data);
+		world.entities_id_map[op.del.entity_data.id] = world.entities.count - 1;
+	}
+}
+
 void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
 {
 	v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
@@ -119,8 +194,6 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 					//	|| min_axis_t < min_hit_t)) { 
 					editor.in_gizmo = true;
 					editor.did_drag = false;
-					editor.s_did_drag = false;
-					editor.r_did_drag = false;
 					editor.dragging_axis = best_axis;
 				}
 				}
@@ -148,33 +221,37 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						v3 hit_p = ray_origin + hit_t * ray_dir;
 
 						if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+
 							//push_cube_outline(hit_p, V3(0.01f), V3(0.2));
 							v3 dp = normalize(axis[editor.dragging_axis]) * dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 
 							if (!editor.did_drag) {
 								editor.did_drag = true;
-								editor.drag_p = dp;
+								editor.p_init_drag = dp;
 							}
 							else
-								e->position += dp - editor.drag_p;
+								e->position += dp - editor.p_init_drag;
 						}
 						else if (editor.gizmo_mode == GIZMO_SCALE) {
+
 							float ds = dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 							//printf("DRAG: %f %f %f\n", ds, editor.s_init_drag, e->scale.e[editor.dragging_axis]);
 
-							if (!editor.s_did_drag) {
-								editor.s_did_drag = true;
+							if (!editor.did_drag) {
+								editor.did_drag = true;
 								editor.s_init_drag = ds;
 								editor.s_init_scale = e->scale.e[editor.dragging_axis];
 							}
 							else {
-								e->scale.e[editor.dragging_axis] = 
-									editor.s_init_scale + ds - editor.s_init_drag;
-								if (e->scale.e[editor.dragging_axis] < 0.01f)
-									e->scale.e[editor.dragging_axis] = 0.01f;
+								v3 new_scale = e->scale;
+								new_scale.e[editor.dragging_axis] = editor.s_init_scale + ds - editor.s_init_drag;
+								if (new_scale.e[editor.dragging_axis] < 0.01f)
+									new_scale.e[editor.dragging_axis] = 0.01f;
+								e->scale = new_scale;
 							}
 						}
 						else if (editor.gizmo_mode == GIZMO_ROTATION) {
+
 							v3 p = normalize(hit_p - e->position) * rotation_circle_radius;
 
 
@@ -183,7 +260,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							v3 right_axis = axis[(editor.dragging_axis+1)%3];
 							v3 up_axis = axis[(editor.dragging_axis+2)%3];
 
-							if (editor.r_did_drag)
+							if (editor.did_drag)
 								right_axis = editor.r_right_axis, up_axis = editor.r_up_axis;
 							else
 								editor.r_axis = axis[editor.dragging_axis];
@@ -206,8 +283,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							push_line(e->position, e->position + up_axis, V3(0.2));
 							float a = atan2(p.y, p.x);
 
-							if (!editor.r_did_drag) {
-								editor.r_did_drag = true;
+							if (!editor.did_drag) {
+								editor.did_drag = true;
 								editor.r_init_drag = a;
 								editor.r_init_rot = e->rotation;
 								editor.r_right_axis = right_axis;
@@ -219,6 +296,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 									* editor.r_init_rot;
 							}
 						}
+						else
+							assert(0);
 					}
 				}
 			}
@@ -227,10 +306,41 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				//	editor.selected_entity = 0;
 				//else
 				editor.selected_entity = hit_entity;
+				editor.init_entity = *get_entity(world, hit_entity);
 			}
 		}
 		else {
+			if (editor.in_gizmo && editor.did_drag) {
+				EditorOp op = {};
+				Entity *e = get_entity(world, editor.selected_entity);
+				if (e) {
+					op.entity = editor.init_entity.id;
+					bool push = true;
+					if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+						op.type = EDITOR_OP_TRANSLATE_ENTITY;
+						op.translate.prev_p = editor.init_entity.position;
+						op.translate.new_p = e->position;
+						push &= (!v3_equal(op.translate.prev_p, op.translate.new_p));
+					}
+					else if (editor.gizmo_mode == GIZMO_SCALE) {
+						op.type = EDITOR_OP_SCALE_ENTITY;
+						op.scale.prev_scale = editor.init_entity.scale;
+						op.scale.new_scale = e->scale;
+						push &= (!v3_equal(op.scale.prev_scale, op.scale.new_scale));
+					}
+					else if (editor.gizmo_mode == GIZMO_ROTATION) {
+						op.type = EDITOR_OP_ROTATE_ENTITY;
+						op.rotate.prev_rot = editor.init_entity.rotation;
+						op.rotate.new_rot = e->rotation;
+						push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
+					}
+					if (push)
+						do_editor_op(world, editor, op);
+				}
+			}
 			editor.in_gizmo = 0;
+			if (get_entity(world, editor.selected_entity))
+				editor.init_entity = *get_entity(world, editor.selected_entity);
 		}
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) {
@@ -280,20 +390,96 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		IsDownFirstTime(input, BUTTON_V)) {
 		Entity *e = get_entity(world, editor.copied_entity);
 		if (e) {
-			Entity *copy = make_entity(world, 0, 0, V3(0), make_ellipsoid_shape(V3(0)));
-
-			int id = copy->id;
-			*copy = *e;
-			copy->id = id;
+			EditorOp op = {};
+			op.type = EDITOR_OP_PASTE_ENTITY;
+			op.paste.copy_from = e->id;
 
 			float min_hit_t;
 			entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
 			if (hit_entity) {
-				copy->position = ray_origin + min_hit_t * ray_dir
-					+ V3(0, 0, copy->scale.z);
+				op.paste.p = ray_origin + min_hit_t * ray_dir
+					+ V3(0, 0, e->scale.z);
 			}else 
-				copy->position = camera.position + camera.forward * 2
-					* max(copy->scale.x, max(copy->scale.y, copy->scale.z));
+				op.paste.p = camera.position + camera.forward * 2
+					* max(e->scale.x, max(e->scale.y, e->scale.z));
+			
+			do_editor_op(world, editor, op);
 		}
+	}
+
+
+	{
+		Entity *e = get_entity(world, world.editor_selected_entity);
+
+		if (e) {
+			ImGuiIO &io = ImGui::GetIO();
+
+			ImGui::Begin("Entity");
+            ImGui::ColorEdit3("color", e->color.e);
+			ImGui::Text("id: %ld", e->id);
+			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
+			if (ImGui::Button("Reset scale"))
+				e->scale = V3(1);
+			if (ImGui::Button("Reset rotation"))
+				e->rotation = identity_quat();
+
+			if (e->id != world.player_id && ImGui::Button("delete")) {
+				EditorOp op = {};
+				op.entity = e->id;
+				op.type = EDITOR_OP_DELETE_ENTITY;
+				op.del.entity_data = *e;
+
+				do_editor_op(world, editor, op);
+				e = 0;
+			}
+#if 0
+			begin_render_pass(game.mesh_render_pass);
+			{
+				FrameBuffer &fb = game.debug_asset_fb;
+				bind_framebuffer(fb);
+
+				int width = fb.color_texture.width;
+				int height = fb.color_texture.height;
+
+				set_viewport(0, 0, width, height);
+
+				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
+				clear_framebuffer_depth(fb, 1);
+
+				bind_texture(4, g_rc->white_texture);
+				Camera camera = {};
+				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
+				camera.projection = game_camera.projection;
+				camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
+				camera.projection.e[1][1] *= -1;
+				render_scene(game, game.scenes[e->scene_id], camera, 
+					zrotation(PI/4), 0, 0, e->color);
+				//render_entities(game, world, camera, false);
+
+				Arena *temp = begin_temp_memory();
+
+				void *data = arena_alloc(temp, sizeof(uint32_t) * width * height);
+				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+				glBindTexture(GL_TEXTURE_2D, game.debug_asset_tex.id);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA,
+						GL_UNSIGNED_BYTE, data);
+				ImGui::Image((void *)(intptr_t)game.debug_asset_tex.id, ImVec2(width, height));
+
+				end_temp_memory();
+			}
+			end_render_pass();
+#endif
+
+			ImGui::End();
+		}
+	}
+	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
+		IsDownFirstTime(input, BUTTON_Z)) {
+		undo_editor_op(world, editor);
+	}
+	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
+		IsDownFirstTime(input, BUTTON_X)) {
+		redo_editor_op(world, editor);
 	}
 }

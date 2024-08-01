@@ -29,13 +29,14 @@ global RenderContext *g_rc;
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(Entity &e);
 
+#include "generated.h"
+
 #include "renderer.cpp"
 #include "collision.cpp"
 #include "world.cpp"
 #include "ai.cpp"
 #include "editor.cpp"
 
-#include "generated.h"
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
 		v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
@@ -87,6 +88,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		World &world = *game.world;
 
 		world.arena = make_arena(arena_alloc(memory, Megabyte(64)), Megabyte(64));
+		world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
+		world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
 		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
 
@@ -246,6 +249,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			Texture depth = create_depth_texture(texture.width, texture.height);
 			bind_framebuffer_color(game.debug_asset_fb, texture);
 			bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
+
+			game.debug_asset_tex = create_texture(make_cstring("debug asset temp"),
+						0, texture.width, texture.height, 1, 0);
 			// TODO:
 			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
 					== GL_FRAMEBUFFER_COMPLETE);
@@ -354,79 +360,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::End();
 	}
 
-	{
-		Entity *e = get_entity(world, world.editor_selected_entity);
-
-		if (e) {
-			ImGuiIO &io = ImGui::GetIO();
-
-			ImGui::Begin("Entity");
-            ImGui::ColorEdit3("color", e->color.e);
-			ImGui::Text("id: %ld", e->id);
-			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
-			if (ImGui::Button("Reset scale"))
-				e->scale = V3(1);
-			if (ImGui::Button("Reset rotation"))
-				e->rotation = identity_quat();
-
-			if (ImGui::Button("delete")) {
-				if (e->id != world.player_id) {
-					int index = world.entities_id_map[e->id];
-					int e_id = e->id;
-					assert(index >= 0 && index < world.entities.count);
-					assert(e == &world.entities[index]);
-					world.entities_id_map.erase(e->id);
-
-					if (index != world.entities.count - 1) {
-						world.entities[index] = world.entities[world.entities.count - 1];
-						world.entities_id_map[world.entities[index].id] = index;
-					}
-					world.entities.count--;
-				}
-			}
-			begin_render_pass(game.mesh_render_pass);
-			{
-				FrameBuffer &fb = game.debug_asset_fb;
-				bind_framebuffer(fb);
-
-				int width = fb.color_texture.width;
-				int height = fb.color_texture.height;
-
-				set_viewport(0, 0, width, height);
-
-				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
-				clear_framebuffer_depth(fb, 1);
-
-				bind_texture(4, g_rc->white_texture);
-				Camera camera = {};
-				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
-				camera.projection = game_camera.projection;
-				camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
-				camera.projection.e[1][1] *= -1;
-				render_scene(game, game.scenes[e->scene_id], camera, 
-					zrotation(PI/4), 0, 0, e->color);
-				//render_entities(game, world, camera, false);
-
-				Arena *temp = begin_temp_memory();
-
-				void *data = arena_alloc(temp, sizeof(uint32_t) * width * height);
-				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-				Texture tex = create_texture(make_cstring("tmp"),
-						data, width, height, 1, 0);
-
-				ImGui::Image((void *)(intptr_t)tex.id, ImVec2(width, height));
-
-				// TODO:
-				//glDeleteTextures(1, &tex.id);
-
-				end_temp_memory();
-			}
-			end_render_pass();
-
-			ImGui::End();
-		}
-	}
+	
 	end_render_frame();
 
 	game.time += dt;

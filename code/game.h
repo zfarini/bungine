@@ -107,8 +107,52 @@ enum GizmoMode
 	GIZMO_ROTATION
 };
 
+enum EditorOpType
+{
+	EDITOR_OP_TRANSLATE_ENTITY,
+	EDITOR_OP_ROTATE_ENTITY,
+	EDITOR_OP_SCALE_ENTITY,
+	EDITOR_OP_PASTE_ENTITY,
+	EDITOR_OP_DELETE_ENTITY,
+	EDITOR_OP_SPAWN_ENTITY,
+};
+
+struct EditorOp
+{
+	int type;
+	entity_id entity;
+
+	union {
+		struct {
+			v3 prev_p;
+			v3 new_p;
+		} translate;
+		struct {
+			quat prev_rot;
+			quat new_rot;
+		} rotate;
+		struct {
+			v3 prev_scale;
+			v3 new_scale;
+		} scale;
+		struct {
+			entity_id copy_from;
+			entity_id id;
+			v3 p;
+		} paste;
+		struct {
+			Entity entity_data;
+		} del;
+	};
+};
+
 struct Editor
 {
+	Array<EditorOp> ops;
+	Array<EditorOp> undos;
+
+	Entity init_entity;
+
 	bool in_gizmo;
 	entity_id selected_entity;
 	entity_id copied_entity;
@@ -117,15 +161,12 @@ struct Editor
 
 	int dragging_axis;
 	bool did_drag;
-	v3 drag_p;
 
+	v3 p_init_drag;
 
-	int s_drag_axis;
-	bool s_did_drag;
 	float s_init_scale;
 	float s_init_drag;
 
-	bool r_did_drag;
 	quat r_init_rot;
 	float r_init_drag;
 	v3 r_right_axis;
@@ -193,6 +234,7 @@ struct Game
 	DepthStencilState disable_depth_state;
 
 	FrameBuffer debug_asset_fb;
+	Texture debug_asset_tex;
 
 	bool show_normals;
 	bool render_bones;

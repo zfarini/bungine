@@ -30,12 +30,6 @@ struct Array
 	usize count;
 	usize capacity;
 
-	Array()
-	{
-		data = 0;
-		count = capacity = 0;
-	}
-
 	T &operator[](int index)
 	{
 		assert(index >= 0 && index < count);
@@ -58,11 +52,6 @@ struct Array
 	{
 		assert(count);
 		return data[count - 1];
-	}
-
-	~Array()
-	{
-		//free(data);
 	}
 };
 

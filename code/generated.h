@@ -139,4 +139,15 @@ const char *get_enum_GizmoMode_str(int value)
 		case GIZMO_ROTATION: return "GIZMO_ROTATION";
 	}
 }
+const char *get_enum_EditorOpType_str(int value)
+{
+	switch(value){
+		case EDITOR_OP_TRANSLATE_ENTITY: return "EDITOR_OP_TRANSLATE_ENTITY";
+		case EDITOR_OP_ROTATE_ENTITY: return "EDITOR_OP_ROTATE_ENTITY";
+		case EDITOR_OP_SCALE_ENTITY: return "EDITOR_OP_SCALE_ENTITY";
+		case EDITOR_OP_PASTE_ENTITY: return "EDITOR_OP_PASTE_ENTITY";
+		case EDITOR_OP_DELETE_ENTITY: return "EDITOR_OP_DELETE_ENTITY";
+		case EDITOR_OP_SPAWN_ENTITY: return "EDITOR_OP_SPAWN_ENTITY";
+	}
+}
 #endif

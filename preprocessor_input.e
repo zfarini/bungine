@@ -554,12 +554,6 @@ struct Array
  usize count;
  usize capacity;
 
- Array()
- {
-  data = 0;
-  count = capacity = 0;
- }
-
  T &operator[](int index)
  {
   assert(index >= 0 && index < count);
@@ -583,11 +577,6 @@ struct Array
   assert(count);
   return data[count - 1];
  }
-
- ~Array()
- {
-
- }
 };
 
 
@@ -598,7 +587,7 @@ Array<T> make_array_max(Arena *arena, usize capacity)
 
  result.count = 0;
  result.capacity = capacity;
- result.data = (T *)_arena_alloc("code/utils.h", __func__, 77, arena, capacity * sizeof(T));
+ result.data = (T *)_arena_alloc("code/utils.h", __func__, 66, arena, capacity * sizeof(T));
  return result;
 }
 
@@ -638,13 +627,13 @@ Array<T> clone_array(Arena *arena, Array<T> &array)
 {
  Array<T> result;
 
- result.data = (T *)_arena_alloc("code/utils.h", __func__, 117, arena, array.capacity * sizeof(T));
+ result.data = (T *)_arena_alloc("code/utils.h", __func__, 106, arena, array.capacity * sizeof(T));
  memcpy(result.data, array.data, sizeof(T) * array.count);
  result.count = array.count;
  result.capacity = array.capacity;
  return result;
 }
-# 132 "code/utils.h"
+# 121 "code/utils.h"
 using String = Array<char>;
 String make_string(Arena *arena, usize count, const char *data = 0) {return make_array<char>(arena, count, data);}
 b32 strings_equal(const String &a, const String &b)
@@ -3822,10 +3811,10 @@ namespace std
   using ::__gnu_cxx::vsnprintf;
   using ::__gnu_cxx::vsscanf;
 }
-# 167 "code/utils.h" 2
+# 156 "code/utils.h" 2
 
 
-# 168 "code/utils.h"
+# 157 "code/utils.h"
 String load_entire_file(Arena *arena, String filename)
 {
  assert(
@@ -3840,15 +3829,15 @@ String load_entire_file(Arena *arena, String filename)
   return result;
  }
  fseek(file, 0, 
-# 181 "code/utils.h" 3 4
+# 170 "code/utils.h" 3 4
                2
-# 181 "code/utils.h"
+# 170 "code/utils.h"
                        );
  usize size = ftell(file);
  fseek(file, 0, 
-# 183 "code/utils.h" 3 4
+# 172 "code/utils.h" 3 4
                0
-# 183 "code/utils.h"
+# 172 "code/utils.h"
                        );
 
  result = make_string(arena, size);
@@ -6219,8 +6208,52 @@ enum GizmoMode
  GIZMO_ROTATION
 };
 
+enum EditorOpType
+{
+ EDITOR_OP_TRANSLATE_ENTITY,
+ EDITOR_OP_ROTATE_ENTITY,
+ EDITOR_OP_SCALE_ENTITY,
+ EDITOR_OP_PASTE_ENTITY,
+ EDITOR_OP_DELETE_ENTITY,
+ EDITOR_OP_SPAWN_ENTITY,
+};
+
+struct EditorOp
+{
+ int type;
+ entity_id entity;
+
+ union {
+  struct {
+   v3 prev_p;
+   v3 new_p;
+  } translate;
+  struct {
+   quat prev_rot;
+   quat new_rot;
+  } rotate;
+  struct {
+   v3 prev_scale;
+   v3 new_scale;
+  } scale;
+  struct {
+   entity_id copy_from;
+   entity_id id;
+   v3 p;
+  } paste;
+  struct {
+   Entity entity_data;
+  } del;
+ };
+};
+
 struct Editor
 {
+ Array<EditorOp> ops;
+ Array<EditorOp> undos;
+
+ Entity init_entity;
+
  bool in_gizmo;
  entity_id selected_entity;
  entity_id copied_entity;
@@ -6229,15 +6262,12 @@ struct Editor
 
  int dragging_axis;
  bool did_drag;
- v3 drag_p;
 
+ v3 p_init_drag;
 
- int s_drag_axis;
- bool s_did_drag;
  float s_init_scale;
  float s_init_drag;
 
- bool r_did_drag;
  quat r_init_rot;
  float r_init_drag;
  v3 r_right_axis;
@@ -6305,6 +6335,7 @@ struct Game
  DepthStencilState disable_depth_state;
 
  FrameBuffer debug_asset_fb;
+ Texture debug_asset_tex;
 
  bool show_normals;
  bool render_bones;
@@ -6333,6 +6364,9 @@ struct Constants
 
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(Entity &e);
+
+# 1 "code/generated.h" 1
+# 33 "code/game.cpp" 2
 
 # 1 "code/renderer.cpp" 1
 void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
@@ -6677,7 +6711,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Anima
  glStencilFunc(GL_ALWAYS, 0, 0xFF);
  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
-# 33 "code/game.cpp" 2
+# 35 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
 CollisionShape make_ellipsoid_shape(v3 radius)
 {
@@ -7042,24 +7076,31 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
  end_temp_memory();
 }
-# 34 "code/game.cpp" 2
+# 36 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
-Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world)
 {
  Entity e = {};
 
  e.id = ++world.next_entity_id;
- e.type = type;
- e.position = position;
- e.scene_id = scene_id;
- e.scene_transform = scene_transform;
- e.shape = shape;
- e.color = V3(1);
- e.scale = V3(1);
- e.rotation = identity_quat();
  world.entities.push(e);
  world.entities_id_map[e.id] = world.entities.count - 1;
  return &world.entities[world.entities.count - 1];
+}
+
+Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+{
+ Entity *e = make_entity(world);
+
+ e->type = type;
+ e->position = position;
+ e->scene_id = scene_id;
+ e->scene_transform = scene_transform;
+ e->shape = shape;
+ e->color = V3(1);
+ e->scale = V3(1);
+ e->rotation = identity_quat();
+ return e;
 }
 
 Entity *get_entity(World &world, entity_id id)
@@ -7075,6 +7116,19 @@ Entity *get_entity(World &world, entity_id id)
   return &world.entities[it->second];
 
  return 0;
+}
+
+void remove_entity(World &world, entity_id id)
+{
+ assert(world.entities_id_map.count(id));
+
+ int index = world.entities_id_map[id];
+ world.entities_id_map.erase(id);
+ if (index != world.entities.count - 1) {
+  world.entities[index] = world.entities[world.entities.count - 1];
+  world.entities_id_map[world.entities[index].id] = index;
+ }
+ world.entities.count--;
 }
 
 mat4 get_entity_transform(Entity &e)
@@ -7273,7 +7327,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 241 "code/world.cpp"
+# 261 "code/world.cpp"
   {
 
 
@@ -7328,7 +7382,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 303 "code/world.cpp"
+# 323 "code/world.cpp"
    int curr_anim_idx = -1;
    int next_anim_idx = -1;
    for (int i = 0; i < ANIMATION_COUNT; i++) {
@@ -7337,7 +7391,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (player.next_anim == &game.animations[i])
      next_anim_idx = i;
    }
-# 322 "code/world.cpp"
+# 342 "code/world.cpp"
   }
  }
 }
@@ -7480,7 +7534,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    mat4 A = V * M;
 
    world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
-# 474 "code/world.cpp"
+# 494 "code/world.cpp"
   }
  }
 
@@ -7656,9 +7710,9 @@ void serialize(FILE *fd, bool w, World &world)
 }
 
 #undef S
-# 35 "code/game.cpp" 2
+# 37 "code/game.cpp" 2
 # 1 "code/ai.cpp" 1
-# 36 "code/game.cpp" 2
+# 38 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
   float &hit_t)
@@ -7703,6 +7757,81 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
  }
  hit_t = min_t;
  return hit_id;
+}
+
+void do_editor_op(World &world, Editor &editor, EditorOp &op)
+{
+ Entity *e = get_entity(world, op.entity);
+ if (e) {
+  if (op.type == EDITOR_OP_TRANSLATE_ENTITY)
+   e->position = op.translate.new_p;
+  else if (op.type == EDITOR_OP_ROTATE_ENTITY)
+   e->rotation = op.rotate.new_rot;
+  else if (op.type == EDITOR_OP_SCALE_ENTITY)
+   e->scale = op.scale.new_scale;
+ }
+ if (op.type == EDITOR_OP_PASTE_ENTITY) {
+  Entity *copy_from = get_entity(world, op.paste.copy_from);
+  if (copy_from) {
+
+
+
+   if (op.paste.id) {
+    Entity p = *copy_from;
+    p.id = op.paste.id;
+    p.position = op.paste.p;
+    world.entities.push(p);
+    world.entities_id_map[p.id] = world.entities.count - 1;
+   }
+   else {
+    Entity *p = make_entity(world);
+    entity_id id = p->id;
+    *p = *copy_from;
+    p->id = id;
+    p->position = op.paste.p;
+    op.paste.id = p->id;
+   }
+  }
+ }
+ else if (op.type == EDITOR_OP_DELETE_ENTITY)
+  remove_entity(world, op.entity);
+
+ editor.ops.push(op);
+}
+
+void redo_editor_op(World &world, Editor &editor)
+{
+ if (!editor.undos.count)
+  return ;
+ EditorOp op = editor.undos[editor.undos.count - 1];
+ editor.undos.count--;
+
+ do_editor_op(world, editor, op);
+}
+
+void undo_editor_op(World &world, Editor &editor)
+{
+ if (!editor.ops.count)
+  return ;
+ EditorOp op = editor.ops[editor.ops.count - 1];
+
+ editor.undos.push(op);
+ editor.ops.count--;
+ Entity *e = get_entity(world, op.entity);
+ if (e) {
+  if (op.type == EDITOR_OP_TRANSLATE_ENTITY)
+   e->position = op.translate.prev_p;
+  else if (op.type == EDITOR_OP_ROTATE_ENTITY)
+   e->rotation = op.rotate.prev_rot;
+  else if (op.type == EDITOR_OP_SCALE_ENTITY)
+   e->scale = op.scale.prev_scale;
+ }
+ if (op.type == EDITOR_OP_PASTE_ENTITY)
+  remove_entity(world, op.paste.id);
+ else if (op.type == EDITOR_OP_DELETE_ENTITY) {
+  world.entities.push(op.del.entity_data);
+  world.entities_id_map[op.del.entity_data.id] = world.entities.count - 1;
+ }
 }
 
 void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
@@ -7781,8 +7910,6 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
      editor.in_gizmo = true;
      editor.did_drag = false;
-     editor.s_did_drag = false;
-     editor.r_did_drag = false;
      editor.dragging_axis = best_axis;
     }
     }
@@ -7811,32 +7938,36 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
       if (editor.gizmo_mode == GIZMO_TRANSLATION) {
 
+
        v3 dp = normalize(axis[editor.dragging_axis]) * dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 
        if (!editor.did_drag) {
         editor.did_drag = true;
-        editor.drag_p = dp;
+        editor.p_init_drag = dp;
        }
        else
-        e->position += dp - editor.drag_p;
+        e->position += dp - editor.p_init_drag;
       }
       else if (editor.gizmo_mode == GIZMO_SCALE) {
+
        float ds = dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
 
 
-       if (!editor.s_did_drag) {
-        editor.s_did_drag = true;
+       if (!editor.did_drag) {
+        editor.did_drag = true;
         editor.s_init_drag = ds;
         editor.s_init_scale = e->scale.e[editor.dragging_axis];
        }
        else {
-        e->scale.e[editor.dragging_axis] =
-         editor.s_init_scale + ds - editor.s_init_drag;
-        if (e->scale.e[editor.dragging_axis] < 0.01f)
-         e->scale.e[editor.dragging_axis] = 0.01f;
+        v3 new_scale = e->scale;
+        new_scale.e[editor.dragging_axis] = editor.s_init_scale + ds - editor.s_init_drag;
+        if (new_scale.e[editor.dragging_axis] < 0.01f)
+         new_scale.e[editor.dragging_axis] = 0.01f;
+        e->scale = new_scale;
        }
       }
       else if (editor.gizmo_mode == GIZMO_ROTATION) {
+
        v3 p = normalize(hit_p - e->position) * rotation_circle_radius;
 
 
@@ -7845,7 +7976,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
        v3 right_axis = axis[(editor.dragging_axis+1)%3];
        v3 up_axis = axis[(editor.dragging_axis+2)%3];
 
-       if (editor.r_did_drag)
+       if (editor.did_drag)
         right_axis = editor.r_right_axis, up_axis = editor.r_up_axis;
        else
         editor.r_axis = axis[editor.dragging_axis];
@@ -7868,8 +7999,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
        push_line(e->position, e->position + up_axis, V3(0.2));
        float a = atan2(p.y, p.x);
 
-       if (!editor.r_did_drag) {
-        editor.r_did_drag = true;
+       if (!editor.did_drag) {
+        editor.did_drag = true;
         editor.r_init_drag = a;
         editor.r_init_rot = e->rotation;
         editor.r_right_axis = right_axis;
@@ -7881,6 +8012,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
          * editor.r_init_rot;
        }
       }
+      else
+       assert(0);
      }
     }
    }
@@ -7889,10 +8022,41 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 
     editor.selected_entity = hit_entity;
+    editor.init_entity = *get_entity(world, hit_entity);
    }
   }
   else {
+   if (editor.in_gizmo && editor.did_drag) {
+    EditorOp op = {};
+    Entity *e = get_entity(world, editor.selected_entity);
+    if (e) {
+     op.entity = editor.init_entity.id;
+     bool push = true;
+     if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+      op.type = EDITOR_OP_TRANSLATE_ENTITY;
+      op.translate.prev_p = editor.init_entity.position;
+      op.translate.new_p = e->position;
+      push &= (!v3_equal(op.translate.prev_p, op.translate.new_p));
+     }
+     else if (editor.gizmo_mode == GIZMO_SCALE) {
+      op.type = EDITOR_OP_SCALE_ENTITY;
+      op.scale.prev_scale = editor.init_entity.scale;
+      op.scale.new_scale = e->scale;
+      push &= (!v3_equal(op.scale.prev_scale, op.scale.new_scale));
+     }
+     else if (editor.gizmo_mode == GIZMO_ROTATION) {
+      op.type = EDITOR_OP_ROTATE_ENTITY;
+      op.rotate.prev_rot = editor.init_entity.rotation;
+      op.rotate.new_rot = e->rotation;
+      push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
+     }
+     if (push)
+      do_editor_op(world, editor, op);
+    }
+   }
    editor.in_gizmo = 0;
+   if (get_entity(world, editor.selected_entity))
+    editor.init_entity = *get_entity(world, editor.selected_entity);
   }
   Entity *e = get_entity(world, editor.selected_entity);
   if (e) {
@@ -7942,27 +8106,63 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
   Entity *e = get_entity(world, editor.copied_entity);
   if (e) {
-   Entity *copy = make_entity(world, 0, 0, V3(0), make_ellipsoid_shape(V3(0)));
-
-   int id = copy->id;
-   *copy = *e;
-   copy->id = id;
+   EditorOp op = {};
+   op.type = EDITOR_OP_PASTE_ENTITY;
+   op.paste.copy_from = e->id;
 
    float min_hit_t;
    entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
    if (hit_entity) {
-    copy->position = ray_origin + min_hit_t * ray_dir
-     + V3(0, 0, copy->scale.z);
+    op.paste.p = ray_origin + min_hit_t * ray_dir
+     + V3(0, 0, e->scale.z);
    }else
-    copy->position = camera.position + camera.forward * 2
-     * max(copy->scale.x, max(copy->scale.y, copy->scale.z));
+    op.paste.p = camera.position + camera.forward * 2
+     * max(e->scale.x, max(e->scale.y, e->scale.z));
+
+   do_editor_op(world, editor, op);
   }
  }
-}
-# 37 "code/game.cpp" 2
 
-# 1 "code/generated.h" 1
+
+ {
+  Entity *e = get_entity(world, world.editor_selected_entity);
+
+  if (e) {
+   ImGuiIO &io = ImGui::GetIO();
+
+   ImGui::Begin("Entity");
+            ImGui::ColorEdit3("color", e->color.e);
+   ImGui::Text("id: %ld", e->id);
+   ImGui::Text("type: %s", get_enum_EntityType_str(e->type));
+   if (ImGui::Button("Reset scale"))
+    e->scale = V3(1);
+   if (ImGui::Button("Reset rotation"))
+    e->rotation = identity_quat();
+
+   if (e->id != world.player_id && ImGui::Button("delete")) {
+    EditorOp op = {};
+    op.entity = e->id;
+    op.type = EDITOR_OP_DELETE_ENTITY;
+    op.del.entity_data = *e;
+
+    do_editor_op(world, editor, op);
+    e = 0;
+   }
+# 474 "code/editor.cpp"
+   ImGui::End();
+  }
+ }
+ if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
+  ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down))) {
+  undo_editor_op(world, editor);
+ }
+ if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
+  ((input.buttons[BUTTON_X].is_down) && !(input.buttons[BUTTON_X].was_down))) {
+  redo_editor_op(world, editor);
+ }
+}
 # 39 "code/game.cpp" 2
+
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
   v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
@@ -8003,7 +8203,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 128));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 79, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 80, memory, temp_arena_size), temp_arena_size);
 
 
 
@@ -8013,9 +8213,11 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 89, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 90, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
+  world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 91, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 94, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -8174,6 +8376,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    bind_framebuffer_color(game.debug_asset_fb, texture);
    bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
 
+   game.debug_asset_tex = create_texture(make_cstring("debug asset temp"),
+      0, texture.width, texture.height, 1, 0);
+
    assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
      == GL_FRAMEBUFFER_COMPLETE);
   }
@@ -8281,87 +8486,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   ImGui::End();
  }
 
- {
-  Entity *e = get_entity(world, world.editor_selected_entity);
 
-  if (e) {
-   ImGuiIO &io = ImGui::GetIO();
-
-   ImGui::Begin("Entity");
-            ImGui::ColorEdit3("color", e->color.e);
-   ImGui::Text("id: %ld", e->id);
-   ImGui::Text("type: %s", get_enum_EntityType_str(e->type));
-   if (ImGui::Button("Reset scale"))
-    e->scale = V3(1);
-   if (ImGui::Button("Reset rotation"))
-    e->rotation = identity_quat();
-
-   if (ImGui::Button("delete")) {
-    if (e->id != world.player_id) {
-     int index = world.entities_id_map[e->id];
-     int e_id = e->id;
-     assert(index >= 0 && index < world.entities.count);
-     assert(e == &world.entities[index]);
-     world.entities_id_map.erase(e->id);
-
-     if (index != world.entities.count - 1) {
-      world.entities[index] = world.entities[world.entities.count - 1];
-      world.entities_id_map[world.entities[index].id] = index;
-     }
-     world.entities.count--;
-    }
-   }
-   begin_render_pass(game.mesh_render_pass);
-   {
-    FrameBuffer &fb = game.debug_asset_fb;
-    bind_framebuffer(fb);
-
-    int width = fb.color_texture.width;
-    int height = fb.color_texture.height;
-
-    set_viewport(0, 0, width, height);
-
-    clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
-    clear_framebuffer_depth(fb, 1);
-
-    bind_texture(4, g_rc->white_texture);
-    Camera camera = {};
-    camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
-    camera.projection = game_camera.projection;
-    camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
-    camera.projection.e[1][1] *= -1;
-    render_scene(game, game.scenes[e->scene_id], camera,
-     zrotation(3.14159265359f/4), 0, 0, e->color);
-
-
-    Arena *temp = begin_temp_memory();
-
-    void *data = _arena_alloc("code/game.cpp", __func__, 412, temp, sizeof(uint32_t) * width * height);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    Texture tex = create_texture(make_cstring("tmp"),
-      data, width, height, 1, 0);
-
-    ImGui::Image((void *)(intptr_t)tex.id, ImVec2(width, height));
-
-
-
-
-    end_temp_memory();
-   }
-   end_render_pass();
-
-   ImGui::End();
-  }
- }
  end_render_frame();
 
  game.time += dt;
  if (game.frame == 0)
   ImGui::SetWindowFocus(
-# 434 "code/game.cpp" 3 4
+# 368 "code/game.cpp" 3 4
                        __null
-# 434 "code/game.cpp"
+# 368 "code/game.cpp"
                            );
  game.frame++;
 }

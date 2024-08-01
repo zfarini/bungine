@@ -1,19 +1,26 @@
-Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world)
 {
 	Entity e = {};
 
-	e.id = ++world.next_entity_id; // skip 0
-	e.type = type;
-	e.position = position;
-	e.scene_id = scene_id;
-	e.scene_transform = scene_transform;
-	e.shape = shape;
-	e.color = V3(1);
-	e.scale = V3(1);
-	e.rotation = identity_quat();
+	e.id = ++world.next_entity_id;
 	world.entities.push(e);
 	world.entities_id_map[e.id] = world.entities.count - 1;
 	return &world.entities[world.entities.count - 1];
+}
+
+Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+{
+	Entity *e = make_entity(world);
+
+	e->type = type;
+	e->position = position;
+	e->scene_id = scene_id;
+	e->scene_transform = scene_transform;
+	e->shape = shape;
+	e->color = V3(1);
+	e->scale = V3(1);
+	e->rotation = identity_quat();
+	return e;
 }
 
 Entity *get_entity(World &world, entity_id id)
@@ -29,6 +36,19 @@ Entity *get_entity(World &world, entity_id id)
 		return &world.entities[it->second];
 #endif
 	return 0;
+}
+
+void remove_entity(World &world, entity_id id)
+{
+	assert(world.entities_id_map.count(id));
+
+	int index = world.entities_id_map[id];
+	world.entities_id_map.erase(id);
+	if (index != world.entities.count - 1) {
+		world.entities[index] = world.entities[world.entities.count - 1];
+		world.entities_id_map[world.entities[index].id] = index;
+	}
+	world.entities.count--;
 }
 
 mat4 get_entity_transform(Entity &e)
