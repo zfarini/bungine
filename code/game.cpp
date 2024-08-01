@@ -27,7 +27,8 @@ global RenderContext *g_rc;
 #include "game.h"
 
 Entity *get_entity(World &world, entity_id id);
-mat4 get_entity_transform(Entity &e);
+mat4 get_entity_transform(World &world, Entity &e);
+v3 get_world_p(World &world, entity_id id);
 
 #include "generated.h"
 
@@ -209,8 +210,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
 
 				make_entity(world, EntityType_Static, game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
-
 			};
+			world.moving_box = 7;
+
 			for (int i = 0; i < ARRAY_SIZE(boxes); i++) {
 				//boxes[i]->scene_transform = scale();
 				boxes[i]->scale = boxes[i]->shape.box_radius;
@@ -272,6 +274,10 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	if (!game.in_editor) {
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
+
+		Entity *e = get_entity(world, world.moving_box);
+		if (e)
+			e->position.z = 20 + sinf(game.time) * 20;
 	}
 
 	Camera game_camera = update_camera(game, world, input, dt);

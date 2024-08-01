@@ -20,6 +20,7 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
+#define __SANITIZE_ADDRESS__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -6105,7 +6106,8 @@ enum EntityType
 {
  EntityType_Player,
  EntityType_Enemy,
- EntityType_Static
+ EntityType_Static,
+ EntityType_Count,
 };
 
 enum CollisionShapeType
@@ -6119,6 +6121,8 @@ struct CollisionTriangle
  v3 v0, v1, v2;
 };
 
+typedef usize entity_id;
+
 struct CollisionShape
 {
  int type;
@@ -6128,15 +6132,18 @@ struct CollisionShape
  v3 box_radius;
  mat4 transform;
  v3 scale;
+ entity_id entity;
 };
 
-typedef usize entity_id;
 typedef usize SceneID;
 
 
 struct Entity
 {
  entity_id id;
+
+ entity_id parent;
+
  int type;
  v3 position;
  v3 dp;
@@ -6298,6 +6305,8 @@ struct World
 
  entity_id editor_selected_entity;
  entity_id player_id;
+
+ entity_id moving_box;
 };
 
 struct Game
@@ -6363,10 +6372,11 @@ struct Constants
 # 28 "code/game.cpp" 2
 
 Entity *get_entity(World &world, entity_id id);
-mat4 get_entity_transform(Entity &e);
+mat4 get_entity_transform(World &world, Entity &e);
+v3 get_world_p(World &world, entity_id id);
 
 # 1 "code/generated.h" 1
-# 33 "code/game.cpp" 2
+# 34 "code/game.cpp" 2
 
 # 1 "code/renderer.cpp" 1
 void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
@@ -6711,7 +6721,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Anima
  glStencilFunc(GL_ALWAYS, 0, 0xFF);
  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
-# 35 "code/game.cpp" 2
+# 36 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
 CollisionShape make_ellipsoid_shape(v3 radius)
 {
@@ -6776,6 +6786,7 @@ struct CollisionInfo
  v3 hit_p;
  v3 hit_normal;
  float t;
+ entity_id entity;
 };
 
 #define SMALLEST_VELOCITY 0.01f
@@ -6858,7 +6869,7 @@ void intersect_triangle_plane(v3 v0, v3 v1, v3 v2, v3 dir, CollisionInfo &info)
 
   v3 p = t * dir;
   p = v0 + (p-v0)-dot(p - v0, normal)*normal;
-# 154 "code/collision.cpp"
+# 155 "code/collision.cpp"
   float A = dot(cross(p - v0, v), n) * one_over_length_n_sq;
   float B = -dot(cross(p - v0, u), n) * one_over_length_n_sq;
 
@@ -6878,7 +6889,7 @@ CollisionInfo ellipsoid_intersect_triangle(v3 targetP, v3 ep, v3 er, v3 v0, v3 v
  info.t = FLT_MAX;
 
  v3 inv_r = V3(1/er.x, 1/er.y, 1/er.z);
-# 183 "code/collision.cpp"
+# 184 "code/collision.cpp"
  v3 t0 = inv_r * (v0 - ep);
  v3 t1 = inv_r * (v1 - ep);
  v3 t2 = inv_r * (v2 - ep);
@@ -6960,6 +6971,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
   CollisionInfo hit_info = {};
   hit_info.t = FLT_MAX;
+  entity_id hit_entity = 0;
 
   for (int i = 0; i < shapes.count; i++) {
    CollisionInfo info;
@@ -6972,6 +6984,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
      info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
        p0, p1, p2);
+     info.entity = shapes[i].entity;
      if (info.t < hit_info.t)
       hit_info = info;
     }
@@ -6983,6 +6996,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
        shapes[i].transform.e[2][3]),
       shapes[i].ellipsoid_radius
       * shapes[i].scale);
+    info.entity = shapes[i].entity;
     if (info.t < hit_info.t)
      hit_info = info;
    }
@@ -7030,26 +7044,31 @@ void move_entity(World &world, Entity &e, v3 delta_p)
    continue ;
 
   CollisionShape shape = test.shape;
-  shape.transform = get_entity_transform(test);
+  shape.transform = get_entity_transform(world, test);
 
   if (shape.type == COLLISION_SHAPE_ELLIPSOID)
    shape.scale = test.scale;
 
+  shape.entity = test.id;
   shapes.push(shape);
  }
-# 349 "code/collision.cpp"
- v3 old_p = e.position;
+# 355 "code/collision.cpp"
+ v3 rel_p = e.position;
+
+ e.position = get_world_p(world, e.id);
+ v3 start_p = e.position;
+
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
  int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*3.5f));
  for (int i = 0; i < itr; i++)
   move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 
- if (fabsf(e.position.x - old_p.x) < 1e-7)
+ if (fabsf(e.position.x - start_p.x) < 1e-7)
   e.dp.x = 0;
- if (fabsf(e.position.y - old_p.y) < 1e-7)
+ if (fabsf(e.position.y - start_p.y) < 1e-7)
   e.dp.y = 0;
- if (fabsf(e.position.z - old_p.z) < 1e-7)
+ if (fabsf(e.position.z - start_p.z) < 1e-7)
   e.dp.z = 0;
 
 
@@ -7074,9 +7093,20 @@ void move_entity(World &world, Entity &e, v3 delta_p)
  if (e.on_ground)
   e.can_jump = true;
 
+ if (e.type == EntityType_Static)
+  e.position = rel_p + e.position - start_p;
+ else {
+  Entity *parent = get_entity(world, collision.entity);
+  if (parent) {
+   e.parent = parent->id;
+   e.position -= parent->position;
+  }
+  else
+   e.parent = 0;
+ }
  end_temp_memory();
 }
-# 36 "code/game.cpp" 2
+# 37 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
 Entity *make_entity(World &world)
 {
@@ -7131,20 +7161,36 @@ void remove_entity(World &world, entity_id id)
  world.entities.count--;
 }
 
-mat4 get_entity_transform(Entity &e)
+v3 get_world_p(World &world, entity_id id)
+{
+ Entity *e = get_entity(world, id);
+ assert(e);
+
+ v3 position = e->position;
+ while (e->parent)
+ {
+  Entity *p = get_entity(world, e->parent);
+  assert(p);
+  position += p->position;
+  e = p;
+ }
+ return position;
+}
+
+mat4 get_entity_transform(World &world, Entity &e)
 {
 
 
 
 
- return translate(e.position)
+ return translate(get_world_p(world, e.id))
   * quat_to_mat(e.rotation) * scale(e.scale);
 
 }
 
 void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
 {
- mat4 entity_transform = get_entity_transform(e);
+ mat4 entity_transform = get_entity_transform(world, e);
  mat4 scene_transform = entity_transform * e.scene_transform;
  Arena *temp = begin_temp_memory();
  Animation *final_anim = 0;
@@ -7224,7 +7270,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
    continue ;
   }
 
-  mat4 entity_transform = get_entity_transform(e);
+  mat4 entity_transform = get_entity_transform(world, e);
   mat4 scene_transform = entity_transform * e.scene_transform;
 
 
@@ -7251,7 +7297,8 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
     }
    }
    else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-    push_ellipsoid_outline(e.position, e.scale * e.shape.ellipsoid_radius, color);
+    push_ellipsoid_outline(
+      get_world_p(world, e.id), e.scale * e.shape.ellipsoid_radius, color);
    }
   }
  }
@@ -7327,7 +7374,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 261 "code/world.cpp"
+# 278 "code/world.cpp"
   {
 
 
@@ -7382,7 +7429,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 323 "code/world.cpp"
+# 340 "code/world.cpp"
    int curr_anim_idx = -1;
    int next_anim_idx = -1;
    for (int i = 0; i < ANIMATION_COUNT; i++) {
@@ -7391,13 +7438,19 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (player.next_anim == &game.animations[i])
      next_anim_idx = i;
    }
-# 342 "code/world.cpp"
+# 359 "code/world.cpp"
   }
  }
 }
 
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
+ Entity *player = get_entity(world, world.player_id);
+ if (!player)
+  return ;
+
+ v3 player_world_p = get_world_p(world, player->id);
+
  for (int i = 0; i < world.entities.count; i++)
  {
   Entity &e = world.entities[i];
@@ -7405,25 +7458,15 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
   if (e.type != EntityType_Enemy)
    continue;
 
-  Entity *player = get_entity(world, world.player_id);
-
-  v3 dir = {};
-  if (player)
-   dir = player->position - e.position;
+  v3 dir = player_world_p - get_world_p(world, e.id);
 
   if (length(dir) > 1)
    dir = normalize(dir);
 
-  v3 a = normalize(V3(dir.x, dir.y, 0));
+  v3 a = normalize(V3(dir.x, dir.y, dir.z));
 
-  a += -40 * V3(0, 0, 1);
-  a.xy = a.xy * e.speed;
-
-  if (dir.z > 0 && e.can_jump) {
-   a += 200 * V3(0, 0, 1);
-   a.xy *= 0.3f;
-  }
-
+  a = a * 40;
+# 394 "code/world.cpp"
   a -= e.dp * 3;
 
   v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
@@ -7432,14 +7475,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 
   e.dp += a * dt;
-
-  if (!e.on_ground)
-   e.animation = &game.animations[ANIMATION_JUMP];
-  else
-   e.animation = &game.animations[ANIMATION_RUN];
-
-
-  e.anim_time += dt;
+# 410 "code/world.cpp"
  }
 }
 
@@ -7501,12 +7537,14 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    float t[4] = {-3.14159265359f/2, 0, 3.14159265359f/2.5, 3.14159265359f/2};
    assert(player->shape.type == COLLISION_SHAPE_ELLIPSOID);
 
+   v3 player_p = get_world_p(world, player->id);
+
    v3 v[4] = {
-    player->position + V3(0, 0, player->shape.ellipsoid_radius.z*3),
-    player->position - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
-    player->position - player_forward * 1.5
+    player_p + V3(0, 0, player->shape.ellipsoid_radius.z*3),
+    player_p - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
+    player_p - player_forward * 1.5
      + V3(0, 0, -player->shape.ellipsoid_radius.z +0.2),
-    player->position - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
+    player_p - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
 
    };
 
@@ -7534,7 +7572,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    mat4 A = V * M;
 
    world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
-# 494 "code/world.cpp"
+# 516 "code/world.cpp"
   }
  }
 
@@ -7710,9 +7748,9 @@ void serialize(FILE *fd, bool w, World &world)
 }
 
 #undef S
-# 37 "code/game.cpp" 2
-# 1 "code/ai.cpp" 1
 # 38 "code/game.cpp" 2
+# 1 "code/ai.cpp" 1
+# 39 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
   float &hit_t)
@@ -7726,7 +7764,7 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
    continue ;
 
   Scene &scene = game.scenes[e.scene_id];
-  mat4 transform = get_entity_transform(e) * e.scene_transform;
+  mat4 transform = get_entity_transform(world, e) * e.scene_transform;
   for (usize j = 0; j < scene.meshes.count; j++) {
    Mesh &mesh = scene.meshes[j];
    mat4 mesh_transform = transform * mesh.transform;
@@ -7860,7 +7898,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
  if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
   Entity *e = get_entity(world, editor.selected_entity);
   if (e) {
-   mat4 transform = get_entity_transform(*e);
+   mat4 transform = get_entity_transform(world, *e);
 
    for (int i = 0; i < 3; i++)
     axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
@@ -7904,6 +7942,10 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
       min_axis_t = t;
       best_axis = i;
      }
+    }
+    if (editor.gizmo_mode == GIZMO_SCALE) {
+
+
     }
     if (min_axis_t != FLT_MAX) {
 
@@ -8058,45 +8100,50 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    if (get_entity(world, editor.selected_entity))
     editor.init_entity = *get_entity(world, editor.selected_entity);
   }
-  Entity *e = get_entity(world, editor.selected_entity);
-  if (e) {
+ Entity *e = get_entity(world, editor.selected_entity);
+ if (e) {
 
-   for (int i = 0; i < 3; i++) {
-    v3 color = {};
-    color.e[i] = 1;
-    if (editor.in_gizmo && editor.dragging_axis == i)
-     color = V3(1, 1, 0);
+  for (int i = 0; i < 3; i++) {
+   v3 color = {};
+   color.e[i] = 1;
+   if (editor.in_gizmo && editor.dragging_axis == i)
+    color = V3(1, 1, 0);
 
-    if (editor.gizmo_mode == GIZMO_SCALE) {
-     push_line(e->position, e->position + axis[i], color);
-     push_cube_outline(e->position + axis[i], V3(0.1f), color);
-    }
-    else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-     push_line(e->position, e->position + axis[i], color);
-     push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
-    }
-    else {
+   if (editor.gizmo_mode == GIZMO_SCALE) {
+    push_line(e->position, e->position + axis[i], color);
+    push_cube_outline(e->position + axis[i], V3(0.1f), color);
 
-
-
+   }
+   else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+    push_line(e->position, e->position + axis[i], color);
+    push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+   }
+   else {
 
 
 
-     push_circle(e->position,
-       rotation_circle_radius
-       , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 
 
-    }
 
-
+    push_circle(e->position,
+      rotation_circle_radius
+      , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 
 
    }
-  }
 
-  world.editor_selected_entity = editor.selected_entity;
-  editor.last_camera_p = camera.position;
+
+
+
+  }
+  if (editor.gizmo_mode == GIZMO_SCALE) {
+   push_line(e->position, e->position
+     + 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
+  }
+ }
+
+ world.editor_selected_entity = editor.selected_entity;
+ editor.last_camera_p = camera.position;
  if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_C].is_down) && !(input.buttons[BUTTON_C].was_down)) &&
   editor.selected_entity) {
@@ -8139,6 +8186,12 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    if (ImGui::Button("Reset rotation"))
     e->rotation = identity_quat();
 
+   const char * items[EntityType_Count];
+   for (int i = 0; i < EntityType_Count; i++)
+    items[i] = get_enum_EntityType_str(i);
+   ImGui::ListBox("listbox", &e->type, items, EntityType_Count, 3);
+
+
    if (e->id != world.player_id && ImGui::Button("delete")) {
     EditorOp op = {};
     op.entity = e->id;
@@ -8148,7 +8201,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     do_editor_op(world, editor, op);
     e = 0;
    }
-# 474 "code/editor.cpp"
+# 489 "code/editor.cpp"
    ImGui::End();
   }
  }
@@ -8161,7 +8214,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   redo_editor_op(world, editor);
  }
 }
-# 39 "code/game.cpp" 2
+# 40 "code/game.cpp" 2
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
@@ -8203,7 +8256,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 128));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 80, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 81, memory, temp_arena_size), temp_arena_size);
 
 
 
@@ -8213,11 +8266,11 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 90, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 91, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
   world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
   world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 94, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 95, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -8335,8 +8388,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
     make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
 
     make_entity(world, EntityType_Static, game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
-
    };
+   world.moving_box = 7;
+
    for (int i = 0; i < (sizeof(boxes) / sizeof(*boxes)); i++) {
 
     boxes[i]->scale = boxes[i]->shape.box_radius;
@@ -8398,6 +8452,10 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  if (!game.in_editor) {
   update_player(game, world, input, dt);
   update_enemies(game, world, input, dt);
+
+  Entity *e = get_entity(world, world.moving_box);
+  if (e)
+   e->position.z = 20 + sinf(game.time) * 20;
  }
 
  Camera game_camera = update_camera(game, world, input, dt);
@@ -8492,9 +8550,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  game.time += dt;
  if (game.frame == 0)
   ImGui::SetWindowFocus(
-# 368 "code/game.cpp" 3 4
+# 374 "code/game.cpp" 3 4
                        __null
-# 368 "code/game.cpp"
+# 374 "code/game.cpp"
                            );
  game.frame++;
 }

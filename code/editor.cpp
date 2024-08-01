@@ -10,7 +10,7 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 			continue ;
 
 		Scene &scene = game.scenes[e.scene_id];
-		mat4 transform = get_entity_transform(e) * e.scene_transform;
+		mat4 transform = get_entity_transform(world, e) * e.scene_transform;
 		for (usize j = 0; j < scene.meshes.count; j++) {
 			Mesh &mesh = scene.meshes[j];
 			mat4 mesh_transform = transform * mesh.transform;
@@ -144,7 +144,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) { 
-			mat4 transform = get_entity_transform(*e);
+			mat4 transform = get_entity_transform(world, *e);
 
 			for (int i = 0; i < 3; i++)
 				axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
@@ -188,6 +188,10 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						min_axis_t = t;
 						best_axis = i;
 					}
+				}
+				if (editor.gizmo_mode == GIZMO_SCALE) {
+					// TODO: scale uniformly
+
 				}
 				if (min_axis_t != FLT_MAX) {
 					//&& (hit_entity == editor.selected_entity
@@ -342,45 +346,50 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			if (get_entity(world, editor.selected_entity))
 				editor.init_entity = *get_entity(world, editor.selected_entity);
 		}
-		Entity *e = get_entity(world, editor.selected_entity);
-		if (e) {
+	Entity *e = get_entity(world, editor.selected_entity);
+	if (e) {
 
-			for (int i = 0; i < 3; i++) {
-				v3 color = {};
-				color.e[i] = 1;
-				if (editor.in_gizmo && editor.dragging_axis == i)
-					color = V3(1, 1, 0);
+		for (int i = 0; i < 3; i++) {
+			v3 color = {};
+			color.e[i] = 1;
+			if (editor.in_gizmo && editor.dragging_axis == i)
+				color = V3(1, 1, 0);
 
-				if (editor.gizmo_mode == GIZMO_SCALE) {
-					push_line(e->position, e->position + axis[i], color);
-					push_cube_outline(e->position + axis[i], V3(0.1f), color);
-				}
-				else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-					push_line(e->position, e->position + axis[i], color);
-					push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
-				}
-				else {
+			if (editor.gizmo_mode == GIZMO_SCALE) {
+				push_line(e->position, e->position + axis[i], color);
+				push_cube_outline(e->position + axis[i], V3(0.1f), color);
+
+			}
+			else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+				push_line(e->position, e->position + axis[i], color);
+				push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+			}
+			else {
 #if 0
-					for (int j = 0; j < 36; j++)
-						push_circle(e->position, 
-								lerp(rotation_inner_radius, rotation_outer_radius, j / 36.f)
-								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
-#else
+				for (int j = 0; j < 36; j++)
 					push_circle(e->position, 
-							rotation_circle_radius
+							lerp(rotation_inner_radius, rotation_outer_radius, j / 36.f)
 							, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+#else
+				push_circle(e->position, 
+						rotation_circle_radius
+						, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 #endif
 
-				}
-				//push_box_outline(e->position + 0.5f * axis,
-				//		x_axis * (i == 0 ? 0.5f : 0.25f), 
-				//		y_axis * (i == 1 ? 0.5f : 0.25f), 
-				//		z_axis * (i == 2 ? 0.5f : 0.25f), color);
 			}
+			//push_box_outline(e->position + 0.5f * axis,
+			//		x_axis * (i == 0 ? 0.5f : 0.25f), 
+			//		y_axis * (i == 1 ? 0.5f : 0.25f), 
+			//		z_axis * (i == 2 ? 0.5f : 0.25f), color);
 		}
+		if (editor.gizmo_mode == GIZMO_SCALE) {
+			push_line(e->position, e->position
+					+ 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
+		}
+	}
 
-		world.editor_selected_entity = editor.selected_entity;
-		editor.last_camera_p = camera.position;
+	world.editor_selected_entity = editor.selected_entity;
+	editor.last_camera_p = camera.position;
 	if (IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_C) &&
 		editor.selected_entity) {
@@ -422,6 +431,12 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				e->scale = V3(1);
 			if (ImGui::Button("Reset rotation"))
 				e->rotation = identity_quat();
+
+			const char * items[EntityType_Count];
+			for (int i = 0; i < EntityType_Count; i++)
+				items[i] = ENUM_STRING(EntityType, i);
+			ImGui::ListBox("listbox", &e->type, items, EntityType_Count, 3);
+
 
 			if (e->id != world.player_id && ImGui::Button("delete")) {
 				EditorOp op = {};

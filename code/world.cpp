@@ -51,20 +51,36 @@ void remove_entity(World &world, entity_id id)
 	world.entities.count--;
 }
 
-mat4 get_entity_transform(Entity &e)
+v3 get_world_p(World &world, entity_id id)
+{
+	Entity *e = get_entity(world, id);
+	assert(e);
+
+	v3 position = e->position;
+	while (e->parent)
+	{
+		Entity *p = get_entity(world, e->parent);
+		assert(p);
+		position += p->position;
+		e = p;
+	}
+	return position;
+}
+
+mat4 get_entity_transform(World &world, Entity &e)
 {
 #if 0
 	return translate(e.position) 
 		* zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
 #else
-	return translate(e.position) 
+	return translate(get_world_p(world, e.id)) 
 		* quat_to_mat(e.rotation) * scale(e.scale);
 #endif
 }
 
 void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
 {
-	mat4 entity_transform = get_entity_transform(e);
+	mat4 entity_transform = get_entity_transform(world, e);
 	mat4 scene_transform = entity_transform * e.scene_transform;
 	Arena *temp = begin_temp_memory();
 	Animation *final_anim = 0;
@@ -144,7 +160,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 			continue ;
 		}
 
-		mat4 entity_transform = get_entity_transform(e);
+		mat4 entity_transform = get_entity_transform(world, e);
 		mat4 scene_transform = entity_transform * e.scene_transform;
 
 		
@@ -171,7 +187,8 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 				}
 			}
 			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-				push_ellipsoid_outline(e.position, e.scale * e.shape.ellipsoid_radius, color);
+				push_ellipsoid_outline(
+						get_world_p(world, e.id), e.scale * e.shape.ellipsoid_radius, color);
 			}
 		}
 	}
@@ -345,6 +362,12 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
+	Entity *player = get_entity(world, world.player_id);
+	if (!player)
+		return ;
+
+	v3 player_world_p = get_world_p(world, player->id);
+
 	for (int i = 0; i < world.entities.count; i++)
 	{
 		Entity &e = world.entities[i];
@@ -352,24 +375,21 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 		if (e.type != EntityType_Enemy)
 			continue;
 
-		Entity *player = get_entity(world, world.player_id);
-
-		v3 dir = {};
-		if (player)
-			dir = player->position - e.position;
+		v3 dir = player_world_p - get_world_p(world, e.id);
 
 		if (length(dir) > 1)
 			dir = normalize(dir);
 
-		v3 a = normalize(V3(dir.x, dir.y, 0));
+		v3 a = normalize(V3(dir.x, dir.y, dir.z));
 
-		a += -40 * V3(0, 0, 1);
-		a.xy = a.xy * e.speed;
+		a = a * 40;
+		//a += -40 * V3(0, 0, 1);
+		//a.xy = a.xy * e.speed;
 
-		if (dir.z > 0 && e.can_jump) {
-			a += 200 * V3(0, 0, 1);
-			a.xy *= 0.3f;
-		}
+		//if (dir.z > 0 && e.can_jump) {
+		//	a += 200 * V3(0, 0, 1);
+		//	a.xy *= 0.3f;
+		//}
 
 		a -= e.dp * 3;
 
@@ -380,13 +400,13 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 		e.dp += a * dt;
 
-		if (!e.on_ground)
-			e.animation = &game.animations[ANIMATION_JUMP];
-		else
-			e.animation = &game.animations[ANIMATION_RUN];
+		//if (!e.on_ground)
+		//	e.animation = &game.animations[ANIMATION_JUMP];
+		//else
+		//	e.animation = &game.animations[ANIMATION_RUN];
 
 	//	e.rotation.z = atan2(dir.y, dir.x);
-		e.anim_time += dt;
+		//e.anim_time += dt;
 	}
 }	
 
@@ -448,12 +468,14 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 			float t[4] = {-PI/2, 0, PI/2.5, PI/2};
 			assert(player->shape.type == COLLISION_SHAPE_ELLIPSOID);
 
+			v3 player_p = get_world_p(world, player->id);
+
 			v3 v[4] = {
-				player->position + V3(0, 0, player->shape.ellipsoid_radius.z*3),
-				player->position - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
-				player->position - player_forward * 1.5
+				player_p + V3(0, 0, player->shape.ellipsoid_radius.z*3),
+				player_p - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
+				player_p - player_forward * 1.5
 					+ V3(0, 0, -player->shape.ellipsoid_radius.z +0.2),
-				player->position - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
+				player_p - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
 
 			};
 

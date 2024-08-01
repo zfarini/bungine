@@ -83,7 +83,7 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(1280, 720, "game", 0, 0);
+	GLFWwindow *window = glfwCreateWindow(800, 600, "game", 0, 0);
 	if (!window)
 		assert(0);
 

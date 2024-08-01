@@ -110,6 +110,7 @@ const char *get_enum_EntityType_str(int value)
 		case EntityType_Player: return "EntityType_Player";
 		case EntityType_Enemy: return "EntityType_Enemy";
 		case EntityType_Static: return "EntityType_Static";
+		case EntityType_Count: return "EntityType_Count";
 	}
 }
 const char *get_enum_CollisionShapeType_str(int value)

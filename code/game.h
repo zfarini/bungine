@@ -4,7 +4,8 @@ enum EntityType
 {
 	EntityType_Player,
 	EntityType_Enemy,
-	EntityType_Static
+	EntityType_Static,
+	EntityType_Count,
 };
 
 enum CollisionShapeType
@@ -18,6 +19,8 @@ struct CollisionTriangle
 	v3 v0, v1, v2;
 };
 
+typedef usize entity_id;
+
 struct CollisionShape
 {
 	int type;
@@ -27,17 +30,20 @@ struct CollisionShape
 	v3 box_radius;
 	mat4 transform;
 	v3 scale;
+	entity_id entity;
 };
 
-typedef usize entity_id;
 typedef usize SceneID;
 
 
 struct Entity
 {
 	entity_id id;
+
+	entity_id parent;
+
 	int type;
-	v3 position; // world position
+	v3 position; // relative position
 	v3 dp;
 
 	quat rotation;
@@ -197,6 +203,8 @@ struct World
 
 	entity_id editor_selected_entity;
 	entity_id player_id;
+
+	entity_id moving_box;
 };
 
 struct Game
