@@ -66,7 +66,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		2*V3(0, 0, 1)
 	};
 
-	if (editor.gizmo_mode == GIZMO_SCALE) {
+	if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) { 
 			mat4 transform = get_entity_transform(*e);
@@ -95,8 +95,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							v3 p = ray_origin + t * ray_dir;
 
 							if (t >= 0 && 
-								length(p - e->position) > rotation_inner_radius
-							&&  length(p - e->position) < rotation_outer_radius) {
+									length(p - e->position) > rotation_inner_radius
+									&&  length(p - e->position) < rotation_outer_radius) {
 							}
 							else
 								t = -1;
@@ -104,9 +104,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 					}
 					else {
 						t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis[i], 
-							axis[0] * (i == 0 ? 0.5f : 0.25f), 
-							axis[1] * (i == 1 ? 0.5f : 0.25f), 
-							axis[2] * (i == 2 ? 0.5f : 0.25f));
+								axis[0] * (i == 0 ? 0.5f : 0.15f), 
+								axis[1] * (i == 1 ? 0.5f : 0.15f), 
+								axis[2] * (i == 2 ? 0.5f : 0.15f));
 					}
 
 					if (t >= 0 && t < min_axis_t) {
@@ -123,8 +123,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 					editor.r_did_drag = false;
 					editor.dragging_axis = best_axis;
 				}
+				}
 			}
-		}
 
 			if (editor.in_gizmo) {
 
@@ -136,7 +136,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 					// TODO: actually think about this (what if the axis and camera.forward are aligned?)
 					v3 plane_normal = cross(axis[editor.dragging_axis], cross(axis[editor.dragging_axis], camera.forward));
 					if (editor.gizmo_mode == GIZMO_ROTATION) {
-					//	plane_normal = cross(axis[editor.dragging_axis], camera.forward);
+						//	plane_normal = cross(axis[editor.dragging_axis], camera.forward);
 						plane_normal = axis[editor.dragging_axis];
 					}
 
@@ -179,42 +179,45 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 
 							push_cube_outline(e->position + p, V3(0.1), V3(0));
-#if 1
+
 							v3 right_axis = axis[(editor.dragging_axis+1)%3];
 							v3 up_axis = axis[(editor.dragging_axis+2)%3];
-#else
-							v3 right_axis = 
-								2*normalize(cross(axis[editor.dragging_axis], camera.forward));
-							v3 up_axis = 
-								2*normalize(cross(right_axis, axis[editor.dragging_axis]));
 
+							if (editor.r_did_drag)
+								right_axis = editor.r_right_axis, up_axis = editor.r_up_axis;
+							else
+								editor.r_axis = axis[editor.dragging_axis];
 
-#endif
-
-
+#if 1
 							// transform that will take to a unit circle in xy plane?
 							mat4 m = inverse(
 									mat4_cols(V4(right_axis, 0),
-										V4(up_axis, 0), V4(axis[editor.dragging_axis], 0),
+										V4(up_axis, 0), V4(editor.r_axis, 0),
 										V4(0, 0, 0, 1)));
 
 							p = (m * V4(p, 0)).xyz;
+#else
+							// TODO: shouldn't this work?
+							p.x = dot(p, right_axis);
+							p.y = dot(p, up_axis);
+#endif
 
 							push_line(e->position, e->position + right_axis, V3(1));
 							push_line(e->position, e->position + up_axis, V3(0.2));
-#if 1
 							float a = atan2(p.y, p.x);
 
 							if (!editor.r_did_drag) {
 								editor.r_did_drag = true;
 								editor.r_init_drag = a;
-								editor.r_init_rot = e->rotation.e[editor.dragging_axis];
+								editor.r_init_rot = e->rotation;
+								editor.r_right_axis = right_axis;
+								editor.r_up_axis = up_axis;
+								editor.r_axis = axis[editor.dragging_axis];
 							}
 							else {
-								e->rotation.e[editor.dragging_axis] 
-									= editor.r_init_rot + (a - editor.r_init_drag);
+								e->rotation = rotate_around_axis_quat(editor.r_axis, a - editor.r_init_drag)
+									* editor.r_init_rot;
 							}
-#endif
 						}
 					}
 				}
@@ -254,8 +257,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 #else
 					push_circle(e->position, 
-								rotation_circle_radius
-								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+							rotation_circle_radius
+							, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 #endif
 
 				}
@@ -268,4 +271,29 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 		world.editor_selected_entity = editor.selected_entity;
 		editor.last_camera_p = camera.position;
+	if (IsDown(input, BUTTON_LEFT_CONTROL) &&
+		IsDownFirstTime(input, BUTTON_C) &&
+		editor.selected_entity) {
+		editor.copied_entity = editor.selected_entity;
+	}
+	if (IsDown(input, BUTTON_LEFT_CONTROL) &&
+		IsDownFirstTime(input, BUTTON_V)) {
+		Entity *e = get_entity(world, editor.copied_entity);
+		if (e) {
+			Entity *copy = make_entity(world, 0, 0, V3(0), make_ellipsoid_shape(V3(0)));
+
+			int id = copy->id;
+			*copy = *e;
+			copy->id = id;
+
+			float min_hit_t;
+			entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+			if (hit_entity) {
+				copy->position = ray_origin + min_hit_t * ray_dir
+					+ V3(0, 0, copy->scale.z);
+			}else 
+				copy->position = camera.position + camera.forward * 2
+					* max(copy->scale.x, max(copy->scale.y, copy->scale.z));
+		}
+	}
 }

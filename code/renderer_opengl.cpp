@@ -3,6 +3,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 {
 	Texture texture = {};
 
+	texture.width = width;
+	texture.height = height;
 	texture.name = name;
 	texture.valid = true;
 
@@ -455,6 +457,7 @@ void init_render_context_opengl(RenderContext &rc, Platform &platform)
 #endif
 	rc.window_framebuffer.id = 0;
 	glEnable(GL_FRAMEBUFFER_SRGB);
+	glLineWidth(1.5f);
 }
 
 // TODO: merge this with create_texture
@@ -479,7 +482,7 @@ Texture create_depth_texture(int width, int height)
 	return result;
 }
 
-FrameBuffer create_frame_buffer()
+FrameBuffer create_frame_buffer(bool depth_only = false, bool read = false)
 {
 	FrameBuffer result = {};
 	uint32_t fbo;
@@ -489,6 +492,13 @@ FrameBuffer create_frame_buffer()
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 
+	if (!depth_only) {
+		if (read)
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+		GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+		glDrawBuffers(1, buffers);
+	}
+
 	//glBindFramebuffer(GL_FRAMEBUFFER, g_rc.active_framebuffer_id);
 
 	result.id = fbo;
@@ -497,8 +507,16 @@ FrameBuffer create_frame_buffer()
 
 void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
 {
+	framebuffer.depth_texture = texture;
 	bind_framebuffer(framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
 			texture.id, 0);
-	glLineWidth(1.5f);
+}
+
+void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
+{
+	framebuffer.color_texture = texture;
+	bind_framebuffer(framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+			texture.id, 0);
 }

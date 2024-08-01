@@ -1,5 +1,5 @@
 # 1 "code/game.cpp"
-# 1 "/nfs/homes/zfarini/sgoinfre/3dGame//"
+# 1 "/nfs/homes/zfarini/3dGame//"
 # 1 "<built-in>"
 #define __STDC__ 1
 #define __cplusplus 201703L
@@ -426,7 +426,8 @@
 #define __STDC_ISO_10646__ 201706L
 # 1 "<command-line>" 2
 # 1 "code/game.cpp"
-# 9 "code/game.cpp"
+#define _CRT_SECURE_NO_WARNINGS 
+# 10 "code/game.cpp"
 # 1 "code/common.h" 1
        
 
@@ -448,7 +449,7 @@ typedef float f32;
 typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
-# 10 "code/game.cpp" 2
+# 11 "code/game.cpp" 2
 # 1 "code/arena.h" 1
        
 
@@ -519,7 +520,7 @@ static void end_temp_memory()
  assert(g_temp_arena->last_used_count > 0);
  g_temp_arena->arena.used = g_temp_arena->last_used[--g_temp_arena->last_used_count];
 }
-# 11 "code/game.cpp" 2
+# 12 "code/game.cpp" 2
 # 1 "code/utils.h" 1
 #define Kilobyte(x) (1024ULL * x)
 #define Megabyte(x) (1024ULL * Kilobyte(x))
@@ -3867,7 +3868,7 @@ int align_to(int x, int alignement)
 {
  return alignement * ((x + alignement - 1) / alignement);
 }
-# 12 "code/game.cpp" 2
+# 13 "code/game.cpp" 2
 # 1 "code/math.h" 1
        
 
@@ -4460,6 +4461,21 @@ mat4 lookat(v3 position, v3 dir, v3 up)
 
 using quat = v4;
 
+quat Quat(float x, float y, float z, float w)
+{
+ return {x, y, z, w};
+}
+
+quat operator*(quat a, quat b)
+{
+ return {
+        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+    };
+}
+
 mat4 quat_to_mat(quat a)
 {
  float x = a.x;
@@ -4511,8 +4527,6 @@ quat quat_lerp(quat a, quat b, float t)
  if(l2 < 0.0f)
   b = -b;
  v4 c;
-
-
  c.x = a.x - t*(a.x - b.x);
  c.y = a.y - t*(a.y - b.y);
  c.z = a.z - t*(a.z - b.z);
@@ -4665,7 +4679,25 @@ float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
   return -1;
  return min_t;
 }
-# 13 "code/game.cpp" 2
+
+quat rotate_around_axis_quat(v3 axis, float a)
+{
+ axis = normalize(axis);
+ float s = sinf(a / 2);
+ float c = cosf(a / 2);
+ return V4(axis * s, c);
+}
+
+quat zrotation_quat(float a)
+{
+ return rotate_around_axis_quat(V3(0, 0, 1), a);
+}
+
+quat identity_quat()
+{
+ return Quat(0, 0, 0, 1);
+}
+# 14 "code/game.cpp" 2
 # 1 "code/platform.h" 1
        
 
@@ -4729,7 +4761,7 @@ struct Platform {
 
 #define GAME_UPDATE_AND_RENDER(name) void name(Platform &platform, Arena *memory, GameInput &input, float dt)
 typedef void game_update_and_render_fn(Platform &platform, Arena *memory, GameInput &input, float dt);
-# 14 "code/game.cpp" 2
+# 15 "code/game.cpp" 2
 # 1 "code/renderer.h" 1
        
 
@@ -4741,6 +4773,8 @@ struct Texture
  uint32_t id;
 
  String name;
+ int width;
+ int height;
  b32 valid;
 };
 
@@ -4753,7 +4787,7 @@ enum ShaderType
 struct Shader
 {
  ShaderType type;
-# 31 "code/renderer.h"
+# 33 "code/renderer.h"
  uint32_t id;
 
 };
@@ -4805,6 +4839,9 @@ struct FrameBuffer
 
  uint32_t id;
 
+
+ Texture color_texture;
+ Texture depth_texture;
 };
 
 struct DepthStencilState
@@ -4944,7 +4981,7 @@ struct ConstantBuffer
  uint32_t id;
 
 };
-# 15 "code/game.cpp" 2
+# 16 "code/game.cpp" 2
 
 static RenderContext *g_rc;
 #define RENDERER_DEBUG 
@@ -4957,6 +4994,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 {
  Texture texture = {};
 
+ texture.width = width;
+ texture.height = height;
  texture.name = name;
  texture.valid = true;
 
@@ -5409,6 +5448,7 @@ void init_render_context_opengl(RenderContext &rc, Platform &platform)
 
  rc.window_framebuffer.id = 0;
  glEnable(GL_FRAMEBUFFER_SRGB);
+ glLineWidth(1.5f);
 }
 
 
@@ -5433,7 +5473,7 @@ Texture create_depth_texture(int width, int height)
  return result;
 }
 
-FrameBuffer create_frame_buffer()
+FrameBuffer create_frame_buffer(bool depth_only = false, bool read = false)
 {
  FrameBuffer result = {};
  uint32_t fbo;
@@ -5443,6 +5483,13 @@ FrameBuffer create_frame_buffer()
  glDrawBuffer(GL_NONE);
  glReadBuffer(GL_NONE);
 
+ if (!depth_only) {
+  if (read)
+   glReadBuffer(GL_COLOR_ATTACHMENT0);
+  GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, buffers);
+ }
+
 
 
  result.id = fbo;
@@ -5451,12 +5498,20 @@ FrameBuffer create_frame_buffer()
 
 void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
 {
+ framebuffer.depth_texture = texture;
  bind_framebuffer(framebuffer);
  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
    texture.id, 0);
- glLineWidth(1.5f);
 }
-# 22 "code/game.cpp" 2
+
+void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
+{
+ framebuffer.color_texture = texture;
+ bind_framebuffer(framebuffer);
+ glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+   texture.id, 0);
+}
+# 23 "code/game.cpp" 2
 
 
 # 1 "code/scene.h" 1
@@ -5569,7 +5624,7 @@ struct Scene
  Array<Animation> animations;
  String path;
 };
-# 25 "code/game.cpp" 2
+# 26 "code/game.cpp" 2
 # 1 "code/scene.cpp" 1
 
 
@@ -6053,7 +6108,7 @@ Scene load_scene(Arena *arena, const char *filename)
  end_temp_memory();
  return scene;
 }
-# 26 "code/game.cpp" 2
+# 27 "code/game.cpp" 2
 # 1 "code/game.h" 1
        
 
@@ -6097,7 +6152,7 @@ struct Entity
  v3 position;
  v3 dp;
 
- v3 rotation;
+ quat rotation;
  v3 scale;
 
  v3 color;
@@ -6168,6 +6223,7 @@ struct Editor
 {
  bool in_gizmo;
  entity_id selected_entity;
+ entity_id copied_entity;
 
  GizmoMode gizmo_mode;
 
@@ -6182,10 +6238,11 @@ struct Editor
  float s_init_drag;
 
  bool r_did_drag;
- float r_init_rot;
+ quat r_init_rot;
  float r_init_drag;
- v3 r_init_x_axis;
- v3 r_init_y_axis;
+ v3 r_right_axis;
+ v3 r_up_axis;
+ v3 r_axis;
 
  v3 last_camera_p;
 };
@@ -6247,6 +6304,8 @@ struct Game
  DepthStencilState default_depth_stencil_state;
  DepthStencilState disable_depth_state;
 
+ FrameBuffer debug_asset_fb;
+
  bool show_normals;
  bool render_bones;
 };
@@ -6270,7 +6329,7 @@ struct Constants
  int has_normal_map;
  int show_normals;
 };
-# 27 "code/game.cpp" 2
+# 28 "code/game.cpp" 2
 
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(Entity &e);
@@ -6579,7 +6638,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
   render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color,
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
   bool outline = false)
 {
 
@@ -6618,7 +6677,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Anima
  glStencilFunc(GL_ALWAYS, 0, 0xFF);
  glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
-# 32 "code/game.cpp" 2
+# 33 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
 CollisionShape make_ellipsoid_shape(v3 radius)
 {
@@ -6983,7 +7042,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
  end_temp_memory();
 }
-# 33 "code/game.cpp" 2
+# 34 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
 Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
@@ -6997,6 +7056,7 @@ Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, Colli
  e.shape = shape;
  e.color = V3(1);
  e.scale = V3(1);
+ e.rotation = identity_quat();
  world.entities.push(e);
  world.entities_id_map[e.id] = world.entities.count - 1;
  return &world.entities[world.entities.count - 1];
@@ -7019,8 +7079,13 @@ Entity *get_entity(World &world, entity_id id)
 
 mat4 get_entity_transform(Entity &e)
 {
+
+
+
+
  return translate(e.position)
-  * zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
+  * quat_to_mat(e.rotation) * scale(e.scale);
+
 }
 
 void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
@@ -7152,7 +7217,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
  b32 camera_shoot_mode = false;
  b32 walk_backward = false;
  {
-  v3 player_forward = normalize(V3(cosf(player.rotation.z), sinf(player.rotation.z), 0));
+  v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
   v3 player_up = V3(0, 0, 1);
   v3 player_right = normalize(cross(player_forward, player_up));
   v3 a = {};
@@ -7208,7 +7273,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 235 "code/world.cpp"
+# 241 "code/world.cpp"
   {
 
 
@@ -7263,7 +7328,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 297 "code/world.cpp"
+# 303 "code/world.cpp"
    int curr_anim_idx = -1;
    int next_anim_idx = -1;
    for (int i = 0; i < ANIMATION_COUNT; i++) {
@@ -7272,7 +7337,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (player.next_anim == &game.animations[i])
      next_anim_idx = i;
    }
-# 316 "code/world.cpp"
+# 322 "code/world.cpp"
   }
  }
 }
@@ -7319,7 +7384,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
   else
    e.animation = &game.animations[ANIMATION_RUN];
 
-  e.rotation.z = atan2(dir.y, dir.x);
+
   e.anim_time += dt;
  }
 }
@@ -7369,9 +7434,13 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
   camera_rot = world.player_camera_rotation;
   camera_rot.z -= 3.14159265359f / 2;
-  player->rotation.z = world.player_camera_rotation.z;
+
+  player->rotation = zrotation_quat(world.player_camera_rotation.z);
+
+
   {
-   v3 player_forward = normalize(V3(cosf(player->rotation.z), sinf(player->rotation.z), 0));
+   v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z),
+      sinf(world.player_camera_rotation.z), 0));
 
    float o = camera_rot.x;
 
@@ -7411,7 +7480,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    mat4 A = V * M;
 
    world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
-# 464 "code/world.cpp"
+# 474 "code/world.cpp"
   }
  }
 
@@ -7477,8 +7546,8 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
  camera.projection = projection;
  return camera;
 }
-# 555 "code/world.cpp"
-#define S(type,fd,w,value) do { if (w) write(fd, &value, sizeof(type)); else read(fd, &value, sizeof(type)); } while (0)
+
+#define S(type,fd,w,value) do { if (w) fwrite(&value, sizeof(type), 1, fd); else fread(&value, sizeof(type), 1, fd); } while (0)
 
 
 
@@ -7489,21 +7558,25 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 #define serialize_usize(...) S(usize, __VA_ARGS__)
 
 
-void serialize(int fd, bool w, v3 &v)
+void serialize(FILE *fd, bool w, v3 &v)
 {
- do { if (w) write(fd, &v.x, sizeof(float)); else read(fd, &v.x, sizeof(float)); } while (0);
- do { if (w) write(fd, &v.y, sizeof(float)); else read(fd, &v.y, sizeof(float)); } while (0);
- do { if (w) write(fd, &v.z, sizeof(float)); else read(fd, &v.z, sizeof(float)); } while (0);
+ for (int i = 0; i < 3; i++)
+  do { if (w) fwrite(&v.e[i], sizeof(float), 1, fd); else fread(&v.e[i], sizeof(float), 1, fd); } while (0);
+}
+void serialize(FILE *fd, bool w, quat &q)
+{
+ for (int i = 0; i < 4; i++)
+  do { if (w) fwrite(&q.e[i], sizeof(float), 1, fd); else fread(&q.e[i], sizeof(float), 1, fd); } while (0);
 }
 
-void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
+void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
 {
  if (!w)
   shape = {};
 
- do { if (w) write(fd, &shape.type, sizeof(int)); else read(fd, &shape.type, sizeof(int)); } while (0);
+ do { if (w) fwrite(&shape.type, sizeof(int), 1, fd); else fread(&shape.type, sizeof(int), 1, fd); } while (0);
  if (w) {
-  do { if (w) write(fd, &shape.triangles.count, sizeof(usize)); else read(fd, &shape.triangles.count, sizeof(usize)); } while (0);
+  do { if (w) fwrite(&shape.triangles.count, sizeof(usize), 1, fd); else fread(&shape.triangles.count, sizeof(usize), 1, fd); } while (0);
   for (int i = 0; i < shape.triangles.count; i++) {
    serialize(fd, w, shape.triangles[i].v0);
    serialize(fd, w, shape.triangles[i].v1);
@@ -7512,7 +7585,7 @@ void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
  }
  else {
   usize count;
-  do { if (w) write(fd, &count, sizeof(usize)); else read(fd, &count, sizeof(usize)); } while (0);
+  do { if (w) fwrite(&count, sizeof(usize), 1, fd); else fread(&count, sizeof(usize), 1, fd); } while (0);
   shape.triangles = make_array<CollisionTriangle>(arena, count);
   for (int i = 0; i < count; i++) {
    CollisionTriangle t;
@@ -7525,45 +7598,46 @@ void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
  serialize(fd, w, shape.ellipsoid_radius);
 }
 
-void serialize(int fd, bool w, mat4 &m)
+
+void serialize(FILE *fd, bool w, mat4 &m)
 {
  for (int i = 0; i < 16; i++)
-  do { if (w) write(fd, &m.e[i/4][i%4], sizeof(float)); else read(fd, &m.e[i/4][i%4], sizeof(float)); } while (0);
+  do { if (w) fwrite(&m.e[i/4][i%4], sizeof(float), 1, fd); else fread(&m.e[i/4][i%4], sizeof(float), 1, fd); } while (0);
 }
 
-void serialize(Arena *arena, int fd, bool w, Entity &e)
+void serialize(Arena *arena, FILE *fd, bool w, Entity &e)
 {
- do { if (w) write(fd, &e.id, sizeof(usize)); else read(fd, &e.id, sizeof(usize)); } while (0);
- do { if (w) write(fd, &e.type, sizeof(int)); else read(fd, &e.type, sizeof(int)); } while (0);
+ do { if (w) fwrite(&e.id, sizeof(usize), 1, fd); else fread(&e.id, sizeof(usize), 1, fd); } while (0);
+ do { if (w) fwrite(&e.type, sizeof(int), 1, fd); else fread(&e.type, sizeof(int), 1, fd); } while (0);
  serialize(fd, w, e.position);
  serialize(fd, w, e.dp);
  serialize(fd, w, e.rotation);
  serialize(fd, w, e.scale);
  serialize(fd, w, e.color);
 
- do { if (w) write(fd, &e.moved, sizeof(b32)); else read(fd, &e.moved, sizeof(b32)); } while (0);
- do { if (w) write(fd, &e.run, sizeof(b32)); else read(fd, &e.run, sizeof(b32)); } while (0);
- do { if (w) write(fd, &e.shooting, sizeof(b32)); else read(fd, &e.shooting, sizeof(b32)); } while (0);
- do { if (w) write(fd, &e.can_jump, sizeof(b32)); else read(fd, &e.can_jump, sizeof(b32)); } while (0);
- do { if (w) write(fd, &e.on_ground, sizeof(b32)); else read(fd, &e.on_ground, sizeof(b32)); } while (0);
+ do { if (w) fwrite(&e.moved, sizeof(b32), 1, fd); else fread(&e.moved, sizeof(b32), 1, fd); } while (0);
+ do { if (w) fwrite(&e.run, sizeof(b32), 1, fd); else fread(&e.run, sizeof(b32), 1, fd); } while (0);
+ do { if (w) fwrite(&e.shooting, sizeof(b32), 1, fd); else fread(&e.shooting, sizeof(b32), 1, fd); } while (0);
+ do { if (w) fwrite(&e.can_jump, sizeof(b32), 1, fd); else fread(&e.can_jump, sizeof(b32), 1, fd); } while (0);
+ do { if (w) fwrite(&e.on_ground, sizeof(b32), 1, fd); else fread(&e.on_ground, sizeof(b32), 1, fd); } while (0);
 
  serialize(arena, fd, w, e.shape);
 
- do { if (w) write(fd, &e.scene_id, sizeof(usize)); else read(fd, &e.scene_id, sizeof(usize)); } while (0);
+ do { if (w) fwrite(&e.scene_id, sizeof(usize), 1, fd); else fread(&e.scene_id, sizeof(usize), 1, fd); } while (0);
  serialize(fd, w, e.scene_transform);
- do { if (w) write(fd, &e.height_above_ground, sizeof(float)); else read(fd, &e.height_above_ground, sizeof(float)); } while (0);
+ do { if (w) fwrite(&e.height_above_ground, sizeof(float), 1, fd); else fread(&e.height_above_ground, sizeof(float), 1, fd); } while (0);
 }
 
-void serialize(int fd, bool w, World &world)
+void serialize(FILE *fd, bool w, World &world)
 {
  if (w) {
-  do { if (w) write(fd, &world.entities.count, sizeof(usize)); else read(fd, &world.entities.count, sizeof(usize)); } while (0);
+  do { if (w) fwrite(&world.entities.count, sizeof(usize), 1, fd); else fread(&world.entities.count, sizeof(usize), 1, fd); } while (0);
   for (int i = 0; i < world.entities.count; i++)
    serialize(&world.arena, fd, w, world.entities[i]);
  }
  else {
   usize count;
-  do { if (w) write(fd, &count, sizeof(usize)); else read(fd, &count, sizeof(usize)); } while (0);
+  do { if (w) fwrite(&count, sizeof(usize), 1, fd); else fread(&count, sizeof(usize), 1, fd); } while (0);
   world.entities = make_array_max<Entity>(&world.arena, 4096);
   for (int i = 0; i < count; i++) {
    Entity e = {};
@@ -7572,19 +7646,19 @@ void serialize(int fd, bool w, World &world)
   }
 
  }
- do { if (w) write(fd, &world.next_entity_id, sizeof(usize)); else read(fd, &world.next_entity_id, sizeof(usize)); } while (0);
+ do { if (w) fwrite(&world.next_entity_id, sizeof(usize), 1, fd); else fread(&world.next_entity_id, sizeof(usize), 1, fd); } while (0);
  serialize(fd, w, world.player_camera_p);
  serialize(fd, w, world.player_camera_rotation);
  serialize(fd, w, world.player_camera_drotation);
  serialize(fd, w, world.editor_camera_p);
  serialize(fd, w, world.editor_camera_rotation);
- do { if (w) write(fd, &world.player_id, sizeof(usize)); else read(fd, &world.player_id, sizeof(usize)); } while (0);
+ do { if (w) fwrite(&world.player_id, sizeof(usize), 1, fd); else fread(&world.player_id, sizeof(usize), 1, fd); } while (0);
 }
 
 #undef S
-# 34 "code/game.cpp" 2
-# 1 "code/ai.cpp" 1
 # 35 "code/game.cpp" 2
+# 1 "code/ai.cpp" 1
+# 36 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
   float &hit_t)
@@ -7654,7 +7728,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   2*V3(0, 0, 1)
  };
 
- if (editor.gizmo_mode == GIZMO_SCALE) {
+ if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
   Entity *e = get_entity(world, editor.selected_entity);
   if (e) {
    mat4 transform = get_entity_transform(*e);
@@ -7683,8 +7757,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
        v3 p = ray_origin + t * ray_dir;
 
        if (t >= 0 &&
-        length(p - e->position) > rotation_inner_radius
-       && length(p - e->position) < rotation_outer_radius) {
+         length(p - e->position) > rotation_inner_radius
+         && length(p - e->position) < rotation_outer_radius) {
        }
        else
         t = -1;
@@ -7692,9 +7766,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
      }
      else {
       t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis[i],
-       axis[0] * (i == 0 ? 0.5f : 0.25f),
-       axis[1] * (i == 1 ? 0.5f : 0.25f),
-       axis[2] * (i == 2 ? 0.5f : 0.25f));
+        axis[0] * (i == 0 ? 0.5f : 0.15f),
+        axis[1] * (i == 1 ? 0.5f : 0.15f),
+        axis[2] * (i == 2 ? 0.5f : 0.15f));
      }
 
      if (t >= 0 && t < min_axis_t) {
@@ -7711,8 +7785,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
      editor.r_did_drag = false;
      editor.dragging_axis = best_axis;
     }
+    }
    }
-  }
 
    if (editor.in_gizmo) {
 
@@ -7770,29 +7844,42 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
        v3 right_axis = axis[(editor.dragging_axis+1)%3];
        v3 up_axis = axis[(editor.dragging_axis+2)%3];
-# 196 "code/editor.cpp"
+
+       if (editor.r_did_drag)
+        right_axis = editor.r_right_axis, up_axis = editor.r_up_axis;
+       else
+        editor.r_axis = axis[editor.dragging_axis];
+
+
+
        mat4 m = inverse(
          mat4_cols(V4(right_axis, 0),
-          V4(up_axis, 0), V4(axis[editor.dragging_axis], 0),
+          V4(up_axis, 0), V4(editor.r_axis, 0),
           V4(0, 0, 0, 1)));
 
        p = (m * V4(p, 0)).xyz;
 
+
+
+
+
+
        push_line(e->position, e->position + right_axis, V3(1));
        push_line(e->position, e->position + up_axis, V3(0.2));
-
        float a = atan2(p.y, p.x);
 
        if (!editor.r_did_drag) {
         editor.r_did_drag = true;
         editor.r_init_drag = a;
-        editor.r_init_rot = e->rotation.e[editor.dragging_axis];
+        editor.r_init_rot = e->rotation;
+        editor.r_right_axis = right_axis;
+        editor.r_up_axis = up_axis;
+        editor.r_axis = axis[editor.dragging_axis];
        }
        else {
-        e->rotation.e[editor.dragging_axis]
-         = editor.r_init_rot + (a - editor.r_init_drag);
+        e->rotation = rotate_around_axis_quat(editor.r_axis, a - editor.r_init_drag)
+         * editor.r_init_rot;
        }
-
       }
      }
     }
@@ -7832,8 +7919,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 
      push_circle(e->position,
-        rotation_circle_radius
-        , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+       rotation_circle_radius
+       , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
 
 
     }
@@ -7846,11 +7933,36 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
   world.editor_selected_entity = editor.selected_entity;
   editor.last_camera_p = camera.position;
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
+  ((input.buttons[BUTTON_C].is_down) && !(input.buttons[BUTTON_C].was_down)) &&
+  editor.selected_entity) {
+  editor.copied_entity = editor.selected_entity;
+ }
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
+  ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
+  Entity *e = get_entity(world, editor.copied_entity);
+  if (e) {
+   Entity *copy = make_entity(world, 0, 0, V3(0), make_ellipsoid_shape(V3(0)));
+
+   int id = copy->id;
+   *copy = *e;
+   copy->id = id;
+
+   float min_hit_t;
+   entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+   if (hit_entity) {
+    copy->position = ray_origin + min_hit_t * ray_dir
+     + V3(0, 0, copy->scale.z);
+   }else
+    copy->position = camera.position + camera.forward * 2
+     * max(copy->scale.x, max(copy->scale.y, copy->scale.z));
+  }
+ }
 }
-# 36 "code/game.cpp" 2
+# 37 "code/game.cpp" 2
 
 # 1 "code/generated.h" 1
-# 38 "code/game.cpp" 2
+# 39 "code/game.cpp" 2
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
   v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
@@ -7867,7 +7979,7 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 
  shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
 
- shadow_map.framebuffer = create_frame_buffer();
+ shadow_map.framebuffer = create_frame_buffer(true);
 
  bind_framebuffer_depthbuffer(shadow_map.framebuffer, shadow_map.depth_texture);
 
@@ -7891,7 +8003,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 128));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 78, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 79, memory, temp_arena_size), temp_arena_size);
 
 
 
@@ -7901,11 +8013,11 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 88, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 89, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 90, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 91, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
 
-  game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_FRONT);
+  game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
   game.disable_depth_state = create_depth_stencil_state(false);
 
@@ -8004,8 +8116,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
-  int fd = open("world.bin", O_RDONLY);
-  if (fd < 0) {
+  FILE *fd = fopen("world.bin", "rb");
+  if (!fd) {
 
    world.entities = make_array_max<Entity>(&world.arena, 4096);
 
@@ -8044,14 +8156,26 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
    player->color = V3(0.2, 0.8, 0.8);
 
-
    world.editor_camera_p = V3(0, 0, 3);
   }
   else {
    serialize(fd, false, world);
    for (int i = 0; i < world.entities.count; i++)
     world.entities_id_map[world.entities[i].id] = i;
-   close(fd);
+   fclose(fd);
+  }
+
+  {
+   game.debug_asset_fb = create_frame_buffer(false, true);
+
+   Texture texture = create_texture(make_cstring("Debug Asset"), 0, 128, 128,
+     true, false);
+   Texture depth = create_depth_texture(texture.width, texture.height);
+   bind_framebuffer_color(game.debug_asset_fb, texture);
+   bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
+
+   assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+     == GL_FRAMEBUFFER_COMPLETE);
   }
 
   game.is_initialized = 1;
@@ -8059,15 +8183,6 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  World &world = *game.world;
 
- if ((input.buttons[BUTTON_ESCAPE].is_down)) {
-
-  int fd = open("world.bin", O_WRONLY|O_CREAT|O_TRUNC, 0744);
-  if (fd < 0)
-   assert(0);
-  serialize(fd, true, world);
-  close(fd);
-  return ;
- }
 
 
  if (((input.buttons[TOGGLE_EDITOR_BUTTON].is_down) && !(input.buttons[TOGGLE_EDITOR_BUTTON].was_down)))
@@ -8138,8 +8253,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   ImGui::Checkbox("debug collission", &game.debug_collision);
   ImGui::Checkbox("show normals", &game.show_normals);
   ImGui::Checkbox("show bones", &game.render_bones);
-  ImGui::Text("in gizmo: %d, gizmo mode: %d", world.editor.in_gizmo,
-    world.editor.gizmo_mode);
+  ImGui::Text("entity count: %ld", world.entities.count);
   if (ImGui::Button("new cube")) {
    Entity *entity = make_entity(world, EntityType_Static,
      2, game_camera.position
@@ -8152,6 +8266,18 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      + game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
    world.editor.selected_entity = entity->id;
   }
+
+  if (ImGui::Button("save world")) {
+   FILE *fd = fopen("world.bin", "wb");
+   if (!fd)
+    assert(0);
+   serialize(fd, true, world);
+   fclose(fd);
+  }
+
+  if (get_entity(world, world.editor.copied_entity))
+   ImGui::Text("copying entity %ld", world.editor.copied_entity);
+
   ImGui::End();
  }
 
@@ -8163,7 +8289,12 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
    ImGui::Begin("Entity");
             ImGui::ColorEdit3("color", e->color.e);
+   ImGui::Text("id: %ld", e->id);
    ImGui::Text("type: %s", get_enum_EntityType_str(e->type));
+   if (ImGui::Button("Reset scale"))
+    e->scale = V3(1);
+   if (ImGui::Button("Reset rotation"))
+    e->rotation = identity_quat();
 
    if (ImGui::Button("delete")) {
     if (e->id != world.player_id) {
@@ -8180,6 +8311,46 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      world.entities.count--;
     }
    }
+   begin_render_pass(game.mesh_render_pass);
+   {
+    FrameBuffer &fb = game.debug_asset_fb;
+    bind_framebuffer(fb);
+
+    int width = fb.color_texture.width;
+    int height = fb.color_texture.height;
+
+    set_viewport(0, 0, width, height);
+
+    clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
+    clear_framebuffer_depth(fb, 1);
+
+    bind_texture(4, g_rc->white_texture);
+    Camera camera = {};
+    camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
+    camera.projection = game_camera.projection;
+    camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
+    camera.projection.e[1][1] *= -1;
+    render_scene(game, game.scenes[e->scene_id], camera,
+     zrotation(3.14159265359f/4), 0, 0, e->color);
+
+
+    Arena *temp = begin_temp_memory();
+
+    void *data = _arena_alloc("code/game.cpp", __func__, 412, temp, sizeof(uint32_t) * width * height);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    Texture tex = create_texture(make_cstring("tmp"),
+      data, width, height, 1, 0);
+
+    ImGui::Image((void *)(intptr_t)tex.id, ImVec2(width, height));
+
+
+
+
+    end_temp_memory();
+   }
+   end_render_pass();
+
    ImGui::End();
   }
  }
@@ -8188,9 +8359,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  game.time += dt;
  if (game.frame == 0)
   ImGui::SetWindowFocus(
-# 374 "code/game.cpp" 3 4
+# 434 "code/game.cpp" 3 4
                        __null
-# 374 "code/game.cpp"
+# 434 "code/game.cpp"
                            );
  game.frame++;
 }

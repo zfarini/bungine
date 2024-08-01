@@ -8,7 +8,9 @@ struct Texture
 	uint32_t id;
 	#endif
 	String name;
-	b32 valid;
+	int width;
+	int height;
+	b32 valid; // TODO: remove this
 };
 
 enum ShaderType
@@ -78,7 +80,10 @@ struct FrameBuffer
 	ID3D11DepthStencilView *dsv;
 	#else
 	uint32_t id;
+
 	#endif
+	Texture color_texture;
+	Texture depth_texture;
 };
 
 struct DepthStencilState

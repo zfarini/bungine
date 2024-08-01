@@ -10,6 +10,7 @@ Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, Colli
 	e.shape = shape;
 	e.color = V3(1);
 	e.scale = V3(1);
+	e.rotation = identity_quat();
 	world.entities.push(e);
 	world.entities_id_map[e.id] = world.entities.count - 1;
 	return &world.entities[world.entities.count - 1];
@@ -32,8 +33,13 @@ Entity *get_entity(World &world, entity_id id)
 
 mat4 get_entity_transform(Entity &e)
 {
+#if 0
 	return translate(e.position) 
 		* zrotation(e.rotation.z) * yrotation(e.rotation.y) * xrotation(e.rotation.x) * scale(e.scale);
+#else
+	return translate(e.position) 
+		* quat_to_mat(e.rotation) * scale(e.scale);
+#endif
 }
 
 void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
@@ -165,7 +171,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	b32 camera_shoot_mode = false;
 	b32 walk_backward = false;
 	{
-		v3 player_forward = normalize(V3(cosf(player.rotation.z), sinf(player.rotation.z), 0));
+		v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
 		v3 player_up = V3(0, 0, 1);
 		v3 player_right = normalize(cross(player_forward, player_up));
 		v3 a = {};
@@ -359,7 +365,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 		else
 			e.animation = &game.animations[ANIMATION_RUN];
 
-		e.rotation.z = atan2(dir.y, dir.x);
+	//	e.rotation.z = atan2(dir.y, dir.x);
 		e.anim_time += dt;
 	}
 }	
@@ -409,9 +415,13 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 		camera_rot = world.player_camera_rotation;
 		camera_rot.z -= PI / 2;
-		player->rotation.z = world.player_camera_rotation.z;
+
+		player->rotation = zrotation_quat(world.player_camera_rotation.z);
+
+	//	player->rotation.z = world.player_camera_rotation.z;
 		{
-			v3 player_forward = normalize(V3(cosf(player->rotation.z), sinf(player->rotation.z), 0));
+			v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), 
+						sinf(world.player_camera_rotation.z), 0));
 
 			float o = camera_rot.x;
 
@@ -527,33 +537,9 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	return camera;
 }
 
-/*
-struct SerializedWorld
-{
-	int entity_count;
-	Entity *entities;
-	entity_id next_entity_id;
-	v3 player_camera_p;
-	v3 player_camera_rotation;
-	v3 player_camera_drotation;
-	v3 editor_camera_p;
-	v3 editor_camera_rotation;
-	entity_id editor_selected_entity;
-	entity_id player_id;
-};
-*/
-
-//#define S(type) void serialize(int fd, bool w, type &value) \
-//	{ \
-//		if (w) write(fd, &value, sizeof(type)); \
-//		else read(fd, &value, sizeof(type)); \
-//	}
-
-//S(int);
-//S(usize);
-
 #define S(type, fd, w, value) do {\
-\
+	if (w) fwrite(&value, sizeof(type), 1, fd); \
+	else fread(&value, sizeof(type), 1, fd); \
 	} while (0)
 
 #define serialize_int(...) S(int, __VA_ARGS__)
@@ -564,9 +550,13 @@ struct SerializedWorld
 
 void serialize(FILE *fd, bool w, v3 &v)
 {
-	serialize_float(fd, w, v.x);
-	serialize_float(fd, w, v.y);
-	serialize_float(fd, w, v.z);
+	for (int i = 0; i < 3; i++)
+		serialize_float(fd, w, v.e[i]);
+}
+void serialize(FILE *fd, bool w, quat &q)
+{
+	for (int i = 0; i < 4; i++)
+		serialize_float(fd, w, q.e[i]);
 }
 
 void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
@@ -597,6 +587,7 @@ void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
 	}
 	serialize(fd, w, shape.ellipsoid_radius);
 }
+
 
 void serialize(FILE *fd, bool w, mat4 &m)
 {

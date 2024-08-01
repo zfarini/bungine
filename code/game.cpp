@@ -52,7 +52,7 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 
 	shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
 
-	shadow_map.framebuffer = create_frame_buffer();
+	shadow_map.framebuffer = create_frame_buffer(true);
 
 	bind_framebuffer_depthbuffer(shadow_map.framebuffer, shadow_map.depth_texture);
 	// TODO:!!
@@ -90,7 +90,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
 
-		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_FRONT);
+		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
 		game.disable_depth_state = create_depth_stencil_state(false);
 
@@ -190,7 +190,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 
 		FILE *fd = fopen("world.bin", "rb");
-		fd = 0;
 		if (!fd) {
 
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
@@ -227,9 +226,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			//player->scene = 0;
 			//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
 			//player->scene_transform =  scale(player->shape.ellipsoid_radius);
-			player->scene_transform =  translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
+			player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
 			player->color = V3(0.2, 0.8, 0.8);
-
 
 			world.editor_camera_p = V3(0, 0, 3);
 		}
@@ -240,20 +238,24 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			fclose(fd);
 		}
 
+		{
+			game.debug_asset_fb = create_frame_buffer(false, true);
+
+			Texture texture = create_texture(make_cstring("Debug Asset"), 0, 128, 128,
+					true, false);
+			Texture depth = create_depth_texture(texture.width, texture.height);
+			bind_framebuffer_color(game.debug_asset_fb, texture);
+			bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
+			// TODO:
+			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+					== GL_FRAMEBUFFER_COMPLETE);
+		}
+
 		game.is_initialized = 1;
 	}
 
 	World &world = *game.world;
 
-	if (IsDown(input, BUTTON_ESCAPE)) {
-		
-		FILE *fd = fopen("world.bin", "wb");
-		if (!fd)
-			assert(0);
-		serialize(fd, true, world);
-		fclose(fd);
-		return ;
-	}
 
 
 	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON))
@@ -324,8 +326,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Checkbox("debug collission", &game.debug_collision);
 		ImGui::Checkbox("show normals", &game.show_normals);
 		ImGui::Checkbox("show bones", &game.render_bones);
-		ImGui::Text("in gizmo: %d, gizmo mode: %d", world.editor.in_gizmo,
-				world.editor.gizmo_mode);
+		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
 					2, game_camera.position
@@ -338,6 +339,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
+
+		if (ImGui::Button("save world")) {
+			FILE *fd = fopen("world.bin", "wb");
+			if (!fd)
+				assert(0);
+			serialize(fd, true, world);
+			fclose(fd);
+		}
+
+		if (get_entity(world, world.editor.copied_entity))
+			ImGui::Text("copying entity %ld", world.editor.copied_entity);
+
 		ImGui::End();
 	}
 
@@ -349,7 +362,12 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 			ImGui::Begin("Entity");
             ImGui::ColorEdit3("color", e->color.e);
+			ImGui::Text("id: %ld", e->id);
 			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
+			if (ImGui::Button("Reset scale"))
+				e->scale = V3(1);
+			if (ImGui::Button("Reset rotation"))
+				e->rotation = identity_quat();
 
 			if (ImGui::Button("delete")) {
 				if (e->id != world.player_id) {
@@ -366,6 +384,46 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					world.entities.count--;
 				}
 			}
+			begin_render_pass(game.mesh_render_pass);
+			{
+				FrameBuffer &fb = game.debug_asset_fb;
+				bind_framebuffer(fb);
+
+				int width = fb.color_texture.width;
+				int height = fb.color_texture.height;
+
+				set_viewport(0, 0, width, height);
+
+				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
+				clear_framebuffer_depth(fb, 1);
+
+				bind_texture(4, g_rc->white_texture);
+				Camera camera = {};
+				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
+				camera.projection = game_camera.projection;
+				camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
+				camera.projection.e[1][1] *= -1;
+				render_scene(game, game.scenes[e->scene_id], camera, 
+					zrotation(PI/4), 0, 0, e->color);
+				//render_entities(game, world, camera, false);
+
+				Arena *temp = begin_temp_memory();
+
+				void *data = arena_alloc(temp, sizeof(uint32_t) * width * height);
+				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+				Texture tex = create_texture(make_cstring("tmp"),
+						data, width, height, 1, 0);
+
+				ImGui::Image((void *)(intptr_t)tex.id, ImVec2(width, height));
+
+				// TODO:
+				//glDeleteTextures(1, &tex.id);
+
+				end_temp_memory();
+			}
+			end_render_pass();
+
 			ImGui::End();
 		}
 	}

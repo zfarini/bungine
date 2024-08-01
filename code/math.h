@@ -589,6 +589,21 @@ mat4 lookat(v3 position, v3 dir, v3 up)
 
 using quat = v4;
 
+quat Quat(float x, float y, float z, float w)
+{
+	return {x, y, z, w};
+}
+
+quat operator*(quat a, quat b)
+{
+	return {
+        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,  // i
+        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,  // j
+        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,  // k
+        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,  // 1
+    };
+}
+
 mat4 quat_to_mat(quat a)
 {
 	float x = a.x;
@@ -640,8 +655,6 @@ quat quat_lerp(quat a, quat b, float t)
 	if(l2 < 0.0f) 
 		b = -b;
 	v4 c;
-	// c = a + t(b - a)  -->   c = a - t(a - b)
-	// the latter is slightly better on x64
 	c.x = a.x - t*(a.x - b.x);
 	c.y = a.y - t*(a.y - b.y);
 	c.z = a.z - t*(a.z - b.z);
@@ -793,4 +806,22 @@ float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
 	if (min_t == FLT_MAX)
 		return -1;
 	return min_t;
+}
+
+quat rotate_around_axis_quat(v3 axis, float a)
+{
+	axis = normalize(axis);
+	float s = sinf(a / 2);
+	float c = cosf(a / 2);
+	return V4(axis * s, c);
+}
+
+quat zrotation_quat(float a)
+{
+	return rotate_around_axis_quat(V3(0, 0, 1), a);
+}
+
+quat identity_quat()
+{
+	return Quat(0, 0, 0, 1);
 }

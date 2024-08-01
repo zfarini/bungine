@@ -40,7 +40,7 @@ struct Entity
 	v3 position; // world position
 	v3 dp;
 
-	v3 rotation;
+	quat rotation;
 	v3 scale;
 
 	v3 color;
@@ -111,6 +111,7 @@ struct Editor
 {
 	bool in_gizmo;
 	entity_id selected_entity;
+	entity_id copied_entity;
 
 	GizmoMode gizmo_mode;
 
@@ -125,10 +126,11 @@ struct Editor
 	float s_init_drag;
 
 	bool r_did_drag;
-	float r_init_rot;
+	quat r_init_rot;
 	float r_init_drag;
-	v3 r_init_x_axis;
-	v3 r_init_y_axis;
+	v3 r_right_axis;
+	v3 r_up_axis;
+	v3 r_axis;
 
 	v3 last_camera_p;
 };
@@ -189,6 +191,8 @@ struct Game
 	RasterizerState default_rasterizer_state;
 	DepthStencilState default_depth_stencil_state;
 	DepthStencilState disable_depth_state;
+
+	FrameBuffer debug_asset_fb;
 
 	bool show_normals;
 	bool render_bones;

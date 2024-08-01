@@ -312,7 +312,7 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 		render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color,
+void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
 		bool outline = false)
 {
 	/*
