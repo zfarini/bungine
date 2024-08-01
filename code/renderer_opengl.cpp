@@ -442,7 +442,7 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 void init_render_context_opengl(RenderContext &rc, Platform &platform)
 {
 	rc.window = platform.window;
-#ifdef RENDERER_DEBUG
+#ifndef _WIN32
 	int flags;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {

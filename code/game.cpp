@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #ifndef DISABLE_PREPROCESSOR
 #include <stb_image.h>
 #include <ufbx.h>
@@ -188,8 +189,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 
 
-		int fd = open("world.bin", O_RDONLY);
-		if (fd < 0) {
+		FILE *fd = fopen("world.bin", "rb");
+		fd = 0;
+		if (!fd) {
 
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
@@ -235,7 +237,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			serialize(fd, false, world);
 			for (int i = 0; i < world.entities.count; i++)
 				world.entities_id_map[world.entities[i].id] = i;
-			close(fd);
+			fclose(fd);
 		}
 
 		game.is_initialized = 1;
@@ -245,11 +247,11 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	if (IsDown(input, BUTTON_ESCAPE)) {
 		
-		int fd = open("world.bin", O_WRONLY|O_CREAT|O_TRUNC, 0744);
-		if (fd < 0)
+		FILE *fd = fopen("world.bin", "wb");
+		if (!fd)
 			assert(0);
 		serialize(fd, true, world);
-		close(fd);
+		fclose(fd);
 		return ;
 	}
 

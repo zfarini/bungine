@@ -553,8 +553,7 @@ struct SerializedWorld
 //S(usize);
 
 #define S(type, fd, w, value) do {\
-	if (w) write(fd, &value, sizeof(type)); \
-	else read(fd, &value, sizeof(type)); \
+\
 	} while (0)
 
 #define serialize_int(...) S(int, __VA_ARGS__)
@@ -563,14 +562,14 @@ struct SerializedWorld
 #define serialize_usize(...) S(usize, __VA_ARGS__)
 
 
-void serialize(int fd, bool w, v3 &v)
+void serialize(FILE *fd, bool w, v3 &v)
 {
 	serialize_float(fd, w, v.x);
 	serialize_float(fd, w, v.y);
 	serialize_float(fd, w, v.z);
 }
 
-void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
+void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
 {
 	if (!w)
 		shape = {};
@@ -599,13 +598,13 @@ void serialize(Arena *arena, int fd, bool w, CollisionShape &shape)
 	serialize(fd, w, shape.ellipsoid_radius);
 }
 
-void serialize(int fd, bool w, mat4 &m)
+void serialize(FILE *fd, bool w, mat4 &m)
 {
 	for (int i = 0; i < 16; i++)
 		serialize_float(fd, w, m.e[i/4][i%4]);
 }
 
-void serialize(Arena *arena, int fd, bool w, Entity &e)
+void serialize(Arena *arena, FILE *fd, bool w, Entity &e)
 {
 	serialize_usize(fd, w, e.id);
 	serialize_int(fd, w, e.type);
@@ -628,7 +627,7 @@ void serialize(Arena *arena, int fd, bool w, Entity &e)
 	serialize_float(fd, w, e.height_above_ground);
 }
 
-void serialize(int fd, bool w, World &world)
+void serialize(FILE *fd, bool w, World &world)
 {
 	if (w) {
 		serialize_usize(fd, w, world.entities.count);
