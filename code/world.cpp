@@ -42,7 +42,7 @@ void remove_entity(World &world, entity_id id)
 {
 	assert(world.entities_id_map.count(id));
 
-	int index = world.entities_id_map[id];
+	usize index = world.entities_id_map[id];
 	world.entities_id_map.erase(id);
 	if (index != world.entities.count - 1) {
 		world.entities[index] = world.entities[world.entities.count - 1];
@@ -579,22 +579,24 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	return camera;
 }
 
+
+
 #define S(type, fd, w, value) do {\
 	if (w) fwrite(&value, sizeof(type), 1, fd); \
 	else fread(&value, sizeof(type), 1, fd); \
 	} while (0)
 
-#define serialize_int(...) S(int, __VA_ARGS__)
-#define serialize_b32(...) S(b32, __VA_ARGS__)
-#define serialize_float(...) S(float, __VA_ARGS__)
-#define serialize_usize(...) S(usize, __VA_ARGS__)
-
+#define serialize_int(fd, w, value) S(int, fd, w, value)
+#define serialize_b32(fd, w, value) S(b32, fd, w, value)
+#define serialize_float(fd, w, value) S(float, fd, w, value)
+#define serialize_usize(fd, w, value) S(usize, fd, w, value)
 
 void serialize(FILE *fd, bool w, v3 &v)
 {
 	for (int i = 0; i < 3; i++)
 		serialize_float(fd, w, v.e[i]);
 }
+
 void serialize(FILE *fd, bool w, quat &q)
 {
 	for (int i = 0; i < 4; i++)

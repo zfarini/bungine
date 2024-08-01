@@ -310,7 +310,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				//	editor.selected_entity = 0;
 				//else
 				editor.selected_entity = hit_entity;
-				editor.init_entity = *get_entity(world, hit_entity);
+				Entity *e = get_entity(world, hit_entity);
+				if (e)
+					editor.init_entity = *e;
 			}
 		}
 		else {
@@ -346,45 +348,47 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			if (get_entity(world, editor.selected_entity))
 				editor.init_entity = *get_entity(world, editor.selected_entity);
 		}
-	Entity *e = get_entity(world, editor.selected_entity);
-	if (e) {
+	{
+		Entity *e = get_entity(world, editor.selected_entity);
+		if (e) {
 
-		for (int i = 0; i < 3; i++) {
-			v3 color = {};
-			color.e[i] = 1;
-			if (editor.in_gizmo && editor.dragging_axis == i)
-				color = V3(1, 1, 0);
+			for (int i = 0; i < 3; i++) {
+				v3 color = {};
+				color.e[i] = 1;
+				if (editor.in_gizmo && editor.dragging_axis == i)
+					color = V3(1, 1, 0);
 
-			if (editor.gizmo_mode == GIZMO_SCALE) {
-				push_line(e->position, e->position + axis[i], color);
-				push_cube_outline(e->position + axis[i], V3(0.1f), color);
+				if (editor.gizmo_mode == GIZMO_SCALE) {
+					push_line(e->position, e->position + axis[i], color);
+					push_cube_outline(e->position + axis[i], V3(0.1f), color);
 
-			}
-			else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-				push_line(e->position, e->position + axis[i], color);
-				push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
-			}
-			else {
-#if 0
-				for (int j = 0; j < 36; j++)
+				}
+				else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+					push_line(e->position, e->position + axis[i], color);
+					push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+				}
+				else {
+	#if 0
+					for (int j = 0; j < 36; j++)
+						push_circle(e->position, 
+								lerp(rotation_inner_radius, rotation_outer_radius, j / 36.f)
+								, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+	#else
 					push_circle(e->position, 
-							lerp(rotation_inner_radius, rotation_outer_radius, j / 36.f)
+							rotation_circle_radius
 							, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
-#else
-				push_circle(e->position, 
-						rotation_circle_radius
-						, axis[(i + 1) % 3], axis[(i + 2) % 3], color);
-#endif
+	#endif
 
+				}
+				//push_box_outline(e->position + 0.5f * axis,
+				//		x_axis * (i == 0 ? 0.5f : 0.25f), 
+				//		y_axis * (i == 1 ? 0.5f : 0.25f), 
+				//		z_axis * (i == 2 ? 0.5f : 0.25f), color);
 			}
-			//push_box_outline(e->position + 0.5f * axis,
-			//		x_axis * (i == 0 ? 0.5f : 0.25f), 
-			//		y_axis * (i == 1 ? 0.5f : 0.25f), 
-			//		z_axis * (i == 2 ? 0.5f : 0.25f), color);
-		}
-		if (editor.gizmo_mode == GIZMO_SCALE) {
-			push_line(e->position, e->position
-					+ 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
+			if (editor.gizmo_mode == GIZMO_SCALE) {
+				push_line(e->position, e->position
+						+ 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
+			}
 		}
 	}
 
@@ -397,20 +401,20 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	}
 	if (IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_V)) {
-		Entity *e = get_entity(world, editor.copied_entity);
-		if (e) {
+		Entity *copy_from = get_entity(world, editor.copied_entity);
+		if (copy_from) {
 			EditorOp op = {};
 			op.type = EDITOR_OP_PASTE_ENTITY;
-			op.paste.copy_from = e->id;
+			op.paste.copy_from = copy_from->id;
 
 			float min_hit_t;
 			entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
 			if (hit_entity) {
 				op.paste.p = ray_origin + min_hit_t * ray_dir
-					+ V3(0, 0, e->scale.z);
+					+ V3(0, 0, copy_from->scale.z);
 			}else 
 				op.paste.p = camera.position + camera.forward * 2
-					* max(e->scale.x, max(e->scale.y, e->scale.z));
+					* max(copy_from->scale.x, max(copy_from->scale.y, copy_from->scale.z));
 			
 			do_editor_op(world, editor, op);
 		}

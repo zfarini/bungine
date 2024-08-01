@@ -172,7 +172,7 @@ string generate(const vector<Token> &tokens)
 				i++;
 				skip_token(',');
 			}
-			s += "\t}\n}\n";
+			s += "\t}\treturn \"ENUM_????\";\n}\n";
 			result += s;
 		}
 		else

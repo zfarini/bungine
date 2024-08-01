@@ -339,7 +339,7 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 			+ get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
 	}
 
-	result.element_count = elements.count;
+	result.element_count = (int)elements.count;
 	result.size = offset;
 
 	glGenBuffers(1, &result.id);

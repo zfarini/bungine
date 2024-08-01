@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #ifndef DISABLE_PREPROCESSOR
 #include <stb_image.h>
 #include <ufbx.h>
@@ -97,7 +96,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
 		game.disable_depth_state = create_depth_stencil_state(false);
-
+		game.wireframe_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_WIREFRAME, RASTERIZER_CULL_NONE);
 
 		VertexInputLayout input_layout = create_vertex_input_layout(g_vertex_input_elements, 
 				ARRAY_SIZE(g_vertex_input_elements), sizeof(Vertex));
@@ -308,6 +307,10 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		bind_texture(4, game.shadow_map.depth_texture);
 		render_entities(game, world, game_camera, false);
+
+		// clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		// bind_rasterizer_state(game.wireframe_rasterizer_state);
+		// render_entities(game, world, game_camera, false);
 	}
 	end_render_pass();
 

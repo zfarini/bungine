@@ -47,42 +47,42 @@ const char *get_enum_GameButtonType_str(int value)
 		case BUTTON_F11: return "BUTTON_F11";
 		case BUTTON_F12: return "BUTTON_F12";
 		case BUTTON_COUNT: return "BUTTON_COUNT";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_ShaderType_str(int value)
 {
 	switch(value){
 		case SHADER_TYPE_VERTEX: return "SHADER_TYPE_VERTEX";
 		case SHADER_TYPE_FRAGMENT: return "SHADER_TYPE_FRAGMENT";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_InputElementType_str(int value)
 {
 	switch(value){
 		case INPUT_ELEMENT_FLOAT: return "INPUT_ELEMENT_FLOAT";
 		case INPUT_ELEMENT_SIGNED_INT: return "INPUT_ELEMENT_SIGNED_INT";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_PrimitiveType_str(int value)
 {
 	switch(value){
 		case PRIMITIVE_TRIANGLES: return "PRIMITIVE_TRIANGLES";
 		case PRIMITIVE_LINES: return "PRIMITIVE_LINES";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_VertexBufferUsage_str(int value)
 {
 	switch(value){
 		case VERTEX_BUFFER_IMMUTABLE: return "VERTEX_BUFFER_IMMUTABLE";
 		case VERTEX_BUFFER_DYNAMIC: return "VERTEX_BUFFER_DYNAMIC";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_RasterizerFillMode_str(int value)
 {
 	switch(value){
 		case RASTERIZER_FILL_SOLID: return "RASTERIZER_FILL_SOLID";
 		case RASTERIZER_FILL_WIREFRAME: return "RASTERIZER_FILL_WIREFRAME";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_RasterizerCullMode_str(int value)
 {
@@ -90,7 +90,7 @@ const char *get_enum_RasterizerCullMode_str(int value)
 		case RASTERIZER_CULL_NONE: return "RASTERIZER_CULL_NONE";
 		case RASTERIZER_CULL_FRONT: return "RASTERIZER_CULL_FRONT";
 		case RASTERIZER_CULL_BACK: return "RASTERIZER_CULL_BACK";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_ConstantBufferElementType_str(int value)
 {
@@ -102,7 +102,7 @@ const char *get_enum_ConstantBufferElementType_str(int value)
 		case CONSTANT_BUFFER_ELEMENT_FLOAT: return "CONSTANT_BUFFER_ELEMENT_FLOAT";
 		case CONSTANT_BUFFER_ELEMENT_INT: return "CONSTANT_BUFFER_ELEMENT_INT";
 		case CONSTANT_BUFFER_ELEMENT_COUNT: return "CONSTANT_BUFFER_ELEMENT_COUNT";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_EntityType_str(int value)
 {
@@ -111,14 +111,14 @@ const char *get_enum_EntityType_str(int value)
 		case EntityType_Enemy: return "EntityType_Enemy";
 		case EntityType_Static: return "EntityType_Static";
 		case EntityType_Count: return "EntityType_Count";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_CollisionShapeType_str(int value)
 {
 	switch(value){
 		case COLLISION_SHAPE_TRIANGLES: return "COLLISION_SHAPE_TRIANGLES";
 		case COLLISION_SHAPE_ELLIPSOID: return "COLLISION_SHAPE_ELLIPSOID";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_AnimationType_str(int value)
 {
@@ -130,7 +130,7 @@ const char *get_enum_AnimationType_str(int value)
 		case ANIMATION_BACKWARD_GUN_WALK: return "ANIMATION_BACKWARD_GUN_WALK";
 		case ANIMATION_GUN_IDLE: return "ANIMATION_GUN_IDLE";
 		case ANIMATION_COUNT: return "ANIMATION_COUNT";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_GizmoMode_str(int value)
 {
@@ -138,7 +138,7 @@ const char *get_enum_GizmoMode_str(int value)
 		case GIZMO_TRANSLATION: return "GIZMO_TRANSLATION";
 		case GIZMO_SCALE: return "GIZMO_SCALE";
 		case GIZMO_ROTATION: return "GIZMO_ROTATION";
-	}
+	}	return "ENUM_????";
 }
 const char *get_enum_EditorOpType_str(int value)
 {
@@ -149,6 +149,6 @@ const char *get_enum_EditorOpType_str(int value)
 		case EDITOR_OP_PASTE_ENTITY: return "EDITOR_OP_PASTE_ENTITY";
 		case EDITOR_OP_DELETE_ENTITY: return "EDITOR_OP_DELETE_ENTITY";
 		case EDITOR_OP_SPAWN_ENTITY: return "EDITOR_OP_SPAWN_ENTITY";
-	}
+	}	return "ENUM_????";
 }
 #endif

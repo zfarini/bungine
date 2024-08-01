@@ -237,7 +237,7 @@ struct Game
 	int frame;
 	float time;
 
-	RasterizerState default_rasterizer_state;
+	RasterizerState default_rasterizer_state, wireframe_rasterizer_state;
 	DepthStencilState default_depth_stencil_state;
 	DepthStencilState disable_depth_state;
 

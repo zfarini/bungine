@@ -395,13 +395,13 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	if (e.type == EntityType_Static)
 		e.position = rel_p + e.position - start_p;
 	else {
-		Entity *parent = get_entity(world, collision.entity);
-		if (parent) {
-			e.parent = parent->id;
-			e.position -= parent->position;
-		}
-		else
-			e.parent = 0;
+		// Entity *parent = get_entity(world, collision.entity);
+		// if (parent) {
+		// 	e.parent = parent->id;
+		// 	e.position -= parent->position;
+		// }
+		// else
+		// 	e.parent = 0;
 	}
 	end_temp_memory();
 }
