@@ -247,11 +247,16 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 		bool jumped = false;
 		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
 		{
+			if (!player.pressing_jump)
+				play_sound(game, game.loaded_sounds[1]);
 			// a = a * 2;
 			a += 200 * player_up;
 			a.xy = {};
 			jumped = true;
+			player.pressing_jump = true;
 		}
+		else
+			player.pressing_jump = false;
 		//if (!player.on_ground)
 		//	a.xy *= 0.7f;
 
@@ -360,13 +365,34 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	}
 }
 
+#include <time.h>
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
+	#if 0
 	Entity *player = get_entity(world, world.player_id);
 	if (!player)
 		return ;
 
 	v3 player_world_p = get_world_p(world, player->id);
+
+	Arena *temp = begin_temp_memory();
+
+	Array<CollisionShape> shapes = make_array_max<CollisionShape>(temp, world.entities.count + 64);
+
+	for (int i = 0; i < world.entities.count; i++) {
+		Entity &test = world.entities[i];
+
+		if (test.type == EntityType_Enemy)
+			continue ;
+
+		CollisionShape shape = test.shape;
+		shape.transform = get_entity_transform(world, test);
+
+		if (shape.type == COLLISION_SHAPE_ELLIPSOID)
+			shape.scale = test.scale;
+		shape.entity = test.id;
+		shapes.push(shape);
+	}
 
 	for (int i = 0; i < world.entities.count; i++)
 	{
@@ -374,6 +400,75 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 		if (e.type != EntityType_Enemy)
 			continue;
+		//clock_t start = clock();
+		int best_move = 0;
+		float best_score = FLT_MAX;
+
+		auto Move = [&](Entity &entity, float time) {
+			v3 forward = V3(cosf(entity.z_rot), sinf(entity.z_rot), 0);
+			v3 a = forward;
+
+			a = a * 50;// - 40 * V3(0, 0, 1);
+
+			a -= entity.dp * 3;
+			v3 delta_p = 0.5f * time * time * a + time * entity.dp;
+			//v3 delta_p = 20*forward * SIM_DT;
+			move_entity(world, entity, delta_p, shapes);
+			entity.dp += time * a;
+
+		};
+
+		for (int itr = 0; itr < 500; itr++)
+		{
+			int MOVES_COUNT = 20;
+			float SIM_DT = 0.3f;
+			Entity t = e;
+			int first_move = -1;
+			int last_move = e.last_move;
+			int second_move = -1;
+			for (int i = 0; i < MOVES_COUNT; i++) {
+				int move = rand() % 6;
+
+				if (last_move < 4)
+					move = 4;
+				if (!i)
+					first_move = move;
+				
+				if (move >= 4) {
+					Move(t, SIM_DT);
+					// v3 forward = normalize(V3(cosf(t.z_rot), sinf(t.z_rot), 0));
+					// v3 a = 
+					// v3 delta_p = 20*forward * SIM_DT;
+					// move_entity(world, t, delta_p);
+				}
+				else {
+					t.z_rot = (PI/2)*(move);
+					t.rotation = rotate_around_axis_quat(V3(0, 0, 1), t.z_rot);
+
+				}
+				last_move = move;
+			}
+			float score = length_sq(t.position - player_world_p);
+			if (score < best_score) {
+				best_score = score;
+				best_move = first_move;
+			}
+		}
+		printf("%f %d\n", best_score, best_move);
+		if (best_move >= 4) {
+			Move(e, dt);
+
+			// v3 forward = normalize(V3(cosf(e.z_rot), sinf(e.z_rot), 0));
+			// v3 delta_p = 20 * forward * dt;
+			// move_entity(world, e, delta_p);
+		} else {
+			e.z_rot = (PI/2)*(best_move);
+			e.rotation = rotate_around_axis_quat(V3(0, 0, 1), e.z_rot);
+			//e.rotation.z = (PI/2) * (best_move - 1);
+		}
+		e.last_move = best_move;
+
+		#if 0
 
 		v3 dir = player_world_p - get_world_p(world, e.id);
 
@@ -407,7 +502,10 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 	//	e.rotation.z = atan2(dir.y, dir.x);
 		//e.anim_time += dt;
+		#endif
 	}
+	end_temp_memory();
+	#endif
 }	
 
 Camera update_camera(Game &game, World &world, GameInput &input, float dt)

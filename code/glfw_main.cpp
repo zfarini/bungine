@@ -18,12 +18,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-
-
 #undef min
 #undef max
-
-#define TOGGLE_EDITOR_BUTTON BUTTON_F1
 
 #include "game.cpp"
 
@@ -84,7 +80,7 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(800, 600, "game", 0, 0);
+	GLFWwindow *window = glfwCreateWindow(1280, 720, "game", 0, 0);
 	if (!window)
 		assert(0);
 
@@ -133,6 +129,7 @@ int main()
 		update_game_input(window, game_input, frame);
 		if (IsDown(game_input, BUTTON_ESCAPE))
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		glfwGetFramebufferSize(window, &rc.window_width, &rc.window_height);
 		game_update_and_render(platform, &memory, game_input, 1.f / 60);
 
 		glfwSwapBuffers(window);

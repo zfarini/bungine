@@ -1,0 +1,13 @@
+in editor handle rotation when rotation plane is tangent ortho to view dir 
+sound 
+spatial parititioning for collision mesh data and entities in general?
+background asset loading
+guns & some actual gameplay
+ai: A*, Monte carlo? 
+replace unordered_map by either some hash map implementation or 
+    a red-black tree meh? 
+particles (optimize them simd/ gpu instancing?)
+profile code and optimize stuff
+better shadows
+main menu
+better lighthing?

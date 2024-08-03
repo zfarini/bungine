@@ -386,9 +386,13 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 
 void begin_render_frame()
 {
-	glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
+	//glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
 	g_rc->debug_lines.count = 0;
+	#ifdef _WIN32
+	ImGui_ImplWin32_NewFrame();
+	#else
 	ImGui_ImplGlfw_NewFrame();
+	#endif
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui::NewFrame();
 }
@@ -443,7 +447,6 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 
 void init_render_context_opengl(RenderContext &rc, Platform &platform)
 {
-	rc.window = platform.window;
 #ifndef _WIN32
 	int flags;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);

@@ -1,48 +1,41 @@
-#pragma comment(lib, "d3d11")
-#pragma comment(lib, "d3dcompiler")
-#pragma comment (lib, "dxgi")
-#pragma comment (lib, "dxguid")
+
 
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef RENDERER_DX11
+#pragma comment(lib, "d3d11")
+#pragma comment(lib, "d3dcompiler")
+#pragma comment (lib, "dxgi")
+#pragma comment (lib, "dxguid")
 #include <d3d11.h>
 #include <dxgi1_3.h>
 #include <d3dcompiler.h>
 #include <dxgidebug.h>
+#endif
 #include <assert.h>
 #include <stdint.h>
 #include <cstdio>
 #include <float.h>
+#include <unordered_map>
 
+#include <glad/glad.h>
+#include <glad.c>
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
+#ifdef RENDERER_OPENGL
+#include "imgui/imgui_impl_opengl3.h"
+#else
 #include "imgui/imgui_impl_dx11.h"
+#endif
 
 #undef min
 #undef max
 #undef near
 #undef swap
 
-#include "common.h"
-#include "arena.h"
-#include "utils.h"
-#include "math.h"
-#include "platform.h"
-
-#include "renderer.h"
-
-global RenderContext *g_rc;
-#ifdef RENDERER_DX11
-#define DIRECT3D_DEBUG
-#include "renderer_dx11.cpp"
-#else
-#include "renderer_opengl.cpp"
-#endif
-
-#include "renderer.cpp"
-
+#include "game.cpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -134,7 +127,6 @@ void update_game_input(HWND window, GameInput &input, int frame)
 		ScreenToClient(window, &cursor);
 
 		input.mouse_p = V2(cursor.x, cursor.y);
-		printf("%f %f\n", input.mouse_p.x, input.mouse_p.y);
 
 		if (frame > 3) {
 			if (g_hide_mouse) {
@@ -168,10 +160,36 @@ void update_game_input(HWND window, GameInput &input, int frame)
 	}
 }
 
-typedef void game_update_and_render_fn(PlatformData &platform_data, Arena *memory, GameInput &input, float dt);
+//typedef void game_update_and_render_fn(PlatformData &platform_data, Arena *memory, GameInput &input, float dt);
 
-int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+// int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int main()
 {
+	Arena game_memory;
+	{
+		usize game_memory_size = GigaByte(3);
+		void *data = VirtualAlloc(0, game_memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+		assert(data);
+		game_memory = make_arena(data, game_memory_size);
+	}
+
+	ma_device sound_device;
+	{
+
+		ma_device_config config = ma_device_config_init(ma_device_type_playback);
+		config.playback.format   = ma_format_f32;
+		config.playback.channels = SOUND_CHANNEL_COUNT;
+		config.sampleRate        = SOUND_SAMPLE_RATE;
+		config.dataCallback      = audio_write_callback;
+		// @HACK: the game struct should always be allocated the first thing
+		config.pUserData         = game_memory.data;
+
+		if (ma_device_init(NULL, &config, &sound_device) != MA_SUCCESS)
+			printf("ERROR: couldn't init sound device\n");
+		else
+			ma_device_start(&sound_device);
+	}
+
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -182,13 +200,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		ImGui::StyleColorsDark();
 		// ImGui::StyleColorsLight();
 	}
-	Arena game_memory;
-	{
-		usize game_memory_size = GigaByte(3);
-		void *data = VirtualAlloc(0, game_memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-		assert(data);
-		game_memory = make_arena(data, game_memory_size);
-	}
+	
 
 	HWND window;
 	{
@@ -209,12 +221,47 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			0, 0, rect.right - rect.left, rect.bottom - rect.top, 0, 0, 0, 0);
 		assert(window);
 	}
+	HDC window_dc;
+	{
+		// Set up OpenGL context
+		HDC hdc = GetDC(window);
 
-	RenderContext rc;
-	init_render_context_dx11(rc, window);
+		PIXELFORMATDESCRIPTOR pfd = {
+			sizeof(PIXELFORMATDESCRIPTOR),
+			1,
+			PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
+			PFD_TYPE_RGBA,
+			32,                      // Color depth
+			0, 0, 0, 0, 0, 0,
+			0,
+			0,
+			0,
+			0, 0, 0, 0,
+			24,                      // Depth buffer
+			8,                       // Stencil buffer
+			0,
+			PFD_MAIN_PLANE,
+			0,
+			0, 0, 0
+		};
 
-	ImGui_ImplWin32_Init(rc.window);
-	ImGui_ImplDX11_Init(rc.device, rc.context);
+		int pixelFormat = ChoosePixelFormat(hdc, &pfd);
+		SetPixelFormat(hdc, pixelFormat, &pfd);
+
+		HGLRC hrc = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hrc);
+		assert(gladLoadGL());
+		window_dc = hdc;
+	}
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_InitForOpenGL(window);
+	ImGui_ImplOpenGL3_Init();
+
+	RenderContext rc = {};
+	//init_render_context_dx11(rc, window);
+
+	//ImGui_ImplWin32_Init(rc.window);
+	//ImGui_ImplDX11_Init(rc.device, rc.context);
 	
 	
 
@@ -222,11 +269,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	TempArena temp_arena = {};
 
-	PlatformData platform_data = {};
-	platform_data.render_context = &rc;
-	platform_data.imgui_context = ImGui::GetCurrentContext();
-	platform_data.temp_arena = &temp_arena;
-	g_temp_arena = &temp_arena;
+	Platform platform = {};
+	platform.render_context = &rc;
+	platform.imgui_context = ImGui::GetCurrentContext();
 
 	float dt = 1.f / 60;
 	
@@ -237,7 +282,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	const char *game_temp_dll_name = "build\\game_temp.dll";
 	game_update_and_render_fn *update_and_render = 0;
 	HMODULE game_dll = 0;
-	FILETIME game_dll_last_write_time;
+	//FILETIME game_dll_last_write_time;
 
 	RECT rect;
     GetClientRect(window, &rect);
@@ -260,23 +305,23 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 		
 
-		{
-			WIN32_FILE_ATTRIBUTE_DATA data;
-			GetFileAttributesExA(game_dll_name, GetFileExInfoStandard, &data);
-			if (!game_dll || CompareFileTime(&game_dll_last_write_time, &data.ftLastWriteTime) == -1) {
-				FreeLibrary(game_dll);
-				//if (!DeleteFile(game_temp_dll_name))
-				//	assert(0);
-				if (!CopyFile(game_dll_name, game_temp_dll_name, FALSE))
-					assert(0);
-				game_dll = LoadLibraryA(game_temp_dll_name);
-				assert(game_dll);
-				update_and_render = (game_update_and_render_fn *)GetProcAddress(game_dll, "game_update_and_render");
-				assert(update_and_render);
-				game_dll_last_write_time = data.ftLastWriteTime;
-			}
-		}
-		printf("%d\n", g_window_active);
+		// {
+		// 	WIN32_FILE_ATTRIBUTE_DATA data;
+		// 	GetFileAttributesExA(game_dll_name, GetFileExInfoStandard, &data);
+		// 	if (!game_dll || CompareFileTime(&game_dll_last_write_time, &data.ftLastWriteTime) == -1) {
+		// 		FreeLibrary(game_dll);
+		// 		//if (!DeleteFile(game_temp_dll_name))
+		// 		//	assert(0);
+		// 		if (!CopyFile(game_dll_name, game_temp_dll_name, FALSE))
+		// 			assert(0);
+		// 		game_dll = LoadLibraryA(game_temp_dll_name);
+		// 		assert(game_dll);
+		// 		update_and_render = (game_update_and_render_fn *)GetProcAddress(game_dll, "game_update_and_render");
+		// 		assert(update_and_render);
+		// 		game_dll_last_write_time = data.ftLastWriteTime;
+		// 	}
+		// }
+		// printf("%d\n", g_window_active);
 
 		update_game_input(window, game_input, frame);
 
@@ -288,15 +333,25 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			game_input.mouse_dp = {};
 		window_width = new_width;
 		window_height = new_height;
+		rc.window_width = window_width;
+		rc.window_height = window_height;
 
-		if (update_and_render)
-			update_and_render(platform_data, &game_memory, game_input, dt);
-		//game_update_and_render(rc, &game_memory, game_input, dt);
+		//if (update_and_render)
+		//	update_and_render(platform_data, &game_memory, game_input, dt);
+		game_update_and_render(platform, &game_memory, game_input, dt);
 		
+		SwapBuffers(window_dc);
 		frame++;
 	}
 
+#ifdef RENDERER_OPENGL
+	ImGui_ImplOpenGL3_Shutdown();
+#else
 	ImGui_ImplDX11_Shutdown();
+#endif
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+
+	//ma_device_uninit(&sound_device);
+
 }

@@ -269,10 +269,20 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 			if (shapes[i].type == COLLISION_SHAPE_TRIANGLES) {
 				for (int j = 0; j < shapes[i].triangles.count; j++) {
+					#if 1
 					v3 p0 = (shapes[i].transform * V4(shapes[i].triangles[j].v0, 1)).xyz;
 					v3 p1 = (shapes[i].transform * V4(shapes[i].triangles[j].v1, 1)).xyz;
 					v3 p2 = (shapes[i].transform * V4(shapes[i].triangles[j].v2, 1)).xyz;
+					#else
+					v3 p0 = shapes[i].triangles[j].v0;
+					v3 p1 = shapes[i].triangles[j].v1;
+					v3 p2 = shapes[i].triangles[j].v2;
 
+					#endif
+					v3 normal = normalize(cross(p1 - p0, p2 - p0));
+					if (fabsf(dot(normal, e.position - (p0+p1+p2)/3.f))
+					> max(e_radius.x, max(e_radius.y, e_radius.z)) * 2)
+						continue ;
 					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
 							p0, p1, p2);
 					info.entity = shapes[i].entity;
@@ -339,6 +349,8 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 		if (shape.type == COLLISION_SHAPE_ELLIPSOID)
 			shape.scale = test.scale;
+		else {
+		}
 
 		shape.entity = test.id;
 		shapes.push(shape);

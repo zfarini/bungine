@@ -5,6 +5,13 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#define MA_NO_MP3
+#define MA_NO_FLAC
+#define MINIAUDIO_IMPLEMENTATION
+#include <miniaudio.h>
+
+#include <atomic>
+
 #endif
 #include "common.h"
 #include "arena.h"
@@ -28,6 +35,199 @@ global RenderContext *g_rc;
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
 v3 get_world_p(World &world, entity_id id);
+
+#define SOUND_CHANNEL_COUNT 2
+#define SOUND_SAMPLE_RATE 48000
+
+LoadedSound load_wav_file(Arena *arena, const char *filename)
+{
+    ma_decoder_config config = ma_decoder_config_init(ma_format_f32, SOUND_CHANNEL_COUNT, SOUND_SAMPLE_RATE);
+
+    ma_decoder decoder;
+    ma_result result = ma_decoder_init_file(filename, &config, &decoder);
+    if (result != MA_SUCCESS)
+        assert(0);
+    LoadedSound sound = {};
+    //sound.samples = (float *)calloc(1, 2 * sizeof(float) * 48000 * 60);
+    ma_uint64 samplesToRead = 1024;
+	sound.samples = (float *)arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
+
+    while (1) {
+        ma_uint64 samplesRead = 0;
+        result = ma_decoder_read_pcm_frames(&decoder, sound.samples + sound.sample_count*SOUND_CHANNEL_COUNT, 
+			samplesToRead, &samplesRead);
+        sound.sample_count += samplesRead;
+        if (samplesRead < samplesToRead)
+            break ;
+		// @HACK: kinda, I'm just assuming stuff will be continuous with no random alignement jumps
+		arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
+    }
+	printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
+    return sound;
+}
+
+void audio_write_callback(ma_device* device, void* output, const void* input, ma_uint32 frame_count)
+{
+	Game &game = *((Game *)device->pUserData);
+	if (!game.is_initialized) 
+		return ;
+
+	int read_index = game.sound_state.read_index;
+	int write_index = game.sound_state.write_index;
+	//printf("read: %d %d %d\n", read_index, write_index, game.sound_state.sample_count);
+
+	if (read_index == write_index)
+		return ;
+
+	if (read_index < write_index) {
+		int samples_to_read = min(write_index - read_index, (int)frame_count);
+		memcpy(output, game.sound_state.buffer + read_index * SOUND_CHANNEL_COUNT,
+			samples_to_read * SOUND_CHANNEL_COUNT * sizeof(float));
+		game.sound_state.read_index = read_index + samples_to_read;
+	}
+	else {
+		int samples_to_copy = min((int)frame_count, game.sound_state.sample_count - read_index);
+		memcpy(output, game.sound_state.buffer + read_index * SOUND_CHANNEL_COUNT,
+			samples_to_copy * SOUND_CHANNEL_COUNT * sizeof(float));
+		frame_count -= samples_to_copy;
+		memcpy(output, game.sound_state.buffer, 
+			min(write_index, (int)frame_count) * SOUND_CHANNEL_COUNT * sizeof(float));
+
+		game.sound_state.read_index = (read_index + samples_to_copy
+			+ min(write_index, (int)frame_count)) % game.sound_state.sample_count;
+	}
+
+	// for (int i = 0; i < frame_count; i++)
+    // {
+
+    //     float *out0 = (float *)output;
+    //     output = (float *)output + 1;
+    //     float *out1 = (float *)output;
+    //     output = (float *)output + 1;
+
+	// 	//*out0 = 0;
+	// 	//*out1 = 0;
+    //     // if (sample >= g_sound_file.sampleCount*2)
+    //     //     sample = 0;
+		
+    //     // float value0 = g_sound_file.samples[sample++];
+    //     // float value1 = g_sound_file.samples[sample++];
+	// 	// float value = sinf(((float)sample / SOUND_SAMPLE_RATE) * 2 * 3.14159265359f * 300);
+    //     // *out0 = value;
+    //     // *out1 = value;
+	// 	// sample++;
+    // }
+}
+
+void play_sound(Game &game, LoadedSound &loaded_sound, entity_id entity = 0)
+{
+	SoundPlaying *sound = (SoundPlaying *)arena_alloc_zero(game.memory, sizeof(SoundPlaying));
+	sound->sound = &loaded_sound;
+	sound->entity = entity;
+
+	sound->next = game.first_playing_sound;
+	if (game.first_playing_sound)
+		game.first_playing_sound->prev = sound;
+	game.first_playing_sound = sound;
+}
+
+void update_sound(Game &game, World &world)
+{
+	if (!game.first_playing_sound)
+		return ;
+
+	SoundState &state = game.sound_state;
+
+	int frames_to_write = 1;
+	int fps = 60;
+	int max_samples_to_write =  ((SOUND_SAMPLE_RATE * frames_to_write) / fps);
+
+
+	int write_index = state.write_index;
+	int read_index = state.read_index;
+	//printf("write %d %d %d\n", read_index, write_index, state.sample_count);
+
+	int can_write = 0;
+	if (read_index <= write_index)
+		can_write = read_index + state.sample_count - write_index; 
+	else
+		can_write = read_index - write_index;
+	
+	can_write -= 1;
+
+	max_samples_to_write = min(max_samples_to_write, can_write);
+
+	if (max_samples_to_write <= 0)
+		return ;
+
+	Entity *player = get_entity(world, world.player_id);
+	v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
+	v3 player_up = V3(0, 0, 1);
+	v3 player_right = normalize(cross(player_forward, player_up));
+		
+	int index = write_index;
+	for (int sample = 0; sample < max_samples_to_write; sample++) {
+		for (int i = 0; i < SOUND_CHANNEL_COUNT; i++)
+			state.buffer[index * SOUND_CHANNEL_COUNT + i] = 0;
+		index++;
+		if (index == state.sample_count)
+			index = 0;
+	}
+	//printf("INIT JUMP SOUND %d %d\n", max_samples_to_write, game.first_playing_sound->sound->sample_count);
+
+	for (SoundPlaying *playing_sound = game.first_playing_sound; 
+		playing_sound;) {
+
+		Entity *e = get_entity(world, playing_sound->entity);
+		float volume[2] = {1, 1};
+		if (e) {
+			v3 to_e = normalize(e->position - world.player_camera_p);
+			float x = dot(to_e, player_right);
+			float y = dot(to_e, player_forward);
+			float a = fabsf(atan2(y, x));
+			a = a / PI;
+			volume[0] = a;
+			volume[1] = 1 - a;
+
+			float dist = 1 - logf(length(e->position - world.player_camera_p)) / 5;
+			if (dist < 0)
+				dist = 0;
+			volume[0] *= dist;
+			volume[1] *= dist;
+		}
+		
+		int samples_to_write = min(max_samples_to_write, 
+		playing_sound->sound->sample_count - playing_sound->samples_played);
+
+		index = write_index;
+		for (int sample = 0; sample < samples_to_write; sample++) {
+			for (int i = 0; i < SOUND_CHANNEL_COUNT; i++) {
+				state.buffer[index * SOUND_CHANNEL_COUNT + i] += 
+					playing_sound->sound->samples[playing_sound->samples_played
+						* SOUND_CHANNEL_COUNT + i] * volume[i] * game.master_volume;
+			}
+			playing_sound->samples_played++;
+			index++;
+			if (index == state.sample_count)
+				index = 0;
+		}
+		SoundPlaying *next = playing_sound->next;
+		if (playing_sound->samples_played == playing_sound->sound->sample_count) {
+			if (next)
+				next->prev = playing_sound->prev;
+			if (playing_sound->prev)
+				playing_sound->prev->next = next;
+			if (game.first_playing_sound == playing_sound)
+				game.first_playing_sound = next;
+		}
+		playing_sound = next;
+	}
+	//printf("finished? %d\n", game.first_playing_sound == 0);
+	//printf("END JUMP SOUND\n");
+	int new_write_index = (write_index + max_samples_to_write) % state.sample_count;
+	state.write_index = new_write_index;
+}
+
 
 #include "generated.h"
 
@@ -62,6 +262,8 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 	return shadow_map;
 }
 
+
+
 extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 {
 	g_rc = (RenderContext *)platform.render_context;
@@ -70,7 +272,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	Game &game = *((Game *)memory->data);
 	if (!game.is_initialized) {
-
 		assert(memory->used == 0);
 		arena_alloc_zero(memory, sizeof(game));
 
@@ -132,7 +333,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				{0, 3, INPUT_ELEMENT_FLOAT, "POSITION"},
 				{sizeof(v3), 3, INPUT_ELEMENT_FLOAT, "COLOR"},
 			};
-			VertexInputLayout input_layout = create_vertex_input_layout(input_elements, ARRAY_SIZE(input_elements),
+			VertexInputLayout line_input_layout = create_vertex_input_layout(input_elements, ARRAY_SIZE(input_elements),
 					sizeof(v3) * 2);
 
 			game.debug_lines_render_pass = create_render_pass(
@@ -144,7 +345,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					load_shader(make_cstring("shaders/debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
 #endif
 					PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
-					input_layout);
+					line_input_layout);
 
 			game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
 					g_rc->debug_lines.capacity * sizeof(v3));
@@ -257,13 +458,24 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
 					== GL_FRAMEBUFFER_COMPLETE);
 		}
+		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
+		game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
+
+		game.loaded_sounds[0] = load_wav_file(memory, "data/music.wav");
+		game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
+
+		game.master_volume = 1;
 
 		game.is_initialized = 1;
 	}
+	game.memory = memory;
+
+
+	if (game.frame == 0) {
+		play_sound(game, game.loaded_sounds[0], 12);
+	}
 
 	World &world = *game.world;
-
-
 
 	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON))
 		game.in_editor = !game.in_editor;
@@ -274,9 +486,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
 
-		Entity *e = get_entity(world, world.moving_box);
-		if (e)
-			e->position.z = 20 + sinf(game.time) * 20;
+		//Entity *e = get_entity(world, world.moving_box);
+		//if (e)
+		//	e->position.z = 20 + sinf(game.time) * 20;
 	}
 
 	Camera game_camera = update_camera(game, world, input, dt);
@@ -338,6 +550,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Begin("debug");
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
+		ImGui::SliderFloat("master volume", &game.master_volume, 0, 1);
 		ImGui::Checkbox("debug collission", &game.debug_collision);
 		ImGui::Checkbox("show normals", &game.show_normals);
 		ImGui::Checkbox("show bones", &game.render_bones);
@@ -371,6 +584,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	
 	end_render_frame();
+
+	update_sound(game, world);
 
 	game.time += dt;
 	if (game.frame == 0)

@@ -1,665 +1,518 @@
 #pragma once
 
-
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
 #define RAD2DEG (180.f / PI)
 
-int sign(float x)
-{
-	if (x < 0) return -1;
-	else if (x > 0) return 1;
-	return 0;
+int sign(float x) {
+    if (x < 0)
+        return -1;
+    else if (x > 0)
+        return 1;
+    return 0;
 }
 
 // ~ V2
 union v2 {
-	struct {
-		float x, y;
-	};
-	struct {
-		float u, v;
-	};
-	float e[2];
+    struct {
+        float x, y;
+    };
+    struct {
+        float u, v;
+    };
+    float e[2];
 };
 
-v2 V2(float x)
-{
-	return v2{x, x};
-}
-v2 V2(float x, float y)
-{
-	return v2{x, y};
-}
+v2 V2(float x) { return v2{x, x}; }
+v2 V2(float x, float y) { return v2{x, y}; }
 
-v2 operator+(v2 a, v2 b)
-{
-	return v2{a.x + b.x, a.y + b.y};
-}
+v2 operator+(v2 a, v2 b) { return v2{a.x + b.x, a.y + b.y}; }
 
-v2 operator-(v2 a, v2 b)
-{
-	return v2{a.x - b.x, a.y - b.y};
-}
+v2 operator-(v2 a, v2 b) { return v2{a.x - b.x, a.y - b.y}; }
 
-v2 operator*(v2 a, float b)
-{
-	return v2{a.x * b, a.y * b};
+v2 operator*(v2 a, float b) { return v2{a.x * b, a.y * b}; }
+
+v2 operator*(float a, v2 b) { return v2{a * b.x, a * b.y}; }
+
+v2 operator*(v2 a, v2 b) { return v2{a.x * b.x, a.y * b.y}; }
+
+v2 operator/(v2 a, float b) {
+    float inv = 1.f / b;
+    return v2{a.x * inv, a.y * inv};
 }
 
-v2 operator*(float a, v2 b)
-{
-	return v2{a * b.x, a * b.y};
-}
+v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
 
-v2 operator*(v2 a, v2 b)
-{
-	return v2{a.x * b.x, a.y * b.y};
-}
+v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
 
-v2 operator/(v2 a, float b)
-{
-	float inv = 1.f / b;
-	return v2{a.x * inv, a.y * inv};
-}
+v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
 
-v2 &operator+=(v2 &a, v2 b)
-{
-	return a = a + b;
-}
+v2 &operator*=(v2 &a, float b) { return a = a * b; }
 
-v2 &operator-=(v2 &a, v2 b)
-{
-	return a = a - b;
-}
+v2 &operator/=(v2 &a, float b) { return a = a / b; }
 
-v2 &operator*=(v2 &a, v2 b)
-{
-	return a = a * b;
-}
+float dot(v2 a, v2 b) { return a.x * b.x + a.y * b.y; }
 
-v2 &operator*=(v2 &a, float b)
-{
-	return a = a * b;
-}
+float length_sq(v2 a) { return dot(a, a); }
 
-v2 &operator/=(v2 &a, float b)
-{
-	return a = a / b;
-}
+float length(v2 a) { return sqrtf(dot(a, a)); }
 
-float dot(v2 a, v2 b)
-{
-	return a.x * b.x + a.y * b.y;
-}
+v2 normalize(v2 a) {
+    float len = length_sq(a);
 
-float length_sq(v2 a)
-{
-	return dot(a, a);
-}
-
-float length(v2 a)
-{
-	return sqrtf(dot(a, a));
-}
-
-v2 normalize(v2 a)
-{
-	float len = length_sq(a);
-
-	// TODO:
-	if (len < 1e-9)
-		return {};
-	else
-		return a / sqrtf(len);
+    // TODO:
+    if (len < 1e-9)
+        return {};
+    else
+        return a / sqrtf(len);
 }
 
 // ~ v3
 union v3 {
-	struct {
-		float x, y, z;
-	};
-	struct {
-		float r, g, b;
-	};
-	struct {
-		float u, v, w;
-	};
-	v2 xy;
-	float e[3];
+    struct {
+        float x, y, z;
+    };
+    struct {
+        float r, g, b;
+    };
+    struct {
+        float u, v, w;
+    };
+    v2 xy;
+    float e[3];
 };
 
-v3 V3(float x)
-{
-	return v3{x, x, x};
+v3 V3(float x) { return v3{x, x, x}; }
+
+v3 V3(float x, float y, float z) {
+    v3 result;
+
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
 }
 
-v3 V3(float x, float y, float z)
-{
-	v3 result;
+v3 operator+(v3 a, v3 b) { return v3{a.x + b.x, a.y + b.y, a.z + b.z}; }
 
-	result.x = x;
-	result.y = y;
-	result.z = z;
-	return result;
+v3 operator-(v3 a, v3 b) { return v3{a.x - b.x, a.y - b.y, a.z - b.z}; }
+
+v3 operator*(v3 a, float b) { return v3{a.x * b, a.y * b, a.z * b}; }
+
+v3 operator*(float a, v3 b) { return v3{a * b.x, a * b.y, a * b.z}; }
+
+v3 operator/(v3 a, float b) {
+    float inv = 1.f / b;
+    return v3{a.x * inv, a.y * inv, a.z * inv};
 }
 
-v3 operator+(v3 a, v3 b)
-{
-	return v3{a.x + b.x, a.y + b.y, a.z + b.z};
+v3 operator*(v3 a, v3 b) { return v3{a.x * b.x, a.y * b.y, a.z * b.z}; }
+
+v3 operator-(v3 a) { return v3{-a.x, -a.y, -a.z}; }
+
+v3 &operator+=(v3 &a, v3 b) { return a = a + b; }
+
+v3 &operator-=(v3 &a, v3 b) { return a = a - b; }
+
+v3 &operator*=(v3 &a, v3 b) { return a = a * b; }
+
+v3 &operator*=(v3 &a, float b) { return a = a * b; }
+
+v3 &operator/=(v3 &a, float b) { return a = a / b; }
+
+v3 operator/(float a, v3 b) { return v3{a / b.x, a / b.y, a / b.z}; }
+
+float dot(v3 a, v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+
+float length_sq(v3 a) { return dot(a, a); }
+
+float length(v3 a) { return sqrtf(dot(a, a)); }
+
+v3 normalize(v3 a) {
+    float len = length_sq(a);
+    // TODO:
+    if (len < 1e-9)
+        return {};
+    else
+        return a / sqrtf(len);
 }
 
-v3 operator-(v3 a, v3 b)
-{
-	return v3{a.x - b.x, a.y - b.y, a.z - b.z};
+v3 cross(v3 a, v3 b) {
+    return v3{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+              a.x * b.y - a.y * b.x};
 }
 
-v3 operator*(v3 a, float b)
-{
-	return v3{a.x * b, a.y * b, a.z * b};
+v3 min(v3 a, v3 b) { return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+
+v3 max(v3 a, v3 b) { return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
+bool v3_equal(v3 a, v3 b, float eps = 1e-6) {
+    return fabsf(a.x - b.x) < eps && fabsf(a.y - b.y) < eps &&
+           fabsf(a.z - b.z) < eps;
 }
 
-v3 operator*(float a, v3 b)
-{
-	return v3{a * b.x, a * b.y, a * b.z};
-}
-
-v3 operator/(v3 a, float b)
-{
-	float inv = 1.f / b;
-	return v3{a.x * inv, a.y * inv, a.z * inv};
-}
-
-v3 operator*(v3 a, v3 b)
-{
-	return v3{a.x * b.x, a.y * b.y, a.z * b.z};
-}
-
-v3 operator-(v3 a)
-{
-	return v3{-a.x, -a.y, -a.z};
-}
-
-v3 &operator+=(v3 &a, v3 b)
-{
-	return a = a + b;
-}
-
-v3 &operator-=(v3 &a, v3 b)
-{
-	return a = a - b;
-}
-
-v3 &operator*=(v3 &a, v3 b)
-{
-	return a = a * b;
-}
-
-v3 &operator*=(v3 &a, float b)
-{
-	return a = a * b;
-}
-
-v3 &operator/=(v3 &a, float b)
-{
-	return a = a / b;
-}
-
-v3 operator/(float a, v3 b)
-{
-	return v3{a / b.x, a / b.y, a / b.z};
-}
-
-float dot(v3 a, v3 b)
-{
-	return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-float length_sq(v3 a)
-{
-	return dot(a, a);
-}
-
-float length(v3 a)
-{
-	return sqrtf(dot(a, a));
-}
-
-v3 normalize(v3 a)
-{
-	float len = length_sq(a);
-	// TODO:
-	if (len < 1e-9)
-		return {};
-	else
-		return a / sqrtf(len);
-}
-
-v3 cross(v3 a, v3 b)
-{
-	return v3 {
-		a.y * b.z - a.z * b.y,
-		a.z * b.x - a.x * b.z,
-		a.x * b.y - a.y * b.x
-	};
-}
-
-v3 min(v3 a, v3 b)
-{
-	return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
-}
-
-v3 max(v3 a, v3 b)
-{
-	return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
-}
-
-bool v3_equal(v3 a, v3 b, float eps = 1e-6)
-{
-	return fabsf(a.x - b.x) < eps && 
-		   fabsf(a.y - b.y) < eps &&
-		   fabsf(a.z - b.z) < eps;
-}
-
-union v3i
-{
-	struct {
-		int x, y, z;
-	};
-	int e[3];
+union v3i {
+    struct {
+        int x, y, z;
+    };
+    int e[3];
 };
 
-v3i V3i(int x, int y, int z)
-{
-	return v3i{x, y, z};
+v3i V3i(int x, int y, int z) { return v3i{x, y, z}; }
+
+v3i V3i(int x) { return v3i{x, x, x}; }
+
+v3 V3(v3i v) { return v3{(float)v.x, (float)v.y, (float)v.z}; }
+
+v3i operator+(v3i a, v3i b) { return v3i{a.x + b.x, a.y + b.y, a.z + b.z}; }
+
+v3i operator-(v3i a, v3i b) { return v3i{a.x - b.x, a.y - b.y, a.z - b.z}; }
+
+v3i operator-(v3i a) { return v3i{-a.x, -a.y, -a.z}; }
+
+v3i max(v3i a, v3i b) {
+    return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
 }
 
-v3i V3i(int x)
-{
-	return v3i{x, x, x};
-}
-
-v3 V3(v3i v)
-{
-	return v3{(float)v.x, (float)v.y, (float)v.z};
-}
-
-v3i operator+(v3i a, v3i b)
-{
-	return  v3i{a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-v3i operator-(v3i a, v3i b)
-{
-	return v3i{a.x - b.x, a.y - b.y, a.z - b.z};
-}
-
-v3i operator-(v3i a)
-{
-	return v3i{-a.x, -a.y, -a.z};
-}
-
-v3i max(v3i a, v3i b)
-{
-	return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
-}
-
-v3i min(v3i a, v3i b)
-{
-	return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
+v3i min(v3i a, v3i b) {
+    return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 }
 
 // ~ v4
 union v4 {
-	struct {
-		float x, y, z, w;
-	};
-	struct {
-		float r, g, b, a;
-	};
-	v3 xyz;
-	float e[4];
+    struct {
+        float x, y, z, w;
+    };
+    struct {
+        float r, g, b, a;
+    };
+    v3 xyz;
+    float e[4];
 };
 
-v4 V4(float x, float y, float z, float w)
-{
-	v4 v;
+v4 V4(float x, float y, float z, float w) {
+    v4 v;
 
-	v.x = x, v.y = y, v.z = z, v.w = w;
-	return v;
+    v.x = x, v.y = y, v.z = z, v.w = w;
+    return v;
 }
 
-v4 V4(v3 xyz, float w)
-{
-	v4 v;
+v4 V4(v3 xyz, float w) {
+    v4 v;
 
-	v.xyz = xyz;
-	v.w = w;
-	return v;
+    v.xyz = xyz;
+    v.w = w;
+    return v;
 }
 
-v4 operator+(v4 a, v4 b)
-{
-	return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+v4 operator+(v4 a, v4 b) {
+    return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 }
 
-v4 operator-(v4 a, v4 b)
-{
-	return v4{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+v4 operator-(v4 a, v4 b) {
+    return v4{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
 }
 
-v4 operator*(v4 a, float b)
-{
-	return v4{a.x * b, a.y * b, a.z * b, a.w * b};
-}
+v4 operator*(v4 a, float b) { return v4{a.x * b, a.y * b, a.z * b, a.w * b}; }
 
-float dot(v4 a, v4 b)
-{
-	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-}
+float dot(v4 a, v4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
-v4 operator-(v4 a)
-{
-	return v4{-a.x, -a.y, -a.z, -a.w};
-}
+v4 operator-(v4 a) { return v4{-a.x, -a.y, -a.z, -a.w}; }
 
-float length(v4 a)
-{
-	return sqrtf(dot(a, a));
-}
+float length(v4 a) { return sqrtf(dot(a, a)); }
 
 // ~ mat4
-union mat4
-{
-	float e[4][4]; // row-major
-	float v[16];
+union mat4 {
+    float e[4][4]; // row-major
+    float v[16];
 };
 
-mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3)
-{
-	mat4 m;
+mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3) {
+    mat4 m;
 
-	m.e[0][0] = r0.e[0], m.e[0][1] = r0.e[1], m.e[0][2] = r0.e[2], m.e[0][3] = r0.e[3];
-	m.e[1][0] = r1.e[0], m.e[3][1] = r1.e[1], m.e[1][2] = r1.e[2], m.e[1][3] = r1.e[3];
-	m.e[2][0] = r2.e[0], m.e[2][1] = r2.e[1], m.e[2][2] = r2.e[2], m.e[2][3] = r2.e[3];
-	m.e[3][0] = r3.e[0], m.e[1][1] = r3.e[1], m.e[3][2] = r3.e[2], m.e[3][3] = r3.e[3];
-	return m;
+    m.e[0][0] = r0.e[0], m.e[0][1] = r0.e[1], m.e[0][2] = r0.e[2],
+    m.e[0][3] = r0.e[3];
+    m.e[1][0] = r1.e[0], m.e[3][1] = r1.e[1], m.e[1][2] = r1.e[2],
+    m.e[1][3] = r1.e[3];
+    m.e[2][0] = r2.e[0], m.e[2][1] = r2.e[1], m.e[2][2] = r2.e[2],
+    m.e[2][3] = r2.e[3];
+    m.e[3][0] = r3.e[0], m.e[1][1] = r3.e[1], m.e[3][2] = r3.e[2],
+    m.e[3][3] = r3.e[3];
+    return m;
 }
 
-mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3)
-{
-	mat4 m;
+mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3) {
+    mat4 m;
 
-	m.e[0][0] = c0.e[0], m.e[1][0] = c0.e[1], m.e[2][0] = c0.e[2], m.e[3][0] = c0.e[3];
-	m.e[0][1] = c1.e[0], m.e[1][1] = c1.e[1], m.e[2][1] = c1.e[2], m.e[3][1] = c1.e[3];
-	m.e[0][2] = c2.e[0], m.e[1][2] = c2.e[1], m.e[2][2] = c2.e[2], m.e[3][2] = c2.e[3];
-	m.e[0][3] = c3.e[0], m.e[1][3] = c3.e[1], m.e[2][3] = c3.e[2], m.e[3][3] = c3.e[3];
-	return m;
+    m.e[0][0] = c0.e[0], m.e[1][0] = c0.e[1], m.e[2][0] = c0.e[2],
+    m.e[3][0] = c0.e[3];
+    m.e[0][1] = c1.e[0], m.e[1][1] = c1.e[1], m.e[2][1] = c1.e[2],
+    m.e[3][1] = c1.e[3];
+    m.e[0][2] = c2.e[0], m.e[1][2] = c2.e[1], m.e[2][2] = c2.e[2],
+    m.e[3][2] = c2.e[3];
+    m.e[0][3] = c3.e[0], m.e[1][3] = c3.e[1], m.e[2][3] = c3.e[2],
+    m.e[3][3] = c3.e[3];
+    return m;
 }
 
-mat4 transpose(mat4 a)
-{
-	mat4 b;
+mat4 transpose(mat4 a) {
+    mat4 b;
 
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			b.e[i][j] = a.e[j][i];
-	return b;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            b.e[i][j] = a.e[j][i];
+    return b;
 }
 
-mat4 operator*(mat4 a, mat4 b)
-{
-	mat4 c = {};
+mat4 operator*(mat4 a, mat4 b) {
+    mat4 c = {};
 
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			for (int k = 0; k < 4; k++)
-				c.e[i][j] += a.e[i][k] * b.e[k][j];
-	return c;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            for (int k = 0; k < 4; k++)
+                c.e[i][j] += a.e[i][k] * b.e[k][j];
+    return c;
 }
 
-v4 operator*(mat4 a, v4 b)
-{
-	v4 c;
+v4 operator*(mat4 a, v4 b) {
+    v4 c;
 
-	c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] + a.e[0][3] * b.e[3];
-	c.e[1] = a.e[1][0] * b.e[0] + a.e[1][1] * b.e[1] + a.e[1][2] * b.e[2] + a.e[1][3] * b.e[3];
-	c.e[2] = a.e[2][0] * b.e[0] + a.e[2][1] * b.e[1] + a.e[2][2] * b.e[2] + a.e[2][3] * b.e[3];
-	c.e[3] = a.e[3][0] * b.e[0] + a.e[3][1] * b.e[1] + a.e[3][2] * b.e[2] + a.e[3][3] * b.e[3];
-	
-	return c;
+    c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] +
+             a.e[0][3] * b.e[3];
+    c.e[1] = a.e[1][0] * b.e[0] + a.e[1][1] * b.e[1] + a.e[1][2] * b.e[2] +
+             a.e[1][3] * b.e[3];
+    c.e[2] = a.e[2][0] * b.e[0] + a.e[2][1] * b.e[1] + a.e[2][2] * b.e[2] +
+             a.e[2][3] * b.e[3];
+    c.e[3] = a.e[3][0] * b.e[0] + a.e[3][1] * b.e[1] + a.e[3][2] * b.e[2] +
+             a.e[3][3] * b.e[3];
+
+    return c;
 }
 
-mat4 scale(float a)
-{
-	mat4 S = {};
+mat4 scale(float a) {
+    mat4 S = {};
 
-	S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
-	S.e[3][3] = 1;
- 	return S;
+    S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
+    S.e[3][3] = 1;
+    return S;
 }
 
-mat4 scale(float x, float y, float z)
-{
-	mat4 S = {};
+mat4 scale(float x, float y, float z) {
+    mat4 S = {};
 
-	S.e[0][0] = x;
-	S.e[1][1] = y;
-	S.e[2][2] = z;
-	S.e[3][3] = 1;
-	return S;
+    S.e[0][0] = x;
+    S.e[1][1] = y;
+    S.e[2][2] = z;
+    S.e[3][3] = 1;
+    return S;
 }
 
-mat4 scale(v3 v)
-{
-	return scale(v.x, v.y, v.z);
+mat4 scale(v3 v) { return scale(v.x, v.y, v.z); }
+
+mat4 identity() { return scale(1); }
+
+mat4 translate(float x, float y, float z) {
+    mat4 T = identity();
+
+    T.e[0][3] = x;
+    T.e[1][3] = y;
+    T.e[2][3] = z;
+    return T;
 }
 
-mat4 identity()
-{
-	return scale(1);
+mat4 translate(v3 t) { return translate(t.x, t.y, t.z); }
+
+mat4 operator*(float a, mat4 b) {
+    mat4 c;
+
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            c.e[i][j] = a * b.e[i][j];
+    return c;
 }
 
-mat4 translate(float x, float y, float z)
-{
-	mat4 T = identity();
+mat4 zrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
 
-	T.e[0][3] = x;
-	T.e[1][3] = y;
-	T.e[2][3] = z;
-	return T;
+    return {c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 }
 
-mat4 translate(v3 t)
-{
-	return translate(t.x, t.y, t.z);
+mat4 xrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
+
+    return {1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1};
 }
 
-mat4 operator*(float a, mat4 b)
-{
-	mat4 c;
+mat4 yrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
 
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++)
-			c.e[i][j] = a * b.e[i][j];
-	return c;
+    return {c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1};
 }
 
-mat4 zrotation(float a)
-{
-	float c = cosf(a);
-	float s = sinf(a);
-	
-	return {
-		c, -s, 0, 0,
-		s, c, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	};
+mat4 rotate_around_axis(v3 u, float a) {
+    u = normalize(u);
+    float c = cosf(a);
+    float s = sinf(a);
+
+    return {c + u.x * u.x * (1 - c),
+            u.x * u.y * (1 - c) - u.z * s,
+            u.x * u.z * (1 - c) + u.y * s,
+            0,
+            u.y * u.x * (1 - c) + u.z * s,
+            c + u.y * u.y * (1 - c),
+            u.y * u.z * (1 - c) - u.x * s,
+            0,
+            u.z * u.x * (1 - c) - u.y * s,
+            u.z * u.y * (1 - c) + u.x * s,
+            c + u.z * u.z * (1 - c),
+            0,
+            0,
+            0,
+            0,
+            1};
 }
 
-mat4 xrotation(float a)
-{
-	float c = cosf(a);
-	float s = sinf(a);
+mat4 perspective_projection(float znear, float zfar, float width_fov_degree,
+                            float height_over_width) {
+    float width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
+    float height = width * height_over_width;
 
-	return {
-		1, 0, 0, 0,
-		0, c, -s, 0,
-		0, s, c, 0,
-		0, 0, 0, 1
-	};
+    return {znear * 2 / width,
+            0,
+            0,
+            0,
+            0,
+            znear * 2 / height,
+            0,
+            0,
+#ifdef RENDERER_DX11
+            0,
+            0,
+            zfar / (znear - zfar),
+            zfar * znear / (znear - zfar),
+#else
+            0,
+            0,
+            (zfar + znear) / (znear - zfar),
+            2 * znear * zfar / (znear - zfar),
+#endif
+            0,
+            0,
+            -1,
+            0};
 }
 
-mat4 yrotation(float a)
-{
-	float c = cosf(a);
-	float s = sinf(a);
-
-	return {
-		c, 0, s, 0,
-		0, 1, 0, 0,
-		-s, 0, c, 0,
-		0, 0, 0, 1
-	};
+mat4 orthographic_projection(float znear, float zfar, float width,
+                             float height) {
+    return {2.f / width,
+            0,
+            0,
+            0,
+            0,
+            2.f / height,
+            0,
+            0,
+#ifdef RENDERER_DX11
+            0,
+            0,
+            1.f / (znear - zfar),
+            znear / (znear - zfar),
+#else
+            0,
+            0,
+            -2.f / (zfar - znear),
+            (-znear - zfar) / (zfar - znear),
+#endif
+            0,
+            0,
+            0,
+            1};
 }
 
-mat4 rotate_around_axis(v3 u, float a)
-{
-	u = normalize(u);
-	float c = cosf(a);
-	float s = sinf(a);
+mat4 lookat(v3 position, v3 dir, v3 up) {
+    v3 z_axis = normalize(-dir);
+    // if (fabsf(dot(normalize(dir), normalize(up))) > 0.95)
+    //	assert(0);
+    v3 x_axis = normalize(cross(up, z_axis));
+    v3 y_axis = normalize(cross(z_axis, x_axis));
 
-	return {
-		c+u.x*u.x*(1-c), u.x*u.y*(1-c)-u.z*s, u.x*u.z*(1-c)+u.y*s, 0,
-		u.y*u.x*(1-c)+u.z*s, c+u.y*u.y*(1-c), u.y*u.z*(1-c)-u.x*s, 0,
-		u.z*u.x*(1-c)-u.y*s, u.z*u.y*(1-c)+u.x*s, c+u.z*u.z*(1-c), 0,
-		0, 0, 0, 1
-	};
-}
+    mat4 transform = {
+        x_axis.x, x_axis.y, x_axis.z, 0, y_axis.x, y_axis.y, y_axis.z, 0,
+        z_axis.x, z_axis.y, z_axis.z, 0, 0,        0,        0,        1};
 
-mat4 perspective_projection(float znear, float zfar, float width_fov_degree, float height_over_width)
-{
-	float width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
-	float height = width * height_over_width;
-	
-	return {
-		znear * 2 / width, 0, 0, 0,
-		0, znear * 2 / height, 0, 0,
-		#ifdef RENDERER_DX11
-		0, 0, zfar / (znear - zfar), zfar * znear / (znear - zfar),
-		#else
-		0, 0, (zfar + znear) / (znear - zfar), 2 * znear * zfar / (znear - zfar),
-		#endif
-		0, 0, -1, 0
-	};
-}
-
-mat4 orthographic_projection(float znear, float zfar, float width, float height)
-{
-	return {
-		2.f / width, 0, 0, 0,
-		0, 2.f / height, 0, 0,
-		#ifdef RENDERER_DX11
-		0, 0, 1.f / (znear-zfar), znear / (znear-zfar),
-		#else
-		0, 0, -2.f / (zfar-znear), (-znear-zfar) / (zfar-znear),
-		#endif
-		0, 0, 0, 1
-	};
-}
-
-mat4 lookat(v3 position, v3 dir, v3 up)
-{
-	v3 z_axis = normalize(-dir);
-	//if (fabsf(dot(normalize(dir), normalize(up))) > 0.95)
-	//	assert(0);
-	v3 x_axis = normalize(cross(up, z_axis));
-	v3 y_axis = normalize(cross(z_axis, x_axis));
-
-	mat4 transform = {
-		x_axis.x, x_axis.y, x_axis.z, 0,
-		y_axis.x, y_axis.y, y_axis.z, 0,
-		z_axis.x, z_axis.y, z_axis.z, 0,
-		0, 0, 0, 1
-	};
-
-	return transform * translate(-position);
+    return transform * translate(-position);
 }
 
 using quat = v4;
 
-quat Quat(float x, float y, float z, float w)
-{
-	return {x, y, z, w};
-}
+quat Quat(float x, float y, float z, float w) { return {x, y, z, w}; }
 
-quat operator*(quat a, quat b)
-{
-	return {
-        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,  // i
-        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,  // j
-        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,  // k
-        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,  // 1
+quat operator*(quat a, quat b) {
+    return {
+        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, // i
+        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x, // j
+        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w, // k
+        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z, // 1
     };
 }
 
-mat4 quat_to_mat(quat a)
-{
-	float x = a.x;
-	float y = a.y;
-	float z = a.z;
-	float w = a.w;
+mat4 quat_to_mat(quat a) {
+    float x = a.x;
+    float y = a.y;
+    float z = a.z;
+    float w = a.w;
 
-	mat4 matrix;
+    mat4 matrix;
 
-	float wx, wy, wz, xx, yy, yz, xy, xz, zz;
-	// adapted from Shoemake
-	xx = x * x;
-	xy = x * y;
-	xz = x * z;
-	yy = y * y;
-	zz = z * z;
-	yz = y * z;
+    float wx, wy, wz, xx, yy, yz, xy, xz, zz;
+    // adapted from Shoemake
+    xx = x * x;
+    xy = x * y;
+    xz = x * z;
+    yy = y * y;
+    zz = z * z;
+    yz = y * z;
 
-	wx = w * x;
-	wy = w * y;
-	wz = w * z;
+    wx = w * x;
+    wy = w * y;
+    wz = w * z;
 
-	matrix.v[0] = 1.0f - 2.0f*(yy + zz);
-	matrix.v[4] = 2.0f*(xy - wz);
-	matrix.v[8] = 2.0f*(xz + wy);
-	matrix.v[12] = 0.0;
+    matrix.v[0] = 1.0f - 2.0f * (yy + zz);
+    matrix.v[4] = 2.0f * (xy - wz);
+    matrix.v[8] = 2.0f * (xz + wy);
+    matrix.v[12] = 0.0;
 
-	matrix.v[1] = 2.0f*(xy + wz);
-	matrix.v[5] = 1.0f - 2.0f*(xx + zz);
-	matrix.v[9] = 2.0f*(yz - wx);
-	matrix.v[13] = 0.0;
+    matrix.v[1] = 2.0f * (xy + wz);
+    matrix.v[5] = 1.0f - 2.0f * (xx + zz);
+    matrix.v[9] = 2.0f * (yz - wx);
+    matrix.v[13] = 0.0;
 
-	matrix.v[2] = 2.0f*(xz - wy);
-	matrix.v[6] = 2.0f*(yz + wx);
-	matrix.v[10] = 1.0f - 2.0f*(xx + yy);
-	matrix.v[14] = 0.0;
+    matrix.v[2] = 2.0f * (xz - wy);
+    matrix.v[6] = 2.0f * (yz + wx);
+    matrix.v[10] = 1.0f - 2.0f * (xx + yy);
+    matrix.v[14] = 0.0;
 
-	matrix.v[3] = 0;
-	matrix.v[7] = 0;
-	matrix.v[11] = 0;
-	matrix.v[15] = 1;
+    matrix.v[3] = 0;
+    matrix.v[7] = 0;
+    matrix.v[11] = 0;
+    matrix.v[15] = 1;
 
-	return transpose(matrix);
+    return transpose(matrix);
 }
 
-quat quat_lerp(quat a, quat b, float t)
-{
-	float l2 = dot(a, b);
-	if(l2 < 0.0f) 
-		b = -b;
-	v4 c;
-	c.x = a.x - t*(a.x - b.x);
-	c.y = a.y - t*(a.y - b.y);
-	c.z = a.z - t*(a.z - b.z);
-	c.w = a.w - t*(a.w - b.w);
-	return c * (1.f / length(c));
+quat quat_lerp(quat a, quat b, float t) {
+    float l2 = dot(a, b);
+    if (l2 < 0.0f)
+        b = -b;
+    v4 c;
+    c.x = a.x - t * (a.x - b.x);
+    c.y = a.y - t * (a.y - b.y);
+    c.z = a.z - t * (a.z - b.z);
+    c.w = a.w - t * (a.w - b.w);
+    return c * (1.f / length(c));
 }
 
 mat4 inverse(mat4 matrix) {
@@ -736,92 +589,94 @@ mat4 inverse(mat4 matrix) {
     return out_matrix;
 }
 
-template<typename T>
-T lerp(const T a, const T b, float t)
-{
-	return (1 - t) * a + t * b;
+template <typename T> T lerp(const T a, const T b, float t) {
+    return (1 - t) * a + t * b;
 }
 
-bool ray_hit_plane(v3 ray_origin, v3 ray_dir, 
-	v3 plane_normal, v3 plane_point, float *hit_t)
-{
-	float denom = dot(ray_dir, plane_normal);
-	if (fabsf(denom) < 1e-5)
-		return false;
-	float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) / denom;
-	if (t >= 0) {
-		if (hit_t)
-			*hit_t = t;
-		return true;
-	}
-	return false;
+bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
+                   float *hit_t) {
+    float denom = dot(ray_dir, plane_normal);
+    if (fabsf(denom) < 1e-5)
+        return false;
+    float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) /
+              denom;
+    if (t >= 0) {
+        if (hit_t)
+            *hit_t = t;
+        return true;
+    }
+    return false;
 }
 
 void push_cube_outline(v3 p, v3 r, v3 color);
 
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
-	v3 box_yaxis, v3 box_zaxis)
-{
-	struct  {
-		v3 normal;
-		v3 p;
-	} planes[6];
+                  v3 box_yaxis, v3 box_zaxis) {
+    struct {
+        v3 normal;
+        v3 p;
+    } planes[6];
 
-	planes[0] = {box_xaxis, box_center + box_xaxis};
-	planes[1] = {-box_xaxis, box_center - box_xaxis};
-	planes[2] = {box_yaxis, box_center + box_yaxis};
-	planes[3] = {-box_yaxis, box_center - box_yaxis};
-	planes[4] = {box_zaxis, box_center + box_zaxis};
-	planes[5] = {-box_zaxis, box_center - box_zaxis};
+    planes[0] = {box_xaxis, box_center + box_xaxis};
+    planes[1] = {-box_xaxis, box_center - box_xaxis};
+    planes[2] = {box_yaxis, box_center + box_yaxis};
+    planes[3] = {-box_yaxis, box_center - box_yaxis};
+    planes[4] = {box_zaxis, box_center + box_zaxis};
+    planes[5] = {-box_zaxis, box_center - box_zaxis};
 
-	float lx = length(box_xaxis);
-	float ly = length(box_yaxis);
-	float lz = length(box_zaxis);
+    float lx = length(box_xaxis);
+    float ly = length(box_yaxis);
+    float lz = length(box_zaxis);
 
-	v3 xaxis = normalize(box_xaxis);
-	v3 yaxis = normalize(box_yaxis);
-	v3 zaxis = normalize(box_zaxis);
+    v3 xaxis = normalize(box_xaxis);
+    v3 yaxis = normalize(box_yaxis);
+    v3 zaxis = normalize(box_zaxis);
 
-	float min_t = FLT_MAX;
-	for (int i = 0; i < 6; i++) {
-		/*
-			dot(O + t * D, normal) = dot(normal, p)
+    float min_t = FLT_MAX;
+    for (int i = 0; i < 6; i++) {
+        /*
+                dot(O + t * D, normal) = dot(normal, p)
 
-			t * dot(D, normal) = dot(normal, p) - dot(O, normal) / dot(D, normal)
+                t * dot(D, normal) = dot(normal, p) - dot(O, normal) / dot(D,
+           normal)
 
-		*/
-		float denom = dot(ray_dir, planes[i].normal);
-		if (fabsf(denom) < 1e-6)
-			continue ;
-		float t = (dot(planes[i].normal, planes[i].p) - dot(ray_origin, planes[i].normal)) / denom;
-		if (t >= 0 && t < min_t) {
-			v3 p = ray_origin + t * ray_dir - box_center;
-			float eps = 1e-4;
-			if (dot(p, xaxis) >= -lx - eps && dot(p, xaxis) <= lx + eps &&
-				dot(p, yaxis) >= -ly - eps && dot(p, yaxis) <= ly + eps &&
-				dot(p, zaxis) >= -lz - eps && dot(p, zaxis) <= lz + eps)
-				min_t = t;
-		}
-	}
-	if (min_t == FLT_MAX)
-		return -1;
-	return min_t;
+        */
+        float denom = dot(ray_dir, planes[i].normal);
+        if (fabsf(denom) < 1e-6)
+            continue;
+        float t = (dot(planes[i].normal, planes[i].p) -
+                   dot(ray_origin, planes[i].normal)) /
+                  denom;
+        if (t >= 0 && t < min_t) {
+            v3 p = ray_origin + t * ray_dir - box_center;
+            float eps = 1e-4;
+            if (dot(p, xaxis) >= -lx - eps && dot(p, xaxis) <= lx + eps &&
+                dot(p, yaxis) >= -ly - eps && dot(p, yaxis) <= ly + eps &&
+                dot(p, zaxis) >= -lz - eps && dot(p, zaxis) <= lz + eps)
+                min_t = t;
+        }
+    }
+    if (min_t == FLT_MAX)
+        return -1;
+    return min_t;
 }
 
-quat rotate_around_axis_quat(v3 axis, float a)
-{
-	axis = normalize(axis);
-	float s = sinf(a / 2);
-	float c = cosf(a / 2);
-	return V4(axis * s, c);
+quat rotate_around_axis_quat(v3 axis, float a) {
+    axis = normalize(axis);
+    float s = sinf(a / 2);
+    float c = cosf(a / 2);
+    return V4(axis * s, c);
 }
 
-quat zrotation_quat(float a)
-{
-	return rotate_around_axis_quat(V3(0, 0, 1), a);
-}
+quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
 
-quat identity_quat()
-{
-	return Quat(0, 0, 0, 1);
-}
+quat identity_quat() { return Quat(0, 0, 0, 1); }
+
+/*
+    (t * dir - p)^2 = 1
+
+    dot(t*dir - p, t*dir - p) = 1
+
+    t^2 * dot(dir, dir) -2 * 
+
+*/

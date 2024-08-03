@@ -28,6 +28,6 @@ if not exist precompiled.obj (
 cl %RootDir%\code\preprocessor.cpp /EHsc -nologo
 cl  -DDISABLE_PREPROCESSOR %MSVCFlags%  %RootDir%\code\game.cpp /P /Fipreprocessor_input.e 
 preprocessor.exe preprocessor_input.e %RootDir%\code\generated.h
-cl  -O2 %RootDir%\code\glfw_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
+cl -O2 %RootDir%\code\win32_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
 
 popd
