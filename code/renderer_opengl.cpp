@@ -215,6 +215,17 @@ void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+IndexBuffer create_index_buffer(usize size, uint32_t *indices)
+{
+	IndexBuffer result = {};
+
+	glGenBuffers(1, &result.ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+
+	return result;
+}
+
 VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize size, void *data = 0)
 {
 	VertexBuffer result = {};
@@ -263,6 +274,13 @@ void bind_vertex_buffer(VertexBuffer &vb)
 	}
 }
 
+// TODO: this assumes a vao was already bound
+void bind_index_buffer(IndexBuffer &ib)
+{
+	assert(g_rc->render_pass);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.ebo);
+}
+
 void draw(int offset, int vertices_count)
 {
 	int mode = 0;
@@ -273,6 +291,18 @@ void draw(int offset, int vertices_count)
 	else
 		assert(0);
 	glDrawArrays(mode, offset, vertices_count);
+}
+
+void draw_indexed(int offset, int indices_count)
+{
+	int mode = 0;
+	if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+		mode = GL_TRIANGLES;
+	else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+		mode = GL_LINES;
+	else
+		assert(0);
+	glDrawElements(mode, indices_count, GL_UNSIGNED_INT, (void *)offset);
 }
 
 int get_constant_buffer_element_size(int type)

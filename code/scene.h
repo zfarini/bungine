@@ -36,7 +36,7 @@ struct Material {
 
 struct MeshPart {
     Material material;
-    usize vertices_count;
+    usize indices_count;
     usize offset;
 };
 
@@ -50,11 +50,17 @@ struct Bone {
 struct Mesh {
     String name;
     Array<MeshPart> parts;
+    
     VertexBuffer vertex_buffer;
+    IndexBuffer index_buffer;
+
     Array<Bone> bones;
     v3 box_min;
     v3 box_max;
     mat4 transform;
+
+    usize vertices_count;
+    usize indices_count;
 };
 
 struct NodeAnimation {
@@ -92,6 +98,10 @@ struct SceneNode {
     b32 skip_render;
 };
 
+struct MeshTriangle {
+    v3 v0, v1, v2;
+};
+
 struct Scene {
     Array<SceneNode> nodes;
     Array<Mesh> meshes;
@@ -99,4 +109,7 @@ struct Scene {
     SceneNode *root;
     Array<Animation> animations;
     String path;
+
+
+    Array<MeshTriangle> triangles;
 };

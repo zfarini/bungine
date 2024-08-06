@@ -375,11 +375,7 @@ mat4 rotate_around_axis(v3 u, float a) {
             1};
 }
 
-mat4 perspective_projection(float znear, float zfar, float width_fov_degree,
-                            float height_over_width) {
-    float width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
-    float height = width * height_over_width;
-
+mat4 perspective_projection(float znear, float zfar, float width, float height) {
     return {znear * 2 / width,
             0,
             0,
@@ -405,8 +401,7 @@ mat4 perspective_projection(float znear, float zfar, float width_fov_degree,
             0};
 }
 
-mat4 orthographic_projection(float znear, float zfar, float width,
-                             float height) {
+mat4 orthographic_projection(float znear, float zfar, float width, float height) {
     return {2.f / width,
             0,
             0,

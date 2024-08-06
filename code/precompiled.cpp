@@ -24,10 +24,11 @@
 #define UFBX_IMPLEMENTATION
 #include <ufbx.h>
 
-// #define MINIAUDIO_IMPLEMENTATION
-// #define MA_NO_MP3
-// #define MA_NO_FLAC
-// #include <miniaudio.h>
+#define MA_NO_MP3
+#define MA_NO_FLAC
+#define MINIAUDIO_IMPLEMENTATION
+#include <miniaudio.h>
+
 // #include "common.h"
 // #include "arena.h"
 

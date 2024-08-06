@@ -35,7 +35,7 @@ out vec3 object_p;
 void main()
 {
 	mat4 transform;
-
+#if 1
 	if (skinned != 0) {
 		transform = 
 			(weights.x * bones[int(indices.x)]) +
@@ -44,6 +44,7 @@ void main()
 			(weights.w * bones[int(indices.w)]);
 	}
 	else
+#endif
 		transform = model;
 
 #if 1

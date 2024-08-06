@@ -137,7 +137,8 @@ void render_player(Game &game, World &world, Camera camera, Entity &e, bool shad
 		assert(!final_anim);
 	bool outline = !shadow_map_pass
 	&& (e.id == world.editor_selected_entity);
-	render_scene(game, 
+
+	render_scene(game, world,
 	game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
 
 
@@ -168,7 +169,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 	
 		bool outline = !shadow_map_pass
 			&& (e.id == world.editor_selected_entity);
-		render_scene(game, 
+		render_scene(game, world,
 			game.scenes[e.scene_id], camera, scene_transform, 0, 0, e.color, outline);
 
 
@@ -204,6 +205,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	Entity &player = *_player;
 
 	player.color = V3(0, 1, 1);
+	
 
 	b32 camera_shoot_mode = false;
 	b32 walk_backward = false;
@@ -229,7 +231,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 
 		player.moved = forward;
 		player.run = input.buttons[BUTTON_LEFT_SHIFT].is_down && forward;
-		if (!IsDown(input, BUTTON_MOUSE_LEFT) || player.run || player.moved)
+		if (!IsDown(input, BUTTON_MOUSE_LEFT) || player.moved)
 			player.shooting = false;
 		else
 		{
@@ -237,7 +239,32 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 			player.run = false;
 			player.moved = false;
 			a = {};
+		}
 
+		if (!IsDown(input, BUTTON_MOUSE_RIGHT) || player.moved) {
+			if (player.aiming)
+				world.aim_camera_transition_t = 0;
+			player.aiming = 0;
+		} else {
+			if (!player.aiming)
+				world.aim_camera_transition_t = 0;
+			player.aiming = 1;
+		}
+
+		if (player.shooting) {
+			// TODO: maybe shoot only if the animation put out the gun?
+			if (game.time - player.last_gun_time > 0.3) {
+				
+			
+				v3 dir = normalize(world.player_camera_p + 4 * player_forward
+					- player.position);
+				push_line(player.position, player.position + dir * 5, V3(0));
+				// v3 pos = ;
+				// mat4 scene_transform = identity();
+				// Entity *bullet = make_entity(world, EntityType_Projectile, get_scene(game, SCENE_SPHERE), 
+				// 	make_ellipsoid_shape(V3(0.1f)), scene_transform);
+				// bullet->scale = V3(0.1f);
+			}
 		}
 
 
@@ -553,14 +580,13 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 		camera_rot = world.player_camera_rotation;
 		camera_rot.z -= PI / 2;
-
 		player->rotation = zrotation_quat(world.player_camera_rotation.z);
 
 	//	player->rotation.z = world.player_camera_rotation.z;
 		{
 			v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), 
 						sinf(world.player_camera_rotation.z), 0));
-
+			v3 player_right = normalize(cross(player_forward, V3(0, 0, 1)));
 			float o = camera_rot.x;
 
 			float t[4] = {-PI/2, 0, PI/2.5, PI/2};
@@ -600,7 +626,22 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 			mat4 A = V * M;
 
-			world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
+			v3 target_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
+#if 1
+			if (player->aiming)
+				target_camera_p += player_right * 1.f + player_forward * 0.9 + V3(0, 0, 0.7);
+			else
+				target_camera_p += player_right * 0.3f;
+			float transition_time = 1.5f;
+			if (world.aim_camera_transition_t < transition_time)
+				world.player_camera_p += (15 + 40 * world.aim_camera_transition_t/transition_time) * dt * (target_camera_p - world.player_camera_p);
+			else
+				world.player_camera_p +=  (15 + 40) * dt * (target_camera_p - world.player_camera_p);
+
+			world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
+#else
+			world.player_camera_p = target_camera_p;
+#endif
 			// float T = PI / 2;
 			// float dO = 0.1f;
 			// for (float O = -T; O <= T; O += dO) {
@@ -660,24 +701,24 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	mat4 view = rotation * translate(-p);
 
 
-	float fov = 100;
-	camera.znear = 0.1f;
-	camera.zfar = 100;
-	camera.width = 2 * camera.znear * tanf(DEG2RAD * (fov / 2));
-	camera.height = camera.width *  (float)g_rc->window_height / g_rc->window_width;
-	camera.forward = -camera_z;
-	camera.right = camera_x;
-	camera.up = camera_y;
+	camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
 
-	mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)g_rc->window_height / g_rc->window_width);
+	// float fov = 100;
+	// camera.znear = 0.1f;
+	// camera.zfar = 100;
+	// camera.width = 2 * camera.znear * tanf(DEG2RAD * (fov / 2));
+	// camera.height = camera.width *  (float)g_rc->window_height / g_rc->window_width;
+	// camera.forward = -camera_z;
+	// camera.right = camera_x;
+	// camera.up = camera_y;
 
-	camera.position = p;
-	camera.view = view;
-	camera.projection = projection;
+	// mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)g_rc->window_height / g_rc->window_width);
+
+	// camera.position = p;
+	// camera.view = view;
+	// camera.projection = projection;
 	return camera;
 }
-
-
 
 #define S(type, fd, w, value) do {\
 	if (w) fwrite(&value, sizeof(type), 1, fd); \

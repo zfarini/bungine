@@ -4,6 +4,7 @@ enum EntityType {
     EntityType_Player,
     EntityType_Enemy,
     EntityType_Static,
+    EntityType_Projectile,
     EntityType_Count,
 };
 
@@ -52,6 +53,7 @@ struct Entity {
     b32 can_jump;
     b32 on_ground;
     b32 pressing_jump;
+    b32 aiming;
 
     CollisionShape shape;
 
@@ -74,6 +76,8 @@ struct Entity {
     float z_rot;
     int last_move;
 
+    float last_gun_time;
+
 };
 
 enum AnimationType {
@@ -92,11 +96,22 @@ struct ShadowMap {
     v3 light_p;
     mat4 view;
     mat4 projection;
-    int width, height;
+    int tex_width, tex_height;
+
+    float znear, zfar;
+    float width, height;
+
     Texture depth_texture;
 };
 
+enum CameraType {
+    CAMERA_TYPE_PERSPECTIVE,
+    CAMERA_TYPE_ORTHOGRAPHIC,
+};
+
 struct Camera {
+    CameraType type;
+
     v3 position;
     mat4 view;
     mat4 projection;
@@ -195,6 +210,10 @@ struct World {
     entity_id player_id;
 
     entity_id moving_box;
+    // TODO: remove this
+    Camera last_game_camera;
+
+    float aim_camera_transition_t;
 };
 
 struct LoadedSound
@@ -221,7 +240,29 @@ struct SoundState
 	std::atomic_int32_t write_index;
 };
 
+enum SceneType {
+    SCENE_PLAYER = 1,
+    SCENE_CUBE,
+    SCENE_SPHERE,
+    SCENE_TEST,
+};
+
+struct CollisionTriangleID {
+    int scene_id;
+    int triangle_id;
+};
+
+#define CELL_DIM_X 1
+#define CELL_DIM_Y 1
+#define CELL_X_COUNT 256
+#define CELL_Y_COUNT 256
+struct CollisionCell {
+    CollisionShape shape;
+};
+
 struct Game {
+    CollisionCell cells[CELL_DIM_Y * 2 + 1][CELL_DIM_X * 2 + 1];
+
     Arena *memory;
 
     std::atomic_bool is_initialized;
@@ -241,7 +282,6 @@ struct Game {
 
     Arena asset_arena;
 
-    SceneID ch43, sponza, cube_asset, sphere_asset;
     Scene scenes[16];
 
     Animation animations[ANIMATION_COUNT];
@@ -266,6 +306,7 @@ struct Game {
 
     bool show_normals;
     bool render_bones;
+    bool frustum_culling;
     float master_volume;
 };
 

@@ -7,7 +7,6 @@
 #include <stdio.h>
 #define MA_NO_MP3
 #define MA_NO_FLAC
-#define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
 #include <atomic>
@@ -31,6 +30,54 @@ global RenderContext *g_rc;
 #include "scene.h"
 #include "scene.cpp"
 #include "game.h"
+
+
+Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
+{
+	Camera camera = {};
+
+	camera.type = CAMERA_TYPE_PERSPECTIVE;
+	camera.znear = znear;
+	camera.zfar = zfar;
+	camera.width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
+	camera.height = camera.width * height_over_width;
+	camera.view = view;
+	camera.projection = perspective_projection(znear, zfar, camera.width, camera.height);
+	//TODO: remove inverse
+	mat4 inv_view = inverse(view);
+	camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
+	camera.right	= V3(inv_view.e[0][0], inv_view.e[1][0], inv_view.e[2][0]);
+	camera.up 		= V3(inv_view.e[0][1], inv_view.e[1][1], inv_view.e[2][1]);
+	camera.forward	= -V3(inv_view.e[0][2], inv_view.e[1][2], inv_view.e[2][2]);
+
+	return camera;
+}
+// TODO: merge this with the perspective function
+Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width, float height)
+{
+	Camera camera = {};
+
+	camera.type = CAMERA_TYPE_ORTHOGRAPHIC;
+	camera.znear = znear;
+	camera.zfar = zfar;
+	camera.width = width;
+	camera.height = height;
+	camera.view = view;
+	camera.projection = orthographic_projection(znear, zfar, width, height);
+	mat4 inv_view = inverse(view);
+	camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
+	camera.right	= V3(inv_view.e[0][0], inv_view.e[0][1], inv_view.e[0][2]);
+	camera.up 		= V3(inv_view.e[1][0], inv_view.e[1][1], inv_view.e[1][2]);
+	camera.forward	= V3(inv_view.e[2][0], inv_view.e[2][1], inv_view.e[2][2]);
+
+	return camera;
+}
+
+SceneID get_scene(Game &game, SceneType type)
+{
+	assert(type > 0 && type < ARRAY_SIZE(game.scenes));
+	return (SceneID)type;
+}
 
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
@@ -239,17 +286,21 @@ void update_sound(Game &game, World &world)
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
-		v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
+		v3 light_p, v3 light_dir, float znear, float zfar, float width, float height, v3 up = V3(0, 0, 1))
 {
 	ShadowMap shadow_map = {};
 
-	shadow_map.width = texture_width;
-	shadow_map.height = texture_height;
+	shadow_map.tex_width = texture_width;
+	shadow_map.tex_height = texture_height;
 	shadow_map.light_p = light_p;
 	shadow_map.light_dir = light_dir;
 
 	shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, up);
-	shadow_map.projection = projection;
+	shadow_map.znear = znear;
+	shadow_map.zfar = zfar;
+	shadow_map.width = width;
+	shadow_map.height = height;
+	shadow_map.projection = orthographic_projection(znear, zfar, width, height);
 
 	shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
 
@@ -261,7 +312,6 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 		assert(0);
 	return shadow_map;
 }
-
 
 
 extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
@@ -299,6 +349,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.disable_depth_state = create_depth_stencil_state(false);
 		game.wireframe_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_WIREFRAME, RASTERIZER_CULL_NONE);
 
+
+		//game.default_rasterizer_state = game.wireframe_rasterizer_state;
+
 		VertexInputLayout input_layout = create_vertex_input_layout(g_vertex_input_elements, 
 				ARRAY_SIZE(g_vertex_input_elements), sizeof(Vertex));
 
@@ -327,7 +380,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		game.shadow_map = create_shadow_map(4096, 4096, 
 				V3(24, 0, 24), V3(-1, 0, -1),
-				orthographic_projection(1, 75, 50, 40));
+				1, 75, 50, 40);
 		{
 			VertexInputElement input_elements[] = {
 				{0, 3, INPUT_ELEMENT_FLOAT, "POSITION"},
@@ -375,23 +428,32 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			{CONSTANT_BUFFER_ELEMENT_INT},
 		};
 		game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
+		
+#if 1
+		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "Z:\\3dGame4\\data\\parking\\source\\ZM Car Park\\zma_carpark_b2.obj");
+#else
+#endif
+		game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
+		game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
 
-		game.scenes[1] = load_scene(&game.asset_arena, "data/YBot.fbx");
-		game.scenes[2] = load_scene(&game.asset_arena, "data/cube.fbx");
-		game.scenes[3] = load_scene(&game.asset_arena, "data/sphere.fbx");
-
-		game.ch43 = 1;
-		game.cube_asset = 2;
-		game.sphere_asset = 3;
-
+#if 1
+		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
 		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
 		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
+		game.animations[ANIMATION_SHOOT].duration *= 0.6;
 		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
 		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
 		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
 		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
-
-
+#else
+		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Swat.fbx");
+		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/SwatRifleJump.fbx").animations[0];
+		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/SwatRiffleShoot.fbx").animations[0];
+		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/SwatRunning.fbx").animations[0];
+		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/SwatRifleWalk.fbx").animations[0];
+		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/SwatBackwardRifleWalk.fbx").animations[0];
+		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/SwatRifleIdle.fbx").animations[0];
+#endif
 
 		FILE *fd = fopen("world.bin", "rb");
 		if (!fd) {
@@ -399,17 +461,20 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
 			Entity *boxes[] = {
-				make_entity(world, EntityType_Static, game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
-				make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
+				make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
 
-				make_entity(world, EntityType_Static, game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
+				
+				//make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
+				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
+
+				//make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
 			};
 			world.moving_box = 7;
 
@@ -425,7 +490,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				boxes[i]->color = V3(r, g, b);
 
 			}
-			Entity *player = make_entity(world, EntityType_Player, game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
+			Entity *player = make_entity(world, EntityType_Player, get_scene(game, SCENE_PLAYER), V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
 			world.player_id = player->id;
 			//player->scene = &game.sphere_asset;
 			//player->scene = 0;
@@ -443,6 +508,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			fclose(fd);
 		}
 
+		Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
+		test->rotation = rotate_around_axis_quat(V3(1, 0, 0), PI/2);
+
 		{
 			game.debug_asset_fb = create_frame_buffer(false, true);
 
@@ -458,6 +526,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
 					== GL_FRAMEBUFFER_COMPLETE);
 		}
+
 		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
 		game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
 
@@ -465,6 +534,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
 
 		game.master_volume = 1;
+		game.frustum_culling = true;
 
 		game.is_initialized = 1;
 	}
@@ -472,7 +542,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 
 	if (game.frame == 0) {
-		play_sound(game, game.loaded_sounds[0], 12);
+		//play_sound(game, game.loaded_sounds[0], 12);
 	}
 
 	World &world = *game.world;
@@ -482,30 +552,53 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	begin_render_frame();
 
+	// TODO: decide weither this should update before or after player
+
 	if (!game.in_editor) {
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
+
+
 
 		//Entity *e = get_entity(world, world.moving_box);
 		//if (e)
 		//	e->position.z = 20 + sinf(game.time) * 20;
 	}
-
 	Camera game_camera = update_camera(game, world, input, dt);
 
-	if (game.in_editor)
-		update_editor(game, world, world.editor, input, game_camera);
+	if (!game.in_editor)
+		world.last_game_camera = game_camera;
 
+	if (game.in_editor) {
+		update_editor(game, world, world.editor, input, game_camera);
+		
+		Camera c = world.last_game_camera;
+
+		v3 p[4] = {
+			c.position + c.forward * c.znear - c.right * c.width * 0.5f - c.up * c.height * 0.5f,
+			c.position + c.forward * c.znear + c.right * c.width * 0.5f - c.up * c.height * 0.5f,
+			c.position + c.forward * c.znear + c.right * c.width * 0.5f + c.up * c.height * 0.5f,
+			c.position + c.forward * c.znear - c.right * c.width * 0.5f + c.up * c.height * 0.5f,
+		};
+		push_line(c.position, p[0]);
+		push_line(c.position, p[1]);
+		push_line(c.position, p[2]);
+		push_line(c.position, p[3]);
+		push_line(p[0], p[1]);
+		push_line(p[1], p[2]);
+		push_line(p[2], p[3]);
+		push_line(p[3], p[0]);
+	}
 	push_cube_outline(game.shadow_map.light_p, V3(0.3));
 	push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
 
 	begin_render_pass(game.shadow_map_render_pass);
 	{
-		set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
+		set_viewport(0, 0, game.shadow_map.tex_width, game.shadow_map.tex_height);
 		bind_framebuffer(game.shadow_map.framebuffer);
 		clear_framebuffer_depth(game.shadow_map.framebuffer, 1);
-		render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection},
-					true);
+		render_entities(game, world, make_orthographic_camera(game.shadow_map.view, game.shadow_map.znear,
+			game.shadow_map.zfar, game.shadow_map.width, game.shadow_map.height), true);
 	}
 	end_render_pass();
 
@@ -533,7 +626,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	begin_render_pass(game.debug_lines_render_pass);
 	{
 		// TODO:!!!
-		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		//clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 				g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;
@@ -554,16 +647,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Checkbox("debug collission", &game.debug_collision);
 		ImGui::Checkbox("show normals", &game.show_normals);
 		ImGui::Checkbox("show bones", &game.render_bones);
+		ImGui::Checkbox("frustum culling", &game.frustum_culling);
+
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					2, game_camera.position
+					get_scene(game, SCENE_CUBE), game_camera.position
 					+ game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					3, game_camera.position
+					get_scene(game, SCENE_SPHERE), game_camera.position
 					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
 			world.editor.selected_entity = entity->id;
 		}

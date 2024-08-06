@@ -110,6 +110,7 @@ const char *get_enum_EntityType_str(int value)
 		case EntityType_Player: return "EntityType_Player";
 		case EntityType_Enemy: return "EntityType_Enemy";
 		case EntityType_Static: return "EntityType_Static";
+		case EntityType_Projectile: return "EntityType_Projectile";
 		case EntityType_Count: return "EntityType_Count";
 	}	return "ENUM_????";
 }
@@ -132,6 +133,13 @@ const char *get_enum_AnimationType_str(int value)
 		case ANIMATION_COUNT: return "ANIMATION_COUNT";
 	}	return "ENUM_????";
 }
+const char *get_enum_CameraType_str(int value)
+{
+	switch(value){
+		case CAMERA_TYPE_PERSPECTIVE: return "CAMERA_TYPE_PERSPECTIVE";
+		case CAMERA_TYPE_ORTHOGRAPHIC: return "CAMERA_TYPE_ORTHOGRAPHIC";
+	}	return "ENUM_????";
+}
 const char *get_enum_GizmoMode_str(int value)
 {
 	switch(value){
@@ -149,6 +157,15 @@ const char *get_enum_EditorOpType_str(int value)
 		case EDITOR_OP_PASTE_ENTITY: return "EDITOR_OP_PASTE_ENTITY";
 		case EDITOR_OP_DELETE_ENTITY: return "EDITOR_OP_DELETE_ENTITY";
 		case EDITOR_OP_SPAWN_ENTITY: return "EDITOR_OP_SPAWN_ENTITY";
+	}	return "ENUM_????";
+}
+const char *get_enum_SceneType_str(int value)
+{
+	switch(value){
+		case SCENE_PLAYER: return "SCENE_PLAYER";
+		case SCENE_CUBE: return "SCENE_CUBE";
+		case SCENE_SPHERE: return "SCENE_SPHERE";
+		case SCENE_TEST: return "SCENE_TEST";
 	}	return "ENUM_????";
 }
 #endif

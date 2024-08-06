@@ -298,8 +298,8 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 		
 		if (!constants.skinned && game.frustum_culling)
 		{
-			Camera cam = camera;
-			// cam = world.last_game_camera;
+			 Camera cam = camera;
+			 cam = world.last_game_camera;
 
 			v3 c[2] = {mesh.box_min, mesh.box_max};
 			v3 p[8];
@@ -328,21 +328,21 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 			frustum_points[5] = V3(+0.5f * zfar_width, -0.5f * zfar_height, -cam.zfar);
 			frustum_points[6] = V3(+0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
 			frustum_points[7] = V3(-0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
-			// points are counter clockwise, normal points out of the frustum
-			v3 frustum_planes[6][3] = {
-				{frustum_points[0], frustum_points[3], frustum_points[4]}, // left
-				{frustum_points[2], frustum_points[1], frustum_points[5]}, // right
-				{frustum_points[3], frustum_points[2], frustum_points[6]}, // up
-				{frustum_points[1], frustum_points[0], frustum_points[4]}, // down
-				{frustum_points[0], frustum_points[1], frustum_points[2]}, // front
-				{frustum_points[5], frustum_points[4], frustum_points[6]}, // back
+
+			v3 frustum_planes[6][4] = {
+				{frustum_points[0], frustum_points[3], frustum_points[4], frustum_points[1]}, // left
+				{frustum_points[1], frustum_points[2], frustum_points[5], frustum_points[0]}, // right
+				{frustum_points[2], frustum_points[3], frustum_points[6], frustum_points[0]}, // up
+				{frustum_points[0], frustum_points[1], frustum_points[4], frustum_points[2]}, // down
+				{frustum_points[0], frustum_points[1], frustum_points[2], frustum_points[4]}, // front
+				{frustum_points[4], frustum_points[5], frustum_points[6], frustum_points[0]}, // back
 			};
 
 			for (int i = 0; i < ARRAY_SIZE(frustum_planes); i++) {
 				v3 normal = cross(frustum_planes[i][1] - frustum_planes[i][0], frustum_planes[i][2] - frustum_planes[i][0]);
 				bool cull = true;
 				for (int j = 0; j < ARRAY_SIZE(p); j++) {
-					if (dot(p[j] - frustum_planes[i][0], normal) < 0) {
+					if (sign(dot(p[j] - frustum_planes[i][0], normal)) == sign(dot(frustum_planes[i][3] - frustum_planes[i][0], normal))) {
 						cull = false;
 						break ;
 					}
@@ -352,6 +352,11 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 					break ;
 				}
 			}
+		}
+
+		if (game.in_editor && cull_mesh) {
+			constants.color = V3(0);
+			cull_mesh = 0;
 		}
 
 		if (!cull_mesh) {

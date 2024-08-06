@@ -92,18 +92,16 @@ void update_game_input(HWND window, GameInput &input, int frame)
 {
 	UINT button_vkcode[BUTTON_COUNT] = {};
 
-	button_vkcode[BUTTON_CAMERA_FORWARD] 	= 'W';
-	button_vkcode[BUTTON_CAMERA_BACKWARD] 	= 'S';
-	button_vkcode[BUTTON_CAMERA_LEFT] 		= 'A';
-	button_vkcode[BUTTON_CAMERA_RIGHT] 		= 'D';
-	button_vkcode[BUTTON_CAMERA_UP] 		= 'Q';
-	button_vkcode[BUTTON_CAMERA_DOWN] 		= 'E';
+	
+	for (int i = 0; i < 26; i++)
+		button_vkcode[BUTTON_A + i] = 'A' + i;
+
+	button_vkcode[BUTTON_ESCAPE] 	= VK_ESCAPE;
+	button_vkcode[BUTTON_SPACE] 	= VK_SPACE;
+	button_vkcode[BUTTON_LEFT_SHIFT] 		= VK_LSHIFT;
+	button_vkcode[BUTTON_LEFT_CONTROL] 		= VK_LCONTROL;
 	button_vkcode[BUTTON_MOUSE_LEFT]		= VK_LBUTTON;
 	button_vkcode[BUTTON_MOUSE_RIGHT]		= VK_RBUTTON;
-	button_vkcode[BUTTON_PLAYER_FORWARD] 	= 'F';
-	button_vkcode[BUTTON_PLAYER_BACKWARD] 	= 'G';
-	button_vkcode[BUTTON_PLAYER_JUMP]		= VK_SPACE;
-	button_vkcode[BUTTON_LEFT_SHIFT]			= VK_LSHIFT;
 
 	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
 		button_vkcode[i] = VK_F1 + (i-BUTTON_F1);

@@ -163,8 +163,10 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
 
 	Array<Vertex> vertices = make_array_max<Vertex>(tmp_arena, umesh->num_triangles * 3);
+	Array<uint32_t> indices = make_array_max<uint32_t>(tmp_arena, umesh->num_triangles * 3);
 
 	ufbx_skin_deformer *skin = 0;
+	
 	if (umesh->skin_deformers.count) {
 		assert(umesh->skin_deformers.count == 1);
 		skin = umesh->skin_deformers.data[0];
@@ -174,11 +176,13 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 		mesh.bones = make_array<Bone>(arena, skin->clusters.count);
 		for (usize i = 0; i < mesh.bones.count; i++) {
 			ufbx_skin_cluster *cluster = skin->clusters.data[i];
+
 			mesh.bones[i].inv_bind = ufbx_to_mat4(cluster->geometry_to_bone);
 			mesh.bones[i].transform = inverse(mesh.bones[i].inv_bind);
 			mesh.bones[i].parent = -1;
 			mesh.bones[i].name = make_string(arena, cluster->bone_node->name.length,
 					cluster->bone_node->name.data);
+		//	printf("%.*s: %f %f %f\n", str_format(mesh.bones[i].name), M.e[0][3], M.e[1][3], M.e[2][0]);
 			//printf("\tbone name: %.*s\n", str_format(mesh.bones[i].name));
 			for (int j = 0; j < mesh.bones.count; j++) {
 				if (cluster->bone_node->parent == skin->clusters.data[j]->bone_node) {
@@ -186,15 +190,23 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 					break ;
 				}
 			}
+			/*
+				TODO: if you load the swat.fbx
+				he will have 2 meshes each with their set of bones
+				except the root bone will point to another bone in the other mesh
+				handle this
+			*/
+			if (mesh.bones[i].parent == -1)
+				assert(cluster->bone_node->parent->bone == 0);
 		}
 		Array<bool> computed = make_zero_array<bool>(tmp_arena, mesh.bones.count);
 		for (usize i = 0; i < mesh.bones.count; i++)
 			make_bones_transform_relative_to_parent(mesh.bones, i, computed);
 	}
-
+	uint32_t max_used_index = 0;
 	for (usize part_idx = 0; part_idx < umesh->material_parts.count; part_idx++) {
 		MeshPart &part = mesh.parts[part_idx];
-		part.offset = vertices.count;
+		part.offset = indices.count;
 
 		ufbx_mesh_part upart = umesh->material_parts.data[part_idx];
 		uint32_t num_vertices = 0;
@@ -204,10 +216,8 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 			uint32_t num_tris = ufbx_triangulate_face(tri_indices.data, tri_indices.count, umesh, face);
 
 			for (size_t i = 0; i < num_tris * 3; i++) {
-				uint32_t index = tri_indices[i];
-
-
-				vertices.push(get_ufbx_vertex(umesh, skin, index));
+				max_used_index = max(max_used_index, tri_indices[i]);
+				indices.push(tri_indices[i]);			
 			}
 		}
 		if (upart.face_indices.count && umesh->face_material.count) {
@@ -216,17 +226,33 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 					umesh->materials.data[umesh->face_material.data[upart.face_indices.data[0]]]);
 		}
 
-		part.vertices_count = vertices.count - part.offset;
+		part.indices_count = indices.count - part.offset;
 	}
-	mesh.box_min = V3(FLT_MAX);
-	mesh.box_max = V3(FLT_MIN);
-	for (usize i = 0; i < vertices.count; i++) {
-		mesh.box_min = min(mesh.box_min, vertices[i].position);
-		mesh.box_max = max(mesh.box_max, vertices[i].position);
-	}
+
+	for (uint32_t index = 0; index < max_used_index + 1; index++)
+		vertices.push(get_ufbx_vertex(umesh, skin, index));
 
 	mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
 			vertices.count * sizeof(Vertex), vertices.data);
+	mesh.index_buffer = create_index_buffer(indices.count, indices.data);
+
+
+	mesh.box_min = V3(1e18);
+	mesh.box_max = V3(-1e18);
+	for (usize i = 0; i < indices.count; i++) {
+		mesh.box_min = min(mesh.box_min, vertices[(int)indices[i]].position);
+		mesh.box_max = max(mesh.box_max, vertices[(int)indices[i]].position);
+	}
+
+	mesh.vertices_count = vertices.count;
+	mesh.indices_count = indices.count;
+	
+	// printf("INDICES COUNT: %d, VERTICES COUNT: %d, %d %d %d\n",  indices.count,  vertices.count, umesh->num_vertices,
+	// 	umesh->vertex_position.values.count, umesh->vertex_normal.values.count);
+	//assert(vertices.count % 3 == 0);
+	//for (usize i = 0; i < vertices.count; i += 3)
+	//	scene.triangles.push(MeshTriangle{vertices[i].position, vertices[i + 1].position, vertices[i + 2].position});
+
 
 	end_temp_memory();
 	return mesh;
@@ -407,11 +433,15 @@ Scene load_scene(Arena *arena, const char *filename)
 	opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
 	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
 	opts.target_unit_meters = 1;
-	opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	opts.temp_allocator.allocator.user = temp;
-	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	opts.result_allocator.allocator.user = temp;
+	// opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	// opts.temp_allocator.allocator.user = temp;
+	// opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	// opts.result_allocator.allocator.user = temp;
 	opts.generate_missing_normals = true;
+	opts.load_external_files = true;
+	//opts.obj_merge_objects = true;
+	//TODO: loading the car parking model with this option crashes the gpu driver
+	//opts.obj_merge_groups = true;
 
 	ufbx_error error;
 	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
@@ -420,8 +450,16 @@ Scene load_scene(Arena *arena, const char *filename)
 		exit(1);
 	}
 
-	printf("loading scene %s\n", filename);
 
+	usize total_num_triangles = 0;
+	for (size_t i = 0; i < uscene->nodes.count; i++)
+		if (uscene->nodes.data[i]->mesh)
+			total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
+	
+	printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
+
+
+	scene.triangles = make_array_max<MeshTriangle>(arena, total_num_triangles);
 	scene.nodes  = make_array<SceneNode>(arena, uscene->nodes.count);
 	scene.meshes = make_array<Mesh>(arena, uscene->meshes.count);
 	scene.root = &scene.nodes[(int)uscene->root_node->typed_id];

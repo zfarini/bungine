@@ -61,7 +61,6 @@ struct CollisionInfo
 	v3 hit_p;
 	v3 hit_normal;
 	float t;
-	entity_id entity;
 };
 
 #define SMALLEST_VELOCITY 0.01f
@@ -262,30 +261,18 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 		CollisionInfo hit_info = {};
 		hit_info.t = FLT_MAX;
-		entity_id hit_entity = 0;
 
 		for (int i = 0; i < shapes.count; i++) {
 			CollisionInfo info;
 
 			if (shapes[i].type == COLLISION_SHAPE_TRIANGLES) {
 				for (int j = 0; j < shapes[i].triangles.count; j++) {
-					#if 1
 					v3 p0 = (shapes[i].transform * V4(shapes[i].triangles[j].v0, 1)).xyz;
 					v3 p1 = (shapes[i].transform * V4(shapes[i].triangles[j].v1, 1)).xyz;
 					v3 p2 = (shapes[i].transform * V4(shapes[i].triangles[j].v2, 1)).xyz;
-					#else
-					v3 p0 = shapes[i].triangles[j].v0;
-					v3 p1 = shapes[i].triangles[j].v1;
-					v3 p2 = shapes[i].triangles[j].v2;
 
-					#endif
-					v3 normal = normalize(cross(p1 - p0, p2 - p0));
-					if (fabsf(dot(normal, e.position - (p0+p1+p2)/3.f))
-					> max(e_radius.x, max(e_radius.y, e_radius.z)) * 2)
-						continue ;
 					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
 							p0, p1, p2);
-					info.entity = shapes[i].entity;
 					if (info.t < hit_info.t)
 						hit_info = info;
 				}
@@ -297,7 +284,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 							shapes[i].transform.e[2][3]), 
 						shapes[i].ellipsoid_radius
 						* shapes[i].scale);
-				info.entity = shapes[i].entity;
 				if (info.t < hit_info.t)
 					hit_info = info;
 			}
@@ -349,10 +335,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 		if (shape.type == COLLISION_SHAPE_ELLIPSOID)
 			shape.scale = test.scale;
-		else {
-		}
 
-		shape.entity = test.id;
 		shapes.push(shape);
 	}
 	// {
@@ -363,23 +346,18 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	// 	shapes.push(shape);
 	// }
 
-	//v3 old_p = e.position;
-	v3 rel_p = e.position;
-
-	e.position = get_world_p(world, e.id);
-	v3 start_p = e.position;
-
+	v3 old_p = e.position;
 	move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
 	int itr = 1 + roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
 	for (int i = 0; i < itr; i++)
 		move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 
-	if (fabsf(e.position.x - start_p.x) < 1e-7)
+	if (fabsf(e.position.x - old_p.x) < 1e-7)
 		e.dp.x = 0;
-	if (fabsf(e.position.y - start_p.y) < 1e-7)
+	if (fabsf(e.position.y - old_p.y) < 1e-7)
 		e.dp.y = 0;
-	if (fabsf(e.position.z - start_p.z) < 1e-7)
+	if (fabsf(e.position.z - old_p.z) < 1e-7)
 		e.dp.z = 0;
 
 
@@ -404,16 +382,5 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	if (e.on_ground)
 		e.can_jump = true;
 
-	if (e.type == EntityType_Static)
-		e.position = rel_p + e.position - start_p;
-	else {
-		// Entity *parent = get_entity(world, collision.entity);
-		// if (parent) {
-		// 	e.parent = parent->id;
-		// 	e.position -= parent->position;
-		// }
-		// else
-		// 	e.parent = 0;
-	}
 	end_temp_memory();
 }

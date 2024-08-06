@@ -65,6 +65,13 @@ struct VertexBuffer {
 #endif
 };
 
+struct IndexBuffer {
+    #ifdef RENDERER_OPENGL
+    uint32_t ebo;
+    #else
+    #endif
+};
+
 struct FrameBuffer {
 #ifdef RENDERER_DX11
     ID3D11RenderTargetView *rtv;
