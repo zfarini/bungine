@@ -209,7 +209,7 @@ void update_sound(Game &game, World &world)
 
 	Entity *player = get_entity(world, world.player_id);
 	v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
-	v3 player_up = V3(0, 0, 1);
+	v3 player_up = WORLD_UP;
 	v3 player_right = normalize(cross(player_forward, player_up));
 		
 	int index = write_index;
@@ -281,12 +281,11 @@ void update_sound(Game &game, World &world)
 #include "renderer.cpp"
 #include "collision.cpp"
 #include "world.cpp"
-#include "ai.cpp"
 #include "editor.cpp"
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
-		v3 light_p, v3 light_dir, float znear, float zfar, float width, float height, v3 up = V3(0, 0, 1))
+		v3 light_p, v3 light_dir, float znear, float zfar, float width, float height, v3 up = WORLD_UP)
 {
 	ShadowMap shadow_map = {};
 
@@ -440,6 +439,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
 		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
 		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
+		// TODO: remove this
 		game.animations[ANIMATION_SHOOT].duration *= 0.6;
 		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
 		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];

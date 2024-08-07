@@ -31,19 +31,29 @@ mat4 ufbx_to_mat4(ufbx_matrix m)
 	return (result);
 }
 
-// TODO: remove this
-Arena *g_stb_image_arena;
+struct stb_load_texture_data
+{
+	char filename[256];
+	Texture *texture;
+};
+
+THREAD_WORK_FUNC(stb_load_texture_work)
+{
+	stb_load_texture_data *data = (stb_load_texture_data *)data;
+	void *data;
+	int width, height, n_channels;
+	data = stbi_load(path.data, &width, &height, &n_channels, 4);
+}
 
 Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
 {
 	assert(utex->type == UFBX_TEXTURE_FILE);
 
-	void *data;
-	int width, height, n_channels;
-
+	
 	stbi_set_flip_vertically_on_load(true);
 
 	String name = make_string(arena, utex->filename.length, utex->filename.data);
+	assert(name.count);
 
 	if (name.count) {
 		for (int i = 0; i < g_rc->loaded_textures.count; i++) {
@@ -51,7 +61,7 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 				return g_rc->loaded_textures[i];
 		}
 	}
-	g_stb_image_arena = begin_temp_memory();
+	Arena *temp = begin_temp_memory();
 	if (utex->content.size) {
 		data = stbi_load_from_memory((stbi_uc *)utex->content.data,
 				(int)utex->content.size, &width, &height,
@@ -65,16 +75,18 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 			last_slash--;
 		last_slash++;
 
-		String path = concact_string(g_stb_image_arena, scene.path, make_string(g_stb_image_arena, utex->filename.length - last_slash, utex->filename.data + last_slash));
-		path = concact_string(g_stb_image_arena, path, make_string(g_stb_image_arena, 1, ""));
+		String path = concact_string(temp, scene.path, make_string(temp, utex->filename.length - last_slash, utex->filename.data + last_slash));
+		path = concact_string(temp, path, make_string(temp, 1, ""));
+
+		//add_thread_work(stb_load_texture_work, );
 		data = stbi_load(path.data, &width, &height, &n_channels, 4);
 		if (!data)
 			printf("failed to load texture file: %s\n", path.data);
 	}
-	assert(data);
+	//assert(data);
 	end_temp_memory();
 
-	Texture texture = create_texture(name, data, width, height, srgb);
+	Texture texture = create_texture(name, 0, width, height, srgb);
 	if (name.count)
 		g_rc->loaded_textures.push(texture);
 
@@ -433,10 +445,11 @@ Scene load_scene(Arena *arena, const char *filename)
 	opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
 	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
 	opts.target_unit_meters = 1;
-	// opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	// opts.temp_allocator.allocator.user = temp;
-	// opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	// opts.result_allocator.allocator.user = temp;
+	//TODO: this needs to use thread local storage
+	opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.temp_allocator.allocator.user = temp;
+	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.result_allocator.allocator.user = temp;
 	opts.generate_missing_normals = true;
 	opts.load_external_files = true;
 	//opts.obj_merge_objects = true;

@@ -158,6 +158,74 @@ void update_game_input(HWND window, GameInput &input, int frame)
 	}
 }
 
+
+#include <intrin.h>
+
+bool add_thread_work(ThreadWorkFn *callback, void *data)
+{
+	int index;
+	while (1) {
+		index = thread_work_queue_occupied_index;
+		if (THREAD_MASK(index + 1) == THREAD_MASK(thread_work_queue_read_index)) {
+			assert(0);
+			return false;
+		}
+		
+		if (InterlockedCompareExchange((LONG *)&thread_work_queue_occupied_index, 
+			index + 1, index) == index)
+			break ;
+	}
+
+	ThreadWork *work = &thread_work_queue[THREAD_MASK(index)];
+
+	work->callback = callback;
+	work->data = data;
+
+	while (InterlockedCompareExchange((LONG *)&thread_work_queue_write_index,
+			index + 1, index) != index)
+		;
+	ReleaseSemaphore(thread_work_semaphore, 1, 0);
+	return true;
+}
+
+DWORD thread_func(LPVOID param)
+{
+	int idx = *(DWORD *)param;
+
+	printf("lanched thread %d\n", idx);
+
+	while (1) {
+		int entry_idx = thread_work_queue_read_index;
+		_ReadWriteBarrier(); // propably not necessary
+		if (entry_idx != thread_work_queue_write_index) {
+			if (InterlockedCompareExchange((LONG *)&thread_work_queue_read_index, 
+				entry_idx + 1, entry_idx) == entry_idx) 
+			{
+				ThreadWork *work = &thread_work_queue[THREAD_MASK(entry_idx)];
+				work->callback(work->data);
+			}
+		}
+		else
+			WaitForSingleObject(thread_work_semaphore, INFINITE);
+	}
+	return 0;
+}
+
+void push_string(const char *str);
+
+THREAD_WORK_FUNC(push_string_work)
+{
+	const char *str = (char *)data;
+	printf("%s\n", str);
+	if ((str[strlen(str) - 1] - '0') % 2 == 0)
+		push_string("PUSHED FROM THREA1");
+}
+
+void push_string(const char *str)
+{
+	add_thread_work(push_string_work, (void *)str);
+}
+
 //typedef void game_update_and_render_fn(PlatformData &platform_data, Arena *memory, GameInput &input, float dt);
 
 // int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
@@ -270,6 +338,7 @@ int main()
 	Platform platform = {};
 	platform.render_context = &rc;
 	platform.imgui_context = ImGui::GetCurrentContext();
+	platform.add_thread_work = add_thread_work;
 
 	float dt = 1.f / 60;
 	
@@ -286,6 +355,15 @@ int main()
     GetClientRect(window, &rect);
 	int window_width = rect.right - rect.left;
     int window_height = rect.bottom - rect.top;
+
+	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
+	
+	#define THREAD_COUNT 3
+	DWORD thread_ids[THREAD_COUNT];
+
+	for (int i = 0; i < THREAD_COUNT; i++) {
+		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
+	}
 
 	while (!should_close) {
 

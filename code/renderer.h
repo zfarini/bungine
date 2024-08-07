@@ -1,5 +1,11 @@
 #pragma once
 
+enum TextureState {
+    TEXTURE_STATE_UNLOADED,
+    TEXTURE_STATE_LOADING,
+    TEXTURE_STATE_LOADED,
+};
+
 struct Texture {
 #ifdef RENDERER_DX11
     ID3D11ShaderResourceView *srv;
@@ -10,6 +16,9 @@ struct Texture {
     int width;
     int height;
     b32 valid; // TODO: remove this
+
+
+    int state;
 };
 
 enum ShaderType {

@@ -49,6 +49,14 @@ const char *get_enum_GameButtonType_str(int value)
 		case BUTTON_COUNT: return "BUTTON_COUNT";
 	}	return "ENUM_????";
 }
+const char *get_enum_TextureState_str(int value)
+{
+	switch(value){
+		case TEXTURE_STATE_UNLOADED: return "TEXTURE_STATE_UNLOADED";
+		case TEXTURE_STATE_LOADING: return "TEXTURE_STATE_LOADING";
+		case TEXTURE_STATE_LOADED: return "TEXTURE_STATE_LOADED";
+	}	return "ENUM_????";
+}
 const char *get_enum_ShaderType_str(int value)
 {
 	switch(value){

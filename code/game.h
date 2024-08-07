@@ -1,5 +1,7 @@
 #pragma once
 
+#define WORLD_UP V3(0, 0, 1)
+
 enum EntityType {
     EntityType_Player,
     EntityType_Enemy,

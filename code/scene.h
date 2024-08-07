@@ -112,4 +112,6 @@ struct Scene {
 
 
     Array<MeshTriangle> triangles;
+
+    int is_loaded;
 };

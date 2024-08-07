@@ -138,10 +138,31 @@ struct GameInput {
     X(PFNGLPOLYGONMODEPROC, glPolygonMode)
 #endif
 
+
+#define THREAD_WORK_FUNC(name) void name(void *data)
+
+typedef THREAD_WORK_FUNC(ThreadWorkFn);
+
+struct ThreadWork {
+	ThreadWorkFn *callback;
+	void *data;
+};
+
+global ThreadWork thread_work_queue[256];
+#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
+global volatile int thread_work_queue_read_index;
+global volatile int thread_work_queue_write_index;
+global volatile int thread_work_queue_occupied_index;
+global void *thread_work_semaphore;
+
+typedef bool AddThreadWorkFn(ThreadWorkFn *callback, void *data);
+
 struct Platform {
     void *render_context;
     void *imgui_context;
     TempArena temp_arena;
+
+    AddThreadWorkFn *add_thread_work;
 };
 
 #define GAME_UPDATE_AND_RENDER(name)                                           \
