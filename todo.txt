@@ -1,5 +1,6 @@
 be able to edit entity asset + edit its transfor regardless of entity transform
 use meta stuff for constant buffer
+compute collision hit point for cylinder vs cylinder
 
 
 in editor handle rotation when rotation plane is tangent ortho to view dir 

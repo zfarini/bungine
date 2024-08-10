@@ -4777,6 +4777,8 @@ usize get_input_element_size(int type) {
     return 0;
 }
 
+
+
 enum ConstantBufferElementType {
     CONSTANT_BUFFER_ELEMENT_MAT4,
     CONSTANT_BUFFER_ELEMENT_VEC4,
@@ -4786,6 +4788,26 @@ enum ConstantBufferElementType {
     CONSTANT_BUFFER_ELEMENT_INT,
     CONSTANT_BUFFER_ELEMENT_COUNT
 };
+
+const char *get_constant_buffer_element_typename(ConstantBufferElementType type) {
+ switch (type) {
+    case CONSTANT_BUFFER_ELEMENT_MAT4:
+  return "mat4";
+    case CONSTANT_BUFFER_ELEMENT_VEC4:
+  return "v4";
+    case CONSTANT_BUFFER_ELEMENT_VEC3:
+  return "v3";
+    case CONSTANT_BUFFER_ELEMENT_VEC2:
+  return "v2";
+    case CONSTANT_BUFFER_ELEMENT_FLOAT:
+  return "float";
+    case CONSTANT_BUFFER_ELEMENT_INT:
+  return "int";
+    default:
+        assert(0);
+    }
+ return "";
+}
 
 int get_c_type_alignement(ConstantBufferElementType type) {
     switch (type) {
@@ -8445,23 +8467,41 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
-  ConstantBufferElement elems[] = {
-   {CONSTANT_BUFFER_ELEMENT_MAT4},
-   {CONSTANT_BUFFER_ELEMENT_MAT4},
-   {CONSTANT_BUFFER_ELEMENT_MAT4},
-   {CONSTANT_BUFFER_ELEMENT_MAT4},
-   {CONSTANT_BUFFER_ELEMENT_MAT4, 96},
-   {CONSTANT_BUFFER_ELEMENT_VEC3},
-   {CONSTANT_BUFFER_ELEMENT_VEC3},
-   {CONSTANT_BUFFER_ELEMENT_VEC3},
-   {CONSTANT_BUFFER_ELEMENT_FLOAT},
-   {CONSTANT_BUFFER_ELEMENT_FLOAT},
-   {CONSTANT_BUFFER_ELEMENT_FLOAT},
-   {CONSTANT_BUFFER_ELEMENT_INT},
-   {CONSTANT_BUFFER_ELEMENT_INT},
-   {CONSTANT_BUFFER_ELEMENT_INT},
-  };
-  game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, (sizeof(elems) / sizeof(*elems))));
+  {
+   StructMetaData constant_metadata = get_struct_Constants_info();
+   Arena *temp = begin_temp_memory();
+
+   auto elems = make_array<ConstantBufferElement>(temp, constant_metadata.member_count);
+
+
+   for (int i = 0; i < constant_metadata.member_count; i++) {
+
+    elems[i] = {};
+    bool found = false;
+    for (int j = 0; j < CONSTANT_BUFFER_ELEMENT_COUNT; j++) {
+     const char *type_name = get_constant_buffer_element_typename((ConstantBufferElementType)j);
+
+     int k = 0;
+     while (constant_metadata.members[i].type_name[k]
+       == type_name[k] && type_name[k])
+      k++;
+     if (!constant_metadata.members[i].type_name[k] && !type_name[k]) {
+      elems[i].type = (ConstantBufferElementType)j;
+      found = true;
+      break ;
+     }
+    }
+    if (!found) {
+     printf("ERROR: in constant buffer elements, couldn't find type for %s\n", constant_metadata.members[i].type_name);
+     assert(0);
+    }
+    if (constant_metadata.members[i].is_array)
+     elems[i].array_size = constant_metadata.members[i].array_size;
+   }
+
+   game.constant_buffer = create_constant_buffer(elems);
+   end_temp_memory();
+  }
 
 
   game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
@@ -8480,7 +8520,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
-# 458 "code/game.cpp"
+# 476 "code/game.cpp"
   FILE *fd = fopen("world.bin", "rb");
   if (!fd) {
 
@@ -8488,7 +8528,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
    Entity *boxes[] = {
     make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
-# 478 "code/game.cpp"
+# 496 "code/game.cpp"
    };
    world.moving_box = 7;
 
@@ -8699,9 +8739,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  if (game.frame == 0 || !game.in_editor)
   ImGui::SetWindowFocus(
-# 687 "code/game.cpp" 3 4
+# 705 "code/game.cpp" 3 4
                        __null
-# 687 "code/game.cpp"
+# 705 "code/game.cpp"
                            );
  game.frame++;
 }

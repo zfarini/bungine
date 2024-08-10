@@ -177,6 +177,8 @@ usize get_input_element_size(int type) {
     return 0;
 }
 
+// TODO:cleanup maybe generate some enum for all struct declared and be able to query metadata
+// using the id, then we can just use it here
 enum ConstantBufferElementType {
     CONSTANT_BUFFER_ELEMENT_MAT4,
     CONSTANT_BUFFER_ELEMENT_VEC4,
@@ -186,6 +188,26 @@ enum ConstantBufferElementType {
     CONSTANT_BUFFER_ELEMENT_INT,
     CONSTANT_BUFFER_ELEMENT_COUNT
 };
+
+const char *get_constant_buffer_element_typename(ConstantBufferElementType type) {
+	switch (type) {
+    case CONSTANT_BUFFER_ELEMENT_MAT4:
+		return "mat4";
+    case CONSTANT_BUFFER_ELEMENT_VEC4:
+		return "v4";
+    case CONSTANT_BUFFER_ELEMENT_VEC3:
+		return "v3";
+    case CONSTANT_BUFFER_ELEMENT_VEC2:
+		return "v2";
+    case CONSTANT_BUFFER_ELEMENT_FLOAT:
+		return "float";
+    case CONSTANT_BUFFER_ELEMENT_INT:
+		return "int";
+    default:
+        assert(0);
+    }
+	return "";
+}
 
 int get_c_type_alignement(ConstantBufferElementType type) {
     switch (type) {

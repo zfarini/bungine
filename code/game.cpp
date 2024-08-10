@@ -410,23 +410,41 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		//perspective_projection(1, 75, 120, 1));
 
-		ConstantBufferElement elems[] = {
-			{CONSTANT_BUFFER_ELEMENT_MAT4},
-			{CONSTANT_BUFFER_ELEMENT_MAT4},
-			{CONSTANT_BUFFER_ELEMENT_MAT4},
-			{CONSTANT_BUFFER_ELEMENT_MAT4},
-			{CONSTANT_BUFFER_ELEMENT_MAT4, 96},
-			{CONSTANT_BUFFER_ELEMENT_VEC3},
-			{CONSTANT_BUFFER_ELEMENT_VEC3},
-			{CONSTANT_BUFFER_ELEMENT_VEC3},
-			{CONSTANT_BUFFER_ELEMENT_FLOAT},
-			{CONSTANT_BUFFER_ELEMENT_FLOAT},
-			{CONSTANT_BUFFER_ELEMENT_FLOAT},
-			{CONSTANT_BUFFER_ELEMENT_INT},
-			{CONSTANT_BUFFER_ELEMENT_INT},
-			{CONSTANT_BUFFER_ELEMENT_INT},
-		};
-		game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
+		{
+			StructMetaData constant_metadata = get_struct_Constants_info();
+			Arena *temp = begin_temp_memory();
+
+			auto elems = make_array<ConstantBufferElement>(temp, constant_metadata.member_count);
+			
+			// TODO: cleanup
+			for (int i = 0; i < constant_metadata.member_count; i++) {
+				
+				elems[i] = {};
+				bool found = false;
+				for (int j = 0; j < CONSTANT_BUFFER_ELEMENT_COUNT; j++) {
+					const char *type_name = get_constant_buffer_element_typename((ConstantBufferElementType)j);
+
+					int k = 0;
+					while (constant_metadata.members[i].type_name[k]
+							== type_name[k] && type_name[k])
+						k++;
+					if (!constant_metadata.members[i].type_name[k] && !type_name[k]) {
+						elems[i].type = (ConstantBufferElementType)j;
+						found = true;
+						break ;
+					}
+				}
+				if (!found) {
+					printf("ERROR: in constant buffer elements, couldn't find type for %s\n", constant_metadata.members[i].type_name);
+					assert(0);
+				}
+				if (constant_metadata.members[i].is_array)
+					elems[i].array_size = constant_metadata.members[i].array_size;
+			}
+
+			game.constant_buffer = create_constant_buffer(elems);
+			end_temp_memory();
+		}
 		
 #if 1
 		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
