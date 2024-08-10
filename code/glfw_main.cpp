@@ -69,8 +69,8 @@ GAME_UPDATE_AND_RENDER(game_update_and_render);
 int main()
 {
 	// TODO: change to mmap
-	usize memory_size = GigaByte(1);
-	Arena memory = make_arena(calloc(1, memory_size), memory_size);
+	usize memory_size = GigaByte(4);
+	Arena memory = make_arena(calloc(4, memory_size), memory_size);
 
 	ma_device sound_device;
 	{

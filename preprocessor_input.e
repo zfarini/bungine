@@ -6060,6 +6060,10 @@ enum SceneType {
     SCENE_PLAYER = 1,
     SCENE_CUBE,
     SCENE_SPHERE,
+ SCENE_WOOD_CRATE,
+ SCENE_FENCE_PACK,
+ SCENE_SPONZA,
+ SCENE_BISTRO,
     SCENE_TEST,
 };
 
@@ -6131,6 +6135,8 @@ struct Entity {
 
     meta(ui, serialize) SceneType scene_id;
     meta(ui, serialize) mat4 scene_transform;
+
+ meta(ui, serialize) bool disable_collision;
 
 
 
@@ -7326,7 +7332,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
  for (int i = 0; i < world.entities.count; i++) {
   Entity &test = world.entities[i];
 
-  if (test.id == e.id)
+  if (test.id == e.id || test.disable_collision)
    continue ;
 
   CollisionShape shape = test.shape;
@@ -8417,7 +8423,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
   init_render_context(memory, *g_rc, platform);
 
-  usize temp_arena_size = (1024ULL * (1024ULL * 128));
+  usize temp_arena_size = (1024ULL * (1024ULL * 1024));
   g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 330, memory, temp_arena_size), temp_arena_size);
 
 
@@ -8432,7 +8438,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
   world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 344, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 344, memory, (1024ULL * (1024ULL * 2048))), (1024ULL * (1024ULL * 2048)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -8541,8 +8547,12 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
 
 
+  game.scenes[SCENE_SPONZA] = load_scene(&game.asset_arena, "data/Sponza/Sponza.fbx");
   game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
   game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
+  game.scenes[SCENE_WOOD_CRATE] = load_scene(&game.asset_arena, "data/wood-crates/source/BoxPack1.fbx");
+  game.scenes[SCENE_FENCE_PACK] = load_scene(&game.asset_arena, "data/PrivacyFencePack/PrivacyFencePack.fbx");
+
 
 
   game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
@@ -8554,7 +8564,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
-# 476 "code/game.cpp"
+# 480 "code/game.cpp"
   FILE *fd = fopen("world.bin", "rb");
   if (!fd) {
 
@@ -8562,7 +8572,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
    Entity *boxes[] = {
     make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
-# 496 "code/game.cpp"
+# 500 "code/game.cpp"
    };
    world.moving_box = 7;
 
@@ -8773,9 +8783,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  if (game.frame == 0 || !game.in_editor)
   ImGui::SetWindowFocus(
-# 705 "code/game.cpp" 3 4
+# 709 "code/game.cpp" 3 4
                        __null
-# 705 "code/game.cpp"
+# 709 "code/game.cpp"
                            );
  game.frame++;
 }

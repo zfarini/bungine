@@ -320,7 +320,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	for (int i = 0; i < world.entities.count; i++) {
 		Entity &test = world.entities[i];
 
-		if (test.id == e.id)
+		if (test.id == e.id || test.disable_collision)
 			continue ;
 
 		CollisionShape shape = test.shape;

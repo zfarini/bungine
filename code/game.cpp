@@ -326,7 +326,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		init_render_context(memory, *g_rc, platform);
 
-		usize temp_arena_size = Megabyte(128);
+		usize temp_arena_size = Megabyte(1024);
 		g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
 
 
@@ -341,7 +341,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
 		world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(256)), Megabyte(256));
+		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(2048)), Megabyte(2048));
 
 		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -450,8 +450,12 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
 #else
 #endif
+		game.scenes[SCENE_SPONZA] = load_scene(&game.asset_arena, "data/Sponza/Sponza.fbx");
 		game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
 		game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
+		game.scenes[SCENE_WOOD_CRATE] = load_scene(&game.asset_arena, "data/wood-crates/source/BoxPack1.fbx");
+		game.scenes[SCENE_FENCE_PACK] = load_scene(&game.asset_arena, "data/PrivacyFencePack/PrivacyFencePack.fbx");
+	//	game.scenes[SCENE_BISTRO] = load_scene(&game.asset_arena, "data/Bistro_v5_2/BistroExterior.fbx");
 
 #if 1
 		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");

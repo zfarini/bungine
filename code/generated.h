@@ -553,6 +553,14 @@ static const char *get_enum_SceneType_str(int value) {
         return "SCENE_CUBE";
     case SCENE_SPHERE:
         return "SCENE_SPHERE";
+    case SCENE_WOOD_CRATE:
+        return "SCENE_WOOD_CRATE";
+    case SCENE_FENCE_PACK:
+        return "SCENE_FENCE_PACK";
+    case SCENE_SPONZA:
+        return "SCENE_SPONZA";
+    case SCENE_BISTRO:
+        return "SCENE_BISTRO";
     case SCENE_TEST:
         return "SCENE_TEST";
     }
@@ -1025,7 +1033,7 @@ StructMetaData get_struct_World_info() {
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 29;
+    data.member_count = 30;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -1062,28 +1070,30 @@ StructMetaData get_struct_Entity_info() {
     data.members[16].type_name = "SceneType";
     data.members[17].name = "scene_transform";
     data.members[17].type_name = "mat4";
-    data.members[18].name = "curr_anim";
-    data.members[18].type_name = "Animation*";
-    data.members[19].name = "next_anim";
+    data.members[18].name = "disable_collision";
+    data.members[18].type_name = "bool";
+    data.members[19].name = "curr_anim";
     data.members[19].type_name = "Animation*";
-    data.members[20].name = "anim_time";
-    data.members[20].type_name = "float";
-    data.members[21].name = "blend_time";
+    data.members[20].name = "next_anim";
+    data.members[20].type_name = "Animation*";
+    data.members[21].name = "anim_time";
     data.members[21].type_name = "float";
-    data.members[22].name = "animation";
-    data.members[22].type_name = "Animation*";
-    data.members[23].name = "speed";
-    data.members[23].type_name = "float";
-    data.members[24].name = "height_above_ground";
+    data.members[22].name = "blend_time";
+    data.members[22].type_name = "float";
+    data.members[23].name = "animation";
+    data.members[23].type_name = "Animation*";
+    data.members[24].name = "speed";
     data.members[24].type_name = "float";
-    data.members[25].name = "point_light_scale";
+    data.members[25].name = "height_above_ground";
     data.members[25].type_name = "float";
-    data.members[26].name = "z_rot";
+    data.members[26].name = "point_light_scale";
     data.members[26].type_name = "float";
-    data.members[27].name = "last_move";
-    data.members[27].type_name = "int";
-    data.members[28].name = "last_gun_time";
-    data.members[28].type_name = "float";
+    data.members[27].name = "z_rot";
+    data.members[27].type_name = "float";
+    data.members[28].name = "last_move";
+    data.members[28].type_name = "int";
+    data.members[29].name = "last_gun_time";
+    data.members[29].type_name = "float";
     return data;
 }
 StructMetaData get_struct__G_fpos64_t_info() {
@@ -1959,8 +1969,8 @@ imgui_edit_enum_ConstantBufferElementType(ConstantBufferElementType &x,
     x = items_type[curr];
 }
 static void imgui_edit_enum_SceneType(SceneType &x, const char *name) {
-    const char *items[4];
-    SceneType items_type[4];
+    const char *items[8];
+    SceneType items_type[8];
     int curr = 0;
     items[0] = "SCENE_PLAYER";
     items_type[0] = SCENE_PLAYER;
@@ -1974,12 +1984,28 @@ static void imgui_edit_enum_SceneType(SceneType &x, const char *name) {
     items_type[2] = SCENE_SPHERE;
     if (x == SCENE_SPHERE)
         curr = 2;
-    items[3] = "SCENE_TEST";
-    items_type[3] = SCENE_TEST;
-    if (x == SCENE_TEST)
+    items[3] = "SCENE_WOOD_CRATE";
+    items_type[3] = SCENE_WOOD_CRATE;
+    if (x == SCENE_WOOD_CRATE)
         curr = 3;
+    items[4] = "SCENE_FENCE_PACK";
+    items_type[4] = SCENE_FENCE_PACK;
+    if (x == SCENE_FENCE_PACK)
+        curr = 4;
+    items[5] = "SCENE_SPONZA";
+    items_type[5] = SCENE_SPONZA;
+    if (x == SCENE_SPONZA)
+        curr = 5;
+    items[6] = "SCENE_BISTRO";
+    items_type[6] = SCENE_BISTRO;
+    if (x == SCENE_BISTRO)
+        curr = 6;
+    items[7] = "SCENE_TEST";
+    items_type[7] = SCENE_TEST;
+    if (x == SCENE_TEST)
+        curr = 7;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 4);
+        ImGui::ListBox(name, &curr, items, 8);
     x = items_type[curr];
 }
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
@@ -2218,6 +2244,11 @@ static void imgui_edit_struct_Entity(Entity &x, const char *name,
         }
         imgui_edit_struct_CollisionShape(x.shape, "shape");
         imgui_edit_enum_SceneType(x.scene_id, "scene_id");
+        {
+            bool tmp = x.disable_collision;
+            ImGui::Checkbox("disable_collision", &tmp);
+            x.disable_collision = tmp;
+        }
         ImGui::InputFloat("height_above_ground", &x.height_above_ground);
         ImGui::InputFloat("point_light_scale", &x.point_light_scale);
     }
@@ -2250,6 +2281,7 @@ static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena = 0) {
             x.scene_id = (SceneType)tmp;
     }
     serialize_mat4(fd, w, x.scene_transform);
+    serialize_bool(fd, w, x.disable_collision);
     serialize_float(fd, w, x.height_above_ground);
     serialize_float(fd, w, x.point_light_scale);
 }

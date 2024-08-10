@@ -1,8 +1,21 @@
-be able to edit entity asset + edit its transfor regardless of entity transform
+** load a scene and be able to pick meshes and make them their own asset?
+** edit/create collision mesh somehow? and save it somewhere?
+** spatial partition
+** be able to edit entity asset + edit its transfor regardless of entity transform
+
+fix all keybindings to not be active if imgui is asking for input
 uniform scaling
 snap movement in editor (for all gizmo types)
-spawn point light entities (possibly with a mesh)
+
+* async asset loading
+
+more sound work? (possibly SIMD)
+
+replace unoredred_map
+
+"fix" jumping
 compute collision hit point for cylinder vs cylinder
+
 send bones as (translation scale and rotation)
 make the game runnable from anywhere? (as long as the data directory is in ..)
 cleanup strings
@@ -13,9 +26,7 @@ shadow map follow player?
 platform layer
 cleanup arenas
 logging
-* async asset loading
 particles (instancing?)
 transition between worlds?
 menu
-spatial partition
 improve entity selection? (meshes that are too big?)

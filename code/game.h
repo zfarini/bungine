@@ -6,6 +6,10 @@ enum SceneType {
     SCENE_PLAYER = 1,
     SCENE_CUBE,
     SCENE_SPHERE,
+	SCENE_WOOD_CRATE,
+	SCENE_FENCE_PACK,
+	SCENE_SPONZA,
+	SCENE_BISTRO,
     SCENE_TEST,
 };
 
@@ -77,6 +81,8 @@ struct Entity {
 
     meta(ui, serialize) SceneType scene_id;
     meta(ui, serialize) mat4 scene_transform;
+
+	meta(ui, serialize) bool disable_collision;
 
 
     // Animation *animation;
