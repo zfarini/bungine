@@ -282,19 +282,6 @@ static void imgui_edit_struct_NodeAnimation(NodeAnimation &x, const char *name,
                                             bool collapsed);
 static void serialize_NodeAnimation(FILE *fd, bool w, NodeAnimation &x,
                                     Arena *arena);
-static const char *get_enum_SceneType_str(int value) {
-    switch (value) {
-    case SCENE_PLAYER:
-        return "SCENE_PLAYER";
-    case SCENE_CUBE:
-        return "SCENE_CUBE";
-    case SCENE_SPHERE:
-        return "SCENE_SPHERE";
-    case SCENE_TEST:
-        return "SCENE_TEST";
-    }
-    return "Enum_SceneType_Unknown";
-}
 static const char *get_enum_EditorOpType_str(int value) {
     switch (value) {
     case EDITOR_OP_TRANSLATE_ENTITY:
@@ -322,6 +309,15 @@ static const char *get_enum_GizmoMode_str(int value) {
         return "GIZMO_ROTATION";
     }
     return "Enum_GizmoMode_Unknown";
+}
+static const char *get_enum_CameraType_str(int value) {
+    switch (value) {
+    case CAMERA_TYPE_PERSPECTIVE:
+        return "CAMERA_TYPE_PERSPECTIVE";
+    case CAMERA_TYPE_ORTHOGRAPHIC:
+        return "CAMERA_TYPE_ORTHOGRAPHIC";
+    }
+    return "Enum_CameraType_Unknown";
 }
 static const char *get_enum_PrimitiveType_str(int value) {
     switch (value) {
@@ -380,6 +376,8 @@ static const char *get_enum_EntityType_str(int value) {
         return "EntityType_Static";
     case EntityType_Projectile:
         return "EntityType_Projectile";
+    case EntityType_PointLight:
+        return "EntityType_PointLight";
     case EntityType_Count:
         return "EntityType_Count";
     }
@@ -547,19 +545,23 @@ static const char *get_enum_ConstantBufferElementType_str(int value) {
     }
     return "Enum_ConstantBufferElementType_Unknown";
 }
-static const char *get_enum_CameraType_str(int value) {
+static const char *get_enum_SceneType_str(int value) {
     switch (value) {
-    case CAMERA_TYPE_PERSPECTIVE:
-        return "CAMERA_TYPE_PERSPECTIVE";
-    case CAMERA_TYPE_ORTHOGRAPHIC:
-        return "CAMERA_TYPE_ORTHOGRAPHIC";
+    case SCENE_PLAYER:
+        return "SCENE_PLAYER";
+    case SCENE_CUBE:
+        return "SCENE_CUBE";
+    case SCENE_SPHERE:
+        return "SCENE_SPHERE";
+    case SCENE_TEST:
+        return "SCENE_TEST";
     }
-    return "Enum_CameraType_Unknown";
+    return "Enum_SceneType_Unknown";
 }
 StructMetaData get_struct_Constants_info() {
     StructMetaData data = {};
     data.name = "Constants";
-    data.member_count = 14;
+    data.member_count = 17;
     data.members[0].name = "view";
     data.members[0].type_name = "mat4";
     data.members[1].name = "projection";
@@ -572,24 +574,34 @@ StructMetaData get_struct_Constants_info() {
     data.members[4].type_name = "mat4";
     data.members[4].is_array = 1;
     data.members[4].array_size = 96;
-    data.members[5].name = "camera_p";
-    data.members[5].type_name = "v3";
-    data.members[6].name = "player_p";
-    data.members[6].type_name = "v3";
-    data.members[7].name = "color";
-    data.members[7].type_name = "v3";
-    data.members[8].name = "diffuse_factor";
-    data.members[8].type_name = "float";
-    data.members[9].name = "specular_factor";
-    data.members[9].type_name = "float";
-    data.members[10].name = "specular_exponent_factor";
-    data.members[10].type_name = "float";
-    data.members[11].name = "skinned";
-    data.members[11].type_name = "int";
-    data.members[12].name = "has_normal_map";
-    data.members[12].type_name = "int";
-    data.members[13].name = "show_normals";
-    data.members[13].type_name = "int";
+    data.members[5].name = "point_light_count";
+    data.members[5].type_name = "int";
+    data.members[6].name = "point_light_color";
+    data.members[6].type_name = "v4";
+    data.members[6].is_array = 1;
+    data.members[6].array_size = 8;
+    data.members[7].name = "point_light_position";
+    data.members[7].type_name = "v4";
+    data.members[7].is_array = 1;
+    data.members[7].array_size = 8;
+    data.members[8].name = "camera_p";
+    data.members[8].type_name = "v3";
+    data.members[9].name = "player_p";
+    data.members[9].type_name = "v3";
+    data.members[10].name = "color";
+    data.members[10].type_name = "v3";
+    data.members[11].name = "diffuse_factor";
+    data.members[11].type_name = "float";
+    data.members[12].name = "specular_factor";
+    data.members[12].type_name = "float";
+    data.members[13].name = "specular_exponent_factor";
+    data.members[13].type_name = "float";
+    data.members[14].name = "skinned";
+    data.members[14].type_name = "int";
+    data.members[15].name = "has_normal_map";
+    data.members[15].type_name = "int";
+    data.members[16].name = "show_normals";
+    data.members[16].type_name = "int";
     return data;
 }
 StructMetaData get_struct_SoundState_info() {
@@ -619,43 +631,45 @@ StructMetaData get_struct_LoadedSound_info() {
 StructMetaData get_struct_Editor_info() {
     StructMetaData data = {};
     data.name = "Editor";
-    data.member_count = 18;
+    data.member_count = 19;
     data.members[0].name = "ops";
     data.members[0].type_name = "Array<EditorOp>";
     data.members[1].name = "undos";
     data.members[1].type_name = "Array<EditorOp>";
     data.members[2].name = "init_entity";
     data.members[2].type_name = "Entity";
-    data.members[3].name = "in_gizmo";
+    data.members[3].name = "edit_scene";
     data.members[3].type_name = "bool";
-    data.members[4].name = "selected_entity";
-    data.members[4].type_name = "entity_id";
-    data.members[5].name = "copied_entity";
+    data.members[4].name = "in_gizmo";
+    data.members[4].type_name = "bool";
+    data.members[5].name = "selected_entity";
     data.members[5].type_name = "entity_id";
-    data.members[6].name = "gizmo_mode";
-    data.members[6].type_name = "GizmoMode";
-    data.members[7].name = "dragging_axis";
-    data.members[7].type_name = "int";
-    data.members[8].name = "did_drag";
-    data.members[8].type_name = "bool";
-    data.members[9].name = "p_init_drag";
-    data.members[9].type_name = "v3";
-    data.members[10].name = "s_init_scale";
-    data.members[10].type_name = "float";
-    data.members[11].name = "s_init_drag";
+    data.members[6].name = "copied_entity";
+    data.members[6].type_name = "entity_id";
+    data.members[7].name = "gizmo_mode";
+    data.members[7].type_name = "GizmoMode";
+    data.members[8].name = "dragging_axis";
+    data.members[8].type_name = "int";
+    data.members[9].name = "did_drag";
+    data.members[9].type_name = "bool";
+    data.members[10].name = "p_init_drag";
+    data.members[10].type_name = "v3";
+    data.members[11].name = "s_init_scale";
     data.members[11].type_name = "float";
-    data.members[12].name = "r_init_rot";
-    data.members[12].type_name = "quat";
-    data.members[13].name = "r_init_drag";
-    data.members[13].type_name = "float";
-    data.members[14].name = "r_right_axis";
-    data.members[14].type_name = "v3";
-    data.members[15].name = "r_up_axis";
+    data.members[12].name = "s_init_drag";
+    data.members[12].type_name = "float";
+    data.members[13].name = "r_init_rot";
+    data.members[13].type_name = "quat";
+    data.members[14].name = "r_init_drag";
+    data.members[14].type_name = "float";
+    data.members[15].name = "r_right_axis";
     data.members[15].type_name = "v3";
-    data.members[16].name = "r_axis";
+    data.members[16].name = "r_up_axis";
     data.members[16].type_name = "v3";
-    data.members[17].name = "last_camera_p";
+    data.members[17].name = "r_axis";
     data.members[17].type_name = "v3";
+    data.members[18].name = "last_camera_p";
+    data.members[18].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_Camera_info() {
@@ -1011,7 +1025,7 @@ StructMetaData get_struct_World_info() {
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 28;
+    data.member_count = 29;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -1045,7 +1059,7 @@ StructMetaData get_struct_Entity_info() {
     data.members[15].name = "shape";
     data.members[15].type_name = "CollisionShape";
     data.members[16].name = "scene_id";
-    data.members[16].type_name = "SceneID";
+    data.members[16].type_name = "SceneType";
     data.members[17].name = "scene_transform";
     data.members[17].type_name = "mat4";
     data.members[18].name = "curr_anim";
@@ -1062,12 +1076,14 @@ StructMetaData get_struct_Entity_info() {
     data.members[23].type_name = "float";
     data.members[24].name = "height_above_ground";
     data.members[24].type_name = "float";
-    data.members[25].name = "z_rot";
+    data.members[25].name = "point_light_scale";
     data.members[25].type_name = "float";
-    data.members[26].name = "last_move";
-    data.members[26].type_name = "int";
-    data.members[27].name = "last_gun_time";
-    data.members[27].type_name = "float";
+    data.members[26].name = "z_rot";
+    data.members[26].type_name = "float";
+    data.members[27].name = "last_move";
+    data.members[27].type_name = "int";
+    data.members[28].name = "last_gun_time";
+    data.members[28].type_name = "float";
     return data;
 }
 StructMetaData get_struct__G_fpos64_t_info() {
@@ -1438,222 +1454,533 @@ StructMetaData get_struct_NodeAnimation_info() {
     data.members[7].type_name = "mat4";
     return data;
 }
-static void imgui_edit_enum_SceneType(SceneType &x, const char *name) {
-    const char *items[4];
-    items[0] = "SCENE_PLAYER";
-    items[1] = "SCENE_CUBE";
-    items[2] = "SCENE_SPHERE";
-    items[3] = "SCENE_TEST";
-    int type = x;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 4);
-    x = (SceneType)type;
-}
 static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
     const char *items[6];
+    EditorOpType items_type[6];
+    int curr = 0;
     items[0] = "EDITOR_OP_TRANSLATE_ENTITY";
+    items_type[0] = EDITOR_OP_TRANSLATE_ENTITY;
+    if (x == EDITOR_OP_TRANSLATE_ENTITY)
+        curr = 0;
     items[1] = "EDITOR_OP_ROTATE_ENTITY";
+    items_type[1] = EDITOR_OP_ROTATE_ENTITY;
+    if (x == EDITOR_OP_ROTATE_ENTITY)
+        curr = 1;
     items[2] = "EDITOR_OP_SCALE_ENTITY";
+    items_type[2] = EDITOR_OP_SCALE_ENTITY;
+    if (x == EDITOR_OP_SCALE_ENTITY)
+        curr = 2;
     items[3] = "EDITOR_OP_PASTE_ENTITY";
+    items_type[3] = EDITOR_OP_PASTE_ENTITY;
+    if (x == EDITOR_OP_PASTE_ENTITY)
+        curr = 3;
     items[4] = "EDITOR_OP_DELETE_ENTITY";
+    items_type[4] = EDITOR_OP_DELETE_ENTITY;
+    if (x == EDITOR_OP_DELETE_ENTITY)
+        curr = 4;
     items[5] = "EDITOR_OP_SPAWN_ENTITY";
-    int type = x;
+    items_type[5] = EDITOR_OP_SPAWN_ENTITY;
+    if (x == EDITOR_OP_SPAWN_ENTITY)
+        curr = 5;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 6);
-    x = (EditorOpType)type;
+        ImGui::ListBox(name, &curr, items, 6);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
     const char *items[3];
+    GizmoMode items_type[3];
+    int curr = 0;
     items[0] = "GIZMO_TRANSLATION";
+    items_type[0] = GIZMO_TRANSLATION;
+    if (x == GIZMO_TRANSLATION)
+        curr = 0;
     items[1] = "GIZMO_SCALE";
+    items_type[1] = GIZMO_SCALE;
+    if (x == GIZMO_SCALE)
+        curr = 1;
     items[2] = "GIZMO_ROTATION";
-    int type = x;
+    items_type[2] = GIZMO_ROTATION;
+    if (x == GIZMO_ROTATION)
+        curr = 2;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 3);
-    x = (GizmoMode)type;
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
+    const char *items[2];
+    CameraType items_type[2];
+    int curr = 0;
+    items[0] = "CAMERA_TYPE_PERSPECTIVE";
+    items_type[0] = CAMERA_TYPE_PERSPECTIVE;
+    if (x == CAMERA_TYPE_PERSPECTIVE)
+        curr = 0;
+    items[1] = "CAMERA_TYPE_ORTHOGRAPHIC";
+    items_type[1] = CAMERA_TYPE_ORTHOGRAPHIC;
+    if (x == CAMERA_TYPE_ORTHOGRAPHIC)
+        curr = 1;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
     const char *items[2];
+    PrimitiveType items_type[2];
+    int curr = 0;
     items[0] = "PRIMITIVE_TRIANGLES";
+    items_type[0] = PRIMITIVE_TRIANGLES;
+    if (x == PRIMITIVE_TRIANGLES)
+        curr = 0;
     items[1] = "PRIMITIVE_LINES";
-    int type = x;
+    items_type[1] = PRIMITIVE_LINES;
+    if (x == PRIMITIVE_LINES)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (PrimitiveType)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_VertexBufferUsage(VertexBufferUsage &x,
                                               const char *name) {
     const char *items[2];
+    VertexBufferUsage items_type[2];
+    int curr = 0;
     items[0] = "VERTEX_BUFFER_IMMUTABLE";
+    items_type[0] = VERTEX_BUFFER_IMMUTABLE;
+    if (x == VERTEX_BUFFER_IMMUTABLE)
+        curr = 0;
     items[1] = "VERTEX_BUFFER_DYNAMIC";
-    int type = x;
+    items_type[1] = VERTEX_BUFFER_DYNAMIC;
+    if (x == VERTEX_BUFFER_DYNAMIC)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (VertexBufferUsage)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_ShaderType(ShaderType &x, const char *name) {
     const char *items[2];
+    ShaderType items_type[2];
+    int curr = 0;
     items[0] = "SHADER_TYPE_VERTEX";
+    items_type[0] = SHADER_TYPE_VERTEX;
+    if (x == SHADER_TYPE_VERTEX)
+        curr = 0;
     items[1] = "SHADER_TYPE_FRAGMENT";
-    int type = x;
+    items_type[1] = SHADER_TYPE_FRAGMENT;
+    if (x == SHADER_TYPE_FRAGMENT)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (ShaderType)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_InputElementType(InputElementType &x,
                                              const char *name) {
     const char *items[2];
+    InputElementType items_type[2];
+    int curr = 0;
     items[0] = "INPUT_ELEMENT_FLOAT";
+    items_type[0] = INPUT_ELEMENT_FLOAT;
+    if (x == INPUT_ELEMENT_FLOAT)
+        curr = 0;
     items[1] = "INPUT_ELEMENT_SIGNED_INT";
-    int type = x;
+    items_type[1] = INPUT_ELEMENT_SIGNED_INT;
+    if (x == INPUT_ELEMENT_SIGNED_INT)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (InputElementType)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_TextureState(TextureState &x, const char *name) {
     const char *items[3];
+    TextureState items_type[3];
+    int curr = 0;
     items[0] = "TEXTURE_STATE_UNLOADED";
+    items_type[0] = TEXTURE_STATE_UNLOADED;
+    if (x == TEXTURE_STATE_UNLOADED)
+        curr = 0;
     items[1] = "TEXTURE_STATE_LOADING";
+    items_type[1] = TEXTURE_STATE_LOADING;
+    if (x == TEXTURE_STATE_LOADING)
+        curr = 1;
     items[2] = "TEXTURE_STATE_LOADED";
-    int type = x;
+    items_type[2] = TEXTURE_STATE_LOADED;
+    if (x == TEXTURE_STATE_LOADED)
+        curr = 2;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 3);
-    x = (TextureState)type;
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_EntityType(EntityType &x, const char *name) {
-    const char *items[5];
+    const char *items[6];
+    EntityType items_type[6];
+    int curr = 0;
     items[0] = "EntityType_Player";
+    items_type[0] = EntityType_Player;
+    if (x == EntityType_Player)
+        curr = 0;
     items[1] = "EntityType_Enemy";
+    items_type[1] = EntityType_Enemy;
+    if (x == EntityType_Enemy)
+        curr = 1;
     items[2] = "EntityType_Static";
+    items_type[2] = EntityType_Static;
+    if (x == EntityType_Static)
+        curr = 2;
     items[3] = "EntityType_Projectile";
-    items[4] = "EntityType_Count";
-    int type = x;
+    items_type[3] = EntityType_Projectile;
+    if (x == EntityType_Projectile)
+        curr = 3;
+    items[4] = "EntityType_PointLight";
+    items_type[4] = EntityType_PointLight;
+    if (x == EntityType_PointLight)
+        curr = 4;
+    items[5] = "EntityType_Count";
+    items_type[5] = EntityType_Count;
+    if (x == EntityType_Count)
+        curr = 5;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 5);
-    x = (EntityType)type;
+        ImGui::ListBox(name, &curr, items, 6);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_GameButtonType(GameButtonType &x,
                                            const char *name) {
     const char *items[45];
+    GameButtonType items_type[45];
+    int curr = 0;
     items[0] = "BUTTON_A";
+    items_type[0] = BUTTON_A;
+    if (x == BUTTON_A)
+        curr = 0;
     items[1] = "BUTTON_B";
+    items_type[1] = BUTTON_B;
+    if (x == BUTTON_B)
+        curr = 1;
     items[2] = "BUTTON_C";
+    items_type[2] = BUTTON_C;
+    if (x == BUTTON_C)
+        curr = 2;
     items[3] = "BUTTON_D";
+    items_type[3] = BUTTON_D;
+    if (x == BUTTON_D)
+        curr = 3;
     items[4] = "BUTTON_E";
+    items_type[4] = BUTTON_E;
+    if (x == BUTTON_E)
+        curr = 4;
     items[5] = "BUTTON_F";
+    items_type[5] = BUTTON_F;
+    if (x == BUTTON_F)
+        curr = 5;
     items[6] = "BUTTON_G";
+    items_type[6] = BUTTON_G;
+    if (x == BUTTON_G)
+        curr = 6;
     items[7] = "BUTTON_H";
+    items_type[7] = BUTTON_H;
+    if (x == BUTTON_H)
+        curr = 7;
     items[8] = "BUTTON_I";
+    items_type[8] = BUTTON_I;
+    if (x == BUTTON_I)
+        curr = 8;
     items[9] = "BUTTON_J";
+    items_type[9] = BUTTON_J;
+    if (x == BUTTON_J)
+        curr = 9;
     items[10] = "BUTTON_K";
+    items_type[10] = BUTTON_K;
+    if (x == BUTTON_K)
+        curr = 10;
     items[11] = "BUTTON_L";
+    items_type[11] = BUTTON_L;
+    if (x == BUTTON_L)
+        curr = 11;
     items[12] = "BUTTON_M";
+    items_type[12] = BUTTON_M;
+    if (x == BUTTON_M)
+        curr = 12;
     items[13] = "BUTTON_N";
+    items_type[13] = BUTTON_N;
+    if (x == BUTTON_N)
+        curr = 13;
     items[14] = "BUTTON_O";
+    items_type[14] = BUTTON_O;
+    if (x == BUTTON_O)
+        curr = 14;
     items[15] = "BUTTON_P";
+    items_type[15] = BUTTON_P;
+    if (x == BUTTON_P)
+        curr = 15;
     items[16] = "BUTTON_Q";
+    items_type[16] = BUTTON_Q;
+    if (x == BUTTON_Q)
+        curr = 16;
     items[17] = "BUTTON_R";
+    items_type[17] = BUTTON_R;
+    if (x == BUTTON_R)
+        curr = 17;
     items[18] = "BUTTON_S";
+    items_type[18] = BUTTON_S;
+    if (x == BUTTON_S)
+        curr = 18;
     items[19] = "BUTTON_T";
+    items_type[19] = BUTTON_T;
+    if (x == BUTTON_T)
+        curr = 19;
     items[20] = "BUTTON_U";
+    items_type[20] = BUTTON_U;
+    if (x == BUTTON_U)
+        curr = 20;
     items[21] = "BUTTON_V";
+    items_type[21] = BUTTON_V;
+    if (x == BUTTON_V)
+        curr = 21;
     items[22] = "BUTTON_W";
+    items_type[22] = BUTTON_W;
+    if (x == BUTTON_W)
+        curr = 22;
     items[23] = "BUTTON_X";
+    items_type[23] = BUTTON_X;
+    if (x == BUTTON_X)
+        curr = 23;
     items[24] = "BUTTON_Y";
+    items_type[24] = BUTTON_Y;
+    if (x == BUTTON_Y)
+        curr = 24;
     items[25] = "BUTTON_Z";
+    items_type[25] = BUTTON_Z;
+    if (x == BUTTON_Z)
+        curr = 25;
     items[26] = "BUTTON_LEFT_CONTROL";
+    items_type[26] = BUTTON_LEFT_CONTROL;
+    if (x == BUTTON_LEFT_CONTROL)
+        curr = 26;
     items[27] = "BUTTON_LEFT_SHIFT";
+    items_type[27] = BUTTON_LEFT_SHIFT;
+    if (x == BUTTON_LEFT_SHIFT)
+        curr = 27;
     items[28] = "BUTTON_MOUSE_LEFT";
+    items_type[28] = BUTTON_MOUSE_LEFT;
+    if (x == BUTTON_MOUSE_LEFT)
+        curr = 28;
     items[29] = "BUTTON_MOUSE_RIGHT";
+    items_type[29] = BUTTON_MOUSE_RIGHT;
+    if (x == BUTTON_MOUSE_RIGHT)
+        curr = 29;
     items[30] = "BUTTON_SPACE";
+    items_type[30] = BUTTON_SPACE;
+    if (x == BUTTON_SPACE)
+        curr = 30;
     items[31] = "BUTTON_ESCAPE";
+    items_type[31] = BUTTON_ESCAPE;
+    if (x == BUTTON_ESCAPE)
+        curr = 31;
     items[32] = "BUTTON_F1";
+    items_type[32] = BUTTON_F1;
+    if (x == BUTTON_F1)
+        curr = 32;
     items[33] = "BUTTON_F2";
+    items_type[33] = BUTTON_F2;
+    if (x == BUTTON_F2)
+        curr = 33;
     items[34] = "BUTTON_F3";
+    items_type[34] = BUTTON_F3;
+    if (x == BUTTON_F3)
+        curr = 34;
     items[35] = "BUTTON_F4";
+    items_type[35] = BUTTON_F4;
+    if (x == BUTTON_F4)
+        curr = 35;
     items[36] = "BUTTON_F5";
+    items_type[36] = BUTTON_F5;
+    if (x == BUTTON_F5)
+        curr = 36;
     items[37] = "BUTTON_F6";
+    items_type[37] = BUTTON_F6;
+    if (x == BUTTON_F6)
+        curr = 37;
     items[38] = "BUTTON_F7";
+    items_type[38] = BUTTON_F7;
+    if (x == BUTTON_F7)
+        curr = 38;
     items[39] = "BUTTON_F8";
+    items_type[39] = BUTTON_F8;
+    if (x == BUTTON_F8)
+        curr = 39;
     items[40] = "BUTTON_F9";
+    items_type[40] = BUTTON_F9;
+    if (x == BUTTON_F9)
+        curr = 40;
     items[41] = "BUTTON_F10";
+    items_type[41] = BUTTON_F10;
+    if (x == BUTTON_F10)
+        curr = 41;
     items[42] = "BUTTON_F11";
+    items_type[42] = BUTTON_F11;
+    if (x == BUTTON_F11)
+        curr = 42;
     items[43] = "BUTTON_F12";
+    items_type[43] = BUTTON_F12;
+    if (x == BUTTON_F12)
+        curr = 43;
     items[44] = "BUTTON_COUNT";
-    int type = x;
+    items_type[44] = BUTTON_COUNT;
+    if (x == BUTTON_COUNT)
+        curr = 44;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 45);
-    x = (GameButtonType)type;
+        ImGui::ListBox(name, &curr, items, 45);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_RasterizerFillMode(RasterizerFillMode &x,
                                                const char *name) {
     const char *items[2];
+    RasterizerFillMode items_type[2];
+    int curr = 0;
     items[0] = "RASTERIZER_FILL_SOLID";
+    items_type[0] = RASTERIZER_FILL_SOLID;
+    if (x == RASTERIZER_FILL_SOLID)
+        curr = 0;
     items[1] = "RASTERIZER_FILL_WIREFRAME";
-    int type = x;
+    items_type[1] = RASTERIZER_FILL_WIREFRAME;
+    if (x == RASTERIZER_FILL_WIREFRAME)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (RasterizerFillMode)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
                                                const char *name) {
     const char *items[3];
+    RasterizerCullMode items_type[3];
+    int curr = 0;
     items[0] = "RASTERIZER_CULL_NONE";
+    items_type[0] = RASTERIZER_CULL_NONE;
+    if (x == RASTERIZER_CULL_NONE)
+        curr = 0;
     items[1] = "RASTERIZER_CULL_FRONT";
+    items_type[1] = RASTERIZER_CULL_FRONT;
+    if (x == RASTERIZER_CULL_FRONT)
+        curr = 1;
     items[2] = "RASTERIZER_CULL_BACK";
-    int type = x;
+    items_type[2] = RASTERIZER_CULL_BACK;
+    if (x == RASTERIZER_CULL_BACK)
+        curr = 2;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 3);
-    x = (RasterizerCullMode)type;
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_CollisionShapeType(CollisionShapeType &x,
                                                const char *name) {
     const char *items[2];
+    CollisionShapeType items_type[2];
+    int curr = 0;
     items[0] = "COLLISION_SHAPE_TRIANGLES";
+    items_type[0] = COLLISION_SHAPE_TRIANGLES;
+    if (x == COLLISION_SHAPE_TRIANGLES)
+        curr = 0;
     items[1] = "COLLISION_SHAPE_ELLIPSOID";
-    int type = x;
+    items_type[1] = COLLISION_SHAPE_ELLIPSOID;
+    if (x == COLLISION_SHAPE_ELLIPSOID)
+        curr = 1;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (CollisionShapeType)type;
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
 }
 static void imgui_edit_enum_AnimationType(AnimationType &x, const char *name) {
     const char *items[7];
+    AnimationType items_type[7];
+    int curr = 0;
     items[0] = "ANIMATION_JUMP";
+    items_type[0] = ANIMATION_JUMP;
+    if (x == ANIMATION_JUMP)
+        curr = 0;
     items[1] = "ANIMATION_SHOOT";
+    items_type[1] = ANIMATION_SHOOT;
+    if (x == ANIMATION_SHOOT)
+        curr = 1;
     items[2] = "ANIMATION_RUN";
+    items_type[2] = ANIMATION_RUN;
+    if (x == ANIMATION_RUN)
+        curr = 2;
     items[3] = "ANIMATION_FORWARD_GUN_WALK";
+    items_type[3] = ANIMATION_FORWARD_GUN_WALK;
+    if (x == ANIMATION_FORWARD_GUN_WALK)
+        curr = 3;
     items[4] = "ANIMATION_BACKWARD_GUN_WALK";
+    items_type[4] = ANIMATION_BACKWARD_GUN_WALK;
+    if (x == ANIMATION_BACKWARD_GUN_WALK)
+        curr = 4;
     items[5] = "ANIMATION_GUN_IDLE";
+    items_type[5] = ANIMATION_GUN_IDLE;
+    if (x == ANIMATION_GUN_IDLE)
+        curr = 5;
     items[6] = "ANIMATION_COUNT";
-    int type = x;
+    items_type[6] = ANIMATION_COUNT;
+    if (x == ANIMATION_COUNT)
+        curr = 6;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 7);
-    x = (AnimationType)type;
+        ImGui::ListBox(name, &curr, items, 7);
+    x = items_type[curr];
 }
 static void
 imgui_edit_enum_ConstantBufferElementType(ConstantBufferElementType &x,
                                           const char *name) {
     const char *items[7];
+    ConstantBufferElementType items_type[7];
+    int curr = 0;
     items[0] = "CONSTANT_BUFFER_ELEMENT_MAT4";
+    items_type[0] = CONSTANT_BUFFER_ELEMENT_MAT4;
+    if (x == CONSTANT_BUFFER_ELEMENT_MAT4)
+        curr = 0;
     items[1] = "CONSTANT_BUFFER_ELEMENT_VEC4";
+    items_type[1] = CONSTANT_BUFFER_ELEMENT_VEC4;
+    if (x == CONSTANT_BUFFER_ELEMENT_VEC4)
+        curr = 1;
     items[2] = "CONSTANT_BUFFER_ELEMENT_VEC3";
+    items_type[2] = CONSTANT_BUFFER_ELEMENT_VEC3;
+    if (x == CONSTANT_BUFFER_ELEMENT_VEC3)
+        curr = 2;
     items[3] = "CONSTANT_BUFFER_ELEMENT_VEC2";
+    items_type[3] = CONSTANT_BUFFER_ELEMENT_VEC2;
+    if (x == CONSTANT_BUFFER_ELEMENT_VEC2)
+        curr = 3;
     items[4] = "CONSTANT_BUFFER_ELEMENT_FLOAT";
+    items_type[4] = CONSTANT_BUFFER_ELEMENT_FLOAT;
+    if (x == CONSTANT_BUFFER_ELEMENT_FLOAT)
+        curr = 4;
     items[5] = "CONSTANT_BUFFER_ELEMENT_INT";
+    items_type[5] = CONSTANT_BUFFER_ELEMENT_INT;
+    if (x == CONSTANT_BUFFER_ELEMENT_INT)
+        curr = 5;
     items[6] = "CONSTANT_BUFFER_ELEMENT_COUNT";
-    int type = x;
+    items_type[6] = CONSTANT_BUFFER_ELEMENT_COUNT;
+    if (x == CONSTANT_BUFFER_ELEMENT_COUNT)
+        curr = 6;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 7);
-    x = (ConstantBufferElementType)type;
+        ImGui::ListBox(name, &curr, items, 7);
+    x = items_type[curr];
 }
-static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
-    const char *items[2];
-    items[0] = "CAMERA_TYPE_PERSPECTIVE";
-    items[1] = "CAMERA_TYPE_ORTHOGRAPHIC";
-    int type = x;
+static void imgui_edit_enum_SceneType(SceneType &x, const char *name) {
+    const char *items[4];
+    SceneType items_type[4];
+    int curr = 0;
+    items[0] = "SCENE_PLAYER";
+    items_type[0] = SCENE_PLAYER;
+    if (x == SCENE_PLAYER)
+        curr = 0;
+    items[1] = "SCENE_CUBE";
+    items_type[1] = SCENE_CUBE;
+    if (x == SCENE_CUBE)
+        curr = 1;
+    items[2] = "SCENE_SPHERE";
+    items_type[2] = SCENE_SPHERE;
+    if (x == SCENE_SPHERE)
+        curr = 2;
+    items[3] = "SCENE_TEST";
+    items_type[3] = SCENE_TEST;
+    if (x == SCENE_TEST)
+        curr = 3;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &type, items, 2);
-    x = (CameraType)type;
+        ImGui::ListBox(name, &curr, items, 4);
+    x = items_type[curr];
 }
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
                                 Arena *arena = 0) {}
@@ -1664,6 +1991,11 @@ static void serialize_LoadedSound(FILE *fd, bool w, LoadedSound &x,
 static void imgui_edit_struct_Editor(Editor &x, const char *name,
                                      bool collapsed = true) {
     if (!collapsed || ImGui::CollapsingHeader(name)) {
+        {
+            bool tmp = x.edit_scene;
+            ImGui::Checkbox("edit_scene", &tmp);
+            x.edit_scene = tmp;
+        }
         {
             bool tmp = x.in_gizmo;
             ImGui::Checkbox("in_gizmo", &tmp);
@@ -1885,8 +2217,9 @@ static void imgui_edit_struct_Entity(Entity &x, const char *name,
             x.aiming = tmp;
         }
         imgui_edit_struct_CollisionShape(x.shape, "shape");
-        ImGui::Text("scene_id = %lu", x.scene_id);
+        imgui_edit_enum_SceneType(x.scene_id, "scene_id");
         ImGui::InputFloat("height_above_ground", &x.height_above_ground);
+        ImGui::InputFloat("point_light_scale", &x.point_light_scale);
     }
 }
 static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena = 0) {
@@ -1910,9 +2243,15 @@ static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena = 0) {
     serialize_int32_t(fd, w, x.pressing_jump);
     serialize_int32_t(fd, w, x.aiming);
     serialize_CollisionShape(fd, w, x.shape, arena);
-    serialize_size_t(fd, w, x.scene_id);
+    {
+        int tmp = x.scene_id;
+        serialize_int(fd, w, tmp);
+        if (!w)
+            x.scene_id = (SceneType)tmp;
+    }
     serialize_mat4(fd, w, x.scene_transform);
     serialize_float(fd, w, x.height_above_ground);
+    serialize_float(fd, w, x.point_light_scale);
 }
 static void serialize__G_fpos64_t(FILE *fd, bool w, _G_fpos64_t &x,
                                   Arena *arena = 0) {}

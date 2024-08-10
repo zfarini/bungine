@@ -1,4 +1,5 @@
 #version 420
+// TODO: cleanup make a common file to include this and defined types to match the codebase
 
 layout (std140, row_major, binding = 0) uniform Constants
 {
@@ -7,6 +8,11 @@ layout (std140, row_major, binding = 0) uniform Constants
 	mat4 model;
 	mat4 light_transform;
 	mat4 bones[96];
+
+
+	int point_light_count;
+	vec3 point_light_color[8];
+	vec3 point_light_position[8];
 
 	vec3 camera_p;
 	vec3 player_p;
@@ -120,29 +126,12 @@ void main()
     result += 0.2f * color;
     //return ;
 #if 1
-	const int light_count = 2;
-
-	vec3 light_pos[light_count] = {
-		vec3(1, 2, 2),
-		vec3(-1, 2, 2),
-	//	player_p + vec3(0, 0, 2)
-	};
-	vec3 light_color[light_count] = {
-		2*vec3(0.8, 0.2, 0.3),
-		vec3(0.1, 0.9, 0.4),
-		//1.5*vec3(0.8, 0.6, 0.3),
-	};
-	for (int i = 0; i < light_count; i++) {
-		vec3 to_light = normalize(light_pos[i] - world_p);
+	for (int i = 0; i < point_light_count; i++) {
+		vec3 to_light = normalize(point_light_position[i] - world_p);
 		float diffuse = max(0.f, dot(to_light, normal));
-		
 		vec3 specular = specular_color * pow(max(0.f, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
-		//specular = 0;
-		//specular = 0;	
-		//diffuse = 0;
-		//specular *= specular;
-		float attenuation = 1.f / length(light_pos[i] - world_p);
-		result += light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * attenuation;
+		float attenuation = 1.f / length(point_light_position[i] - world_p);
+		result += point_light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * attenuation;
 	}
 #endif
 	//result = vec3(pow(result.r, 1/2.2), pow(result.g, 1/2.2), pow(result.b, 1/2.2));

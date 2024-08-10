@@ -273,6 +273,21 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 		constants.player_p = get_entity(*game.world, game.world->player_id)->position;
 		constants.show_normals = game.show_normals;
 
+		// TODO: cleanup
+		{
+			for (int i = 0; i < game.world->entities.count; i++) {
+				Entity &e = game.world->entities[i];
+
+				if (constants.point_light_count == ARRAY_SIZE(constants.point_light_color))
+					break ;
+				if (e.type == EntityType_PointLight) {
+					int j = constants.point_light_count++;
+					constants.point_light_position[j].xyz = e.position;
+					constants.point_light_color[j].xyz = e.color * e.point_light_scale;
+				}
+			}
+		}
+
 		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
 		

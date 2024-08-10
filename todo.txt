@@ -1,18 +1,21 @@
 be able to edit entity asset + edit its transfor regardless of entity transform
-use meta stuff for constant buffer
+uniform scaling
+snap movement in editor (for all gizmo types)
+spawn point light entities (possibly with a mesh)
 compute collision hit point for cylinder vs cylinder
-
-
-in editor handle rotation when rotation plane is tangent ortho to view dir 
-sound 
-spatial parititioning for collision mesh data and entities in general?
-background asset loading
-guns & some actual gameplay
-ai: A*, Monte carlo? 
-replace unordered_map by either some hash map implementation or 
-    a red-black tree meh? 
-particles (optimize them simd/ gpu instancing?)
-profile code and optimize stuff
-better shadows
-main menu
-better lighthing?
+send bones as (translation scale and rotation)
+make the game runnable from anywhere? (as long as the data directory is in ..)
+cleanup strings
+add some default mesh for zero
+improve camera for up & down
+serialization version
+shadow map follow player?
+platform layer
+cleanup arenas
+logging
+* async asset loading
+particles (instancing?)
+transition between worlds?
+menu
+spatial partition
+improve entity selection? (meshes that are too big?)

@@ -2,6 +2,13 @@
 
 #define WORLD_UP V3(0, 0, 1)
 
+enum SceneType {
+    SCENE_PLAYER = 1,
+    SCENE_CUBE,
+    SCENE_SPHERE,
+    SCENE_TEST,
+};
+
 struct CollisionInfo
 {
 	v3 hit_p;
@@ -14,6 +21,7 @@ enum EntityType {
     EntityType_Enemy,
     EntityType_Static,
     EntityType_Projectile,
+	EntityType_PointLight,
     EntityType_Count,
 };
 
@@ -41,7 +49,7 @@ struct CollisionShape {
     entity_id entity;
 };
 
-typedef usize SceneID;
+//typedef usize SceneID;
 
 struct Entity {
     meta(ui: const, serialize) entity_id id;
@@ -67,8 +75,9 @@ struct Entity {
 
     meta(ui, serialize) CollisionShape shape;
 
-    meta(ui, serialize) SceneID scene_id;
+    meta(ui, serialize) SceneType scene_id;
     meta(ui, serialize) mat4 scene_transform;
+
 
     // Animation *animation;
     Animation *curr_anim;
@@ -82,8 +91,11 @@ struct Entity {
 
     meta(ui: const, serialize) float height_above_ground;
     
+	meta(ui, serialize) float point_light_scale;
+
     float z_rot;
     int last_move;
+
 
     float last_gun_time;
 };
@@ -173,6 +185,8 @@ struct Editor {
 
     Entity init_entity;
 
+	meta(ui) bool edit_scene;
+
     meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
     meta(ui) entity_id copied_entity;
@@ -248,12 +262,6 @@ struct SoundState
 	std::atomic_int32_t write_index;
 };
 
-enum SceneType {
-    SCENE_PLAYER = 1,
-    SCENE_CUBE,
-    SCENE_SPHERE,
-    SCENE_TEST,
-};
 
 struct Game {
 
@@ -311,6 +319,10 @@ struct Constants {
     mat4 model;
     mat4 light_transform;
     mat4 bones[96];
+
+	int point_light_count;
+	v4 point_light_color[8];
+	v4 point_light_position[8];
 
     v3 camera_p;
     v3 player_p;

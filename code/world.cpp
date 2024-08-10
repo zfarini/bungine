@@ -8,7 +8,7 @@ Entity *make_entity(World &world)
 	return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneType scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
 	Entity *e = make_entity(world);
 

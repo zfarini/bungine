@@ -140,16 +140,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				do_editor_op(world, editor, op);
 				e = 0;
 			}
-			if (e)
-				imgui_edit_struct_Entity(*e, "selected entity", false);
-
-
-			//const char * items[EntityType_Count];
-			//for (int i = 0; i < EntityType_Count; i++)
-			//	items[i] = ENUM_STRING(EntityType, i);
-			//int type = e->type;
-			//ImGui::ListBox("listbox", &type, items, EntityType_Count, 3);
-			//e->type = (EntityType) type;
+			imgui_edit_struct_Entity(*e, "selected entity", false);
 
 #if 0
 			begin_render_pass(game.mesh_render_pass);
@@ -209,6 +200,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		if (IsDown(input, BUTTON_T)) editor.gizmo_mode = GIZMO_TRANSLATION;
 		else if (IsDown(input, BUTTON_R)) editor.gizmo_mode = GIZMO_ROTATION;
 		else if (IsDown(input, BUTTON_S)) editor.gizmo_mode = GIZMO_SCALE;
+		else if (IsDownFirstTime(input, BUTTON_Q)) editor.edit_scene = !editor.edit_scene;
 	}
 	float rotation_inner_radius = 1.5;
 	float rotation_outer_radius = 2;
@@ -222,7 +214,11 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) { 
-			mat4 transform = get_entity_transform(world, *e);
+			mat4 transform;
+			if (editor.edit_scene)
+				transform = e->scene_transform;
+			else
+				transform = get_entity_transform(world, *e);
 
 			for (int i = 0; i < 3; i++)
 				axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
@@ -295,8 +291,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						plane_normal = axis[editor.dragging_axis];
 					}
 
-					push_line(e->position, e->position + normalize(plane_normal) * 2,
-							V3(1, 0, 1));
+					//push_line(e->position, e->position + normalize(plane_normal) * 2,
+					//		V3(1, 0, 1));
 
 					float hit_t;
 					if (ray_hit_plane(ray_origin, ray_dir, plane_normal, e->position, &hit_t)) {
@@ -322,14 +318,21 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							if (!editor.did_drag) {
 								editor.did_drag = true;
 								editor.s_init_drag = ds;
-								editor.s_init_scale = e->scale.e[editor.dragging_axis];
+								if (editor.edit_scene)
+									editor.s_init_scale = e->scene_transform.scale;
+								else
+									editor.s_init_scale = e->scale.e[editor.dragging_axis];
 							}
 							else {
-								v3 new_scale = e->scale;
+								v3 new_scale = (editor.edit_scene ? e->scene_transform.scale : e->scale);
+
 								new_scale.e[editor.dragging_axis] = editor.s_init_scale + ds - editor.s_init_drag;
 								if (new_scale.e[editor.dragging_axis] < 0.01f)
 									new_scale.e[editor.dragging_axis] = 0.01f;
-								e->scale = new_scale;
+								if (editor.edit_scene)
+									e->scene_transform.scale = new_scale;
+								else
+									e->scale = new_scale;
 							}
 						}
 						else if (editor.gizmo_mode == GIZMO_ROTATION) {
@@ -368,14 +371,21 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							if (!editor.did_drag) {
 								editor.did_drag = true;
 								editor.r_init_drag = a;
-								editor.r_init_rot = e->rotation;
+								if (editor.edit_scene)
+									editor.r_init_rot = e->scene_transform.rotation;
+								else
+									editor.r_init_rot = e->rotation;
 								editor.r_right_axis = right_axis;
 								editor.r_up_axis = up_axis;
 								editor.r_axis = axis[editor.dragging_axis];
 							}
 							else {
-								e->rotation = rotate_around_axis_quat(editor.r_axis, a - editor.r_init_drag)
+								quat rot = rotate_around_axis_quat(editor.r_axis, a - editor.r_init_drag)
 									* editor.r_init_rot;
+								if (editor.edit_scene)
+									e->scene_transform.rotation = rot;
+								else
+									e->rotation = rot;
 							}
 						}
 						else
@@ -407,15 +417,29 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						push &= (!v3_equal(op.translate.prev_p, op.translate.new_p));
 					}
 					else if (editor.gizmo_mode == GIZMO_SCALE) {
-						op.type = EDITOR_OP_SCALE_ENTITY;
-						op.scale.prev_scale = editor.init_entity.scale;
-						op.scale.new_scale = e->scale;
+						if (editor.edit_scene) {
+							op.type = EDITOR_OP_SCALE_SCENE;
+							op.scale.prev_scale = editor.init_entity.scene_transform.scale;
+							op.scale.new_scale = e->scene_transform.scale;
+						}
+						else {
+							op.type = EDITOR_OP_SCALE_ENTITY;
+							op.scale.prev_scale = editor.init_entity.scale;
+							op.scale.new_scale = e->scale;
+						}
 						push &= (!v3_equal(op.scale.prev_scale, op.scale.new_scale));
 					}
 					else if (editor.gizmo_mode == GIZMO_ROTATION) {
-						op.type = EDITOR_OP_ROTATE_ENTITY;
-						op.rotate.prev_rot = editor.init_entity.rotation;
-						op.rotate.new_rot = e->rotation;
+						if (editor.edit_scene) {
+							assert(!"fix this if you cameback");
+							op.type = EDITOR_OP_ROTATE_SCENE;
+							op.rotate.prev_rot = editor.init_entity.rotation;
+							op.rotate.new_rot = e->rotation;
+						} else {
+							op.type = EDITOR_OP_ROTATE_ENTITY;
+							op.rotate.prev_rot = editor.init_entity.rotation;
+							op.rotate.new_rot = e->rotation;
+						}
 						push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
 					}
 					if (push)

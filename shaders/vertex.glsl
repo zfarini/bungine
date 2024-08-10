@@ -14,6 +14,9 @@ layout (std140, row_major, binding = 0) uniform Constants
 	mat4 model;
 	mat4 light_transform;
 	mat4 bones[96];
+	int point_light_count;
+	vec3 point_light_color[8];
+	vec3 point_light_position[8];
 
 	vec3 camera_p;
 	vec3 player_p;

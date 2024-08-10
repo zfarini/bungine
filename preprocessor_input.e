@@ -20,7 +20,6 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
-#define __SANITIZE_ADDRESS__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -4763,8 +4762,6 @@ struct RenderContext {
     Array<v3> debug_lines;
 
     uintptr_t active_framebuffer_id;
-
-
 };
 
 usize get_input_element_size(int type) {
@@ -5210,6 +5207,7 @@ int get_type_size(ConstantBufferElement e)
  return get_constant_buffer_element_size(e.type);
 }
 
+
 ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 {
  ConstantBuffer result = {};
@@ -5219,9 +5217,18 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
  for (int i = 0; i < elements.count; i++) {
   result.elements[i] = elements[i];
 
-  offset = align_to(offset, get_type_alignement(elements[i]))
-   + get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
+  if (elements[i].array_size) {
+
+
+   offset = align_to(offset, get_type_alignement(elements[i]));
+   int stride = align_to(get_type_size(elements[i]), sizeof(v4));
+   offset += stride * elements[i].array_size;
+   offset = align_to(offset, get_type_alignement(elements[i]));
+  }
+  else
+   offset = align_to(offset, get_type_alignement(elements[i])) + get_type_size(elements[i]);
  }
+ printf("%d\n", offset);
 
  result.element_count = (int)elements.count;
  result.size = offset;
@@ -5259,7 +5266,6 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 
 
  glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
-
  glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
 }
 
@@ -6050,6 +6056,13 @@ Scene load_scene(Arena *arena, const char *filename)
 
 #define WORLD_UP V3(0, 0, 1)
 
+enum SceneType {
+    SCENE_PLAYER = 1,
+    SCENE_CUBE,
+    SCENE_SPHERE,
+    SCENE_TEST,
+};
+
 struct CollisionInfo
 {
  v3 hit_p;
@@ -6062,6 +6075,7 @@ enum EntityType {
     EntityType_Enemy,
     EntityType_Static,
     EntityType_Projectile,
+ EntityType_PointLight,
     EntityType_Count,
 };
 
@@ -6089,7 +6103,7 @@ struct CollisionShape {
     entity_id entity;
 };
 
-typedef usize SceneID;
+
 
 struct Entity {
     meta(ui: const, serialize) entity_id id;
@@ -6115,8 +6129,9 @@ struct Entity {
 
     meta(ui, serialize) CollisionShape shape;
 
-    meta(ui, serialize) SceneID scene_id;
+    meta(ui, serialize) SceneType scene_id;
     meta(ui, serialize) mat4 scene_transform;
+
 
 
     Animation *curr_anim;
@@ -6130,8 +6145,11 @@ struct Entity {
 
     meta(ui: const, serialize) float height_above_ground;
 
+ meta(ui, serialize) float point_light_scale;
+
     float z_rot;
     int last_move;
+
 
     float last_gun_time;
 };
@@ -6221,6 +6239,8 @@ struct Editor {
 
     Entity init_entity;
 
+ meta(ui) bool edit_scene;
+
     meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
     meta(ui) entity_id copied_entity;
@@ -6296,12 +6316,6 @@ struct SoundState
  std::atomic_int32_t write_index;
 };
 
-enum SceneType {
-    SCENE_PLAYER = 1,
-    SCENE_CUBE,
-    SCENE_SPHERE,
-    SCENE_TEST,
-};
 
 struct Game {
 
@@ -6360,6 +6374,10 @@ struct Constants {
     mat4 light_transform;
     mat4 bones[96];
 
+ int point_light_count;
+ v4 point_light_color[8];
+ v4 point_light_position[8];
+
     v3 camera_p;
     v3 player_p;
     v3 color;
@@ -6414,10 +6432,10 @@ Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width,
  return camera;
 }
 
-SceneID get_scene(Game &game, SceneType type)
+SceneType get_scene(Game &game, SceneType type)
 {
  assert(type > 0 && type < (sizeof(game.scenes) / sizeof(*game.scenes)));
- return (SceneID)type;
+ return type;
 }
 
 Entity *get_entity(World &world, entity_id id);
@@ -6866,6 +6884,21 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
   constants.player_p = get_entity(*game.world, game.world->player_id)->position;
   constants.show_normals = game.show_normals;
 
+
+  {
+   for (int i = 0; i < game.world->entities.count; i++) {
+    Entity &e = game.world->entities[i];
+
+    if (constants.point_light_count == (sizeof(constants.point_light_color) / sizeof(*constants.point_light_color)))
+     break ;
+    if (e.type == EntityType_PointLight) {
+     int j = constants.point_light_count++;
+     constants.point_light_position[j].xyz = e.position;
+     constants.point_light_color[j].xyz = e.color * e.point_light_scale;
+    }
+   }
+  }
+
   mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
 
@@ -6968,7 +7001,7 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
     draw_indexed((int)part.offset, (int)part.indices_count);
    }
   }
-# 386 "code/renderer.cpp"
+# 401 "code/renderer.cpp"
  }
 
  for (usize i = 0; i < node->childs.count; i++)
@@ -6978,10 +7011,10 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 void render_scene(Game &game, World &world, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
   bool outline = false)
 {
-# 403 "code/renderer.cpp"
+# 418 "code/renderer.cpp"
  if (anim)
   anim_time = fmod(anim_time, anim->duration);
-# 432 "code/renderer.cpp"
+# 447 "code/renderer.cpp"
  render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
 
 }
@@ -7355,7 +7388,7 @@ Entity *make_entity(World &world)
  return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneType scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
  Entity *e = make_entity(world);
 
@@ -8018,8 +8051,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     do_editor_op(world, editor, op);
     e = 0;
    }
-   imgui_edit_struct_Entity(*e, "selected entity", false);
-# 192 "code/editor.cpp"
+   if (e)
+    imgui_edit_struct_Entity(*e, "selected entity", false);
+# 193 "code/editor.cpp"
    ImGui::End();
   }
  }

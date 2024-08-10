@@ -511,12 +511,16 @@ string generate()
 
 		s += "static void imgui_edit_enum_" + name + "(" + name + " &x, const char *name){";
 		s += "const char *items[" + to_string(data.elems.size()) + "];";
-		for (int i = 0; i < data.elems.size(); i++)
+		s += name + " items_type[" + to_string(data.elems.size()) + "];";
+		s += "int curr = 0;";
+		for (int i = 0; i < data.elems.size(); i++) {
 			s += "items[" + to_string(i) + "] = \"" + data.elems[i].first + "\";";
-		s += "int type = x;";
+			s += "items_type[" + to_string(i) + "] = " + data.elems[i].first + ";";
+			s += "if (x == " + data.elems[i].first + ") curr = " + to_string(i) + ";";
+		}
 		s += "if (ImGui::CollapsingHeader(name))";
-		s += "ImGui::ListBox(name, &type, items, " + to_string(data.elems.size()) + ");";
-		s += "x = (" + name + ")type;";
+		s += "ImGui::ListBox(name, &curr, items, " + to_string(data.elems.size()) + ");";
+		s += "x = items_type[curr];";
 		s += "}";
 		result += s;
 	}

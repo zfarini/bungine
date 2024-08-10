@@ -356,6 +356,7 @@ int get_type_size(ConstantBufferElement e)
 	return get_constant_buffer_element_size(e.type);
 }
 
+//https://registry.khronos.org/OpenGL/specs/gl/glspec45.core.pdf#page=159
 ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 {
 	ConstantBuffer result = {};
@@ -365,9 +366,18 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 	for (int i = 0; i < elements.count; i++) {
 		result.elements[i] = elements[i];
 
-		offset = align_to(offset, get_type_alignement(elements[i]))
-			+ get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
+		if (elements[i].array_size) {
+			// TODO: this is likely wrong, it doesn't work with v3 array but 
+			// the wiki says some implementation get it wrong
+			offset = align_to(offset, get_type_alignement(elements[i]));
+			int stride = align_to(get_type_size(elements[i]), sizeof(v4));
+			offset += stride * elements[i].array_size;
+			offset = align_to(offset, get_type_alignement(elements[i]));
+		}
+		else
+			offset = align_to(offset, get_type_alignement(elements[i])) + get_type_size(elements[i]);
 	}
+	printf("%d\n", offset);
 
 	result.element_count = (int)elements.count;
 	result.size = offset;
@@ -405,7 +415,6 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 	//memcpy(dest, data, sizeof(Constants));
 
 	glBindBuffer(GL_UNIFORM_BUFFER, buffer.id);
-	// TODO: subData?
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, buffer.size, (void *)dest);
 }
 

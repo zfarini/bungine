@@ -72,10 +72,10 @@ Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width,
 	return camera;
 }
 
-SceneID get_scene(Game &game, SceneType type)
+SceneType get_scene(Game &game, SceneType type)
 {
 	assert(type > 0 && type < ARRAY_SIZE(game.scenes));
-	return (SceneID)type;
+	return type;
 }
 
 Entity *get_entity(World &world, entity_id id);
