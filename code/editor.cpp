@@ -120,6 +120,83 @@ void undo_editor_op(World &world, Editor &editor)
 
 void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
 {
+	{
+		Entity *e = get_entity(world, world.editor_selected_entity);
+
+		if (e) {
+			ImGuiIO &io = ImGui::GetIO();
+
+			ImGui::Begin("Entity");
+
+			if (ImGui::Button("Reset scale"))
+				e->scale = V3(1);
+			if (ImGui::Button("Reset rotation"))
+				e->rotation = identity_quat();
+			if (e->id != world.player_id && ImGui::Button("delete")) {
+				EditorOp op = {};
+				op.entity = e->id;
+				op.type = EDITOR_OP_DELETE_ENTITY;
+				op.del.entity_data = *e;
+				do_editor_op(world, editor, op);
+				e = 0;
+			}
+			imgui_edit_struct_Entity(*e, "selected entity", false);
+
+
+			//const char * items[EntityType_Count];
+			//for (int i = 0; i < EntityType_Count; i++)
+			//	items[i] = ENUM_STRING(EntityType, i);
+			//int type = e->type;
+			//ImGui::ListBox("listbox", &type, items, EntityType_Count, 3);
+			//e->type = (EntityType) type;
+
+#if 0
+			begin_render_pass(game.mesh_render_pass);
+			{
+				FrameBuffer &fb = game.debug_asset_fb;
+				bind_framebuffer(fb);
+
+				int width = fb.color_texture.width;
+				int height = fb.color_texture.height;
+
+				set_viewport(0, 0, width, height);
+
+				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
+				clear_framebuffer_depth(fb, 1);
+
+				bind_texture(4, g_rc->white_texture);
+				Camera camera = {};
+				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
+				camera.projection = game_camera.projection;
+				camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
+				camera.projection.e[1][1] *= -1;
+				render_scene(game, game.scenes[e->scene_id], camera, 
+					zrotation(PI/4), 0, 0, e->color);
+				//render_entities(game, world, camera, false);
+
+				Arena *temp = begin_temp_memory();
+
+				void *data = arena_alloc(temp, sizeof(uint32_t) * width * height);
+				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+				glBindTexture(GL_TEXTURE_2D, game.debug_asset_tex.id);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA,
+						GL_UNSIGNED_BYTE, data);
+				ImGui::Image((void *)(intptr_t)game.debug_asset_tex.id, ImVec2(width, height));
+
+				end_temp_memory();
+			}
+			end_render_pass();
+#endif
+
+			ImGui::End();
+		}
+	}
+	if (!game.in_editor)
+		return ;
+
+	
+
 	v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
 	mouse_p.y *= -1;
 
@@ -421,78 +498,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	}
 
 
-	{
-		Entity *e = get_entity(world, world.editor_selected_entity);
-
-		if (e) {
-			ImGuiIO &io = ImGui::GetIO();
-
-			ImGui::Begin("Entity");
-            ImGui::ColorEdit3("color", e->color.e);
-			ImGui::Text("id: %ld", e->id);
-			ImGui::Text("type: %s", ENUM_STRING(EntityType, e->type));
-			if (ImGui::Button("Reset scale"))
-				e->scale = V3(1);
-			if (ImGui::Button("Reset rotation"))
-				e->rotation = identity_quat();
-
-			const char * items[EntityType_Count];
-			for (int i = 0; i < EntityType_Count; i++)
-				items[i] = ENUM_STRING(EntityType, i);
-			ImGui::ListBox("listbox", &e->type, items, EntityType_Count, 3);
-
-
-			if (e->id != world.player_id && ImGui::Button("delete")) {
-				EditorOp op = {};
-				op.entity = e->id;
-				op.type = EDITOR_OP_DELETE_ENTITY;
-				op.del.entity_data = *e;
-
-				do_editor_op(world, editor, op);
-				e = 0;
-			}
-#if 0
-			begin_render_pass(game.mesh_render_pass);
-			{
-				FrameBuffer &fb = game.debug_asset_fb;
-				bind_framebuffer(fb);
-
-				int width = fb.color_texture.width;
-				int height = fb.color_texture.height;
-
-				set_viewport(0, 0, width, height);
-
-				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
-				clear_framebuffer_depth(fb, 1);
-
-				bind_texture(4, g_rc->white_texture);
-				Camera camera = {};
-				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
-				camera.projection = game_camera.projection;
-				camera.projection = perspective_projection(0.1, 100, 90, (float)height/width);
-				camera.projection.e[1][1] *= -1;
-				render_scene(game, game.scenes[e->scene_id], camera, 
-					zrotation(PI/4), 0, 0, e->color);
-				//render_entities(game, world, camera, false);
-
-				Arena *temp = begin_temp_memory();
-
-				void *data = arena_alloc(temp, sizeof(uint32_t) * width * height);
-				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-				glBindTexture(GL_TEXTURE_2D, game.debug_asset_tex.id);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA,
-						GL_UNSIGNED_BYTE, data);
-				ImGui::Image((void *)(intptr_t)game.debug_asset_tex.id, ImVec2(width, height));
-
-				end_temp_memory();
-			}
-			end_render_pass();
-#endif
-
-			ImGui::End();
-		}
-	}
+	
 	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_Z)) {
 		undo_editor_op(world, editor);

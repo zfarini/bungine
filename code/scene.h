@@ -12,6 +12,7 @@ struct Vertex {
     float indices[MAX_BONE_WEIGHTS]; //[MAX_BONE_WEIGHTS];
 };
 
+// TODO: cleanup
 VertexInputElement g_vertex_input_elements[] = {
     {offsetof(Vertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
     {offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},

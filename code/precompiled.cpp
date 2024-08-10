@@ -2,18 +2,20 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 
-#include "imgui/imgui_demo.cpp"
-#ifdef _WIN32
-#include "imgui/imgui_impl_win32.cpp"
-#else
-#include "imgui/imgui_impl_glfw.cpp"
-#endif
 #ifdef RENDERER_DX11
 #include "imgui/imgui_impl_dx11.cpp"
 #elif RENDERER_OPENGL
 #include "imgui/imgui_impl_opengl3.cpp"
 #else
 #error "??"
+#endif
+
+
+#include "imgui/imgui_demo.cpp"
+#ifdef _WIN32
+#include "imgui/imgui_impl_win32.cpp"
+#else
+#include "imgui/imgui_impl_glfw.cpp"
 #endif
 
 #include "imgui/imgui.cpp"

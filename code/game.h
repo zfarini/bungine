@@ -2,6 +2,13 @@
 
 #define WORLD_UP V3(0, 0, 1)
 
+struct CollisionInfo
+{
+	v3 hit_p;
+	v3 hit_normal;
+	float t;
+};
+
 enum EntityType {
     EntityType_Player,
     EntityType_Enemy,
@@ -16,17 +23,19 @@ enum CollisionShapeType {
 };
 
 struct CollisionTriangle {
-    v3 v0, v1, v2;
+    meta(ui, serialize) v3 v0;
+	meta(ui, serialize) v3 v1;
+	meta(ui, serialize) v3 v2;
 };
 
 typedef usize entity_id;
 
 struct CollisionShape {
-    int type;
-    Array<CollisionTriangle> triangles;
-    v3 ellipsoid_radius;
+    meta(ui: const, serialize) CollisionShapeType type;
+    meta(ui, serialize) Array<CollisionTriangle> triangles;
+    meta(ui, serialize) v3 ellipsoid_radius;
     // TODO: both of these are bad
-    v3 box_radius;
+	v3 box_radius;
     mat4 transform;
     v3 scale;
     entity_id entity;
@@ -35,35 +44,33 @@ struct CollisionShape {
 typedef usize SceneID;
 
 struct Entity {
-    entity_id id;
+    meta(ui: const, serialize) entity_id id;
 
-    entity_id parent;
+	entity_id parent;
 
-    int type;
-    v3 position; // relative position
-    v3 dp;
+    meta(ui, serialize) EntityType type;
+    meta(ui, serialize) v3 position; // relative position
+    meta(ui, serialize) v3 dp;
 
-    quat rotation;
-    v3 scale;
+    meta(ui, serialize) quat rotation;
+    meta(ui, serialize) v3 scale;
 
-    v3 color;
-
+    meta(ui: color, serialize) v3 color;
     
-    b32 moved;
-    b32 run;
-    b32 shooting;
-    b32 can_jump;
-    b32 on_ground;
-    b32 pressing_jump;
-    b32 aiming;
+    meta(ui, serialize) b32 moved;
+    meta(ui, serialize) b32 run;
+    meta(ui, serialize) b32 shooting;
+    meta(ui, serialize) b32 can_jump;
+    meta(ui, serialize) b32 on_ground;
+    meta(ui, serialize) b32 pressing_jump;
+    meta(ui, serialize) b32 aiming;
 
-    CollisionShape shape;
+    meta(ui, serialize) CollisionShape shape;
 
-    SceneID scene_id;
-    mat4 scene_transform;
+    meta(ui, serialize) SceneID scene_id;
+    meta(ui, serialize) mat4 scene_transform;
 
     // Animation *animation;
-
     Animation *curr_anim;
     Animation *next_anim;
     float anim_time;
@@ -73,13 +80,12 @@ struct Entity {
 
     float speed;
 
-    float height_above_ground;
+    meta(ui: const, serialize) float height_above_ground;
     
     float z_rot;
     int last_move;
 
     float last_gun_time;
-
 };
 
 enum AnimationType {
@@ -167,49 +173,49 @@ struct Editor {
 
     Entity init_entity;
 
-    bool in_gizmo;
-    entity_id selected_entity;
-    entity_id copied_entity;
+    meta(ui) bool in_gizmo;
+    meta(ui) entity_id selected_entity;
+    meta(ui) entity_id copied_entity;
 
-    GizmoMode gizmo_mode;
+    meta(ui) GizmoMode gizmo_mode;
 
-    int dragging_axis;
-    bool did_drag;
+    meta(ui) int dragging_axis;
+    meta(ui) bool did_drag;
 
-    v3 p_init_drag;
+    meta(ui) v3 p_init_drag;
 
-    float s_init_scale;
-    float s_init_drag;
+    meta(ui) float s_init_scale;
+    meta(ui) float s_init_drag;
 
-    quat r_init_rot;
-    float r_init_drag;
-    v3 r_right_axis;
-    v3 r_up_axis;
-    v3 r_axis;
+    meta(ui) quat r_init_rot;
+    meta(ui) float r_init_drag;
+    meta(ui) v3 r_right_axis;
+    meta(ui) v3 r_up_axis;
+    meta(ui) v3 r_axis;
 
-    v3 last_camera_p;
+    meta(ui) v3 last_camera_p;
 };
 
 struct World {
     Arena arena;
 
-    Editor editor;
+    meta(ui) Editor editor;
 
-    Array<Entity> entities;
+    meta(ui, serialize) Array<Entity> entities;
 
     std::unordered_map<entity_id, usize> entities_id_map;
 
-    entity_id next_entity_id;
+    meta(serialize) entity_id next_entity_id;
 
-    v3 player_camera_p;
-    v3 player_camera_rotation;
-    v3 player_camera_drotation;
+    meta(serialize) v3 player_camera_p;
+    meta(serialize) v3 player_camera_rotation;
+    meta(serialize) v3 player_camera_drotation;
 
-    v3 editor_camera_p;
-    v3 editor_camera_rotation;
+    meta(serialize) v3 editor_camera_p;
+    meta(serialize) v3 editor_camera_rotation;
 
-    entity_id editor_selected_entity;
-    entity_id player_id;
+    meta(ui) entity_id editor_selected_entity;
+    meta(serialize) entity_id player_id;
 
     entity_id moving_box;
     // TODO: remove this
@@ -249,24 +255,11 @@ enum SceneType {
     SCENE_TEST,
 };
 
-struct CollisionTriangleID {
-    int scene_id;
-    int triangle_id;
-};
-
-#define CELL_DIM_X 1
-#define CELL_DIM_Y 1
-#define CELL_X_COUNT 256
-#define CELL_Y_COUNT 256
-struct CollisionCell {
-    CollisionShape shape;
-};
-
 struct Game {
-    CollisionCell cells[CELL_DIM_Y * 2 + 1][CELL_DIM_X * 2 + 1];
 
     Arena *memory;
 
+	// TODO: this get used in sound right now remove atomic later
     std::atomic_bool is_initialized;
 
     World *world;
@@ -289,10 +282,10 @@ struct Game {
     Animation animations[ANIMATION_COUNT];
 
     b32 in_editor;
-    bool debug_collision;
+    meta(ui) bool debug_collision;
 
-    int frame;
-    float time;
+    meta(ui) int frame;
+    meta(ui) float time;
 
     RasterizerState default_rasterizer_state, wireframe_rasterizer_state;
     DepthStencilState default_depth_stencil_state;
@@ -306,10 +299,10 @@ struct Game {
     SoundPlaying *first_playing_sound;
     LoadedSound loaded_sounds[32];
 
-    bool show_normals;
-    bool render_bones;
-    bool frustum_culling;
-    float master_volume;
+    meta(ui) bool show_normals;
+    meta(ui) bool render_bones;
+    meta(ui) bool frustum_culling;
+    meta(ui) float master_volume;
 };
 
 struct Constants {

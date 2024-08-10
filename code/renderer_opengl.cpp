@@ -416,7 +416,6 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 
 void begin_render_frame()
 {
-	//glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
 	g_rc->debug_lines.count = 0;
 	#ifdef _WIN32
 	ImGui_ImplWin32_NewFrame();

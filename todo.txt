@@ -1,3 +1,7 @@
+be able to edit entity asset + edit its transfor regardless of entity transform
+use meta stuff for constant buffer
+
+
 in editor handle rotation when rotation plane is tangent ortho to view dir 
 sound 
 spatial parititioning for collision mesh data and entities in general?

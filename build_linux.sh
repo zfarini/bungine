@@ -11,6 +11,8 @@ FLAGS=$FLAGS" -g3 -fsanitize=address -fsanitize=undefined"
 #g++ -O2 -Iinclude -DRENDERER_OPENGL -c code/precompiled.cpp -o precompiled.o
 g++ $FLAGS code/preprocessor.cpp -o preprocessor
 g++ -DDISABLE_PREPROCESSOR $FLAGS code/game.cpp -E -o preprocessor_input.e
-./preprocessor preprocessor_input.e code/generated.h
-g++  $FLAGS code/glfw_main.cpp precompiled.o $LINK_FLAGS
+./preprocessor preprocessor_input.e code/.generated.h
+clang-format code/.generated.h > code/generated.h
+rm code/.generated.h
+g++ $FLAGS code/glfw_main.cpp precompiled.o $LINK_FLAGS
 

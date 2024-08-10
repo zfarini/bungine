@@ -427,8 +427,7 @@
 #define __STDC_ISO_10646__ 201706L
 # 1 "<command-line>" 2
 # 1 "code/game.cpp"
-#define _CRT_SECURE_NO_WARNINGS 
-# 10 "code/game.cpp"
+# 15 "code/game.cpp"
 # 1 "code/common.h" 1
        
 
@@ -450,7 +449,7 @@ typedef float f32;
 typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
-# 11 "code/game.cpp" 2
+# 16 "code/game.cpp" 2
 # 1 "code/arena.h" 1
        
 
@@ -521,151 +520,130 @@ static void end_temp_memory()
  assert(g_temp_arena->last_used_count > 0);
  g_temp_arena->arena.used = g_temp_arena->last_used[--g_temp_arena->last_used_count];
 }
-# 12 "code/game.cpp" 2
+# 17 "code/game.cpp" 2
 # 1 "code/utils.h" 1
 #define Kilobyte(x) (1024ULL * x)
 #define Megabyte(x) (1024ULL * Kilobyte(x))
 #define GigaByte(x) (1024ULL * Megabyte(x))
 
-template<typename T>
-T min(T a, T b)
-{
- return (a < b ? a : b);
+template <typename T> T min(T a, T b) { return (a < b ? a : b); }
+
+template <typename T> T max(T a, T b) { return (a > b ? a : b); }
+
+template <typename T> void swap(T &a, T &b) {
+    T tmp = a;
+
+    a = b;
+    b = tmp;
 }
 
-template<typename T>
-T max(T a, T b)
-{
- return (a > b ? a : b);
-}
+template <typename T> struct Array {
+    T *data;
+    usize count;
+    usize capacity;
 
-template<typename T>
-void swap(T &a, T &b)
-{
- T tmp = a;
+    T &operator[](int index) {
+        assert(index >= 0 && index < count);
+        return data[index];
+    }
 
- a = b;
- b = tmp;
-}
+    T &operator[](usize index) {
+        assert(index < count);
+        return data[index];
+    }
 
-template<typename T>
-struct Array
-{
- T *data;
- usize count;
- usize capacity;
+    void push(const T &value) {
+        assert(count < capacity);
+        data[count++] = value;
+    }
 
- T &operator[](int index)
- {
-  assert(index >= 0 && index < count);
-  return data[index];
- }
-
- T &operator[](usize index)
- {
-  assert(index < count);
-  return data[index];
- }
-
- void push(const T &value)
- {
-  assert(count < capacity);
-  data[count++] = value;
- }
-
- T &back()
- {
-  assert(count);
-  return data[count - 1];
- }
+    T &back() {
+        assert(count);
+        return data[count - 1];
+    }
 };
 
+template <typename T> Array<T> make_array_max(Arena *arena, usize capacity) {
+    Array<T> result;
 
-template<typename T>
-Array<T> make_array_max(Arena *arena, usize capacity)
-{
- Array<T> result;
-
- result.count = 0;
- result.capacity = capacity;
- result.data = (T *)_arena_alloc("code/utils.h", __func__, 66, arena, capacity * sizeof(T));
- return result;
+    result.count = 0;
+    result.capacity = capacity;
+    result.data = (T *)_arena_alloc("code/utils.h", __func__, 47, arena, capacity * sizeof(T));
+    return result;
 }
 
-template<typename T>
-Array<T> make_array(Arena *arena, usize count, const T *data = 0)
-{
- Array<T> result = make_array_max<T>(arena, count);
+template <typename T>
+Array<T> make_array(Arena *arena, usize count, const T *data = 0) {
+    Array<T> result = make_array_max<T>(arena, count);
 
- result.count = count;
- if (data && count)
-  memcpy(result.data, data, count * sizeof(T));
- return result;
+    result.count = count;
+    if (data && count)
+        memcpy(result.data, data, count * sizeof(T));
+    return result;
 }
 
-template<typename T>
-Array<T> make_zero_array(Arena *arena, usize count)
-{
- Array<T> result = make_array<T>(arena, count);
- memset(result.data, 0, sizeof(T) * count);
+template <typename T> Array<T> make_zero_array(Arena *arena, usize count) {
+    Array<T> result = make_array<T>(arena, count);
+    memset(result.data, 0, sizeof(T) * count);
 
- return result;
+    return result;
 }
 
-template<typename T>
-Array<T> make_array(T *data, usize count)
-{
- Array<T> result;
+template <typename T> Array<T> make_array(T *data, usize count) {
+    Array<T> result;
 
- result.capacity = result.count = count;
- result.data = data;
- return result;
+    result.capacity = result.count = count;
+    result.data = data;
+    return result;
 }
 
 
-template<typename T>
-Array<T> clone_array(Arena *arena, Array<T> &array)
-{
- Array<T> result;
+template <typename T> Array<T> clone_array(Arena *arena, Array<T> &array) {
+    Array<T> result;
 
- result.data = (T *)_arena_alloc("code/utils.h", __func__, 106, arena, array.capacity * sizeof(T));
- memcpy(result.data, array.data, sizeof(T) * array.count);
- result.count = array.count;
- result.capacity = array.capacity;
- return result;
+    result.data = (T *)_arena_alloc("code/utils.h", __func__, 80, arena, array.capacity * sizeof(T));
+    memcpy(result.data, array.data, sizeof(T) * array.count);
+    result.count = array.count;
+    result.capacity = array.capacity;
+    return result;
 }
-# 121 "code/utils.h"
+
+
+
+
+
+
+
 using String = Array<char>;
-String make_string(Arena *arena, usize count, const char *data = 0) {return make_array<char>(arena, count, data);}
-b32 strings_equal(const String &a, const String &b)
-{
- if (a.count != b.count)
-  return false;
- for (usize i = 0; i < a.count; i++)
-  if (a.data[i] != b.data[i])
-   return false;
- return true;
+String make_string(Arena *arena, usize count, const char *data = 0) {
+    return make_array<char>(arena, count, data);
+}
+b32 strings_equal(const String &a, const String &b) {
+    if (a.count != b.count)
+        return false;
+    for (usize i = 0; i < a.count; i++)
+        if (a.data[i] != b.data[i])
+            return false;
+    return true;
 }
 
-String make_cstring(const char *cstr)
-{
- usize len = 0;
- while (cstr[len])
-  len++;
- String s;
- s.data = (char *)cstr;
- s.capacity = len + 1;
- s.count = len;
- return s;
+String make_cstring(const char *cstr) {
+    usize len = 0;
+    while (cstr[len])
+        len++;
+    String s;
+    s.data = (char *)cstr;
+    s.capacity = len + 1;
+    s.count = len;
+    return s;
 }
 
-String concact_string(Arena *arena, String a, String b)
-{
- String result = make_string(arena, a.count + b.count);
+String concact_string(Arena *arena, String a, String b) {
+    String result = make_string(arena, a.count + b.count);
 
- memcpy(result.data, a.data, a.count);
- memcpy(result.data + a.count, b.data, b.count);
- return result;
+    memcpy(result.data, a.data, a.count);
+    memcpy(result.data + a.count, b.data, b.count);
+    return result;
 }
 #define str_format(str) (int)str.count, str.data
 
@@ -3812,653 +3790,499 @@ namespace std
   using ::__gnu_cxx::vsnprintf;
   using ::__gnu_cxx::vsscanf;
 }
-# 156 "code/utils.h" 2
+# 127 "code/utils.h" 2
 
 
-# 157 "code/utils.h"
-String load_entire_file(Arena *arena, String filename)
-{
- assert(
-  filename.count < filename.capacity &&
-  filename.data[filename.count] == 0);
- String result = {};
+# 128 "code/utils.h"
+String load_entire_file(Arena *arena, String filename) {
+    assert(filename.count < filename.capacity &&
+           filename.data[filename.count] == 0);
+    String result = {};
 
- FILE *file = fopen(filename.data, "rb");
- if (!file) {
-  printf("failed to open file %.*s\n", (int)filename.count, filename.data);
-  assert(0);
-  return result;
- }
- fseek(file, 0, 
-# 170 "code/utils.h" 3 4
-               2
-# 170 "code/utils.h"
-                       );
- usize size = ftell(file);
- fseek(file, 0, 
-# 172 "code/utils.h" 3 4
-               0
-# 172 "code/utils.h"
-                       );
+    FILE *file = fopen(filename.data, "rb");
+    if (!file) {
+        printf("failed to open file %.*s\n", (int)filename.count, filename.data);
+        assert(0);
+        return result;
+    }
+    fseek(file, 0, 
+# 139 "code/utils.h" 3 4
+                  2
+# 139 "code/utils.h"
+                          );
+    usize size = ftell(file);
+    fseek(file, 0, 
+# 141 "code/utils.h" 3 4
+                  0
+# 141 "code/utils.h"
+                          );
 
- result = make_string(arena, size);
+    result = make_string(arena, size);
 
- while (size > 0)
- {
-  size_t bytes_read = fread(result.data, 1, size, file);
-  if (bytes_read <= 0)
-   assert(0);
-  size -= bytes_read;
- }
- return result;
+    while (size > 0) {
+        size_t bytes_read = fread(result.data, 1, size, file);
+        if (bytes_read <= 0)
+            assert(0);
+        size -= bytes_read;
+    }
+    return result;
 }
 
 
-int align_to(int x, int alignement)
-{
- return alignement * ((x + alignement - 1) / alignement);
+int align_to(int x, int alignement) {
+    return alignement * ((x + alignement - 1) / alignement);
 }
-# 13 "code/game.cpp" 2
+# 18 "code/game.cpp" 2
 # 1 "code/math.h" 1
        
-
 
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
 #define RAD2DEG (180.f / PI)
 
-int sign(float x)
-{
- if (x < 0) return -1;
- else if (x > 0) return 1;
- return 0;
+int sign(float x) {
+    if (x < 0)
+        return -1;
+    else if (x > 0)
+        return 1;
+    return 0;
 }
 
 
 union v2 {
- struct {
-  float x, y;
- };
- struct {
-  float u, v;
- };
- float e[2];
+    struct {
+        float x, y;
+    };
+    struct {
+        float u, v;
+    };
+    float e[2];
 };
 
-v2 V2(float x)
-{
- return v2{x, x};
-}
-v2 V2(float x, float y)
-{
- return v2{x, y};
-}
+v2 V2(float x) { return v2{x, x}; }
+v2 V2(float x, float y) { return v2{x, y}; }
 
-v2 operator+(v2 a, v2 b)
-{
- return v2{a.x + b.x, a.y + b.y};
-}
+v2 operator+(v2 a, v2 b) { return v2{a.x + b.x, a.y + b.y}; }
 
-v2 operator-(v2 a, v2 b)
-{
- return v2{a.x - b.x, a.y - b.y};
-}
+v2 operator-(v2 a, v2 b) { return v2{a.x - b.x, a.y - b.y}; }
 
-v2 operator*(v2 a, float b)
-{
- return v2{a.x * b, a.y * b};
+v2 operator*(v2 a, float b) { return v2{a.x * b, a.y * b}; }
+
+v2 operator*(float a, v2 b) { return v2{a * b.x, a * b.y}; }
+
+v2 operator*(v2 a, v2 b) { return v2{a.x * b.x, a.y * b.y}; }
+
+v2 operator/(v2 a, float b) {
+    float inv = 1.f / b;
+    return v2{a.x * inv, a.y * inv};
 }
 
-v2 operator*(float a, v2 b)
-{
- return v2{a * b.x, a * b.y};
-}
+v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
 
-v2 operator*(v2 a, v2 b)
-{
- return v2{a.x * b.x, a.y * b.y};
-}
+v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
 
-v2 operator/(v2 a, float b)
-{
- float inv = 1.f / b;
- return v2{a.x * inv, a.y * inv};
-}
+v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
 
-v2 &operator+=(v2 &a, v2 b)
-{
- return a = a + b;
-}
+v2 &operator*=(v2 &a, float b) { return a = a * b; }
 
-v2 &operator-=(v2 &a, v2 b)
-{
- return a = a - b;
-}
+v2 &operator/=(v2 &a, float b) { return a = a / b; }
 
-v2 &operator*=(v2 &a, v2 b)
-{
- return a = a * b;
-}
+float dot(v2 a, v2 b) { return a.x * b.x + a.y * b.y; }
 
-v2 &operator*=(v2 &a, float b)
-{
- return a = a * b;
-}
+float length_sq(v2 a) { return dot(a, a); }
 
-v2 &operator/=(v2 &a, float b)
-{
- return a = a / b;
-}
+float length(v2 a) { return sqrtf(dot(a, a)); }
 
-float dot(v2 a, v2 b)
-{
- return a.x * b.x + a.y * b.y;
-}
-
-float length_sq(v2 a)
-{
- return dot(a, a);
-}
-
-float length(v2 a)
-{
- return sqrtf(dot(a, a));
-}
-
-v2 normalize(v2 a)
-{
- float len = length_sq(a);
+v2 normalize(v2 a) {
+    float len = length_sq(a);
 
 
- if (len < 1e-9)
-  return {};
- else
-  return a / sqrtf(len);
+    if (len < 1e-9)
+        return {};
+    else
+        return a / sqrtf(len);
 }
 
 
 union v3 {
- struct {
-  float x, y, z;
- };
- struct {
-  float r, g, b;
- };
- struct {
-  float u, v, w;
- };
- v2 xy;
- float e[3];
+    struct {
+        float x, y, z;
+    };
+    struct {
+        float r, g, b;
+    };
+    struct {
+        float u, v, w;
+    };
+    v2 xy;
+    float e[3];
 };
 
-v3 V3(float x)
-{
- return v3{x, x, x};
+v3 V3(float x) { return v3{x, x, x}; }
+
+v3 V3(float x, float y, float z) {
+    v3 result;
+
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
 }
 
-v3 V3(float x, float y, float z)
-{
- v3 result;
+v3 operator+(v3 a, v3 b) { return v3{a.x + b.x, a.y + b.y, a.z + b.z}; }
 
- result.x = x;
- result.y = y;
- result.z = z;
- return result;
+v3 operator-(v3 a, v3 b) { return v3{a.x - b.x, a.y - b.y, a.z - b.z}; }
+
+v3 operator*(v3 a, float b) { return v3{a.x * b, a.y * b, a.z * b}; }
+
+v3 operator*(float a, v3 b) { return v3{a * b.x, a * b.y, a * b.z}; }
+
+v3 operator/(v3 a, float b) {
+    float inv = 1.f / b;
+    return v3{a.x * inv, a.y * inv, a.z * inv};
 }
 
-v3 operator+(v3 a, v3 b)
-{
- return v3{a.x + b.x, a.y + b.y, a.z + b.z};
+v3 operator*(v3 a, v3 b) { return v3{a.x * b.x, a.y * b.y, a.z * b.z}; }
+
+v3 operator-(v3 a) { return v3{-a.x, -a.y, -a.z}; }
+
+v3 &operator+=(v3 &a, v3 b) { return a = a + b; }
+
+v3 &operator-=(v3 &a, v3 b) { return a = a - b; }
+
+v3 &operator*=(v3 &a, v3 b) { return a = a * b; }
+
+v3 &operator*=(v3 &a, float b) { return a = a * b; }
+
+v3 &operator/=(v3 &a, float b) { return a = a / b; }
+
+v3 operator/(float a, v3 b) { return v3{a / b.x, a / b.y, a / b.z}; }
+
+float dot(v3 a, v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+
+float length_sq(v3 a) { return dot(a, a); }
+
+float length(v3 a) { return sqrtf(dot(a, a)); }
+
+v3 normalize(v3 a) {
+    float len = length_sq(a);
+
+    if (len < 1e-9)
+        return {};
+    else
+        return a / sqrtf(len);
 }
 
-v3 operator-(v3 a, v3 b)
-{
- return v3{a.x - b.x, a.y - b.y, a.z - b.z};
+v3 cross(v3 a, v3 b) {
+    return v3{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+              a.x * b.y - a.y * b.x};
 }
 
-v3 operator*(v3 a, float b)
-{
- return v3{a.x * b, a.y * b, a.z * b};
+v3 min(v3 a, v3 b) { return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+
+v3 max(v3 a, v3 b) { return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+
+bool v3_equal(v3 a, v3 b, float eps = 1e-6) {
+    return fabsf(a.x - b.x) < eps && fabsf(a.y - b.y) < eps &&
+           fabsf(a.z - b.z) < eps;
 }
 
-v3 operator*(float a, v3 b)
-{
- return v3{a * b.x, a * b.y, a * b.z};
-}
-
-v3 operator/(v3 a, float b)
-{
- float inv = 1.f / b;
- return v3{a.x * inv, a.y * inv, a.z * inv};
-}
-
-v3 operator*(v3 a, v3 b)
-{
- return v3{a.x * b.x, a.y * b.y, a.z * b.z};
-}
-
-v3 operator-(v3 a)
-{
- return v3{-a.x, -a.y, -a.z};
-}
-
-v3 &operator+=(v3 &a, v3 b)
-{
- return a = a + b;
-}
-
-v3 &operator-=(v3 &a, v3 b)
-{
- return a = a - b;
-}
-
-v3 &operator*=(v3 &a, v3 b)
-{
- return a = a * b;
-}
-
-v3 &operator*=(v3 &a, float b)
-{
- return a = a * b;
-}
-
-v3 &operator/=(v3 &a, float b)
-{
- return a = a / b;
-}
-
-v3 operator/(float a, v3 b)
-{
- return v3{a / b.x, a / b.y, a / b.z};
-}
-
-float dot(v3 a, v3 b)
-{
- return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-float length_sq(v3 a)
-{
- return dot(a, a);
-}
-
-float length(v3 a)
-{
- return sqrtf(dot(a, a));
-}
-
-v3 normalize(v3 a)
-{
- float len = length_sq(a);
-
- if (len < 1e-9)
-  return {};
- else
-  return a / sqrtf(len);
-}
-
-v3 cross(v3 a, v3 b)
-{
- return v3 {
-  a.y * b.z - a.z * b.y,
-  a.z * b.x - a.x * b.z,
-  a.x * b.y - a.y * b.x
- };
-}
-
-v3 min(v3 a, v3 b)
-{
- return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
-}
-
-v3 max(v3 a, v3 b)
-{
- return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
-}
-
-bool v3_equal(v3 a, v3 b, float eps = 1e-6)
-{
- return fabsf(a.x - b.x) < eps &&
-     fabsf(a.y - b.y) < eps &&
-     fabsf(a.z - b.z) < eps;
-}
-
-union v3i
-{
- struct {
-  int x, y, z;
- };
- int e[3];
+union v3i {
+    struct {
+        int x, y, z;
+    };
+    int e[3];
 };
 
-v3i V3i(int x, int y, int z)
-{
- return v3i{x, y, z};
+v3i V3i(int x, int y, int z) { return v3i{x, y, z}; }
+
+v3i V3i(int x) { return v3i{x, x, x}; }
+
+v3 V3(v3i v) { return v3{(float)v.x, (float)v.y, (float)v.z}; }
+
+v3i operator+(v3i a, v3i b) { return v3i{a.x + b.x, a.y + b.y, a.z + b.z}; }
+
+v3i operator-(v3i a, v3i b) { return v3i{a.x - b.x, a.y - b.y, a.z - b.z}; }
+
+v3i operator-(v3i a) { return v3i{-a.x, -a.y, -a.z}; }
+
+v3i max(v3i a, v3i b) {
+    return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
 }
 
-v3i V3i(int x)
-{
- return v3i{x, x, x};
-}
-
-v3 V3(v3i v)
-{
- return v3{(float)v.x, (float)v.y, (float)v.z};
-}
-
-v3i operator+(v3i a, v3i b)
-{
- return v3i{a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-v3i operator-(v3i a, v3i b)
-{
- return v3i{a.x - b.x, a.y - b.y, a.z - b.z};
-}
-
-v3i operator-(v3i a)
-{
- return v3i{-a.x, -a.y, -a.z};
-}
-
-v3i max(v3i a, v3i b)
-{
- return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
-}
-
-v3i min(v3i a, v3i b)
-{
- return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
+v3i min(v3i a, v3i b) {
+    return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 }
 
 
 union v4 {
- struct {
-  float x, y, z, w;
- };
- struct {
-  float r, g, b, a;
- };
- v3 xyz;
- float e[4];
+    struct {
+        float x, y, z, w;
+    };
+    struct {
+        float r, g, b, a;
+    };
+    v3 xyz;
+    float e[4];
 };
 
-v4 V4(float x, float y, float z, float w)
-{
- v4 v;
+v4 V4(float x, float y, float z, float w) {
+    v4 v;
 
- v.x = x, v.y = y, v.z = z, v.w = w;
- return v;
+    v.x = x, v.y = y, v.z = z, v.w = w;
+    return v;
 }
 
-v4 V4(v3 xyz, float w)
-{
- v4 v;
+v4 V4(v3 xyz, float w) {
+    v4 v;
 
- v.xyz = xyz;
- v.w = w;
- return v;
+    v.xyz = xyz;
+    v.w = w;
+    return v;
 }
 
-v4 operator+(v4 a, v4 b)
-{
- return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+v4 operator+(v4 a, v4 b) {
+    return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 }
 
-v4 operator-(v4 a, v4 b)
-{
- return v4{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+v4 operator-(v4 a, v4 b) {
+    return v4{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
 }
 
-v4 operator*(v4 a, float b)
-{
- return v4{a.x * b, a.y * b, a.z * b, a.w * b};
-}
+v4 operator*(v4 a, float b) { return v4{a.x * b, a.y * b, a.z * b, a.w * b}; }
 
-float dot(v4 a, v4 b)
-{
- return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-}
+float dot(v4 a, v4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
-v4 operator-(v4 a)
-{
- return v4{-a.x, -a.y, -a.z, -a.w};
-}
+v4 operator-(v4 a) { return v4{-a.x, -a.y, -a.z, -a.w}; }
 
-float length(v4 a)
-{
- return sqrtf(dot(a, a));
-}
+float length(v4 a) { return sqrtf(dot(a, a)); }
 
 
-union mat4
-{
- float e[4][4];
- float v[16];
+union mat4 {
+    float e[4][4];
+    float v[16];
 };
 
-mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3)
-{
- mat4 m;
+mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3) {
+    mat4 m;
 
- m.e[0][0] = r0.e[0], m.e[0][1] = r0.e[1], m.e[0][2] = r0.e[2], m.e[0][3] = r0.e[3];
- m.e[1][0] = r1.e[0], m.e[3][1] = r1.e[1], m.e[1][2] = r1.e[2], m.e[1][3] = r1.e[3];
- m.e[2][0] = r2.e[0], m.e[2][1] = r2.e[1], m.e[2][2] = r2.e[2], m.e[2][3] = r2.e[3];
- m.e[3][0] = r3.e[0], m.e[1][1] = r3.e[1], m.e[3][2] = r3.e[2], m.e[3][3] = r3.e[3];
- return m;
+    m.e[0][0] = r0.e[0], m.e[0][1] = r0.e[1], m.e[0][2] = r0.e[2],
+    m.e[0][3] = r0.e[3];
+    m.e[1][0] = r1.e[0], m.e[3][1] = r1.e[1], m.e[1][2] = r1.e[2],
+    m.e[1][3] = r1.e[3];
+    m.e[2][0] = r2.e[0], m.e[2][1] = r2.e[1], m.e[2][2] = r2.e[2],
+    m.e[2][3] = r2.e[3];
+    m.e[3][0] = r3.e[0], m.e[1][1] = r3.e[1], m.e[3][2] = r3.e[2],
+    m.e[3][3] = r3.e[3];
+    return m;
 }
 
-mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3)
-{
- mat4 m;
+mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3) {
+    mat4 m;
 
- m.e[0][0] = c0.e[0], m.e[1][0] = c0.e[1], m.e[2][0] = c0.e[2], m.e[3][0] = c0.e[3];
- m.e[0][1] = c1.e[0], m.e[1][1] = c1.e[1], m.e[2][1] = c1.e[2], m.e[3][1] = c1.e[3];
- m.e[0][2] = c2.e[0], m.e[1][2] = c2.e[1], m.e[2][2] = c2.e[2], m.e[3][2] = c2.e[3];
- m.e[0][3] = c3.e[0], m.e[1][3] = c3.e[1], m.e[2][3] = c3.e[2], m.e[3][3] = c3.e[3];
- return m;
+    m.e[0][0] = c0.e[0], m.e[1][0] = c0.e[1], m.e[2][0] = c0.e[2],
+    m.e[3][0] = c0.e[3];
+    m.e[0][1] = c1.e[0], m.e[1][1] = c1.e[1], m.e[2][1] = c1.e[2],
+    m.e[3][1] = c1.e[3];
+    m.e[0][2] = c2.e[0], m.e[1][2] = c2.e[1], m.e[2][2] = c2.e[2],
+    m.e[3][2] = c2.e[3];
+    m.e[0][3] = c3.e[0], m.e[1][3] = c3.e[1], m.e[2][3] = c3.e[2],
+    m.e[3][3] = c3.e[3];
+    return m;
 }
 
-mat4 transpose(mat4 a)
-{
- mat4 b;
+mat4 transpose(mat4 a) {
+    mat4 b;
 
- for (int i = 0; i < 4; i++)
-  for (int j = 0; j < 4; j++)
-   b.e[i][j] = a.e[j][i];
- return b;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            b.e[i][j] = a.e[j][i];
+    return b;
 }
 
-mat4 operator*(mat4 a, mat4 b)
-{
- mat4 c = {};
+mat4 operator*(mat4 a, mat4 b) {
+    mat4 c = {};
 
- for (int i = 0; i < 4; i++)
-  for (int j = 0; j < 4; j++)
-   for (int k = 0; k < 4; k++)
-    c.e[i][j] += a.e[i][k] * b.e[k][j];
- return c;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            for (int k = 0; k < 4; k++)
+                c.e[i][j] += a.e[i][k] * b.e[k][j];
+    return c;
 }
 
-v4 operator*(mat4 a, v4 b)
-{
- v4 c;
+v4 operator*(mat4 a, v4 b) {
+    v4 c;
 
- c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] + a.e[0][3] * b.e[3];
- c.e[1] = a.e[1][0] * b.e[0] + a.e[1][1] * b.e[1] + a.e[1][2] * b.e[2] + a.e[1][3] * b.e[3];
- c.e[2] = a.e[2][0] * b.e[0] + a.e[2][1] * b.e[1] + a.e[2][2] * b.e[2] + a.e[2][3] * b.e[3];
- c.e[3] = a.e[3][0] * b.e[0] + a.e[3][1] * b.e[1] + a.e[3][2] * b.e[2] + a.e[3][3] * b.e[3];
+    c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] +
+             a.e[0][3] * b.e[3];
+    c.e[1] = a.e[1][0] * b.e[0] + a.e[1][1] * b.e[1] + a.e[1][2] * b.e[2] +
+             a.e[1][3] * b.e[3];
+    c.e[2] = a.e[2][0] * b.e[0] + a.e[2][1] * b.e[1] + a.e[2][2] * b.e[2] +
+             a.e[2][3] * b.e[3];
+    c.e[3] = a.e[3][0] * b.e[0] + a.e[3][1] * b.e[1] + a.e[3][2] * b.e[2] +
+             a.e[3][3] * b.e[3];
 
- return c;
+    return c;
 }
 
-mat4 scale(float a)
-{
- mat4 S = {};
+mat4 scale(float a) {
+    mat4 S = {};
 
- S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
- S.e[3][3] = 1;
-  return S;
+    S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
+    S.e[3][3] = 1;
+    return S;
 }
 
-mat4 scale(float x, float y, float z)
-{
- mat4 S = {};
+mat4 scale(float x, float y, float z) {
+    mat4 S = {};
 
- S.e[0][0] = x;
- S.e[1][1] = y;
- S.e[2][2] = z;
- S.e[3][3] = 1;
- return S;
+    S.e[0][0] = x;
+    S.e[1][1] = y;
+    S.e[2][2] = z;
+    S.e[3][3] = 1;
+    return S;
 }
 
-mat4 scale(v3 v)
-{
- return scale(v.x, v.y, v.z);
+mat4 scale(v3 v) { return scale(v.x, v.y, v.z); }
+
+mat4 identity() { return scale(1); }
+
+mat4 translate(float x, float y, float z) {
+    mat4 T = identity();
+
+    T.e[0][3] = x;
+    T.e[1][3] = y;
+    T.e[2][3] = z;
+    return T;
 }
 
-mat4 identity()
-{
- return scale(1);
+mat4 translate(v3 t) { return translate(t.x, t.y, t.z); }
+
+mat4 operator*(float a, mat4 b) {
+    mat4 c;
+
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            c.e[i][j] = a * b.e[i][j];
+    return c;
 }
 
-mat4 translate(float x, float y, float z)
-{
- mat4 T = identity();
+mat4 zrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
 
- T.e[0][3] = x;
- T.e[1][3] = y;
- T.e[2][3] = z;
- return T;
+    return {c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 }
 
-mat4 translate(v3 t)
-{
- return translate(t.x, t.y, t.z);
+mat4 xrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
+
+    return {1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1};
 }
 
-mat4 operator*(float a, mat4 b)
-{
- mat4 c;
+mat4 yrotation(float a) {
+    float c = cosf(a);
+    float s = sinf(a);
 
- for (int i = 0; i < 4; i++)
-  for (int j = 0; j < 4; j++)
-   c.e[i][j] = a * b.e[i][j];
- return c;
+    return {c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1};
 }
 
-mat4 zrotation(float a)
-{
- float c = cosf(a);
- float s = sinf(a);
+mat4 rotate_around_axis(v3 u, float a) {
+    u = normalize(u);
+    float c = cosf(a);
+    float s = sinf(a);
 
- return {
-  c, -s, 0, 0,
-  s, c, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 1
- };
+    return {c + u.x * u.x * (1 - c),
+            u.x * u.y * (1 - c) - u.z * s,
+            u.x * u.z * (1 - c) + u.y * s,
+            0,
+            u.y * u.x * (1 - c) + u.z * s,
+            c + u.y * u.y * (1 - c),
+            u.y * u.z * (1 - c) - u.x * s,
+            0,
+            u.z * u.x * (1 - c) - u.y * s,
+            u.z * u.y * (1 - c) + u.x * s,
+            c + u.z * u.z * (1 - c),
+            0,
+            0,
+            0,
+            0,
+            1};
 }
 
-mat4 xrotation(float a)
-{
- float c = cosf(a);
- float s = sinf(a);
+mat4 perspective_projection(float znear, float zfar, float width, float height) {
+    return {znear * 2 / width,
+            0,
+            0,
+            0,
+            0,
+            znear * 2 / height,
+            0,
+            0,
 
- return {
-  1, 0, 0, 0,
-  0, c, -s, 0,
-  0, s, c, 0,
-  0, 0, 0, 1
- };
+
+
+
+
+
+            0,
+            0,
+            (zfar + znear) / (znear - zfar),
+            2 * znear * zfar / (znear - zfar),
+
+            0,
+            0,
+            -1,
+            0};
 }
 
-mat4 yrotation(float a)
-{
- float c = cosf(a);
- float s = sinf(a);
+mat4 orthographic_projection(float znear, float zfar, float width, float height) {
+    return {2.f / width,
+            0,
+            0,
+            0,
+            0,
+            2.f / height,
+            0,
+            0,
 
- return {
-  c, 0, s, 0,
-  0, 1, 0, 0,
-  -s, 0, c, 0,
-  0, 0, 0, 1
- };
+
+
+
+
+
+            0,
+            0,
+            -2.f / (zfar - znear),
+            (-znear - zfar) / (zfar - znear),
+
+            0,
+            0,
+            0,
+            1};
 }
 
-mat4 rotate_around_axis(v3 u, float a)
-{
- u = normalize(u);
- float c = cosf(a);
- float s = sinf(a);
-
- return {
-  c+u.x*u.x*(1-c), u.x*u.y*(1-c)-u.z*s, u.x*u.z*(1-c)+u.y*s, 0,
-  u.y*u.x*(1-c)+u.z*s, c+u.y*u.y*(1-c), u.y*u.z*(1-c)-u.x*s, 0,
-  u.z*u.x*(1-c)-u.y*s, u.z*u.y*(1-c)+u.x*s, c+u.z*u.z*(1-c), 0,
-  0, 0, 0, 1
- };
-}
-
-mat4 perspective_projection(float znear, float zfar, float width_fov_degree, float height_over_width)
-{
- float width = 2 * znear * tanf((3.14159265359f / 180.f) * (width_fov_degree / 2));
- float height = width * height_over_width;
-
- return {
-  znear * 2 / width, 0, 0, 0,
-  0, znear * 2 / height, 0, 0,
+mat4 lookat(v3 position, v3 dir, v3 up) {
+    v3 z_axis = normalize(-dir);
 
 
+    v3 x_axis = normalize(cross(up, z_axis));
+    v3 y_axis = normalize(cross(z_axis, x_axis));
 
-  0, 0, (zfar + znear) / (znear - zfar), 2 * znear * zfar / (znear - zfar),
+    mat4 transform = {
+        x_axis.x, x_axis.y, x_axis.z, 0, y_axis.x, y_axis.y, y_axis.z, 0,
+        z_axis.x, z_axis.y, z_axis.z, 0, 0, 0, 0, 1};
 
-  0, 0, -1, 0
- };
-}
-
-mat4 orthographic_projection(float znear, float zfar, float width, float height)
-{
- return {
-  2.f / width, 0, 0, 0,
-  0, 2.f / height, 0, 0,
-
-
-
-  0, 0, -2.f / (zfar-znear), (-znear-zfar) / (zfar-znear),
-
-  0, 0, 0, 1
- };
-}
-
-mat4 lookat(v3 position, v3 dir, v3 up)
-{
- v3 z_axis = normalize(-dir);
-
-
- v3 x_axis = normalize(cross(up, z_axis));
- v3 y_axis = normalize(cross(z_axis, x_axis));
-
- mat4 transform = {
-  x_axis.x, x_axis.y, x_axis.z, 0,
-  y_axis.x, y_axis.y, y_axis.z, 0,
-  z_axis.x, z_axis.y, z_axis.z, 0,
-  0, 0, 0, 1
- };
-
- return transform * translate(-position);
+    return transform * translate(-position);
 }
 
 using quat = v4;
 
-quat Quat(float x, float y, float z, float w)
-{
- return {x, y, z, w};
-}
+quat Quat(float x, float y, float z, float w) { return {x, y, z, w}; }
 
-quat operator*(quat a, quat b)
-{
- return {
+quat operator*(quat a, quat b) {
+    return {
         a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
         a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
         a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
@@ -4466,62 +4290,60 @@ quat operator*(quat a, quat b)
     };
 }
 
-mat4 quat_to_mat(quat a)
-{
- float x = a.x;
- float y = a.y;
- float z = a.z;
- float w = a.w;
+mat4 quat_to_mat(quat a) {
+    float x = a.x;
+    float y = a.y;
+    float z = a.z;
+    float w = a.w;
 
- mat4 matrix;
+    mat4 matrix;
 
- float wx, wy, wz, xx, yy, yz, xy, xz, zz;
+    float wx, wy, wz, xx, yy, yz, xy, xz, zz;
 
- xx = x * x;
- xy = x * y;
- xz = x * z;
- yy = y * y;
- zz = z * z;
- yz = y * z;
+    xx = x * x;
+    xy = x * y;
+    xz = x * z;
+    yy = y * y;
+    zz = z * z;
+    yz = y * z;
 
- wx = w * x;
- wy = w * y;
- wz = w * z;
+    wx = w * x;
+    wy = w * y;
+    wz = w * z;
 
- matrix.v[0] = 1.0f - 2.0f*(yy + zz);
- matrix.v[4] = 2.0f*(xy - wz);
- matrix.v[8] = 2.0f*(xz + wy);
- matrix.v[12] = 0.0;
+    matrix.v[0] = 1.0f - 2.0f * (yy + zz);
+    matrix.v[4] = 2.0f * (xy - wz);
+    matrix.v[8] = 2.0f * (xz + wy);
+    matrix.v[12] = 0.0;
 
- matrix.v[1] = 2.0f*(xy + wz);
- matrix.v[5] = 1.0f - 2.0f*(xx + zz);
- matrix.v[9] = 2.0f*(yz - wx);
- matrix.v[13] = 0.0;
+    matrix.v[1] = 2.0f * (xy + wz);
+    matrix.v[5] = 1.0f - 2.0f * (xx + zz);
+    matrix.v[9] = 2.0f * (yz - wx);
+    matrix.v[13] = 0.0;
 
- matrix.v[2] = 2.0f*(xz - wy);
- matrix.v[6] = 2.0f*(yz + wx);
- matrix.v[10] = 1.0f - 2.0f*(xx + yy);
- matrix.v[14] = 0.0;
+    matrix.v[2] = 2.0f * (xz - wy);
+    matrix.v[6] = 2.0f * (yz + wx);
+    matrix.v[10] = 1.0f - 2.0f * (xx + yy);
+    matrix.v[14] = 0.0;
 
- matrix.v[3] = 0;
- matrix.v[7] = 0;
- matrix.v[11] = 0;
- matrix.v[15] = 1;
+    matrix.v[3] = 0;
+    matrix.v[7] = 0;
+    matrix.v[11] = 0;
+    matrix.v[15] = 1;
 
- return transpose(matrix);
+    return transpose(matrix);
 }
 
-quat quat_lerp(quat a, quat b, float t)
-{
- float l2 = dot(a, b);
- if(l2 < 0.0f)
-  b = -b;
- v4 c;
- c.x = a.x - t*(a.x - b.x);
- c.y = a.y - t*(a.y - b.y);
- c.z = a.z - t*(a.z - b.z);
- c.w = a.w - t*(a.w - b.w);
- return c * (1.f / length(c));
+quat quat_lerp(quat a, quat b, float t) {
+    float l2 = dot(a, b);
+    if (l2 < 0.0f)
+        b = -b;
+    v4 c;
+    c.x = a.x - t * (a.x - b.x);
+    c.y = a.y - t * (a.y - b.y);
+    c.z = a.z - t * (a.z - b.z);
+    c.w = a.w - t * (a.w - b.w);
+    return c * (1.f / length(c));
 }
 
 mat4 inverse(mat4 matrix) {
@@ -4598,114 +4420,139 @@ mat4 inverse(mat4 matrix) {
     return out_matrix;
 }
 
-template<typename T>
-T lerp(const T a, const T b, float t)
-{
- return (1 - t) * a + t * b;
+template <typename T> T lerp(const T a, const T b, float t) {
+    return (1 - t) * a + t * b;
 }
 
-bool ray_hit_plane(v3 ray_origin, v3 ray_dir,
- v3 plane_normal, v3 plane_point, float *hit_t)
-{
- float denom = dot(ray_dir, plane_normal);
- if (fabsf(denom) < 1e-5)
-  return false;
- float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) / denom;
- if (t >= 0) {
-  if (hit_t)
-   *hit_t = t;
-  return true;
- }
- return false;
+bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
+                   float *hit_t) {
+    float denom = dot(ray_dir, plane_normal);
+    if (fabsf(denom) < 1e-5)
+        return false;
+    float t = (dot(plane_normal, plane_point) - dot(ray_origin, plane_normal)) /
+              denom;
+    if (t >= 0) {
+        if (hit_t)
+            *hit_t = t;
+        return true;
+    }
+    return false;
 }
 
 void push_cube_outline(v3 p, v3 r, v3 color);
 
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
- v3 box_yaxis, v3 box_zaxis)
-{
- struct {
-  v3 normal;
-  v3 p;
- } planes[6];
+                  v3 box_yaxis, v3 box_zaxis) {
+    struct {
+        v3 normal;
+        v3 p;
+    } planes[6];
 
- planes[0] = {box_xaxis, box_center + box_xaxis};
- planes[1] = {-box_xaxis, box_center - box_xaxis};
- planes[2] = {box_yaxis, box_center + box_yaxis};
- planes[3] = {-box_yaxis, box_center - box_yaxis};
- planes[4] = {box_zaxis, box_center + box_zaxis};
- planes[5] = {-box_zaxis, box_center - box_zaxis};
+    planes[0] = {box_xaxis, box_center + box_xaxis};
+    planes[1] = {-box_xaxis, box_center - box_xaxis};
+    planes[2] = {box_yaxis, box_center + box_yaxis};
+    planes[3] = {-box_yaxis, box_center - box_yaxis};
+    planes[4] = {box_zaxis, box_center + box_zaxis};
+    planes[5] = {-box_zaxis, box_center - box_zaxis};
 
- float lx = length(box_xaxis);
- float ly = length(box_yaxis);
- float lz = length(box_zaxis);
+    float lx = length(box_xaxis);
+    float ly = length(box_yaxis);
+    float lz = length(box_zaxis);
 
- v3 xaxis = normalize(box_xaxis);
- v3 yaxis = normalize(box_yaxis);
- v3 zaxis = normalize(box_zaxis);
+    v3 xaxis = normalize(box_xaxis);
+    v3 yaxis = normalize(box_yaxis);
+    v3 zaxis = normalize(box_zaxis);
 
- float min_t = FLT_MAX;
- for (int i = 0; i < 6; i++) {
-
+    float min_t = FLT_MAX;
+    for (int i = 0; i < 6; i++) {
 
 
 
 
 
-  float denom = dot(ray_dir, planes[i].normal);
-  if (fabsf(denom) < 1e-6)
-   continue ;
-  float t = (dot(planes[i].normal, planes[i].p) - dot(ray_origin, planes[i].normal)) / denom;
-  if (t >= 0 && t < min_t) {
-   v3 p = ray_origin + t * ray_dir - box_center;
-   float eps = 1e-4;
-   if (dot(p, xaxis) >= -lx - eps && dot(p, xaxis) <= lx + eps &&
-    dot(p, yaxis) >= -ly - eps && dot(p, yaxis) <= ly + eps &&
-    dot(p, zaxis) >= -lz - eps && dot(p, zaxis) <= lz + eps)
-    min_t = t;
-  }
- }
- if (min_t == FLT_MAX)
-  return -1;
- return min_t;
+
+
+        float denom = dot(ray_dir, planes[i].normal);
+        if (fabsf(denom) < 1e-6)
+            continue;
+        float t = (dot(planes[i].normal, planes[i].p) -
+                   dot(ray_origin, planes[i].normal)) /
+                  denom;
+        if (t >= 0 && t < min_t) {
+            v3 p = ray_origin + t * ray_dir - box_center;
+            float eps = 1e-4;
+            if (dot(p, xaxis) >= -lx - eps && dot(p, xaxis) <= lx + eps &&
+                dot(p, yaxis) >= -ly - eps && dot(p, yaxis) <= ly + eps &&
+                dot(p, zaxis) >= -lz - eps && dot(p, zaxis) <= lz + eps)
+                min_t = t;
+        }
+    }
+    if (min_t == FLT_MAX)
+        return -1;
+    return min_t;
 }
 
-quat rotate_around_axis_quat(v3 axis, float a)
-{
- axis = normalize(axis);
- float s = sinf(a / 2);
- float c = cosf(a / 2);
- return V4(axis * s, c);
+quat rotate_around_axis_quat(v3 axis, float a) {
+    axis = normalize(axis);
+    float s = sinf(a / 2);
+    float c = cosf(a / 2);
+    return V4(axis * s, c);
 }
 
-quat zrotation_quat(float a)
-{
- return rotate_around_axis_quat(V3(0, 0, 1), a);
-}
+quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
 
-quat identity_quat()
-{
- return Quat(0, 0, 0, 1);
-}
-# 14 "code/game.cpp" 2
+quat identity_quat() { return Quat(0, 0, 0, 1); }
+# 19 "code/game.cpp" 2
 # 1 "code/platform.h" 1
        
 
-enum GameButtonType
-{
- BUTTON_A, BUTTON_B, BUTTON_C, BUTTON_D, BUTTON_E, BUTTON_F, BUTTON_G, BUTTON_H, BUTTON_I,
- BUTTON_J, BUTTON_K, BUTTON_L, BUTTON_M, BUTTON_N, BUTTON_O, BUTTON_P, BUTTON_Q, BUTTON_R,
- BUTTON_S, BUTTON_T, BUTTON_U, BUTTON_V, BUTTON_W, BUTTON_X, BUTTON_Y, BUTTON_Z,
+enum GameButtonType {
+    BUTTON_A,
+    BUTTON_B,
+    BUTTON_C,
+    BUTTON_D,
+    BUTTON_E,
+    BUTTON_F,
+    BUTTON_G,
+    BUTTON_H,
+    BUTTON_I,
+    BUTTON_J,
+    BUTTON_K,
+    BUTTON_L,
+    BUTTON_M,
+    BUTTON_N,
+    BUTTON_O,
+    BUTTON_P,
+    BUTTON_Q,
+    BUTTON_R,
+    BUTTON_S,
+    BUTTON_T,
+    BUTTON_U,
+    BUTTON_V,
+    BUTTON_W,
+    BUTTON_X,
+    BUTTON_Y,
+    BUTTON_Z,
 
- BUTTON_LEFT_CONTROL,
- BUTTON_LEFT_SHIFT,
- BUTTON_MOUSE_LEFT,
- BUTTON_MOUSE_RIGHT,
- BUTTON_SPACE,
- BUTTON_ESCAPE,
- BUTTON_F1, BUTTON_F2, BUTTON_F3, BUTTON_F4, BUTTON_F5, BUTTON_F6,
- BUTTON_F7, BUTTON_F8, BUTTON_F9, BUTTON_F10, BUTTON_F11, BUTTON_F12,
- BUTTON_COUNT
+    BUTTON_LEFT_CONTROL,
+    BUTTON_LEFT_SHIFT,
+    BUTTON_MOUSE_LEFT,
+    BUTTON_MOUSE_RIGHT,
+    BUTTON_SPACE,
+    BUTTON_ESCAPE,
+    BUTTON_F1,
+    BUTTON_F2,
+    BUTTON_F3,
+    BUTTON_F4,
+    BUTTON_F5,
+    BUTTON_F6,
+    BUTTON_F7,
+    BUTTON_F8,
+    BUTTON_F9,
+    BUTTON_F10,
+    BUTTON_F11,
+    BUTTON_F12,
+    BUTTON_COUNT
 };
 
 #define BUTTON_CAMERA_FORWARD BUTTON_W
@@ -4717,19 +4564,18 @@ enum GameButtonType
 #define BUTTON_PLAYER_FORWARD BUTTON_F
 #define BUTTON_PLAYER_BACKWARD BUTTON_G
 #define BUTTON_PLAYER_JUMP BUTTON_SPACE
+#define TOGGLE_EDITOR_BUTTON BUTTON_F1
 
-struct GameButton
-{
- b32 is_down;
- b32 was_down;
+struct GameButton {
+    b32 is_down;
+    b32 was_down;
 };
 
-struct GameInput
-{
- GameButton buttons[BUTTON_COUNT];
- v2 mouse_dp;
- v2 mouse_p;
- v2 last_mouse_p;
+struct GameInput {
+    GameButton buttons[BUTTON_COUNT];
+    v2 mouse_dp;
+    v2 mouse_p;
+    v2 last_mouse_p;
 };
 
 #define IsDown(input,button) (input.buttons[button].is_down)
@@ -4738,188 +4584,190 @@ struct GameInput
 
 
 
-#define GL_FUNCTIONS(X) X(PFNGLENABLEPROC, glEnable ) X(PFNGLDISABLEPROC, glDisable ) X(PFNGLBLENDFUNCPROC, glBlendFunc ) X(PFNGLVIEWPORTPROC, glViewport ) X(PFNGLCLEARCOLORPROC, glClearColor ) X(PFNGLCLEARPROC, glClear ) X(PFNGLDRAWARRAYSPROC, glDrawArrays ) X(PFNGLCREATEBUFFERSPROC, glCreateBuffers ) X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage ) X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray ) X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays ) X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding ) X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer ) X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat ) X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib ) X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv ) X(PFNGLGETPROGRAMIVPROC, glGetProgramiv ) X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog ) X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines ) X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages ) X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline ) X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv ) X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit ) X(PFNGLCREATETEXTURESPROC, glCreateTextures ) X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri ) X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D ) X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D ) X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback ) X(PFNGLGETINTEGERVPROC, glGetIntegerv ) X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl ) X(PFNGLCREATESHADERPROC, glCreateShader ) X(PFNGLSHADERSOURCEPROC, glShaderSource ) X(PFNGLCOMPILESHADERPROC, glCompileShader ) X(PFNGLGETSHADERIVPROC, glGetShaderiv ) X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog ) X(PFNGLACTIVETEXTUREPROC, glActiveTexture ) X(PFNGLBINDTEXTUREPROC, glBindTexture ) X(PFNGLGENTEXTURESPROC, glGenTextures ) X(PFNGLTEXIMAGE2DPROC, glTexImage2D ) X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap ) X(PFNGLTEXPARAMETERIPROC, glTexParameteri ) X(PFNGLCLEARDEPTHPROC, glClearDepth ) X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer ) X(PFNGLCULLFACEPROC, glCullFace ) X(PFNGLCREATEPROGRAMPROC, glCreateProgram ) X(PFNGLATTACHSHADERPROC, glAttachShader ) X(PFNGLLINKPROGRAMPROC, glLinkProgram ) X(PFNGLUSEPROGRAMPROC, glUseProgram ) X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays ) X(PFNGLGENBUFFERSPROC, glGenBuffers ) X(PFNGLBINDBUFFERPROC, glBindBuffer ) X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase ) X(PFNGLBUFFERDATAPROC, glBufferData ) X(PFNGLBUFFERSUBDATAPROC, glBufferSubData ) X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer ) X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray ) X(PFNGLPOLYGONMODEPROC, glPolygonMode )
-# 110 "code/platform.h"
+#define GL_FUNCTIONS(X) X(PFNGLENABLEPROC, glEnable) X(PFNGLDISABLEPROC, glDisable) X(PFNGLBLENDFUNCPROC, glBlendFunc) X(PFNGLVIEWPORTPROC, glViewport) X(PFNGLCLEARCOLORPROC, glClearColor) X(PFNGLCLEARPROC, glClear) X(PFNGLDRAWARRAYSPROC, glDrawArrays) X(PFNGLCREATEBUFFERSPROC, glCreateBuffers) X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage) X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays) X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding) X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer) X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat) X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib) X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv) X(PFNGLGETPROGRAMIVPROC, glGetProgramiv) X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog) X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines) X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages) X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline) X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv) X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) X(PFNGLCREATETEXTURESPROC, glCreateTextures) X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback) X(PFNGLGETINTEGERVPROC, glGetIntegerv) X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl) X(PFNGLCREATESHADERPROC, glCreateShader) X(PFNGLSHADERSOURCEPROC, glShaderSource) X(PFNGLCOMPILESHADERPROC, glCompileShader) X(PFNGLGETSHADERIVPROC, glGetShaderiv) X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog) X(PFNGLACTIVETEXTUREPROC, glActiveTexture) X(PFNGLBINDTEXTUREPROC, glBindTexture) X(PFNGLGENTEXTURESPROC, glGenTextures) X(PFNGLTEXIMAGE2DPROC, glTexImage2D) X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap) X(PFNGLTEXPARAMETERIPROC, glTexParameteri) X(PFNGLCLEARDEPTHPROC, glClearDepth) X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer) X(PFNGLCULLFACEPROC, glCullFace) X(PFNGLCREATEPROGRAMPROC, glCreateProgram) X(PFNGLATTACHSHADERPROC, glAttachShader) X(PFNGLLINKPROGRAMPROC, glLinkProgram) X(PFNGLUSEPROGRAMPROC, glUseProgram) X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) X(PFNGLGENBUFFERSPROC, glGenBuffers) X(PFNGLBINDBUFFERPROC, glBindBuffer) X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase) X(PFNGLBUFFERDATAPROC, glBufferData) X(PFNGLBUFFERSUBDATAPROC, glBufferSubData) X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer) X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray) X(PFNGLPOLYGONMODEPROC, glPolygonMode)
+# 142 "code/platform.h"
+#define THREAD_WORK_FUNC(name) void name(void *data)
+
+typedef void ThreadWorkFn(void *data);
+
+struct ThreadWork {
+ ThreadWorkFn *callback;
+ void *data;
+};
+
+static ThreadWork thread_work_queue[256];
+#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
+static volatile int thread_work_queue_read_index;
+static volatile int thread_work_queue_write_index;
+static volatile int thread_work_queue_occupied_index;
+static void *thread_work_semaphore;
+
+typedef bool AddThreadWorkFn(ThreadWorkFn *callback, void *data);
+
 struct Platform {
- void *render_context;
- void *imgui_context;
- TempArena temp_arena;
+    void *render_context;
+    void *imgui_context;
+    TempArena temp_arena;
 
- GLFWwindow *window;
-
+    AddThreadWorkFn *add_thread_work;
 };
 
 #define GAME_UPDATE_AND_RENDER(name) void name(Platform &platform, Arena *memory, GameInput &input, float dt)
+
 typedef void game_update_and_render_fn(Platform &platform, Arena *memory, GameInput &input, float dt);
-# 15 "code/game.cpp" 2
+# 20 "code/game.cpp" 2
 # 1 "code/renderer.h" 1
        
 
-struct Texture
-{
-
-
-
- uint32_t id;
-
- String name;
- int width;
- int height;
- b32 valid;
+enum TextureState {
+    TEXTURE_STATE_UNLOADED,
+    TEXTURE_STATE_LOADING,
+    TEXTURE_STATE_LOADED,
 };
 
-enum ShaderType
-{
- SHADER_TYPE_VERTEX,
- SHADER_TYPE_FRAGMENT,
+struct Texture {
+
+
+
+    uint32_t id;
+
+    String name;
+    int width;
+    int height;
+    b32 valid;
+
+
+    int state;
 };
 
-struct Shader
-{
- ShaderType type;
-# 33 "code/renderer.h"
- uint32_t id;
-
+enum ShaderType {
+    SHADER_TYPE_VERTEX,
+    SHADER_TYPE_FRAGMENT,
 };
 
-enum InputElementType
-{
- INPUT_ELEMENT_FLOAT,
- INPUT_ELEMENT_SIGNED_INT,
-};
-
-struct VertexInputElement
-{
- int offset;
- int count;
- InputElementType type;
- const char *name;
-};
-
-enum PrimitiveType
-{
- PRIMITIVE_TRIANGLES,
- PRIMITIVE_LINES,
-};
-
-enum VertexBufferUsage
-{
- VERTEX_BUFFER_IMMUTABLE,
- VERTEX_BUFFER_DYNAMIC,
-};
-
-struct VertexBuffer
-{
- usize size;
- VertexBufferUsage usage;
-
-
-
-
- uint32_t vao;
- uint32_t vbo;
+struct Shader {
+    ShaderType type;
+# 39 "code/renderer.h"
+    uint32_t id;
 
 };
 
-struct FrameBuffer
-{
-
-
-
-
- uint32_t id;
-
-
- Texture color_texture;
- Texture depth_texture;
+enum InputElementType {
+    INPUT_ELEMENT_FLOAT,
+    INPUT_ELEMENT_SIGNED_INT,
 };
 
-struct DepthStencilState
-{
- bool enable_depth;
+struct VertexInputElement {
+    int offset;
+    int count;
+    InputElementType type;
+    const char *name;
+};
 
+enum PrimitiveType {
+    PRIMITIVE_TRIANGLES,
+    PRIMITIVE_LINES,
+};
+
+enum VertexBufferUsage {
+    VERTEX_BUFFER_IMMUTABLE,
+    VERTEX_BUFFER_DYNAMIC,
+};
+
+struct VertexBuffer {
+    usize size;
+    VertexBufferUsage usage;
+
+
+
+
+    uint32_t vao;
+    uint32_t vbo;
+
+};
+
+struct IndexBuffer {
+
+    uint32_t ebo;
 
 
 };
 
-enum RasterizerFillMode
-{
- RASTERIZER_FILL_SOLID,
- RASTERIZER_FILL_WIREFRAME
+struct FrameBuffer {
+
+
+
+
+    uint32_t id;
+
+
+    Texture color_texture;
+    Texture depth_texture;
 };
 
-enum RasterizerCullMode
-{
- RASTERIZER_CULL_NONE,
- RASTERIZER_CULL_FRONT,
- RASTERIZER_CULL_BACK,
-};
-
-struct RasterizerState
-{
- RasterizerFillMode fillmode;
- RasterizerCullMode cullmode;
+struct DepthStencilState {
+    bool enable_depth;
 
 
 
 };
 
-struct VertexInputLayout
-{
- VertexInputElement elements[64];
- int element_count;
- int vertex_size;
+enum RasterizerFillMode { RASTERIZER_FILL_SOLID, RASTERIZER_FILL_WIREFRAME };
+
+enum RasterizerCullMode {
+    RASTERIZER_CULL_NONE,
+    RASTERIZER_CULL_FRONT,
+    RASTERIZER_CULL_BACK,
+};
+
+struct RasterizerState {
+    RasterizerFillMode fillmode;
+    RasterizerCullMode cullmode;
 
 
 
 };
 
-struct RenderPass
-{
- PrimitiveType primitive_type;
+struct VertexInputLayout {
+    VertexInputElement elements[64];
+    int element_count;
+    int vertex_size;
 
- Shader vs;
- Shader fs;
- DepthStencilState depth_stencil_state;
- RasterizerState rasterizer_state;
- VertexInputLayout input_layout;
 
- uint32_t program;
+
 };
 
-struct RenderContext
-{
- int window_width;
- int window_height;
+struct RenderPass {
+    PrimitiveType primitive_type;
 
- FrameBuffer window_framebuffer;
+    Shader vs;
+    Shader fs;
+    DepthStencilState depth_stencil_state;
+    RasterizerState rasterizer_state;
+    VertexInputLayout input_layout;
 
+    uint32_t program;
+};
 
+struct RenderContext {
+    int window_width;
+    int window_height;
 
-
-
-
-
- GLFWwindow *window;
-#define X(type,name) type name;
- PFNGLENABLEPROC glEnable; PFNGLDISABLEPROC glDisable; PFNGLBLENDFUNCPROC glBlendFunc; PFNGLVIEWPORTPROC glViewport; PFNGLCLEARCOLORPROC glClearColor; PFNGLCLEARPROC glClear; PFNGLDRAWARRAYSPROC glDrawArrays; PFNGLCREATEBUFFERSPROC glCreateBuffers; PFNGLNAMEDBUFFERSTORAGEPROC glNamedBufferStorage; PFNGLBINDVERTEXARRAYPROC glBindVertexArray; PFNGLCREATEVERTEXARRAYSPROC glCreateVertexArrays; PFNGLVERTEXARRAYATTRIBBINDINGPROC glVertexArrayAttribBinding; PFNGLVERTEXARRAYVERTEXBUFFERPROC glVertexArrayVertexBuffer; PFNGLVERTEXARRAYATTRIBFORMATPROC glVertexArrayAttribFormat; PFNGLENABLEVERTEXARRAYATTRIBPROC glEnableVertexArrayAttrib; PFNGLCREATESHADERPROGRAMVPROC glCreateShaderProgramv; PFNGLGETPROGRAMIVPROC glGetProgramiv; PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog; PFNGLGENPROGRAMPIPELINESPROC glGenProgramPipelines; PFNGLUSEPROGRAMSTAGESPROC glUseProgramStages; PFNGLBINDPROGRAMPIPELINEPROC glBindProgramPipeline; PFNGLPROGRAMUNIFORMMATRIX2FVPROC glProgramUniformMatrix2fv; PFNGLBINDTEXTUREUNITPROC glBindTextureUnit; PFNGLCREATETEXTURESPROC glCreateTextures; PFNGLTEXTUREPARAMETERIPROC glTextureParameteri; PFNGLTEXTURESTORAGE2DPROC glTextureStorage2D; PFNGLTEXTURESUBIMAGE2DPROC glTextureSubImage2D; PFNGLDEBUGMESSAGECALLBACKPROC glDebugMessageCallback; PFNGLGETINTEGERVPROC glGetIntegerv; PFNGLDEBUGMESSAGECONTROLPROC glDebugMessageControl; PFNGLCREATESHADERPROC glCreateShader; PFNGLSHADERSOURCEPROC glShaderSource; PFNGLCOMPILESHADERPROC glCompileShader; PFNGLGETSHADERIVPROC glGetShaderiv; PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog; PFNGLACTIVETEXTUREPROC glActiveTexture; PFNGLBINDTEXTUREPROC glBindTexture; PFNGLGENTEXTURESPROC glGenTextures; PFNGLTEXIMAGE2DPROC glTexImage2D; PFNGLGENERATEMIPMAPPROC glGenerateMipmap; PFNGLTEXPARAMETERIPROC glTexParameteri; PFNGLCLEARDEPTHPROC glClearDepth; PFNGLBINDFRAMEBUFFERPROC glBindFrameBuffer; PFNGLCULLFACEPROC glCullFace; PFNGLCREATEPROGRAMPROC glCreateProgram; PFNGLATTACHSHADERPROC glAttachShader; PFNGLLINKPROGRAMPROC glLinkProgram; PFNGLUSEPROGRAMPROC glUseProgram; PFNGLGENVERTEXARRAYSPROC glGenVertexArrays; PFNGLGENBUFFERSPROC glGenBuffers; PFNGLBINDBUFFERPROC glBindBuffer; PFNGLBINDBUFFERBASEPROC glBindBufferBase; PFNGLBUFFERDATAPROC glBufferData; PFNGLBUFFERSUBDATAPROC glBufferSubData; PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer; PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray; PFNGLPOLYGONMODEPROC glPolygonMode;
-#undef X
-
-
+    FrameBuffer window_framebuffer;
+# 158 "code/renderer.h"
     Array<Texture> loaded_textures;
 
     RenderPass *render_pass;
- Texture white_texture;
+    Texture white_texture;
 
- Array<v3> debug_lines;
+    Array<v3> debug_lines;
 
- uintptr_t active_framebuffer_id;
+    uintptr_t active_framebuffer_id;
 
 
 };
 
-usize get_input_element_size(int type)
-{
+usize get_input_element_size(int type) {
     if (type == INPUT_ELEMENT_FLOAT)
         return sizeof(float);
     else if (type == INPUT_ELEMENT_SIGNED_INT)
@@ -4929,49 +4777,52 @@ usize get_input_element_size(int type)
     return 0;
 }
 
-enum ConstantBufferElementType
-{
- CONSTANT_BUFFER_ELEMENT_MAT4,
- CONSTANT_BUFFER_ELEMENT_VEC4,
- CONSTANT_BUFFER_ELEMENT_VEC3,
- CONSTANT_BUFFER_ELEMENT_VEC2,
- CONSTANT_BUFFER_ELEMENT_FLOAT,
- CONSTANT_BUFFER_ELEMENT_INT,
- CONSTANT_BUFFER_ELEMENT_COUNT
+enum ConstantBufferElementType {
+    CONSTANT_BUFFER_ELEMENT_MAT4,
+    CONSTANT_BUFFER_ELEMENT_VEC4,
+    CONSTANT_BUFFER_ELEMENT_VEC3,
+    CONSTANT_BUFFER_ELEMENT_VEC2,
+    CONSTANT_BUFFER_ELEMENT_FLOAT,
+    CONSTANT_BUFFER_ELEMENT_INT,
+    CONSTANT_BUFFER_ELEMENT_COUNT
 };
 
-int get_c_type_alignement(ConstantBufferElementType type)
-{
- switch (type) {
-  case CONSTANT_BUFFER_ELEMENT_MAT4: return alignof(mat4);
-  case CONSTANT_BUFFER_ELEMENT_VEC4: return alignof(v4);
-  case CONSTANT_BUFFER_ELEMENT_VEC3: return alignof(v3);
-  case CONSTANT_BUFFER_ELEMENT_VEC2: return alignof(v2);
-  case CONSTANT_BUFFER_ELEMENT_FLOAT: return alignof(float);
-  case CONSTANT_BUFFER_ELEMENT_INT: return alignof(int);
-  default: assert(0);
- }
- return 0;
+int get_c_type_alignement(ConstantBufferElementType type) {
+    switch (type) {
+    case CONSTANT_BUFFER_ELEMENT_MAT4:
+        return alignof(mat4);
+    case CONSTANT_BUFFER_ELEMENT_VEC4:
+        return alignof(v4);
+    case CONSTANT_BUFFER_ELEMENT_VEC3:
+        return alignof(v3);
+    case CONSTANT_BUFFER_ELEMENT_VEC2:
+        return alignof(v2);
+    case CONSTANT_BUFFER_ELEMENT_FLOAT:
+        return alignof(float);
+    case CONSTANT_BUFFER_ELEMENT_INT:
+        return alignof(int);
+    default:
+        assert(0);
+    }
+    return 0;
 }
 
-struct ConstantBufferElement
-{
- ConstantBufferElementType type;
- int array_size;
+struct ConstantBufferElement {
+    ConstantBufferElementType type;
+    int array_size;
 };
 
-struct ConstantBuffer
-{
- usize size;
- ConstantBufferElement elements[64];
- int element_count;
+struct ConstantBuffer {
+    usize size;
+    ConstantBufferElement elements[64];
+    int element_count;
 
 
 
- uint32_t id;
+    uint32_t id;
 
 };
-# 16 "code/game.cpp" 2
+# 21 "code/game.cpp" 2
 
 static RenderContext *g_rc;
 #define RENDERER_DEBUG 
@@ -5196,6 +5047,17 @@ void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
  glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+IndexBuffer create_index_buffer(usize size, uint32_t *indices)
+{
+ IndexBuffer result = {};
+
+ glGenBuffers(1, &result.ebo);
+ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.ebo);
+ glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+
+ return result;
+}
+
 VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize size, void *data = 0)
 {
  VertexBuffer result = {};
@@ -5244,6 +5106,13 @@ void bind_vertex_buffer(VertexBuffer &vb)
  }
 }
 
+
+void bind_index_buffer(IndexBuffer &ib)
+{
+ assert(g_rc->render_pass);
+ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.ebo);
+}
+
 void draw(int offset, int vertices_count)
 {
  int mode = 0;
@@ -5254,6 +5123,18 @@ void draw(int offset, int vertices_count)
  else
   assert(0);
  glDrawArrays(mode, offset, vertices_count);
+}
+
+void draw_indexed(int offset, int indices_count)
+{
+ int mode = 0;
+ if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+  mode = GL_TRIANGLES;
+ else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+  mode = GL_LINES;
+ else
+  assert(0);
+ glDrawElements(mode, indices_count, GL_UNSIGNED_INT, (void *)offset);
 }
 
 int get_constant_buffer_element_size(int type)
@@ -5320,7 +5201,7 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
    + get_type_size(elements[i]) * (elements[i].array_size ? elements[i].array_size : 1);
  }
 
- result.element_count = elements.count;
+ result.element_count = (int)elements.count;
  result.size = offset;
 
  glGenBuffers(1, &result.id);
@@ -5367,9 +5248,12 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 
 void begin_render_frame()
 {
- glfwGetFramebufferSize(g_rc->window, &g_rc->window_width, &g_rc->window_height);
  g_rc->debug_lines.count = 0;
+
+
+
  ImGui_ImplGlfw_NewFrame();
+
  ImGui_ImplOpenGL3_NewFrame();
  ImGui::NewFrame();
 }
@@ -5424,7 +5308,6 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 
 void init_render_context_opengl(RenderContext &rc, Platform &platform)
 {
- rc.window = platform.window;
 
  int flags;
  glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
@@ -5501,7 +5384,7 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
    texture.id, 0);
 }
-# 23 "code/game.cpp" 2
+# 28 "code/game.cpp" 2
 
 
 # 1 "code/scene.h" 1
@@ -5510,111 +5393,120 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
 #define MAX_BONE_WEIGHTS 4
 
 
-struct Vertex
-{
- v3 position;
- v3 normal;
- v2 uv;
+struct Vertex {
+    v3 position;
+    v3 normal;
+    v2 uv;
 
- float weights[4];
- float indices[4];
+    float weights[4];
+    float indices[4];
 };
+
 
 VertexInputElement g_vertex_input_elements[] = {
- {offsetof(Vertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
- {offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
- {offsetof(Vertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
- {offsetof(Vertex, weights), 4, INPUT_ELEMENT_FLOAT, "BLENDWEIGHT"},
- {offsetof(Vertex, indices), 4, INPUT_ELEMENT_FLOAT, "BLENDINDICES"},
+    {offsetof(Vertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
+    {offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
+    {offsetof(Vertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
+    {offsetof(Vertex, weights), 4, INPUT_ELEMENT_FLOAT,
+     "BLENDWEIGHT"},
+    {offsetof(Vertex, indices), 4, INPUT_ELEMENT_FLOAT,
+     "BLENDINDICES"},
 };
 
-struct Material
-{
- Texture diffuse;
- Texture normal_map;
- Texture specular;
- Texture ambient;
- Texture specular_exponent;
+struct Material {
+    Texture diffuse;
+    Texture normal_map;
+    Texture specular;
+    Texture ambient;
+    Texture specular_exponent;
 
- float diffuse_factor;
- float specular_factor;
- float specular_exponent_factor;
+    float diffuse_factor;
+    float specular_factor;
+    float specular_exponent_factor;
 };
 
-struct MeshPart
-{
- Material material;
- usize vertices_count;
- usize offset;
+struct MeshPart {
+    Material material;
+    usize indices_count;
+    usize offset;
 };
 
-struct Bone
-{
- String name;
- mat4 transform;
- mat4 inv_bind;
- int parent;
+struct Bone {
+    String name;
+    mat4 transform;
+    mat4 inv_bind;
+    int parent;
 };
 
-struct Mesh
-{
- String name;
- Array<MeshPart> parts;
- VertexBuffer vertex_buffer;
- Array<Bone> bones;
- v3 box_min;
- v3 box_max;
- mat4 transform;
+struct Mesh {
+    String name;
+    Array<MeshPart> parts;
+
+    VertexBuffer vertex_buffer;
+    IndexBuffer index_buffer;
+
+    Array<Bone> bones;
+    v3 box_min;
+    v3 box_max;
+    mat4 transform;
+
+    usize vertices_count;
+    usize indices_count;
 };
 
-struct NodeAnimation
-{
- String name;
- Array<v3> position;
- Array<v3> scale;
- Array<quat> rotation;
+struct NodeAnimation {
+    String name;
+    Array<v3> position;
+    Array<v3> scale;
+    Array<quat> rotation;
 
- v3 const_position;
- v3 const_scale;
- quat const_rotation;
+    v3 const_position;
+    v3 const_scale;
+    quat const_rotation;
 
- mat4 transform;
+    mat4 transform;
 };
 
-struct Animation
-{
- float timebegin;
- float duration;
+struct Animation {
+    float timebegin;
+    float duration;
 
- float frametime;
+    float frametime;
 
- int frame_count;
+    int frame_count;
 
- Array<NodeAnimation> nodes;
+    Array<NodeAnimation> nodes;
 };
 
-struct SceneNode
-{
- String name;
- SceneNode *parent;
- Array<SceneNode *> childs;
- Mesh *mesh;
- mat4 local_transform;
- mat4 geometry_transform;
- int id;
- b32 skip_render;
+struct SceneNode {
+    String name;
+    SceneNode *parent;
+    Array<SceneNode *> childs;
+    Mesh *mesh;
+    mat4 local_transform;
+    mat4 geometry_transform;
+    int id;
+    b32 skip_render;
 };
 
-struct Scene
-{
- Array<SceneNode> nodes;
- Array<Mesh> meshes;
-
- SceneNode *root;
- Array<Animation> animations;
- String path;
+struct MeshTriangle {
+    v3 v0, v1, v2;
 };
-# 26 "code/game.cpp" 2
+
+struct Scene {
+    Array<SceneNode> nodes;
+    Array<Mesh> meshes;
+
+    SceneNode *root;
+    Array<Animation> animations;
+    String path;
+
+
+    Array<MeshTriangle> triangles;
+
+    int is_loaded;
+};
+# 31 "code/game.cpp" 2
 # 1 "code/scene.cpp" 1
 
 
@@ -5648,20 +5540,16 @@ mat4 ufbx_to_mat4(ufbx_matrix m)
 
  return (result);
 }
-
-
-Arena *g_stb_image_arena;
-
+# 50 "code/scene.cpp"
 Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
 {
  assert(utex->type == UFBX_TEXTURE_FILE);
 
- void *data;
- int width, height, n_channels;
 
  stbi_set_flip_vertically_on_load(true);
 
  String name = make_string(arena, utex->filename.length, utex->filename.data);
+ assert(name.count);
 
  if (name.count) {
   for (int i = 0; i < g_rc->loaded_textures.count; i++) {
@@ -5669,7 +5557,9 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
     return g_rc->loaded_textures[i];
   }
  }
- g_stb_image_arena = begin_temp_memory();
+ void *data;
+ int width, height, n_channels;
+ Arena *temp = begin_temp_memory();
  if (utex->content.size) {
   data = stbi_load_from_memory((stbi_uc *)utex->content.data,
     (int)utex->content.size, &width, &height,
@@ -5683,13 +5573,15 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
    last_slash--;
   last_slash++;
 
-  String path = concact_string(g_stb_image_arena, scene.path, make_string(g_stb_image_arena, utex->filename.length - last_slash, utex->filename.data + last_slash));
-  path = concact_string(g_stb_image_arena, path, make_string(g_stb_image_arena, 1, ""));
+  String path = concact_string(temp, scene.path, make_string(temp, utex->filename.length - last_slash, utex->filename.data + last_slash));
+  path = concact_string(temp, path, make_string(temp, 1, ""));
+
+
   data = stbi_load(path.data, &width, &height, &n_channels, 4);
   if (!data)
    printf("failed to load texture file: %s\n", path.data);
  }
- assert(data);
+
  end_temp_memory();
 
  Texture texture = create_texture(name, data, width, height, srgb);
@@ -5781,8 +5673,10 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
  Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
 
  Array<Vertex> vertices = make_array_max<Vertex>(tmp_arena, umesh->num_triangles * 3);
+ Array<uint32_t> indices = make_array_max<uint32_t>(tmp_arena, umesh->num_triangles * 3);
 
  ufbx_skin_deformer *skin = 0;
+
  if (umesh->skin_deformers.count) {
   assert(umesh->skin_deformers.count == 1);
   skin = umesh->skin_deformers.data[0];
@@ -5792,11 +5686,13 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
   mesh.bones = make_array<Bone>(arena, skin->clusters.count);
   for (usize i = 0; i < mesh.bones.count; i++) {
    ufbx_skin_cluster *cluster = skin->clusters.data[i];
+
    mesh.bones[i].inv_bind = ufbx_to_mat4(cluster->geometry_to_bone);
    mesh.bones[i].transform = inverse(mesh.bones[i].inv_bind);
    mesh.bones[i].parent = -1;
    mesh.bones[i].name = make_string(arena, cluster->bone_node->name.length,
      cluster->bone_node->name.data);
+
 
    for (int j = 0; j < mesh.bones.count; j++) {
     if (cluster->bone_node->parent == skin->clusters.data[j]->bone_node) {
@@ -5804,15 +5700,23 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
      break ;
     }
    }
+
+
+
+
+
+
+   if (mesh.bones[i].parent == -1)
+    assert(cluster->bone_node->parent->bone == 0);
   }
   Array<bool> computed = make_zero_array<bool>(tmp_arena, mesh.bones.count);
   for (usize i = 0; i < mesh.bones.count; i++)
    make_bones_transform_relative_to_parent(mesh.bones, i, computed);
  }
-
+ uint32_t max_used_index = 0;
  for (usize part_idx = 0; part_idx < umesh->material_parts.count; part_idx++) {
   MeshPart &part = mesh.parts[part_idx];
-  part.offset = vertices.count;
+  part.offset = indices.count;
 
   ufbx_mesh_part upart = umesh->material_parts.data[part_idx];
   uint32_t num_vertices = 0;
@@ -5822,10 +5726,8 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
    uint32_t num_tris = ufbx_triangulate_face(tri_indices.data, tri_indices.count, umesh, face);
 
    for (size_t i = 0; i < num_tris * 3; i++) {
-    uint32_t index = tri_indices[i];
-
-
-    vertices.push(get_ufbx_vertex(umesh, skin, index));
+    max_used_index = max(max_used_index, tri_indices[i]);
+    indices.push(tri_indices[i]);
    }
   }
   if (upart.face_indices.count && umesh->face_material.count) {
@@ -5834,18 +5736,27 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
      umesh->materials.data[umesh->face_material.data[upart.face_indices.data[0]]]);
   }
 
-  part.vertices_count = vertices.count - part.offset;
+  part.indices_count = indices.count - part.offset;
  }
- mesh.box_min = V3(FLT_MAX);
- mesh.box_max = V3(FLT_MIN);
- for (usize i = 0; i < vertices.count; i++) {
-  mesh.box_min = min(mesh.box_min, vertices[i].position);
-  mesh.box_max = max(mesh.box_max, vertices[i].position);
- }
+
+ for (uint32_t index = 0; index < max_used_index + 1; index++)
+  vertices.push(get_ufbx_vertex(umesh, skin, index));
 
  mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
    vertices.count * sizeof(Vertex), vertices.data);
+ mesh.index_buffer = create_index_buffer(indices.count, indices.data);
 
+
+ mesh.box_min = V3(1e18);
+ mesh.box_max = V3(-1e18);
+ for (usize i = 0; i < indices.count; i++) {
+  mesh.box_min = min(mesh.box_min, vertices[(int)indices[i]].position);
+  mesh.box_max = max(mesh.box_max, vertices[(int)indices[i]].position);
+ }
+
+ mesh.vertices_count = vertices.count;
+ mesh.indices_count = indices.count;
+# 273 "code/scene.cpp"
  end_temp_memory();
  return mesh;
 }
@@ -5854,7 +5765,7 @@ void *ufbx_arena_realloc(void *user, void *old_ptr, size_t old_size, size_t new_
 {
  Arena *arena = (Arena *)user;
 
- void *data = _arena_alloc("code/scene.cpp", __func__, 239, arena, new_size);
+ void *data = _arena_alloc("code/scene.cpp", __func__, 281, arena, new_size);
 
  if (old_size > new_size)
   old_size = new_size;
@@ -6025,25 +5936,38 @@ Scene load_scene(Arena *arena, const char *filename)
  opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
  opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
  opts.target_unit_meters = 1;
+
  opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
  opts.temp_allocator.allocator.user = temp;
  opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
  opts.result_allocator.allocator.user = temp;
  opts.generate_missing_normals = true;
+ opts.load_external_files = true;
+
+
+
 
  ufbx_error error;
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
   fprintf(
-# 419 "code/scene.cpp" 3 4
+# 466 "code/scene.cpp" 3 4
          stderr
-# 419 "code/scene.cpp"
+# 466 "code/scene.cpp"
                , "Failed to load %s: %s\n", filename, error.description.data);
   exit(1);
  }
 
- printf("loading scene %s\n", filename);
 
+ usize total_num_triangles = 0;
+ for (size_t i = 0; i < uscene->nodes.count; i++)
+  if (uscene->nodes.data[i]->mesh)
+   total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
+
+ printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
+
+
+ scene.triangles = make_array_max<MeshTriangle>(arena, total_num_triangles);
  scene.nodes = make_array<SceneNode>(arena, uscene->nodes.count);
  scene.meshes = make_array<Mesh>(arena, uscene->meshes.count);
  scene.root = &scene.nodes[(int)uscene->root_node->typed_id];
@@ -6098,285 +6022,562 @@ Scene load_scene(Arena *arena, const char *filename)
  end_temp_memory();
  return scene;
 }
-# 27 "code/game.cpp" 2
+# 32 "code/game.cpp" 2
 # 1 "code/game.h" 1
        
 
-enum EntityType
+#define WORLD_UP V3(0, 0, 1)
+
+struct CollisionInfo
 {
- EntityType_Player,
- EntityType_Enemy,
- EntityType_Static,
- EntityType_Count,
+ v3 hit_p;
+ v3 hit_normal;
+ float t;
 };
 
-enum CollisionShapeType
-{
- COLLISION_SHAPE_TRIANGLES,
- COLLISION_SHAPE_ELLIPSOID,
+enum EntityType {
+    EntityType_Player,
+    EntityType_Enemy,
+    EntityType_Static,
+    EntityType_Projectile,
+    EntityType_Count,
 };
 
-struct CollisionTriangle
-{
- v3 v0, v1, v2;
+enum CollisionShapeType {
+    COLLISION_SHAPE_TRIANGLES,
+    COLLISION_SHAPE_ELLIPSOID,
+};
+
+struct CollisionTriangle {
+    meta(ui, serialize) v3 v0;
+ meta(ui, serialize) v3 v1;
+ meta(ui, serialize) v3 v2;
 };
 
 typedef usize entity_id;
 
-struct CollisionShape
-{
- int type;
- Array<CollisionTriangle> triangles;
- v3 ellipsoid_radius;
+struct CollisionShape {
+    meta(ui: const, serialize) CollisionShapeType type;
+    meta(ui, serialize) Array<CollisionTriangle> triangles;
+    meta(ui, serialize) v3 ellipsoid_radius;
 
  v3 box_radius;
- mat4 transform;
- v3 scale;
- entity_id entity;
+    mat4 transform;
+    v3 scale;
+    entity_id entity;
 };
 
 typedef usize SceneID;
 
-
-struct Entity
-{
- entity_id id;
+struct Entity {
+    meta(ui: const, serialize) entity_id id;
 
  entity_id parent;
 
- int type;
- v3 position;
- v3 dp;
+    meta(ui, serialize) EntityType type;
+    meta(ui, serialize) v3 position;
+    meta(ui, serialize) v3 dp;
 
- quat rotation;
- v3 scale;
+    meta(ui, serialize) quat rotation;
+    meta(ui, serialize) v3 scale;
 
- v3 color;
+    meta(ui: color, serialize) v3 color;
 
- b32 moved;
- b32 run;
- b32 shooting;
- b32 can_jump;
- b32 on_ground;
+    meta(ui, serialize) b32 moved;
+    meta(ui, serialize) b32 run;
+    meta(ui, serialize) b32 shooting;
+    meta(ui, serialize) b32 can_jump;
+    meta(ui, serialize) b32 on_ground;
+    meta(ui, serialize) b32 pressing_jump;
+    meta(ui, serialize) b32 aiming;
 
- CollisionShape shape;
+    meta(ui, serialize) CollisionShape shape;
 
- SceneID scene_id;
- mat4 scene_transform;
+    meta(ui, serialize) SceneID scene_id;
+    meta(ui, serialize) mat4 scene_transform;
 
 
+    Animation *curr_anim;
+    Animation *next_anim;
+    float anim_time;
+    float blend_time;
 
- Animation *curr_anim;
- Animation *next_anim;
- float anim_time;
- float blend_time;
+    Animation *animation;
 
- Animation *animation;
+    float speed;
 
- float speed;
+    meta(ui: const, serialize) float height_above_ground;
 
- float height_above_ground;
+    float z_rot;
+    int last_move;
+
+    float last_gun_time;
 };
 
 enum AnimationType {
- ANIMATION_JUMP,
- ANIMATION_SHOOT,
- ANIMATION_RUN,
- ANIMATION_FORWARD_GUN_WALK,
- ANIMATION_BACKWARD_GUN_WALK,
- ANIMATION_GUN_IDLE,
- ANIMATION_COUNT
+    ANIMATION_JUMP,
+    ANIMATION_SHOOT,
+    ANIMATION_RUN,
+    ANIMATION_FORWARD_GUN_WALK,
+    ANIMATION_BACKWARD_GUN_WALK,
+    ANIMATION_GUN_IDLE,
+    ANIMATION_COUNT
 };
 
 struct ShadowMap {
- FrameBuffer framebuffer;
- v3 light_dir;
- v3 light_p;
- mat4 view;
- mat4 projection;
- int width, height;
- Texture depth_texture;
+    FrameBuffer framebuffer;
+    v3 light_dir;
+    v3 light_p;
+    mat4 view;
+    mat4 projection;
+    int tex_width, tex_height;
+
+    float znear, zfar;
+    float width, height;
+
+    Texture depth_texture;
 };
 
-struct Camera
+enum CameraType {
+    CAMERA_TYPE_PERSPECTIVE,
+    CAMERA_TYPE_ORTHOGRAPHIC,
+};
+
+struct Camera {
+    CameraType type;
+
+    v3 position;
+    mat4 view;
+    mat4 projection;
+
+    float znear, zfar, width, height;
+    v3 forward, right, up;
+};
+
+enum GizmoMode { GIZMO_TRANSLATION, GIZMO_SCALE, GIZMO_ROTATION };
+
+enum EditorOpType {
+    EDITOR_OP_TRANSLATE_ENTITY,
+    EDITOR_OP_ROTATE_ENTITY,
+    EDITOR_OP_SCALE_ENTITY,
+    EDITOR_OP_PASTE_ENTITY,
+    EDITOR_OP_DELETE_ENTITY,
+    EDITOR_OP_SPAWN_ENTITY,
+};
+
+struct EditorOp {
+    int type;
+    entity_id entity;
+
+    union {
+        struct {
+            v3 prev_p;
+            v3 new_p;
+        } translate;
+        struct {
+            quat prev_rot;
+            quat new_rot;
+        } rotate;
+        struct {
+            v3 prev_scale;
+            v3 new_scale;
+        } scale;
+        struct {
+            entity_id copy_from;
+            entity_id id;
+            v3 p;
+        } paste;
+        struct {
+            Entity entity_data;
+        } del;
+    };
+};
+
+struct Editor {
+    Array<EditorOp> ops;
+    Array<EditorOp> undos;
+
+    Entity init_entity;
+
+    meta(ui) bool in_gizmo;
+    meta(ui) entity_id selected_entity;
+    meta(ui) entity_id copied_entity;
+
+    meta(ui) GizmoMode gizmo_mode;
+
+    meta(ui) int dragging_axis;
+    meta(ui) bool did_drag;
+
+    meta(ui) v3 p_init_drag;
+
+    meta(ui) float s_init_scale;
+    meta(ui) float s_init_drag;
+
+    meta(ui) quat r_init_rot;
+    meta(ui) float r_init_drag;
+    meta(ui) v3 r_right_axis;
+    meta(ui) v3 r_up_axis;
+    meta(ui) v3 r_axis;
+
+    meta(ui) v3 last_camera_p;
+};
+
+struct World {
+    Arena arena;
+
+    meta(ui) Editor editor;
+
+    meta(ui, serialize) Array<Entity> entities;
+
+    std::unordered_map<entity_id, usize> entities_id_map;
+
+    meta(serialize) entity_id next_entity_id;
+
+    meta(serialize) v3 player_camera_p;
+    meta(serialize) v3 player_camera_rotation;
+    meta(serialize) v3 player_camera_drotation;
+
+    meta(serialize) v3 editor_camera_p;
+    meta(serialize) v3 editor_camera_rotation;
+
+    meta(ui) entity_id editor_selected_entity;
+    meta(serialize) entity_id player_id;
+
+    entity_id moving_box;
+
+    Camera last_game_camera;
+
+    float aim_camera_transition_t;
+};
+
+struct LoadedSound
 {
- v3 position;
- mat4 view;
- mat4 projection;
-
- float znear, zfar, width, height;
- v3 forward, right, up;
+    int sample_count;
+    float *samples;
 };
 
-enum GizmoMode
+struct SoundPlaying
 {
- GIZMO_TRANSLATION,
- GIZMO_SCALE,
- GIZMO_ROTATION
+    entity_id entity;
+    int samples_played;
+    LoadedSound *sound;
+    SoundPlaying *next;
+    SoundPlaying *prev;
 };
 
-enum EditorOpType
+struct SoundState
 {
- EDITOR_OP_TRANSLATE_ENTITY,
- EDITOR_OP_ROTATE_ENTITY,
- EDITOR_OP_SCALE_ENTITY,
- EDITOR_OP_PASTE_ENTITY,
- EDITOR_OP_DELETE_ENTITY,
- EDITOR_OP_SPAWN_ENTITY,
+ float *buffer;
+    int sample_count;
+
+ std::atomic_int32_t read_index;
+ std::atomic_int32_t write_index;
 };
 
-struct EditorOp
+enum SceneType {
+    SCENE_PLAYER = 1,
+    SCENE_CUBE,
+    SCENE_SPHERE,
+    SCENE_TEST,
+};
+
+struct Game {
+
+    Arena *memory;
+
+
+    std::atomic_bool is_initialized;
+
+    World *world;
+
+    ShadowMap shadow_map;
+
+    RenderPass mesh_render_pass;
+    RenderPass shadow_map_render_pass;
+    RenderPass outline_render_pass;
+    ConstantBuffer constant_buffer;
+
+    RenderPass debug_lines_render_pass;
+    VertexBuffer debug_lines_vertex_buffer;
+    ConstantBuffer debug_lines_constant_buffer;
+
+    Arena asset_arena;
+
+    Scene scenes[16];
+
+    Animation animations[ANIMATION_COUNT];
+
+    b32 in_editor;
+    meta(ui) bool debug_collision;
+
+    meta(ui) int frame;
+    meta(ui) float time;
+
+    RasterizerState default_rasterizer_state, wireframe_rasterizer_state;
+    DepthStencilState default_depth_stencil_state;
+    DepthStencilState disable_depth_state;
+
+    FrameBuffer debug_asset_fb;
+    Texture debug_asset_tex;
+
+    SoundState sound_state;
+
+    SoundPlaying *first_playing_sound;
+    LoadedSound loaded_sounds[32];
+
+    meta(ui) bool show_normals;
+    meta(ui) bool render_bones;
+    meta(ui) bool frustum_culling;
+    meta(ui) float master_volume;
+};
+
+struct Constants {
+    mat4 view;
+    mat4 projection;
+    mat4 model;
+    mat4 light_transform;
+    mat4 bones[96];
+
+    v3 camera_p;
+    v3 player_p;
+    v3 color;
+    float diffuse_factor;
+
+    float specular_factor;
+    float specular_exponent_factor;
+    int skinned;
+    int has_normal_map;
+    int show_normals;
+};
+# 33 "code/game.cpp" 2
+
+Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
- int type;
- entity_id entity;
+ Camera camera = {};
 
- union {
-  struct {
-   v3 prev_p;
-   v3 new_p;
-  } translate;
-  struct {
-   quat prev_rot;
-   quat new_rot;
-  } rotate;
-  struct {
-   v3 prev_scale;
-   v3 new_scale;
-  } scale;
-  struct {
-   entity_id copy_from;
-   entity_id id;
-   v3 p;
-  } paste;
-  struct {
-   Entity entity_data;
-  } del;
- };
-};
+ camera.type = CAMERA_TYPE_PERSPECTIVE;
+ camera.znear = znear;
+ camera.zfar = zfar;
+ camera.width = 2 * znear * tanf((3.14159265359f / 180.f) * (width_fov_degree / 2));
+ camera.height = camera.width * height_over_width;
+ camera.view = view;
+ camera.projection = perspective_projection(znear, zfar, camera.width, camera.height);
 
-struct Editor
+ mat4 inv_view = inverse(view);
+ camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
+ camera.right = V3(inv_view.e[0][0], inv_view.e[1][0], inv_view.e[2][0]);
+ camera.up = V3(inv_view.e[0][1], inv_view.e[1][1], inv_view.e[2][1]);
+ camera.forward = -V3(inv_view.e[0][2], inv_view.e[1][2], inv_view.e[2][2]);
+
+ return camera;
+}
+
+Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width, float height)
 {
- Array<EditorOp> ops;
- Array<EditorOp> undos;
+ Camera camera = {};
 
- Entity init_entity;
+ camera.type = CAMERA_TYPE_ORTHOGRAPHIC;
+ camera.znear = znear;
+ camera.zfar = zfar;
+ camera.width = width;
+ camera.height = height;
+ camera.view = view;
+ camera.projection = orthographic_projection(znear, zfar, width, height);
+ mat4 inv_view = inverse(view);
+ camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
+ camera.right = V3(inv_view.e[0][0], inv_view.e[0][1], inv_view.e[0][2]);
+ camera.up = V3(inv_view.e[1][0], inv_view.e[1][1], inv_view.e[1][2]);
+ camera.forward = V3(inv_view.e[2][0], inv_view.e[2][1], inv_view.e[2][2]);
 
- bool in_gizmo;
- entity_id selected_entity;
- entity_id copied_entity;
+ return camera;
+}
 
- GizmoMode gizmo_mode;
-
- int dragging_axis;
- bool did_drag;
-
- v3 p_init_drag;
-
- float s_init_scale;
- float s_init_drag;
-
- quat r_init_rot;
- float r_init_drag;
- v3 r_right_axis;
- v3 r_up_axis;
- v3 r_axis;
-
- v3 last_camera_p;
-};
-
-struct World
+SceneID get_scene(Game &game, SceneType type)
 {
- Arena arena;
-
- Editor editor;
-
- Array<Entity> entities;
-
- std::unordered_map<entity_id, usize> entities_id_map;
-
- entity_id next_entity_id;
-
- v3 player_camera_p;
- v3 player_camera_rotation;
- v3 player_camera_drotation;
-
- v3 editor_camera_p;
- v3 editor_camera_rotation;
-
- entity_id editor_selected_entity;
- entity_id player_id;
-
- entity_id moving_box;
-};
-
-struct Game
-{
- b32 is_initialized;
-
- World *world;
-
- ShadowMap shadow_map;
-
- RenderPass mesh_render_pass;
- RenderPass shadow_map_render_pass;
- RenderPass outline_render_pass;
- ConstantBuffer constant_buffer;
-
- RenderPass debug_lines_render_pass;
- VertexBuffer debug_lines_vertex_buffer;
- ConstantBuffer debug_lines_constant_buffer;
-
- Arena asset_arena;
-
- SceneID ch43, sponza, cube_asset, sphere_asset;
- Scene scenes[16];
-
- Animation animations[ANIMATION_COUNT];
-
- b32 in_editor;
- bool debug_collision;
-
- int frame;
- float time;
-
- RasterizerState default_rasterizer_state;
- DepthStencilState default_depth_stencil_state;
- DepthStencilState disable_depth_state;
-
- FrameBuffer debug_asset_fb;
- Texture debug_asset_tex;
-
- bool show_normals;
- bool render_bones;
-};
-
-struct Constants
-{
- mat4 view;
- mat4 projection;
- mat4 model;
- mat4 light_transform;
- mat4 bones[96];
-
- v3 camera_p;
- v3 player_p;
- v3 color;
- float diffuse_factor;
-
- float specular_factor;
- float specular_exponent_factor;
- int skinned;
- int has_normal_map;
- int show_normals;
-};
-# 28 "code/game.cpp" 2
+ assert(type > 0 && type < (sizeof(game.scenes) / sizeof(*game.scenes)));
+ return (SceneID)type;
+}
 
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
 v3 get_world_p(World &world, entity_id id);
 
-# 1 "code/generated.h" 1
-# 34 "code/game.cpp" 2
+#define SOUND_CHANNEL_COUNT 2
+#define SOUND_SAMPLE_RATE 48000
+
+LoadedSound load_wav_file(Arena *arena, const char *filename)
+{
+    ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 2, 48000);
+
+    ma_decoder decoder;
+    ma_result result = ma_decoder_init_file(filename, &config, &decoder);
+    if (result != MA_SUCCESS)
+        assert(0);
+    LoadedSound sound = {};
+
+    ma_uint64 samplesToRead = 1024;
+ sound.samples = (float *)_arena_alloc("code/game.cpp", __func__, 99, arena, samplesToRead * sizeof(float) * 2);
+
+    while (1) {
+        ma_uint64 samplesRead = 0;
+        result = ma_decoder_read_pcm_frames(&decoder, sound.samples + sound.sample_count*2,
+   samplesToRead, &samplesRead);
+        sound.sample_count += samplesRead;
+        if (samplesRead < samplesToRead)
+            break ;
+
+  _arena_alloc("code/game.cpp", __func__, 109, arena, samplesToRead * sizeof(float) * 2);
+    }
+ printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
+    return sound;
+}
+
+void audio_write_callback(ma_device* device, void* output, const void* input, ma_uint32 frame_count)
+{
+ Game &game = *((Game *)device->pUserData);
+ if (!game.is_initialized)
+  return ;
+
+ int read_index = game.sound_state.read_index;
+ int write_index = game.sound_state.write_index;
+
+
+ if (read_index == write_index)
+  return ;
+
+ if (read_index < write_index) {
+  int samples_to_read = min(write_index - read_index, (int)frame_count);
+  memcpy(output, game.sound_state.buffer + read_index * 2,
+   samples_to_read * 2 * sizeof(float));
+  game.sound_state.read_index = read_index + samples_to_read;
+ }
+ else {
+  int samples_to_copy = min((int)frame_count, game.sound_state.sample_count - read_index);
+  memcpy(output, game.sound_state.buffer + read_index * 2,
+   samples_to_copy * 2 * sizeof(float));
+  frame_count -= samples_to_copy;
+  memcpy(output, game.sound_state.buffer,
+   min(write_index, (int)frame_count) * 2 * sizeof(float));
+
+  game.sound_state.read_index = (read_index + samples_to_copy
+   + min(write_index, (int)frame_count)) % game.sound_state.sample_count;
+ }
+# 166 "code/game.cpp"
+}
+
+void play_sound(Game &game, LoadedSound &loaded_sound, entity_id entity = 0)
+{
+ SoundPlaying *sound = (SoundPlaying *)arena_alloc_zero(game.memory, sizeof(SoundPlaying));
+ sound->sound = &loaded_sound;
+ sound->entity = entity;
+
+ sound->next = game.first_playing_sound;
+ if (game.first_playing_sound)
+  game.first_playing_sound->prev = sound;
+ game.first_playing_sound = sound;
+}
+
+void update_sound(Game &game, World &world)
+{
+ if (!game.first_playing_sound)
+  return ;
+
+ SoundState &state = game.sound_state;
+
+ int frames_to_write = 1;
+ int fps = 60;
+ int max_samples_to_write = ((48000 * frames_to_write) / fps);
+
+
+ int write_index = state.write_index;
+ int read_index = state.read_index;
+
+
+ int can_write = 0;
+ if (read_index <= write_index)
+  can_write = read_index + state.sample_count - write_index;
+ else
+  can_write = read_index - write_index;
+
+ can_write -= 1;
+
+ max_samples_to_write = min(max_samples_to_write, can_write);
+
+ if (max_samples_to_write <= 0)
+  return ;
+
+ Entity *player = get_entity(world, world.player_id);
+ v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
+ v3 player_up = V3(0, 0, 1);
+ v3 player_right = normalize(cross(player_forward, player_up));
+
+ int index = write_index;
+ for (int sample = 0; sample < max_samples_to_write; sample++) {
+  for (int i = 0; i < 2; i++)
+   state.buffer[index * 2 + i] = 0;
+  index++;
+  if (index == state.sample_count)
+   index = 0;
+ }
+
+
+ for (SoundPlaying *playing_sound = game.first_playing_sound;
+  playing_sound;) {
+
+  Entity *e = get_entity(world, playing_sound->entity);
+  float volume[2] = {1, 1};
+  if (e) {
+   v3 to_e = normalize(e->position - world.player_camera_p);
+   float x = dot(to_e, player_right);
+   float y = dot(to_e, player_forward);
+   float a = fabsf(atan2(y, x));
+   a = a / 3.14159265359f;
+   volume[0] = a;
+   volume[1] = 1 - a;
+
+   float dist = 1 - logf(length(e->position - world.player_camera_p)) / 5;
+   if (dist < 0)
+    dist = 0;
+   volume[0] *= dist;
+   volume[1] *= dist;
+  }
+
+  int samples_to_write = min(max_samples_to_write,
+  playing_sound->sound->sample_count - playing_sound->samples_played);
+
+  index = write_index;
+  for (int sample = 0; sample < samples_to_write; sample++) {
+   for (int i = 0; i < 2; i++) {
+    state.buffer[index * 2 + i] +=
+     playing_sound->sound->samples[playing_sound->samples_played
+      * 2 + i] * volume[i] * game.master_volume;
+   }
+   playing_sound->samples_played++;
+   index++;
+   if (index == state.sample_count)
+    index = 0;
+  }
+  SoundPlaying *next = playing_sound->next;
+  if (playing_sound->samples_played == playing_sound->sound->sample_count) {
+   if (next)
+    next->prev = playing_sound->prev;
+   if (playing_sound->prev)
+    playing_sound->prev->next = next;
+   if (game.first_playing_sound == playing_sound)
+    game.first_playing_sound = next;
+  }
+  playing_sound = next;
+ }
+
+
+ int new_write_index = (write_index + max_samples_to_write) % state.sample_count;
+ state.write_index = new_write_index;
+}
+
+
+
+
+
 
 # 1 "code/renderer.cpp" 1
 void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
@@ -6609,11 +6810,12 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
   compute_bone_transform(anim_bones, i, computed);
  for (int i = 0; i < anim_bones.count; i++)
   anim_bones[i].transform = transform * anim_bones[i].transform;
+
  return anim_bones;
 }
 
 
-void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
+void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
   Animation *anim, float anim_time, v3 color)
 {
  if (node->skip_render)
@@ -6644,85 +6846,129 @@ void render_scene(Game &game, Scene &scene, Camera camera, SceneNode *node, mat4
 
   mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
 
+
   constants.model = mesh_transform;
 
   if (mesh.bones.count && anim) {
    constants.skinned = 1;
    Arena *temp = begin_temp_memory();
    Array<Bone> bones = get_animated_bones(temp, mesh.bones, mesh_transform, anim, anim_time);
+
    for (usize j = 0; j < bones.count; j++)
     constants.bones[j] = bones[j].transform * bones[j].inv_bind;
 
    if (game.render_bones)
     render_bones(bones, mesh_transform, anim, anim_time);
-
    end_temp_memory();
   }
 
-  for (usize j = 0; j < mesh.parts.count; j++) {
-   MeshPart &part = mesh.parts[j];
 
-   bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
-   bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
-   bind_texture(2, part.material.normal_map);
-   bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
 
-   constants.diffuse_factor = part.material.diffuse_factor;
-   constants.specular_factor = part.material.specular_factor;
-   constants.specular_exponent_factor = part.material.specular_exponent_factor;
-   constants.has_normal_map = part.material.normal_map.valid;
 
-   update_constant_buffer(game.constant_buffer, &constants);
-   bind_vertex_buffer(mesh.vertex_buffer);
-   draw((int)part.offset, (int)part.vertices_count);
+  bool cull_mesh = false;
+
+  if (!constants.skinned && game.frustum_culling)
+  {
+   Camera cam = camera;
+
+
+   v3 c[2] = {mesh.box_min, mesh.box_max};
+   v3 p[8];
+   mat4 to_camera = cam.view * mesh_transform;
+   for (int x = 0; x < 2; x++)
+   for (int y = 0; y < 2; y++)
+   for (int z = 0; z < 2; z++)
+    p[(x<<2)|(y<<1)|z] = (to_camera * V4(c[x].x, c[y].y, c[z].z, 1)).xyz;
+
+   v3 frustum_points[8];
+
+   float zfar_width, zfar_height;
+
+   if (cam.type == CAMERA_TYPE_ORTHOGRAPHIC)
+    zfar_width = cam.width, zfar_height = cam.height;
+   else
+    zfar_width = cam.width * (cam.zfar / cam.znear), zfar_height = cam.height * (cam.zfar /cam.znear);
+
+
+   frustum_points[0] = V3(-0.5f * cam.width, -0.5f * cam.height, -cam.znear);
+   frustum_points[1] = V3(+0.5f * cam.width, -0.5f * cam.height, -cam.znear);
+   frustum_points[2] = V3(+0.5f * cam.width, +0.5f * cam.height, -cam.znear);
+   frustum_points[3] = V3(-0.5f * cam.width, +0.5f * cam.height, -cam.znear);
+
+   frustum_points[4] = V3(-0.5f * zfar_width, -0.5f * zfar_height, -cam.zfar);
+   frustum_points[5] = V3(+0.5f * zfar_width, -0.5f * zfar_height, -cam.zfar);
+   frustum_points[6] = V3(+0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
+   frustum_points[7] = V3(-0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
+
+   v3 frustum_planes[6][3] = {
+    {frustum_points[0], frustum_points[3], frustum_points[4]},
+    {frustum_points[2], frustum_points[1], frustum_points[5]},
+    {frustum_points[3], frustum_points[2], frustum_points[6]},
+    {frustum_points[1], frustum_points[0], frustum_points[4]},
+    {frustum_points[0], frustum_points[1], frustum_points[2]},
+    {frustum_points[5], frustum_points[4], frustum_points[6]},
+   };
+
+   for (int i = 0; i < (sizeof(frustum_planes) / sizeof(*frustum_planes)); i++) {
+    v3 normal = cross(frustum_planes[i][1] - frustum_planes[i][0], frustum_planes[i][2] - frustum_planes[i][0]);
+    bool cull = true;
+    for (int j = 0; j < (sizeof(p) / sizeof(*p)); j++) {
+     if (dot(p[j] - frustum_planes[i][0], normal) < 0) {
+      cull = false;
+      break ;
+     }
+    }
+    if (cull) {
+     cull_mesh = true;
+     break ;
+    }
+   }
   }
+
+  if (!cull_mesh) {
+   for (usize j = 0; j < mesh.parts.count; j++) {
+    MeshPart &part = mesh.parts[j];
+
+    bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
+    bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
+    bind_texture(2, part.material.normal_map);
+    bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
+
+    constants.diffuse_factor = part.material.diffuse_factor;
+    constants.specular_factor = part.material.specular_factor;
+    constants.specular_exponent_factor = part.material.specular_exponent_factor;
+    constants.has_normal_map = part.material.normal_map.valid;
+
+    update_constant_buffer(game.constant_buffer, &constants);
+    bind_vertex_buffer(mesh.vertex_buffer);
+    bind_index_buffer(mesh.index_buffer);
+
+    draw_indexed((int)part.offset, (int)part.indices_count);
+   }
+  }
+# 386 "code/renderer.cpp"
  }
 
  for (usize i = 0; i < node->childs.count; i++)
-  render_scene(game, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
+  render_scene(game, world, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
 
-void render_scene(Game &game, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
+void render_scene(Game &game, World &world, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
   bool outline = false)
 {
-
-
-
-
-
-
-
+# 403 "code/renderer.cpp"
  if (anim)
   anim_time = fmod(anim_time, anim->duration);
+# 432 "code/renderer.cpp"
+ render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
 
- if (!outline) {
-  render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-  return ;
- }
-
- glEnable(GL_STENCIL_TEST);
- glStencilMask(0xFF);
- glClear(GL_STENCIL_BUFFER_BIT);
-
- glStencilFunc(GL_ALWAYS, 250, 0xFF);
- glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
- render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-
- glStencilFunc(GL_NOTEQUAL, 250, 0xFF);
- glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
- glStencilMask(0x00);
-
- end_render_pass();
- begin_render_pass(game.outline_render_pass);
- render_scene(game, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
- end_render_pass();
- begin_render_pass(game.mesh_render_pass);
-
- glStencilFunc(GL_ALWAYS, 0, 0xFF);
- glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
-# 36 "code/game.cpp" 2
+# 283 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
+#define SMALLEST_VELOCITY 0.01f
+#define SLIDE_ITERATION_COUNT 4
+#define SLIDE_COEFF 1.2f
+
 CollisionShape make_ellipsoid_shape(v3 radius)
 {
  CollisionShape shape = {};
@@ -6780,18 +7026,6 @@ CollisionShape make_box_shape(Arena *arena, v3 radius)
  shape.box_radius = radius;
  return shape;
 }
-
-struct CollisionInfo
-{
- v3 hit_p;
- v3 hit_normal;
- float t;
- entity_id entity;
-};
-
-#define SMALLEST_VELOCITY 0.01f
-#define SLIDE_ITERATION_COUNT 4
-#define SLIDE_COEFF 1.2f
 
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {
@@ -6869,7 +7103,7 @@ void intersect_triangle_plane(v3 v0, v3 v1, v3 v2, v3 dir, CollisionInfo &info)
 
   v3 p = t * dir;
   p = v0 + (p-v0)-dot(p - v0, normal)*normal;
-# 155 "code/collision.cpp"
+# 147 "code/collision.cpp"
   float A = dot(cross(p - v0, v), n) * one_over_length_n_sq;
   float B = -dot(cross(p - v0, u), n) * one_over_length_n_sq;
 
@@ -6889,7 +7123,7 @@ CollisionInfo ellipsoid_intersect_triangle(v3 targetP, v3 ep, v3 er, v3 v0, v3 v
  info.t = FLT_MAX;
 
  v3 inv_r = V3(1/er.x, 1/er.y, 1/er.z);
-# 184 "code/collision.cpp"
+# 176 "code/collision.cpp"
  v3 t0 = inv_r * (v0 - ep);
  v3 t1 = inv_r * (v1 - ep);
  v3 t2 = inv_r * (v2 - ep);
@@ -6971,7 +7205,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
   CollisionInfo hit_info = {};
   hit_info.t = FLT_MAX;
-  entity_id hit_entity = 0;
 
   for (int i = 0; i < shapes.count; i++) {
    CollisionInfo info;
@@ -6984,7 +7217,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
      info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
        p0, p1, p2);
-     info.entity = shapes[i].entity;
      if (info.t < hit_info.t)
       hit_info = info;
     }
@@ -6996,7 +7228,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
        shapes[i].transform.e[2][3]),
       shapes[i].ellipsoid_radius
       * shapes[i].scale);
-    info.entity = shapes[i].entity;
     if (info.t < hit_info.t)
      hit_info = info;
    }
@@ -7049,26 +7280,21 @@ void move_entity(World &world, Entity &e, v3 delta_p)
   if (shape.type == COLLISION_SHAPE_ELLIPSOID)
    shape.scale = test.scale;
 
-  shape.entity = test.id;
   shapes.push(shape);
  }
-# 355 "code/collision.cpp"
- v3 rel_p = e.position;
-
- e.position = get_world_p(world, e.id);
- v3 start_p = e.position;
-
+# 342 "code/collision.cpp"
+ v3 old_p = e.position;
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
  int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*3.5f));
  for (int i = 0; i < itr; i++)
   move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 
- if (fabsf(e.position.x - start_p.x) < 1e-7)
+ if (fabsf(e.position.x - old_p.x) < 1e-7)
   e.dp.x = 0;
- if (fabsf(e.position.y - start_p.y) < 1e-7)
+ if (fabsf(e.position.y - old_p.y) < 1e-7)
   e.dp.y = 0;
- if (fabsf(e.position.z - start_p.z) < 1e-7)
+ if (fabsf(e.position.z - old_p.z) < 1e-7)
   e.dp.z = 0;
 
 
@@ -7093,20 +7319,9 @@ void move_entity(World &world, Entity &e, v3 delta_p)
  if (e.on_ground)
   e.can_jump = true;
 
- if (e.type == EntityType_Static)
-  e.position = rel_p + e.position - start_p;
- else {
-  Entity *parent = get_entity(world, collision.entity);
-  if (parent) {
-   e.parent = parent->id;
-   e.position -= parent->position;
-  }
-  else
-   e.parent = 0;
- }
  end_temp_memory();
 }
-# 37 "code/game.cpp" 2
+# 284 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
 Entity *make_entity(World &world)
 {
@@ -7118,7 +7333,7 @@ Entity *make_entity(World &world)
  return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
  Entity *e = make_entity(world);
 
@@ -7152,7 +7367,7 @@ void remove_entity(World &world, entity_id id)
 {
  assert(world.entities_id_map.count(id));
 
- int index = world.entities_id_map[id];
+ usize index = world.entities_id_map[id];
  world.entities_id_map.erase(id);
  if (index != world.entities.count - 1) {
   world.entities[index] = world.entities[world.entities.count - 1];
@@ -7247,8 +7462,12 @@ void render_player(Game &game, World &world, Camera camera, Entity &e, bool shad
   assert(!final_anim);
  bool outline = !shadow_map_pass
  && (e.id == world.editor_selected_entity);
- render_scene(game,
- game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+
+
+ if (e.scene_id >= 1 && e.scene_id < (sizeof(game.scenes) / sizeof(*game.scenes))) {
+  render_scene(game, world,
+  game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+ }
 
 
  end_temp_memory();
@@ -7278,7 +7497,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 
   bool outline = !shadow_map_pass
    && (e.id == world.editor_selected_entity);
-  render_scene(game,
+  render_scene(game, world,
    game.scenes[e.scene_id], camera, scene_transform, 0, 0, e.color, outline);
 
 
@@ -7313,8 +7532,6 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
   return ;
  Entity &player = *_player;
 
- player.color = V3(0, 1, 1);
-
  b32 camera_shoot_mode = false;
  b32 walk_backward = false;
  {
@@ -7339,7 +7556,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 
   player.moved = forward;
   player.run = input.buttons[BUTTON_LEFT_SHIFT].is_down && forward;
-  if (!(input.buttons[BUTTON_MOUSE_LEFT].is_down) || player.run || player.moved)
+  if (!(input.buttons[BUTTON_MOUSE_LEFT].is_down) || player.moved)
    player.shooting = false;
   else
   {
@@ -7347,7 +7564,32 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.run = false;
    player.moved = false;
    a = {};
+  }
 
+  if (!(input.buttons[BUTTON_MOUSE_RIGHT].is_down) || player.moved) {
+   if (player.aiming)
+    world.aim_camera_transition_t = 0;
+   player.aiming = 0;
+  } else {
+   if (!player.aiming)
+    world.aim_camera_transition_t = 0;
+   player.aiming = 1;
+  }
+
+  if (player.shooting) {
+
+   if (game.time - player.last_gun_time > 0.3) {
+
+
+    v3 dir = normalize(world.player_camera_p + 4 * player_forward
+     - player.position);
+    push_line(player.position, player.position + dir * 5, V3(0));
+
+
+
+
+
+   }
   }
 
 
@@ -7357,11 +7599,16 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
   bool jumped = false;
   if ((input.buttons[BUTTON_SPACE].is_down) && player.can_jump)
   {
+   if (!player.pressing_jump)
+    play_sound(game, game.loaded_sounds[1]);
 
    a += 200 * player_up;
    a.xy = {};
    jumped = true;
+   player.pressing_jump = true;
   }
+  else
+   player.pressing_jump = false;
 
 
 
@@ -7374,7 +7621,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 278 "code/world.cpp"
+# 310 "code/world.cpp"
   {
 
 
@@ -7429,7 +7676,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 340 "code/world.cpp"
+# 372 "code/world.cpp"
    int curr_anim_idx = -1;
    int next_anim_idx = -1;
    for (int i = 0; i < ANIMATION_COUNT; i++) {
@@ -7438,45 +7685,13 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     if (player.next_anim == &game.animations[i])
      next_anim_idx = i;
    }
-# 359 "code/world.cpp"
+# 391 "code/world.cpp"
   }
  }
 }
 
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
- Entity *player = get_entity(world, world.player_id);
- if (!player)
-  return ;
-
- v3 player_world_p = get_world_p(world, player->id);
-
- for (int i = 0; i < world.entities.count; i++)
- {
-  Entity &e = world.entities[i];
-
-  if (e.type != EntityType_Enemy)
-   continue;
-
-  v3 dir = player_world_p - get_world_p(world, e.id);
-
-  if (length(dir) > 1)
-   dir = normalize(dir);
-
-  v3 a = normalize(V3(dir.x, dir.y, dir.z));
-
-  a = a * 40;
-# 394 "code/world.cpp"
-  a -= e.dp * 3;
-
-  v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
-
-  move_entity(world, e, delta_p);
-
-
-  e.dp += a * dt;
-# 410 "code/world.cpp"
- }
 }
 
 Camera update_camera(Game &game, World &world, GameInput &input, float dt)
@@ -7524,14 +7739,13 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
   camera_rot = world.player_camera_rotation;
   camera_rot.z -= 3.14159265359f / 2;
-
   player->rotation = zrotation_quat(world.player_camera_rotation.z);
 
 
   {
    v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z),
       sinf(world.player_camera_rotation.z), 0));
-
+   v3 player_right = normalize(cross(player_forward, V3(0, 0, 1)));
    float o = camera_rot.x;
 
    float t[4] = {-3.14159265359f/2, 0, 3.14159265359f/2.5, 3.14159265359f/2};
@@ -7571,7 +7785,19 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
    mat4 A = V * M;
 
-   world.player_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
+   v3 target_camera_p = (A * V4(o*o*o, o*o, o, 1)).xyz;
+
+   if (player->aiming)
+    target_camera_p += player_right * 1.f + player_forward * 0.9 + V3(0, 0, 0.7);
+   else
+    target_camera_p += player_right * 0.3f;
+   float transition_time = 1.5f;
+   if (world.aim_camera_transition_t < transition_time)
+    world.player_camera_p += (15 + 40 * world.aim_camera_transition_t/transition_time) * dt * (target_camera_p - world.player_camera_p);
+   else
+    world.player_camera_p += (15 + 40) * dt * (target_camera_p - world.player_camera_p);
+
+   world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
 # 516 "code/world.cpp"
   }
  }
@@ -7622,135 +7848,11 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
  mat4 view = rotation * translate(-p);
 
 
- float fov = 100;
- camera.znear = 0.1f;
- camera.zfar = 100;
- camera.width = 2 * camera.znear * tanf((3.14159265359f / 180.f) * (fov / 2));
- camera.height = camera.width * (float)g_rc->window_height / g_rc->window_width;
- camera.forward = -camera_z;
- camera.right = camera_x;
- camera.up = camera_y;
-
- mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)g_rc->window_height / g_rc->window_width);
-
- camera.position = p;
- camera.view = view;
- camera.projection = projection;
+ camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
+# 581 "code/world.cpp"
  return camera;
 }
-
-#define S(type,fd,w,value) do { if (w) fwrite(&value, sizeof(type), 1, fd); else fread(&value, sizeof(type), 1, fd); } while (0)
-
-
-
-
-#define serialize_int(...) S(int, __VA_ARGS__)
-#define serialize_b32(...) S(b32, __VA_ARGS__)
-#define serialize_float(...) S(float, __VA_ARGS__)
-#define serialize_usize(...) S(usize, __VA_ARGS__)
-
-
-void serialize(FILE *fd, bool w, v3 &v)
-{
- for (int i = 0; i < 3; i++)
-  do { if (w) fwrite(&v.e[i], sizeof(float), 1, fd); else fread(&v.e[i], sizeof(float), 1, fd); } while (0);
-}
-void serialize(FILE *fd, bool w, quat &q)
-{
- for (int i = 0; i < 4; i++)
-  do { if (w) fwrite(&q.e[i], sizeof(float), 1, fd); else fread(&q.e[i], sizeof(float), 1, fd); } while (0);
-}
-
-void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
-{
- if (!w)
-  shape = {};
-
- do { if (w) fwrite(&shape.type, sizeof(int), 1, fd); else fread(&shape.type, sizeof(int), 1, fd); } while (0);
- if (w) {
-  do { if (w) fwrite(&shape.triangles.count, sizeof(usize), 1, fd); else fread(&shape.triangles.count, sizeof(usize), 1, fd); } while (0);
-  for (int i = 0; i < shape.triangles.count; i++) {
-   serialize(fd, w, shape.triangles[i].v0);
-   serialize(fd, w, shape.triangles[i].v1);
-   serialize(fd, w, shape.triangles[i].v2);
-  }
- }
- else {
-  usize count;
-  do { if (w) fwrite(&count, sizeof(usize), 1, fd); else fread(&count, sizeof(usize), 1, fd); } while (0);
-  shape.triangles = make_array<CollisionTriangle>(arena, count);
-  for (int i = 0; i < count; i++) {
-   CollisionTriangle t;
-   serialize(fd, w, t.v0);
-   serialize(fd, w, t.v1);
-   serialize(fd, w, t.v2);
-   shape.triangles[i] = t;
-  }
- }
- serialize(fd, w, shape.ellipsoid_radius);
-}
-
-
-void serialize(FILE *fd, bool w, mat4 &m)
-{
- for (int i = 0; i < 16; i++)
-  do { if (w) fwrite(&m.e[i/4][i%4], sizeof(float), 1, fd); else fread(&m.e[i/4][i%4], sizeof(float), 1, fd); } while (0);
-}
-
-void serialize(Arena *arena, FILE *fd, bool w, Entity &e)
-{
- do { if (w) fwrite(&e.id, sizeof(usize), 1, fd); else fread(&e.id, sizeof(usize), 1, fd); } while (0);
- do { if (w) fwrite(&e.type, sizeof(int), 1, fd); else fread(&e.type, sizeof(int), 1, fd); } while (0);
- serialize(fd, w, e.position);
- serialize(fd, w, e.dp);
- serialize(fd, w, e.rotation);
- serialize(fd, w, e.scale);
- serialize(fd, w, e.color);
-
- do { if (w) fwrite(&e.moved, sizeof(b32), 1, fd); else fread(&e.moved, sizeof(b32), 1, fd); } while (0);
- do { if (w) fwrite(&e.run, sizeof(b32), 1, fd); else fread(&e.run, sizeof(b32), 1, fd); } while (0);
- do { if (w) fwrite(&e.shooting, sizeof(b32), 1, fd); else fread(&e.shooting, sizeof(b32), 1, fd); } while (0);
- do { if (w) fwrite(&e.can_jump, sizeof(b32), 1, fd); else fread(&e.can_jump, sizeof(b32), 1, fd); } while (0);
- do { if (w) fwrite(&e.on_ground, sizeof(b32), 1, fd); else fread(&e.on_ground, sizeof(b32), 1, fd); } while (0);
-
- serialize(arena, fd, w, e.shape);
-
- do { if (w) fwrite(&e.scene_id, sizeof(usize), 1, fd); else fread(&e.scene_id, sizeof(usize), 1, fd); } while (0);
- serialize(fd, w, e.scene_transform);
- do { if (w) fwrite(&e.height_above_ground, sizeof(float), 1, fd); else fread(&e.height_above_ground, sizeof(float), 1, fd); } while (0);
-}
-
-void serialize(FILE *fd, bool w, World &world)
-{
- if (w) {
-  do { if (w) fwrite(&world.entities.count, sizeof(usize), 1, fd); else fread(&world.entities.count, sizeof(usize), 1, fd); } while (0);
-  for (int i = 0; i < world.entities.count; i++)
-   serialize(&world.arena, fd, w, world.entities[i]);
- }
- else {
-  usize count;
-  do { if (w) fwrite(&count, sizeof(usize), 1, fd); else fread(&count, sizeof(usize), 1, fd); } while (0);
-  world.entities = make_array_max<Entity>(&world.arena, 4096);
-  for (int i = 0; i < count; i++) {
-   Entity e = {};
-   serialize(&world.arena, fd, w, e);
-   world.entities.push(e);
-  }
-
- }
- do { if (w) fwrite(&world.next_entity_id, sizeof(usize), 1, fd); else fread(&world.next_entity_id, sizeof(usize), 1, fd); } while (0);
- serialize(fd, w, world.player_camera_p);
- serialize(fd, w, world.player_camera_rotation);
- serialize(fd, w, world.player_camera_drotation);
- serialize(fd, w, world.editor_camera_p);
- serialize(fd, w, world.editor_camera_rotation);
- do { if (w) fwrite(&world.player_id, sizeof(usize), 1, fd); else fread(&world.player_id, sizeof(usize), 1, fd); } while (0);
-}
-
-#undef S
-# 38 "code/game.cpp" 2
-# 1 "code/ai.cpp" 1
-# 39 "code/game.cpp" 2
+# 285 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
   float &hit_t)
@@ -7874,6 +7976,36 @@ void undo_editor_op(World &world, Editor &editor)
 
 void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
 {
+ {
+  Entity *e = get_entity(world, world.editor_selected_entity);
+
+  if (e) {
+   ImGuiIO &io = ImGui::GetIO();
+
+   ImGui::Begin("Entity");
+
+   if (ImGui::Button("Reset scale"))
+    e->scale = V3(1);
+   if (ImGui::Button("Reset rotation"))
+    e->rotation = identity_quat();
+   if (e->id != world.player_id && ImGui::Button("delete")) {
+    EditorOp op = {};
+    op.entity = e->id;
+    op.type = EDITOR_OP_DELETE_ENTITY;
+    op.del.entity_data = *e;
+    do_editor_op(world, editor, op);
+    e = 0;
+   }
+   imgui_edit_struct_Entity(*e, "selected entity", false);
+# 192 "code/editor.cpp"
+   ImGui::End();
+  }
+ }
+ if (!game.in_editor)
+  return ;
+
+
+
  v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
  mouse_p.y *= -1;
 
@@ -8064,7 +8196,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 
     editor.selected_entity = hit_entity;
-    editor.init_entity = *get_entity(world, hit_entity);
+    Entity *e = get_entity(world, hit_entity);
+    if (e)
+     editor.init_entity = *e;
    }
   }
   else {
@@ -8100,45 +8234,47 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    if (get_entity(world, editor.selected_entity))
     editor.init_entity = *get_entity(world, editor.selected_entity);
   }
- Entity *e = get_entity(world, editor.selected_entity);
- if (e) {
+ {
+  Entity *e = get_entity(world, editor.selected_entity);
+  if (e) {
 
-  for (int i = 0; i < 3; i++) {
-   v3 color = {};
-   color.e[i] = 1;
-   if (editor.in_gizmo && editor.dragging_axis == i)
-    color = V3(1, 1, 0);
+   for (int i = 0; i < 3; i++) {
+    v3 color = {};
+    color.e[i] = 1;
+    if (editor.in_gizmo && editor.dragging_axis == i)
+     color = V3(1, 1, 0);
 
+    if (editor.gizmo_mode == GIZMO_SCALE) {
+     push_line(e->position, e->position + axis[i], color);
+     push_cube_outline(e->position + axis[i], V3(0.1f), color);
+
+    }
+    else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+     push_line(e->position, e->position + axis[i], color);
+     push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+    }
+    else {
+
+
+
+
+
+
+     push_circle(e->position,
+       rotation_circle_radius
+       , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+
+
+    }
+
+
+
+
+   }
    if (editor.gizmo_mode == GIZMO_SCALE) {
-    push_line(e->position, e->position + axis[i], color);
-    push_cube_outline(e->position + axis[i], V3(0.1f), color);
-
+    push_line(e->position, e->position
+      + 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
    }
-   else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-    push_line(e->position, e->position + axis[i], color);
-    push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
-   }
-   else {
-
-
-
-
-
-
-    push_circle(e->position,
-      rotation_circle_radius
-      , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
-
-
-   }
-
-
-
-
-  }
-  if (editor.gizmo_mode == GIZMO_SCALE) {
-   push_line(e->position, e->position
-     + 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
   }
  }
 
@@ -8151,60 +8287,27 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
  }
  if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
-  Entity *e = get_entity(world, editor.copied_entity);
-  if (e) {
+  Entity *copy_from = get_entity(world, editor.copied_entity);
+  if (copy_from) {
    EditorOp op = {};
    op.type = EDITOR_OP_PASTE_ENTITY;
-   op.paste.copy_from = e->id;
+   op.paste.copy_from = copy_from->id;
 
    float min_hit_t;
    entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
    if (hit_entity) {
     op.paste.p = ray_origin + min_hit_t * ray_dir
-     + V3(0, 0, e->scale.z);
+     + V3(0, 0, copy_from->scale.z);
    }else
     op.paste.p = camera.position + camera.forward * 2
-     * max(e->scale.x, max(e->scale.y, e->scale.z));
+     * max(copy_from->scale.x, max(copy_from->scale.y, copy_from->scale.z));
 
    do_editor_op(world, editor, op);
   }
  }
 
 
- {
-  Entity *e = get_entity(world, world.editor_selected_entity);
 
-  if (e) {
-   ImGuiIO &io = ImGui::GetIO();
-
-   ImGui::Begin("Entity");
-            ImGui::ColorEdit3("color", e->color.e);
-   ImGui::Text("id: %ld", e->id);
-   ImGui::Text("type: %s", get_enum_EntityType_str(e->type));
-   if (ImGui::Button("Reset scale"))
-    e->scale = V3(1);
-   if (ImGui::Button("Reset rotation"))
-    e->rotation = identity_quat();
-
-   const char * items[EntityType_Count];
-   for (int i = 0; i < EntityType_Count; i++)
-    items[i] = get_enum_EntityType_str(i);
-   ImGui::ListBox("listbox", &e->type, items, EntityType_Count, 3);
-
-
-   if (e->id != world.player_id && ImGui::Button("delete")) {
-    EditorOp op = {};
-    op.entity = e->id;
-    op.type = EDITOR_OP_DELETE_ENTITY;
-    op.del.entity_data = *e;
-
-    do_editor_op(world, editor, op);
-    e = 0;
-   }
-# 489 "code/editor.cpp"
-   ImGui::End();
-  }
- }
  if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down))) {
   undo_editor_op(world, editor);
@@ -8214,21 +8317,25 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   redo_editor_op(world, editor);
  }
 }
-# 40 "code/game.cpp" 2
+# 286 "code/game.cpp" 2
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
-  v3 light_p, v3 light_dir, mat4 projection, v3 up = V3(0, 0, 1))
+  v3 light_p, v3 light_dir, float znear, float zfar, float width, float height, v3 up = V3(0, 0, 1))
 {
  ShadowMap shadow_map = {};
 
- shadow_map.width = texture_width;
- shadow_map.height = texture_height;
+ shadow_map.tex_width = texture_width;
+ shadow_map.tex_height = texture_height;
  shadow_map.light_p = light_p;
  shadow_map.light_dir = light_dir;
 
  shadow_map.view = lookat(shadow_map.light_p, shadow_map.light_dir, up);
- shadow_map.projection = projection;
+ shadow_map.znear = znear;
+ shadow_map.zfar = zfar;
+ shadow_map.width = width;
+ shadow_map.height = height;
+ shadow_map.projection = orthographic_projection(znear, zfar, width, height);
 
  shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
 
@@ -8249,14 +8356,13 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  Game &game = *((Game *)memory->data);
  if (!game.is_initialized) {
-
   assert(memory->used == 0);
   arena_alloc_zero(memory, sizeof(game));
 
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 128));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 81, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 330, memory, temp_arena_size), temp_arena_size);
 
 
 
@@ -8266,15 +8372,18 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 91, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 340, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
   world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
   world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 95, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 344, memory, (1024ULL * (1024ULL * 256))), (1024ULL * (1024ULL * 256)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
   game.disable_depth_state = create_depth_stencil_state(false);
+  game.wireframe_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_WIREFRAME, RASTERIZER_CULL_NONE);
+
+
 
 
   VertexInputLayout input_layout = create_vertex_input_layout(g_vertex_input_elements,
@@ -8305,13 +8414,13 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
   game.shadow_map = create_shadow_map(4096, 4096,
     V3(24, 0, 24), V3(-1, 0, -1),
-    orthographic_projection(1, 75, 50, 40));
+    1, 75, 50, 40);
   {
    VertexInputElement input_elements[] = {
     {0, 3, INPUT_ELEMENT_FLOAT, "POSITION"},
     {sizeof(v3), 3, INPUT_ELEMENT_FLOAT, "COLOR"},
    };
-   VertexInputLayout input_layout = create_vertex_input_layout(input_elements, (sizeof(input_elements) / sizeof(*input_elements)),
+   VertexInputLayout line_input_layout = create_vertex_input_layout(input_elements, (sizeof(input_elements) / sizeof(*input_elements)),
      sizeof(v3) * 2);
 
    game.debug_lines_render_pass = create_render_pass(
@@ -8323,7 +8432,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      load_shader(make_cstring("shaders/debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
 
      PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
-     input_layout);
+     line_input_layout);
 
    game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
      g_rc->debug_lines.capacity * sizeof(v3));
@@ -8354,40 +8463,32 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   };
   game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, (sizeof(elems) / sizeof(*elems))));
 
-  game.scenes[1] = load_scene(&game.asset_arena, "data/YBot.fbx");
-  game.scenes[2] = load_scene(&game.asset_arena, "data/cube.fbx");
-  game.scenes[3] = load_scene(&game.asset_arena, "data/sphere.fbx");
 
-  game.ch43 = 1;
-  game.cube_asset = 2;
-  game.sphere_asset = 3;
+  game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
 
+
+  game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
+  game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
+
+
+  game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
   game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
   game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
+
+  game.animations[ANIMATION_SHOOT].duration *= 0.6;
   game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
   game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
   game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
-
-
-
+# 458 "code/game.cpp"
   FILE *fd = fopen("world.bin", "rb");
   if (!fd) {
 
    world.entities = make_array_max<Entity>(&world.arena, 4096);
 
    Entity *boxes[] = {
-    make_entity(world, EntityType_Static, game.cube_asset, V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(1, 6, 0), make_box_shape(memory, (V3(4, 1, 2)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
-    make_entity(world, EntityType_Static, game.cube_asset, V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
-
-    make_entity(world, EntityType_Static, game.cube_asset, V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
+    make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
+# 478 "code/game.cpp"
    };
    world.moving_box = 7;
 
@@ -8403,23 +8504,27 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
     boxes[i]->color = V3(r, g, b);
 
    }
-   Entity *player = make_entity(world, EntityType_Player, game.ch43, V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
+   Entity *player = make_entity(world, EntityType_Player, get_scene(game, SCENE_PLAYER), V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
    world.player_id = player->id;
 
 
 
 
    player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
-   player->color = V3(0.2, 0.8, 0.8);
+   player->color = V3(0, 1, 1);
+
+   Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
+   test->rotation = rotate_around_axis_quat(V3(1, 0, 0), 3.14159265359f/2);
 
    world.editor_camera_p = V3(0, 0, 3);
   }
   else {
-   serialize(fd, false, world);
+   serialize_World(fd, false, world, &world.arena);
    for (int i = 0; i < world.entities.count; i++)
     world.entities_id_map[world.entities[i].id] = i;
    fclose(fd);
   }
+
 
   {
    game.debug_asset_fb = create_frame_buffer(false, true);
@@ -8437,42 +8542,79 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      == GL_FRAMEBUFFER_COMPLETE);
   }
 
+  game.sound_state.sample_count = 48000*10;
+  game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * 2 * sizeof(float));
+
+  game.loaded_sounds[0] = load_wav_file(memory, "data/music.wav");
+  game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
+
+  game.master_volume = 1;
+  game.frustum_culling = true;
+
   game.is_initialized = 1;
+ }
+ game.memory = memory;
+
+
+ if (game.frame == 0) {
+  play_sound(game, game.loaded_sounds[0], 0);
  }
 
  World &world = *game.world;
 
-
-
- if (((input.buttons[TOGGLE_EDITOR_BUTTON].is_down) && !(input.buttons[TOGGLE_EDITOR_BUTTON].was_down)))
+ if (((input.buttons[BUTTON_F1].is_down) && !(input.buttons[BUTTON_F1].was_down)))
   game.in_editor = !game.in_editor;
 
  begin_render_frame();
+
+
 
  if (!game.in_editor) {
   update_player(game, world, input, dt);
   update_enemies(game, world, input, dt);
 
-  Entity *e = get_entity(world, world.moving_box);
-  if (e)
-   e->position.z = 20 + sinf(game.time) * 20;
- }
 
+
+
+
+
+ }
  Camera game_camera = update_camera(game, world, input, dt);
 
- if (game.in_editor)
-  update_editor(game, world, world.editor, input, game_camera);
+ if (!game.in_editor)
+  world.last_game_camera = game_camera;
 
+
+ update_editor(game, world, world.editor, input, game_camera);
+ if (game.in_editor) {
+
+  Camera c = world.last_game_camera;
+
+  v3 p[4] = {
+   c.position + c.forward * c.znear - c.right * c.width * 0.5f - c.up * c.height * 0.5f,
+   c.position + c.forward * c.znear + c.right * c.width * 0.5f - c.up * c.height * 0.5f,
+   c.position + c.forward * c.znear + c.right * c.width * 0.5f + c.up * c.height * 0.5f,
+   c.position + c.forward * c.znear - c.right * c.width * 0.5f + c.up * c.height * 0.5f,
+  };
+  push_line(c.position, p[0]);
+  push_line(c.position, p[1]);
+  push_line(c.position, p[2]);
+  push_line(c.position, p[3]);
+  push_line(p[0], p[1]);
+  push_line(p[1], p[2]);
+  push_line(p[2], p[3]);
+  push_line(p[3], p[0]);
+ }
  push_cube_outline(game.shadow_map.light_p, V3(0.3));
  push_line(game.shadow_map.light_p, game.shadow_map.light_p + 0.5 * game.shadow_map.light_dir);
 
  begin_render_pass(game.shadow_map_render_pass);
  {
-  set_viewport(0, 0, game.shadow_map.width, game.shadow_map.height);
+  set_viewport(0, 0, game.shadow_map.tex_width, game.shadow_map.tex_height);
   bind_framebuffer(game.shadow_map.framebuffer);
   clear_framebuffer_depth(game.shadow_map.framebuffer, 1);
-  render_entities(game, world, Camera{game.shadow_map.light_p, game.shadow_map.view, game.shadow_map.projection},
-     true);
+  render_entities(game, world, make_orthographic_camera(game.shadow_map.view, game.shadow_map.znear,
+   game.shadow_map.zfar, game.shadow_map.width, game.shadow_map.height), true);
  }
  end_render_pass();
 
@@ -8486,6 +8628,10 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
   bind_texture(4, game.shadow_map.depth_texture);
   render_entities(game, world, game_camera, false);
+
+
+
+
  }
  end_render_pass();
 
@@ -8511,21 +8657,19 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::Begin("debug");
-  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+  ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
   ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
-  ImGui::Checkbox("debug collission", &game.debug_collision);
-  ImGui::Checkbox("show normals", &game.show_normals);
-  ImGui::Checkbox("show bones", &game.render_bones);
+
   ImGui::Text("entity count: %ld", world.entities.count);
   if (ImGui::Button("new cube")) {
    Entity *entity = make_entity(world, EntityType_Static,
-     2, game_camera.position
+     get_scene(game, SCENE_CUBE), game_camera.position
      + game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
    world.editor.selected_entity = entity->id;
   }
   if (ImGui::Button("new sphere")) {
    Entity *entity = make_entity(world, EntityType_Static,
-     3, game_camera.position
+     get_scene(game, SCENE_SPHERE), game_camera.position
      + game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
    world.editor.selected_entity = entity->id;
   }
@@ -8534,12 +8678,14 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    FILE *fd = fopen("world.bin", "wb");
    if (!fd)
     assert(0);
-   serialize(fd, true, world);
+   serialize_World(fd, true, world);
    fclose(fd);
   }
 
   if (get_entity(world, world.editor.copied_entity))
    ImGui::Text("copying entity %ld", world.editor.copied_entity);
+  imgui_edit_struct_Game(game, "game");
+  imgui_edit_struct_World(world, "world");
 
   ImGui::End();
  }
@@ -8547,12 +8693,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  end_render_frame();
 
+ update_sound(game, world);
+
  game.time += dt;
- if (game.frame == 0)
+
+ if (game.frame == 0 || !game.in_editor)
   ImGui::SetWindowFocus(
-# 374 "code/game.cpp" 3 4
+# 687 "code/game.cpp" 3 4
                        __null
-# 374 "code/game.cpp"
+# 687 "code/game.cpp"
                            );
  game.frame++;
 }

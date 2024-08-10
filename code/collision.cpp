@@ -1,3 +1,7 @@
+#define SMALLEST_VELOCITY 0.01f
+#define SLIDE_ITERATION_COUNT 4
+#define SLIDE_COEFF 1.2f
+
 CollisionShape make_ellipsoid_shape(v3 radius)
 {
 	CollisionShape shape = {};
@@ -55,17 +59,6 @@ CollisionShape make_box_shape(Arena *arena, v3 radius)
 	shape.box_radius = radius;
 	return shape;
 }
-
-struct CollisionInfo
-{
-	v3 hit_p;
-	v3 hit_normal;
-	float t;
-};
-
-#define SMALLEST_VELOCITY 0.01f
-#define SLIDE_ITERATION_COUNT 4
-#define SLIDE_COEFF 1.2f
 
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {

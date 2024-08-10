@@ -8,7 +8,7 @@ Entity *make_entity(World &world)
 	return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, int type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
 	Entity *e = make_entity(world);
 
@@ -138,8 +138,11 @@ void render_player(Game &game, World &world, Camera camera, Entity &e, bool shad
 	bool outline = !shadow_map_pass
 	&& (e.id == world.editor_selected_entity);
 
-	render_scene(game, world,
-	game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+	// TODO: cleanup
+	if (e.scene_id >= 1 && e.scene_id < ARRAY_SIZE(game.scenes)) {
+		render_scene(game, world,
+		game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
+	}
 
 
 	end_temp_memory();
@@ -203,9 +206,6 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	if (!_player)
 		return ;
 	Entity &player = *_player;
-
-	player.color = V3(0, 1, 1);
-	
 
 	b32 camera_shoot_mode = false;
 	b32 walk_backward = false;
@@ -581,112 +581,112 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	return camera;
 }
 
-#define S(type, fd, w, value) do {\
-	if (w) fwrite(&value, sizeof(type), 1, fd); \
-	else fread(&value, sizeof(type), 1, fd); \
-	} while (0)
-
-#define serialize_int(fd, w, value) S(int, fd, w, value)
-#define serialize_b32(fd, w, value) S(b32, fd, w, value)
-#define serialize_float(fd, w, value) S(float, fd, w, value)
-#define serialize_usize(fd, w, value) S(usize, fd, w, value)
-
-void serialize(FILE *fd, bool w, v3 &v)
-{
-	for (int i = 0; i < 3; i++)
-		serialize_float(fd, w, v.e[i]);
-}
-
-void serialize(FILE *fd, bool w, quat &q)
-{
-	for (int i = 0; i < 4; i++)
-		serialize_float(fd, w, q.e[i]);
-}
-
-void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
-{
-	if (!w)
-		shape = {};
-
-	serialize_int(fd, w, shape.type);
-	if (w) {
-		serialize_usize(fd, w, shape.triangles.count);
-		for (int i = 0; i < shape.triangles.count; i++) {
-			serialize(fd, w, shape.triangles[i].v0);
-			serialize(fd, w, shape.triangles[i].v1);
-			serialize(fd, w, shape.triangles[i].v2);
-		}
-	}
-	else {
-		usize count;
-		serialize_usize(fd, w, count);
-		shape.triangles = make_array<CollisionTriangle>(arena, count);
-		for (int i = 0; i < count; i++) {
-			CollisionTriangle t;
-			serialize(fd, w, t.v0);
-			serialize(fd, w, t.v1);
-			serialize(fd, w, t.v2);
-			shape.triangles[i] = t;
-		}
-	}
-	serialize(fd, w, shape.ellipsoid_radius);
-}
-
-
-void serialize(FILE *fd, bool w, mat4 &m)
-{
-	for (int i = 0; i < 16; i++)
-		serialize_float(fd, w, m.e[i/4][i%4]);
-}
-
-void serialize(Arena *arena, FILE *fd, bool w, Entity &e)
-{
-	serialize_usize(fd, w, e.id);
-	serialize_int(fd, w, e.type);
-	serialize(fd, w, e.position);
-	serialize(fd, w, e.dp);
-	serialize(fd, w, e.rotation);
-	serialize(fd, w, e.scale);
-	serialize(fd, w, e.color);
-
-	serialize_b32(fd, w, e.moved);
-	serialize_b32(fd, w, e.run);
-	serialize_b32(fd, w, e.shooting);
-	serialize_b32(fd, w, e.can_jump);
-	serialize_b32(fd, w, e.on_ground);
-
-	serialize(arena, fd, w, e.shape);
-
-	serialize_usize(fd, w, e.scene_id);
-	serialize(fd, w, e.scene_transform);
-	serialize_float(fd, w, e.height_above_ground);
-}
-
-void serialize(FILE *fd, bool w, World &world)
-{
-	if (w) {
-		serialize_usize(fd, w, world.entities.count);
-		for (int i = 0; i < world.entities.count; i++)
-			serialize(&world.arena, fd, w, world.entities[i]);
-	}
-	else {
-		usize count;
-		serialize_usize(fd, w, count);
-		world.entities = make_array_max<Entity>(&world.arena, 4096);
-		for (int i = 0; i < count; i++) {
-			Entity e = {};
-			serialize(&world.arena, fd, w, e);
-			world.entities.push(e);
-		}
-
-	}
-	serialize_usize(fd, w, world.next_entity_id);
-	serialize(fd, w, world.player_camera_p);
-	serialize(fd, w, world.player_camera_rotation);
-	serialize(fd, w, world.player_camera_drotation);
-	serialize(fd, w, world.editor_camera_p);
-	serialize(fd, w, world.editor_camera_rotation);
-	serialize_usize(fd, w, world.player_id);
-}
-
-#undef S
+//#define S(type, fd, w, value) do {\
+//	if (w) fwrite(&value, sizeof(type), 1, fd); \
+//	else fread(&value, sizeof(type), 1, fd); \
+//	} while (0)
+//
+//#define serialize_int(fd, w, value) S(int, fd, w, value)
+//#define serialize_b32(fd, w, value) S(b32, fd, w, value)
+//#define serialize_float(fd, w, value) S(float, fd, w, value)
+//#define serialize_usize(fd, w, value) S(usize, fd, w, value)
+//
+//void serialize(FILE *fd, bool w, v3 &v)
+//{
+//	for (int i = 0; i < 3; i++)
+//		serialize_float(fd, w, v.e[i]);
+//}
+//
+//void serialize(FILE *fd, bool w, quat &q)
+//{
+//	for (int i = 0; i < 4; i++)
+//		serialize_float(fd, w, q.e[i]);
+//}
+//
+//void serialize(Arena *arena, FILE *fd, bool w, CollisionShape &shape)
+//{
+//	if (!w)
+//		shape = {};
+//
+//	serialize_int(fd, w, shape.type);
+//	if (w) {
+//		serialize_usize(fd, w, shape.triangles.count);
+//		for (int i = 0; i < shape.triangles.count; i++) {
+//			serialize(fd, w, shape.triangles[i].v0);
+//			serialize(fd, w, shape.triangles[i].v1);
+//			serialize(fd, w, shape.triangles[i].v2);
+//		}
+//	}
+//	else {
+//		usize count;
+//		serialize_usize(fd, w, count);
+//		shape.triangles = make_array<CollisionTriangle>(arena, count);
+//		for (int i = 0; i < count; i++) {
+//			CollisionTriangle t;
+//			serialize(fd, w, t.v0);
+//			serialize(fd, w, t.v1);
+//			serialize(fd, w, t.v2);
+//			shape.triangles[i] = t;
+//		}
+//	}
+//	serialize(fd, w, shape.ellipsoid_radius);
+//}
+//
+//
+//void serialize(FILE *fd, bool w, mat4 &m)
+//{
+//	for (int i = 0; i < 16; i++)
+//		serialize_float(fd, w, m.e[i/4][i%4]);
+//}
+//
+//void serialize(Arena *arena, FILE *fd, bool w, Entity &e)
+//{
+//	serialize_usize(fd, w, e.id);
+//	serialize_int(fd, w, e.type);
+//	serialize(fd, w, e.position);
+//	serialize(fd, w, e.dp);
+//	serialize(fd, w, e.rotation);
+//	serialize(fd, w, e.scale);
+//	serialize(fd, w, e.color);
+//
+//	serialize_b32(fd, w, e.moved);
+//	serialize_b32(fd, w, e.run);
+//	serialize_b32(fd, w, e.shooting);
+//	serialize_b32(fd, w, e.can_jump);
+//	serialize_b32(fd, w, e.on_ground);
+//
+//	serialize(arena, fd, w, e.shape);
+//
+//	serialize_usize(fd, w, e.scene_id);
+//	serialize(fd, w, e.scene_transform);
+//	serialize_float(fd, w, e.height_above_ground);
+//}
+//
+//void serialize(FILE *fd, bool w, World &world)
+//{
+//	if (w) {
+//		serialize_usize(fd, w, world.entities.count);
+//		for (int i = 0; i < world.entities.count; i++)
+//			serialize(&world.arena, fd, w, world.entities[i]);
+//	}
+//	else {
+//		usize count;
+//		serialize_usize(fd, w, count);
+//		world.entities = make_array_max<Entity>(&world.arena, 4096);
+//		for (int i = 0; i < count; i++) {
+//			Entity e = {};
+//			serialize(&world.arena, fd, w, e);
+//			world.entities.push(e);
+//		}
+//
+//	}
+//	serialize_usize(fd, w, world.next_entity_id);
+//	serialize(fd, w, world.player_camera_p);
+//	serialize(fd, w, world.player_camera_rotation);
+//	serialize(fd, w, world.player_camera_drotation);
+//	serialize(fd, w, world.editor_camera_p);
+//	serialize(fd, w, world.editor_camera_rotation);
+//	serialize_usize(fd, w, world.player_id);
+//}
+//
+//#undef S

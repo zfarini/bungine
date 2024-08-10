@@ -68,6 +68,26 @@ GAME_UPDATE_AND_RENDER(game_update_and_render);
 
 int main()
 {
+	// TODO: change to mmap
+	usize memory_size = GigaByte(1);
+	Arena memory = make_arena(calloc(1, memory_size), memory_size);
+
+	ma_device sound_device;
+	{
+
+		ma_device_config config = ma_device_config_init(ma_device_type_playback);
+		config.playback.format   = ma_format_f32;
+		config.playback.channels = SOUND_CHANNEL_COUNT;
+		config.sampleRate        = SOUND_SAMPLE_RATE;
+		config.dataCallback      = audio_write_callback;
+		// @HACK: the game struct should always be allocated the first thing
+		config.pUserData         = memory.data;
+
+		if (ma_device_init(NULL, &config, &sound_device) != MA_SUCCESS)
+			printf("ERROR: couldn't init sound device\n");
+		else
+			ma_device_start(&sound_device);
+	}
 	if (!glfwInit())
 		assert(0);
 
@@ -80,7 +100,7 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(1280, 720, "game", 0, 0);
+	GLFWwindow *window = glfwCreateWindow(1600, 900, "game", 0, 0);
 	if (!window)
 		assert(0);
 
@@ -100,10 +120,6 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);// Second param install_callback=true will install GLFW callbacks and chain to existing ones.
 	ImGui_ImplOpenGL3_Init();
 
-	// TODO: change to mmap
-	usize memory_size = GigaByte(1);
-	Arena memory = make_arena(calloc(1, memory_size), memory_size);
-
 	RenderContext rc = {};
 
 	GameInput game_input = {};
@@ -118,7 +134,6 @@ int main()
 
 	Platform platform = {};
 	platform.render_context = &rc;
-	platform.window = window;
 	platform.imgui_context = ImGui::GetCurrentContext();
 
 	int frame = 0;
@@ -136,6 +151,7 @@ int main()
 		frame++;
 	}
 
+	ma_device_uninit(&sound_device);
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

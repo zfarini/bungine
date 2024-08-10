@@ -31,6 +31,7 @@ mat4 ufbx_to_mat4(ufbx_matrix m)
 	return (result);
 }
 
+#if 0
 struct stb_load_texture_data
 {
 	char filename[256];
@@ -44,6 +45,7 @@ THREAD_WORK_FUNC(stb_load_texture_work)
 	int width, height, n_channels;
 	data = stbi_load(path.data, &width, &height, &n_channels, 4);
 }
+#endif
 
 Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
 {
@@ -61,6 +63,8 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 				return g_rc->loaded_textures[i];
 		}
 	}
+	void *data;
+	int width, height, n_channels;
 	Arena *temp = begin_temp_memory();
 	if (utex->content.size) {
 		data = stbi_load_from_memory((stbi_uc *)utex->content.data,
@@ -86,7 +90,7 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 	//assert(data);
 	end_temp_memory();
 
-	Texture texture = create_texture(name, 0, width, height, srgb);
+	Texture texture = create_texture(name, data, width, height, srgb);
 	if (name.count)
 		g_rc->loaded_textures.push(texture);
 

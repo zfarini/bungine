@@ -8,10 +8,10 @@
 #define MA_NO_MP3
 #define MA_NO_FLAC
 #include <miniaudio.h>
-
 #include <atomic>
-
+#define meta(...)
 #endif
+
 #include "common.h"
 #include "arena.h"
 #include "utils.h"
@@ -30,7 +30,6 @@ global RenderContext *g_rc;
 #include "scene.h"
 #include "scene.cpp"
 #include "game.h"
-
 
 Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
@@ -276,7 +275,9 @@ void update_sound(Game &game, World &world)
 }
 
 
+#ifndef DISABLE_PREPROCESSOR
 #include "generated.h"
+#endif
 
 #include "renderer.cpp"
 #include "collision.cpp"
@@ -311,7 +312,6 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 		assert(0);
 	return shadow_map;
 }
-
 
 extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 {
@@ -429,7 +429,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.constant_buffer = create_constant_buffer(make_array<ConstantBufferElement>(elems, ARRAY_SIZE(elems)));
 		
 #if 1
-		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "Z:\\3dGame4\\data\\parking\\source\\ZM Car Park\\zma_carpark_b2.obj");
+		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
 #else
 #endif
 		game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
@@ -497,20 +497,21 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
 			//player->scene_transform =  scale(player->shape.ellipsoid_radius);
 			player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
-			player->color = V3(0.2, 0.8, 0.8);
+			player->color = V3(0, 1, 1);
+
+			Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
+			test->rotation = rotate_around_axis_quat(V3(1, 0, 0), PI/2);
 
 			world.editor_camera_p = V3(0, 0, 3);
 		}
 		else {
-			serialize(fd, false, world);
+			serialize_World(fd, false, world, &world.arena);
 			for (int i = 0; i < world.entities.count; i++)
 				world.entities_id_map[world.entities[i].id] = i;
 			fclose(fd);
 		}
 
-		Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
-		test->rotation = rotate_around_axis_quat(V3(1, 0, 0), PI/2);
-
+		
 		{
 			game.debug_asset_fb = create_frame_buffer(false, true);
 
@@ -542,7 +543,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 
 	if (game.frame == 0) {
-		//play_sound(game, game.loaded_sounds[0], 12);
+		play_sound(game, game.loaded_sounds[0], 0);
 	}
 
 	World &world = *game.world;
@@ -569,8 +570,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	if (!game.in_editor)
 		world.last_game_camera = game_camera;
 
+
+	update_editor(game, world, world.editor, input, game_camera);
 	if (game.in_editor) {
-		update_editor(game, world, world.editor, input, game_camera);
 		
 		Camera c = world.last_game_camera;
 
@@ -626,7 +628,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	begin_render_pass(game.debug_lines_render_pass);
 	{
 		// TODO:!!!
-		//clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 				g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;
@@ -641,13 +643,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	{
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
-		ImGui::SliderFloat("master volume", &game.master_volume, 0, 1);
-		ImGui::Checkbox("debug collission", &game.debug_collision);
-		ImGui::Checkbox("show normals", &game.show_normals);
-		ImGui::Checkbox("show bones", &game.render_bones);
-		ImGui::Checkbox("frustum culling", &game.frustum_culling);
 
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
@@ -667,23 +664,26 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			FILE *fd = fopen("world.bin", "wb");
 			if (!fd)
 				assert(0);
-			serialize(fd, true, world);
+			serialize_World(fd, true, world);
 			fclose(fd);
 		}
 
 		if (get_entity(world, world.editor.copied_entity))
 			ImGui::Text("copying entity %ld", world.editor.copied_entity);
+		imgui_edit_struct_Game(game, "game");
+		imgui_edit_struct_World(world, "world");
 
 		ImGui::End();
 	}
+	//ImGui::ShowDemoWindow();
 
-	
 	end_render_frame();
 
 	update_sound(game, world);
 
 	game.time += dt;
-	if (game.frame == 0)
+	// @HACK
+	if (game.frame == 0 || !game.in_editor)
 		ImGui::SetWindowFocus(NULL);
 	game.frame++;
 }
