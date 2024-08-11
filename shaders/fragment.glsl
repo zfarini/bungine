@@ -10,9 +10,9 @@ layout (std140, row_major, binding = 0) uniform Constants
 	mat4 bones[96];
 
 
+	vec4 point_light_color[8];
+	vec4 point_light_position[8];
 	int point_light_count;
-	vec3 point_light_color[8];
-	vec3 point_light_position[8];
 
 	vec3 camera_p;
 	vec3 player_p;
@@ -127,11 +127,11 @@ void main()
     //return ;
 #if 1
 	for (int i = 0; i < point_light_count; i++) {
-		vec3 to_light = normalize(point_light_position[i] - world_p);
+		vec3 to_light = normalize(point_light_position[i].xyz - world_p);
 		float diffuse = max(0.f, dot(to_light, normal));
 		vec3 specular = specular_color * pow(max(0.f, dot(reflect(-to_light, normal), to_camera)), shininess_exponenet);
-		float attenuation = 1.f / length(point_light_position[i] - world_p);
-		result += point_light_color[i] * (diffuse_factor*color * diffuse  + specular_factor*specular) * attenuation;
+		float attenuation = 1.f / length(point_light_position[i].xyz - world_p);
+		result += point_light_color[i].xyz * (diffuse_factor*color * diffuse  + specular_factor*specular) * attenuation;
 	}
 #endif
 	//result = vec3(pow(result.r, 1/2.2), pow(result.g, 1/2.2), pow(result.b, 1/2.2));

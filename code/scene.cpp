@@ -471,7 +471,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 				slash = i;
 		}
 		// TODO: cleanup
-		int len = strlen(filename);
+		int len = (int)strlen(filename);
 		scene.path = make_string(arena, slash + 1, filename);
 		scene.name = make_string(arena, len - (slash + 1), filename + slash + 1);
 	}

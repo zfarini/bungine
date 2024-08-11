@@ -317,15 +317,14 @@ struct Constants {
     mat4 light_transform;
     mat4 bones[96];
 
-	int point_light_count;
 	v4 point_light_color[8];
 	v4 point_light_position[8];
+	int point_light_count;
 
     v3 camera_p;
     v3 player_p;
     v3 color;
     float diffuse_factor;
-
     float specular_factor;
     float specular_exponent_factor;
     int skinned;

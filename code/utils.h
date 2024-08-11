@@ -124,8 +124,6 @@ String concact_string(Arena *arena, String a, String b) {
 }
 #define str_format(str) (int)str.count, str.data
 
-#include <cstdio>
-
 String load_entire_file(Arena *arena, String filename) {
     assert(filename.count < filename.capacity &&
            filename.data[filename.count] == 0);

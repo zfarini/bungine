@@ -193,7 +193,7 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 		N = (transpose(to_ep) * V4(N, 0)).xyz;
 		info.hit_p = tp + N;
 
-		push_cube_outline(info.hit_p, V3(0.1f), V3(1));
+		//push_cube_outline(info.hit_p, V3(0.1f), V3(1));
 
 	}
 	return info;

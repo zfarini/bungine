@@ -71,7 +71,7 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 	}
 
 	if (hit_id) {
-		push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
+	//	push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
 	}
 	hit_t = min_t;
 	return hit_id;
@@ -516,6 +516,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			v3 hit_p = ray_origin + min_hit_t * ray_dir;
 
 			float dist_to_snap = 0.03f * length(hit_p - camera.position);
+			dist_to_snap = 0.1f;
 			float size = dist_to_snap;
 
 			if (IsDownFirstTime(input, BUTTON_MOUSE_RIGHT)) {
@@ -547,6 +548,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			}
 		}
 	}
+	if (!editor.edit_collision_mesh)
 	{
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) {

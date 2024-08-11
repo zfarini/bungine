@@ -233,7 +233,7 @@ int main()
 {
 	Arena game_memory;
 	{
-		usize game_memory_size = GigaByte(3);
+		usize game_memory_size = GigaByte(4);
 		void *data = VirtualAlloc(0, game_memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
 		assert(data);
 		game_memory = make_arena(data, game_memory_size);

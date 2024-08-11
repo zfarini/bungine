@@ -8,6 +8,7 @@
 #define MA_NO_MP3
 #define MA_NO_FLAC
 #include <miniaudio.h>
+// TODO: remove this
 #include <atomic>
 #define meta(...)
 #endif
@@ -274,8 +275,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
 		load_scene(&game.asset_arena, game, "data/cube.fbx");
 		load_scene(&game.asset_arena, game, "data/sphere.fbx");
-		load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
-		load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
+		//load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
+		//load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
 
 #if 1
 		load_scene(&game.asset_arena, game, "data/Ybot.fbx");
@@ -437,6 +438,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		bind_texture(4, game.shadow_map.depth_texture);
 		render_entities(game, world, game_camera, false);
+
+	
 
 		// clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		// bind_rasterizer_state(game.wireframe_rasterizer_state);
