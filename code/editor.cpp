@@ -70,8 +70,9 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 		}
 	}
 
-	if (hit_id)
+	if (hit_id) {
 		push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
+	}
 	hit_t = min_t;
 	return hit_id;
 }
@@ -261,6 +262,13 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		if (IsDown(input, BUTTON_T)) editor.gizmo_mode = GIZMO_TRANSLATION;
 		else if (IsDown(input, BUTTON_R)) editor.gizmo_mode = GIZMO_ROTATION;
 		else if (IsDown(input, BUTTON_S)) editor.gizmo_mode = GIZMO_SCALE;
+		
+		if (IsDownFirstTime(input, BUTTON_Q))  {
+
+			editor.edit_collision_mesh = !editor.edit_collision_mesh;
+			if (editor.edit_collision_mesh)
+				editor.in_gizmo = 0;
+		}
 	}
 	float rotation_inner_radius = 1.5;
 	float rotation_outer_radius = 2;
@@ -283,12 +291,12 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		}
 	}
 
-	if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
+	if (!editor.edit_collision_mesh && IsDown(input, BUTTON_MOUSE_RIGHT)) {
 		float min_hit_t;
 		int hit_entity_mesh_index;
 		entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
 
-		if (editor.selected_entity && !editor.in_gizmo) {
+		if (editor.selected_entity && !editor.in_gizmo && !editor.edit_collision_mesh) {
 			Entity *e = get_entity(world, editor.selected_entity);
 			if (e) {
 				float min_axis_t = FLT_MAX;
@@ -446,8 +454,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				if (e)
 					editor.init_entity = *e;
 			}
-		}
-		else {
+
+	}
+	else {
 			if (editor.in_gizmo && editor.did_drag) {
 				EditorOp op = {};
 				Entity *e = get_entity(world, editor.selected_entity);
@@ -479,7 +488,65 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			editor.in_gizmo = 0;
 			if (get_entity(world, editor.selected_entity))
 				editor.init_entity = *get_entity(world, editor.selected_entity);
+	}
+	if (editor.edit_collision_mesh) {
+		
+		float min_hit_t;
+		int hit_entity_mesh_index;
+		entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
+
+		Entity *e = get_entity(world, hit_entity);
+
+		if (e && e->scene_id) {
+
+			mat4 to_world = get_entity_transform(world, *e) * e->scene_transform;
+			mat4 to_object = inverse(to_world);
+
+			if (!world.scene_collision_mesh.count(e->scene_id)) {
+				CollisionMesh cmesh = {};
+				// TODO: cleanup
+				cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
+				cmesh.scene = e->scene_id;
+				world.collision_meshes.push(cmesh);
+				world.scene_collision_mesh[e->scene_id] = world.collision_meshes.count - 1;
+			}
+
+			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+
+			v3 hit_p = ray_origin + min_hit_t * ray_dir;
+
+			float dist_to_snap = 0.03f * length(hit_p - camera.position);
+			float size = dist_to_snap;
+
+			if (IsDownFirstTime(input, BUTTON_MOUSE_RIGHT)) {
+
+				hit_p = (to_object * V4(hit_p, 1)).xyz;
+
+				float closest_dist = FLT_MAX;
+				int best_p = 0;
+				for (int i = 0; i < cmesh.vertices.count; i++) {
+					float dist = length_sq(cmesh.vertices[i] - hit_p);
+					if (dist < closest_dist) {
+						closest_dist = dist;
+						best_p = i;
+					}
+				}
+				if (closest_dist < dist_to_snap * dist_to_snap)
+					hit_p = cmesh.vertices[best_p];
+				cmesh.vertices.push(hit_p);
+				hit_p = (to_world * V4(hit_p, 1)).xyz;
+			}
+			push_cube_outline(hit_p, V3(size), V3(1, 1, 0));
+			for (int i = 0; i < cmesh.vertices.count; i++)
+				push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(size), V3(1, 0, 0));
+
+			for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+					push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
+										  (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
+										  (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, V3(1, 0, 0));
+			}
 		}
+	}
 	{
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) {
@@ -558,8 +625,6 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		}
 	}
 
-
-	
 	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_Z)) {
 		undo_editor_op(game, world, editor);

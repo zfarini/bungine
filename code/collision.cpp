@@ -2,64 +2,6 @@
 #define SLIDE_ITERATION_COUNT 4
 #define SLIDE_COEFF 1.2f
 
-CollisionShape make_ellipsoid_shape(v3 radius)
-{
-	CollisionShape shape = {};
-
-	shape.type = COLLISION_SHAPE_ELLIPSOID;
-	shape.ellipsoid_radius = radius;
-	return shape;
-}
-
-CollisionShape make_triangles_shape(Array<CollisionTriangle> triangles)
-{
-	CollisionShape shape = {};
-
-	shape.type = COLLISION_SHAPE_TRIANGLES;
-	shape.triangles = triangles;
-	return shape;
-}
-
-CollisionShape make_box_shape(Arena *arena, v3 radius)
-{
-	Array<CollisionTriangle> triangles = make_array_max<CollisionTriangle>(arena, 12);
-
-	v3 p00 = V3(-radius.x, -radius.y, -radius.z);
-	v3 p01 = V3(+radius.x, -radius.y, -radius.z);
-	v3 p02 = V3(+radius.x, +radius.y, -radius.z);
-	v3 p03 = V3(-radius.x, +radius.y, -radius.z);
-	v3 p10 = V3(-radius.x, -radius.y, +radius.z);
-	v3 p11 = V3(+radius.x, -radius.y, +radius.z);
-	v3 p12 = V3(+radius.x, +radius.y, +radius.z);
-	v3 p13 = V3(-radius.x, +radius.y, +radius.z);
-
-	//bottom
-	triangles.push({p00, p02, p01});
-	triangles.push({p00, p03, p02});
-	//up
-	triangles.push({p10, p11, p12});
-	triangles.push({p10, p12, p13});
-	//left
-	triangles.push({p00, p10, p13});
-	triangles.push({p00, p13, p03});
-	//right
-	triangles.push({p01, p12, p11});
-	triangles.push({p01, p02, p12});
-	//front
-	triangles.push({p00, p01, p11});
-	triangles.push({p00, p11, p10});
-	//back
-	triangles.push({p03, p12, p02});
-	triangles.push({p03, p13, p12});
-
-	CollisionShape shape = {};
-
-	shape.type = COLLISION_SHAPE_TRIANGLES;
-	shape.triangles = triangles;
-	shape.box_radius = radius;
-	return shape;
-}
-
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {
 	v3 D = dir;
@@ -246,7 +188,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 {
 	CollisionInfo first_hit = {};
 
-	v3 e_radius = e.scale * e.shape.ellipsoid_radius;
+	v3 e_radius = e.scale * e.ellipsoid_radius;
 
 	for (int itr = 0; itr < SLIDE_ITERATION_COUNT; itr++) {
 		if (length_sq(delta_p) < SMALLEST_VELOCITY*SMALLEST_VELOCITY)
@@ -258,11 +200,11 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 		for (int i = 0; i < shapes.count; i++) {
 			CollisionInfo info;
 
-			if (shapes[i].type == COLLISION_SHAPE_TRIANGLES) {
-				for (int j = 0; j < shapes[i].triangles.count; j++) {
-					v3 p0 = (shapes[i].transform * V4(shapes[i].triangles[j].v0, 1)).xyz;
-					v3 p1 = (shapes[i].transform * V4(shapes[i].triangles[j].v1, 1)).xyz;
-					v3 p2 = (shapes[i].transform * V4(shapes[i].triangles[j].v2, 1)).xyz;
+			if (!shapes[i].ellipsoid) {
+				for (int j = 0; j + 2 < shapes[i].collision_mesh.vertices.count; j += 3) {
+					v3 p0 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 0], 1)).xyz;
+					v3 p1 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 1], 1)).xyz;
+					v3 p2 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 2], 1)).xyz;
 
 					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
 							p0, p1, p2);
@@ -270,7 +212,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 						hit_info = info;
 				}
 			}
-			else if (shapes[i].type == COLLISION_SHAPE_ELLIPSOID) {
+			else {
 				info = ellipsoid_intersect_ellipsoid(e.position + delta_p, e.position, e_radius,
 						V3(shapes[i].transform.e[0][3],
 							shapes[i].transform.e[1][3],
@@ -280,8 +222,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 				if (info.t < hit_info.t)
 					hit_info = info;
 			}
-			else
-				assert(0);
 		}
 
 		if (!itr)
@@ -311,7 +251,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 void move_entity(World &world, Entity &e, v3 delta_p)
 {
-	assert(e.shape.type == COLLISION_SHAPE_ELLIPSOID);
+	assert(e.ellipsoid_collision_shape);
 
 	Arena *temp = begin_temp_memory();
 
@@ -323,12 +263,19 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 		if (test.id == e.id || test.disable_collision)
 			continue ;
 
-		CollisionShape shape = test.shape;
-		shape.transform = get_entity_transform(world, test);
-
-		if (shape.type == COLLISION_SHAPE_ELLIPSOID)
+		CollisionShape shape = {};
+		if (test.ellipsoid_collision_shape) {
+			shape.ellipsoid = true;
+			shape.ellipsoid_radius = test.ellipsoid_radius;
+			shape.transform = get_entity_transform(world, test);
 			shape.scale = test.scale;
-
+		}
+		else {
+			if (!world.scene_collision_mesh.count(test.scene_id))
+				continue ;
+			shape.collision_mesh = world.collision_meshes[world.scene_collision_mesh[test.scene_id]];
+			shape.transform = get_entity_transform(world, test) * test.scene_transform;
+		}
 		shapes.push(shape);
 	}
 	// {
@@ -361,7 +308,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 	// TODO: this could be negative (imagine a sloped wall and I'm sliding its not necesarry that the bottom
 	//	of the ellipsoid will hit first)
-	float height_above_ground = e.position.z - collision.hit_p.z - e.scale.z*e.shape.ellipsoid_radius.z
+	float height_above_ground = e.position.z - collision.hit_p.z - e.scale.z*e.ellipsoid_radius.z
 		- SMALLEST_VELOCITY;
 	if (collision.t < 0 || collision.t == FLT_MAX)
 		height_above_ground = 10000;

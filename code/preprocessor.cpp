@@ -308,7 +308,7 @@ string generate()
 	};
 
 	for (auto type: base_types) {
-		header += "void serialize_" + type + "(FILE *fd, bool w, " + type + "&x) {";
+		header += "void serialize_" + type + "(FILE *fd, bool w, " + type + "&x, Arena *arena = 0) {";
 		if (type == "bool") {
 			header += "int v = x;";
 			header += "if (w) fwrite(&v, sizeof(int), 1, fd);";
@@ -481,7 +481,6 @@ string generate()
 			if (typedefed_structs.count(type))
 				type = typedefed_structs[type];
 			if (structs.count(type)) {
-				
 				s += "char elem_name[32];";
 				s += "snprintf(elem_name, sizeof(elem_name), \"" + name + "[%d]\", i);";
 

@@ -2,6 +2,20 @@
 
 #define WORLD_UP V3(0, 0, 1)
 
+struct CollisionMesh {
+	meta(serialize) Array<v3> vertices;
+	meta(serialize) SceneID scene;
+};
+
+struct CollisionShape
+{
+	CollisionMesh collision_mesh;
+	v3 ellipsoid_radius;
+	bool ellipsoid;
+
+	mat4 transform;
+	v3 scale;
+};
 
 struct CollisionInfo
 {
@@ -19,31 +33,7 @@ enum EntityType {
     EntityType_Count,
 };
 
-enum CollisionShapeType {
-    COLLISION_SHAPE_TRIANGLES,
-    COLLISION_SHAPE_ELLIPSOID,
-};
-
-struct CollisionTriangle {
-    meta(ui, serialize) v3 v0;
-	meta(ui, serialize) v3 v1;
-	meta(ui, serialize) v3 v2;
-};
-
 typedef usize entity_id;
-
-struct CollisionShape {
-    meta(ui: const, serialize) CollisionShapeType type;
-    meta(ui, serialize) Array<CollisionTriangle> triangles;
-    meta(ui, serialize) v3 ellipsoid_radius;
-    // TODO: both of these are bad
-	v3 box_radius;
-    mat4 transform;
-    v3 scale;
-    entity_id entity;
-};
-
-//typedef usize SceneID;
 
 struct Entity {
     meta(ui: const, serialize) entity_id id;
@@ -67,13 +57,14 @@ struct Entity {
     meta(ui, serialize) b32 pressing_jump;
     meta(ui, serialize) b32 aiming;
 
-    meta(ui, serialize) CollisionShape shape;
+	meta(ui, serialize) bool ellipsoid_collision_shape;
+	meta(ui, serialize) v3 ellipsoid_radius;
 
     meta(ui, serialize) SceneID scene_id;
+	// TODO: get rid of scene_transform at some point
     meta(ui, serialize) mat4 scene_transform;
 
 	meta(ui, serialize) bool disable_collision;
-
 
     // Animation *animation;
     Animation *curr_anim;
@@ -181,7 +172,7 @@ struct Editor {
 
     Entity init_entity;
 
-	meta(ui) bool edit_scene;
+	meta(ui) bool edit_collision_mesh;
 
     meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
@@ -218,6 +209,7 @@ struct World {
     meta(ui, serialize) Array<Entity> entities;
 
     std::unordered_map<entity_id, usize> entities_id_map;
+	std::unordered_map<SceneID, int> scene_collision_mesh;
 
     meta(serialize) entity_id next_entity_id;
 
@@ -236,6 +228,8 @@ struct World {
     Camera last_game_camera;
 
     float aim_camera_transition_t;
+
+	meta(serialize) Array<CollisionMesh> collision_meshes;
 };
 
 struct LoadedSound

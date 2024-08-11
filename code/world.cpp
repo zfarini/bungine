@@ -8,7 +8,7 @@ Entity *make_entity(World &world)
 	return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, mat4 scene_transform = identity())
 {
 	Entity *e = make_entity(world);
 
@@ -16,7 +16,6 @@ Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position
 	e->position = position;
 	e->scene_id = scene_id;
 	e->scene_transform = scene_transform;
-	e->shape = shape;
 	e->color = V3(1);
 	e->scale = V3(1);
 	e->rotation = identity_quat();
@@ -161,32 +160,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 		mat4 entity_transform = get_entity_transform(world, e);
 		mat4 scene_transform = entity_transform * e.scene_transform;
 
-		
-		//if (e.id != world.editor_selected_entity)
-	
-		bool outline = !shadow_map_pass
-			&& (e.id == world.editor_selected_entity);
 		render_scene(game, world, e.scene_id, camera, scene_transform, 0, 0, e.color);
-
-		if (game.debug_collision) {
-			//	|| (game.in_editor && e.id == world.editor_selected_entity)) {
-			v3 color = e.id == world.editor_selected_entity ? V3(1, 1, 0) : V3(1, 0, 0);
-			if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
-				for (int j = 0; j < e.shape.triangles.count; j++) {
-					v3 p0 = (entity_transform * V4(e.shape.triangles[j].v0, 1)).xyz;
-					v3 p1 = (entity_transform * V4(e.shape.triangles[j].v1, 1)).xyz;
-					v3 p2 = (entity_transform * V4(e.shape.triangles[j].v2, 1)).xyz;
-
-					v3 n = normalize(cross(p1 - p0, p2 - p0));
-					v3 o = n * 0.01f;
-					push_triangle_outline(p0 + o, p1 + o, p2 + o, color);
-				}
-			}
-			else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-				push_ellipsoid_outline(
-						get_world_p(world, e.id), e.scale * e.shape.ellipsoid_radius, color);
-			}
-		}
 	}
 
 }
@@ -423,16 +397,16 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 			float o = camera_rot.x;
 
 			float t[4] = {-PI/2, 0, PI/2.5, PI/2};
-			assert(player->shape.type == COLLISION_SHAPE_ELLIPSOID);
+			assert(player->ellipsoid_collision_shape);
 
 			v3 player_p = get_world_p(world, player->id);
 
 			v3 v[4] = {
-				player_p + V3(0, 0, player->shape.ellipsoid_radius.z*3),
-				player_p - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
+				player_p + V3(0, 0, player->ellipsoid_radius.z*3),
+				player_p - player_forward * 3 + V3(0, 0, player->ellipsoid_radius.z * 0.5),
 				player_p - player_forward * 1.5
-					+ V3(0, 0, -player->shape.ellipsoid_radius.z +0.2),
-				player_p - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
+					+ V3(0, 0, -player->ellipsoid_radius.z +0.2),
+				player_p - V3(0, 0, player->ellipsoid_radius.z-0.1),
 
 			};
 

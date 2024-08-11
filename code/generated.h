@@ -10,49 +10,49 @@ struct StructMetaData {
     int member_count;
     StructMemberData members[64];
 };
-void serialize_float(FILE *fd, bool w, float &x) {
+void serialize_float(FILE *fd, bool w, float &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(float), 1, fd);
     else {
         (void)fread(&x, sizeof(float), 1, fd);
     }
 }
-void serialize_double(FILE *fd, bool w, double &x) {
+void serialize_double(FILE *fd, bool w, double &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(double), 1, fd);
     else {
         (void)fread(&x, sizeof(double), 1, fd);
     }
 }
-void serialize_mat4(FILE *fd, bool w, mat4 &x) {
+void serialize_mat4(FILE *fd, bool w, mat4 &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(mat4), 1, fd);
     else {
         (void)fread(&x, sizeof(mat4), 1, fd);
     }
 }
-void serialize_quat(FILE *fd, bool w, quat &x) {
+void serialize_quat(FILE *fd, bool w, quat &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(quat), 1, fd);
     else {
         (void)fread(&x, sizeof(quat), 1, fd);
     }
 }
-void serialize_char(FILE *fd, bool w, char &x) {
+void serialize_char(FILE *fd, bool w, char &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(char), 1, fd);
     else {
         (void)fread(&x, sizeof(char), 1, fd);
     }
 }
-void serialize_v3(FILE *fd, bool w, v3 &x) {
+void serialize_v3(FILE *fd, bool w, v3 &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(v3), 1, fd);
     else {
         (void)fread(&x, sizeof(v3), 1, fd);
     }
 }
-void serialize_bool(FILE *fd, bool w, bool &x) {
+void serialize_bool(FILE *fd, bool w, bool &x, Arena *arena = 0) {
     int v = x;
     if (w)
         fwrite(&v, sizeof(int), 1, fd);
@@ -61,28 +61,28 @@ void serialize_bool(FILE *fd, bool w, bool &x) {
         x = v;
     }
 }
-void serialize_v2(FILE *fd, bool w, v2 &x) {
+void serialize_v2(FILE *fd, bool w, v2 &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(v2), 1, fd);
     else {
         (void)fread(&x, sizeof(v2), 1, fd);
     }
 }
-void serialize_size_t(FILE *fd, bool w, size_t &x) {
+void serialize_size_t(FILE *fd, bool w, size_t &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(size_t), 1, fd);
     else {
         (void)fread(&x, sizeof(size_t), 1, fd);
     }
 }
-void serialize_int32_t(FILE *fd, bool w, int32_t &x) {
+void serialize_int32_t(FILE *fd, bool w, int32_t &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(int32_t), 1, fd);
     else {
         (void)fread(&x, sizeof(int32_t), 1, fd);
     }
 }
-void serialize_int(FILE *fd, bool w, int &x) {
+void serialize_int(FILE *fd, bool w, int &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(int), 1, fd);
     else {
@@ -117,12 +117,11 @@ static StructMetaData get_struct_Entity_info();
 static void imgui_edit_struct_Entity(Entity &x, const char *name,
                                      bool collapsed);
 static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena);
-static StructMetaData get_struct_CollisionTriangle_info();
-static void imgui_edit_struct_CollisionTriangle(CollisionTriangle &x,
-                                                const char *name,
-                                                bool collapsed);
-static void serialize_CollisionTriangle(FILE *fd, bool w, CollisionTriangle &x,
-                                        Arena *arena);
+static StructMetaData get_struct_CollisionMesh_info();
+static void imgui_edit_struct_CollisionMesh(CollisionMesh &x, const char *name,
+                                            bool collapsed);
+static void serialize_CollisionMesh(FILE *fd, bool w, CollisionMesh &x,
+                                    Arena *arena);
 static StructMetaData get_struct_Scene_info();
 static void imgui_edit_struct_Scene(Scene &x, const char *name, bool collapsed);
 static void serialize_Scene(FILE *fd, bool w, Scene &x, Arena *arena);
@@ -298,17 +297,6 @@ static const char *get_enum_EditorOpType_str(int value) {
         return "EDITOR_OP_SPAWN_ENTITY";
     }
     return "Enum_EditorOpType_Unknown";
-}
-static const char *get_enum_GizmoMode_str(int value) {
-    switch (value) {
-    case GIZMO_TRANSLATION:
-        return "GIZMO_TRANSLATION";
-    case GIZMO_SCALE:
-        return "GIZMO_SCALE";
-    case GIZMO_ROTATION:
-        return "GIZMO_ROTATION";
-    }
-    return "Enum_GizmoMode_Unknown";
 }
 static const char *get_enum_PrimitiveType_str(int value) {
     switch (value) {
@@ -489,15 +477,6 @@ static const char *get_enum_RasterizerCullMode_str(int value) {
     }
     return "Enum_RasterizerCullMode_Unknown";
 }
-static const char *get_enum_CollisionShapeType_str(int value) {
-    switch (value) {
-    case COLLISION_SHAPE_TRIANGLES:
-        return "COLLISION_SHAPE_TRIANGLES";
-    case COLLISION_SHAPE_ELLIPSOID:
-        return "COLLISION_SHAPE_ELLIPSOID";
-    }
-    return "Enum_CollisionShapeType_Unknown";
-}
 static const char *get_enum_AnimationType_str(int value) {
     switch (value) {
     case ANIMATION_JUMP:
@@ -544,6 +523,17 @@ static const char *get_enum_CameraType_str(int value) {
         return "CAMERA_TYPE_ORTHOGRAPHIC";
     }
     return "Enum_CameraType_Unknown";
+}
+static const char *get_enum_GizmoMode_str(int value) {
+    switch (value) {
+    case GIZMO_TRANSLATION:
+        return "GIZMO_TRANSLATION";
+    case GIZMO_SCALE:
+        return "GIZMO_SCALE";
+    case GIZMO_ROTATION:
+        return "GIZMO_ROTATION";
+    }
+    return "Enum_GizmoMode_Unknown";
 }
 StructMetaData get_struct_Constants_info() {
     StructMetaData data = {};
@@ -625,7 +615,7 @@ StructMetaData get_struct_Editor_info() {
     data.members[1].type_name = "Array<EditorOp>";
     data.members[2].name = "init_entity";
     data.members[2].type_name = "Entity";
-    data.members[3].name = "edit_scene";
+    data.members[3].name = "edit_collision_mesh";
     data.members[3].type_name = "bool";
     data.members[4].name = "in_gizmo";
     data.members[4].type_name = "bool";
@@ -684,7 +674,7 @@ StructMetaData get_struct_Camera_info() {
 StructMetaData get_struct_World_info() {
     StructMetaData data = {};
     data.name = "World";
-    data.member_count = 15;
+    data.member_count = 17;
     data.members[0].name = "arena";
     data.members[0].type_name = "Arena";
     data.members[1].name = "editor";
@@ -693,34 +683,38 @@ StructMetaData get_struct_World_info() {
     data.members[2].type_name = "Array<Entity>";
     data.members[3].name = "entities_id_map";
     data.members[3].type_name = "std::unordered_map<entity_id,usize>";
-    data.members[4].name = "next_entity_id";
-    data.members[4].type_name = "entity_id";
-    data.members[5].name = "player_camera_p";
-    data.members[5].type_name = "v3";
-    data.members[6].name = "player_camera_rotation";
+    data.members[4].name = "scene_collision_mesh";
+    data.members[4].type_name = "std::unordered_map<SceneID,int>";
+    data.members[5].name = "next_entity_id";
+    data.members[5].type_name = "entity_id";
+    data.members[6].name = "player_camera_p";
     data.members[6].type_name = "v3";
-    data.members[7].name = "player_camera_drotation";
+    data.members[7].name = "player_camera_rotation";
     data.members[7].type_name = "v3";
-    data.members[8].name = "editor_camera_p";
+    data.members[8].name = "player_camera_drotation";
     data.members[8].type_name = "v3";
-    data.members[9].name = "editor_camera_rotation";
+    data.members[9].name = "editor_camera_p";
     data.members[9].type_name = "v3";
-    data.members[10].name = "editor_selected_entity";
-    data.members[10].type_name = "entity_id";
-    data.members[11].name = "player_id";
+    data.members[10].name = "editor_camera_rotation";
+    data.members[10].type_name = "v3";
+    data.members[11].name = "editor_selected_entity";
     data.members[11].type_name = "entity_id";
-    data.members[12].name = "moving_box";
+    data.members[12].name = "player_id";
     data.members[12].type_name = "entity_id";
-    data.members[13].name = "last_game_camera";
-    data.members[13].type_name = "Camera";
-    data.members[14].name = "aim_camera_transition_t";
-    data.members[14].type_name = "float";
+    data.members[13].name = "moving_box";
+    data.members[13].type_name = "entity_id";
+    data.members[14].name = "last_game_camera";
+    data.members[14].type_name = "Camera";
+    data.members[15].name = "aim_camera_transition_t";
+    data.members[15].type_name = "float";
+    data.members[16].name = "collision_meshes";
+    data.members[16].type_name = "Array<CollisionMesh>";
     return data;
 }
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 30;
+    data.member_count = 31;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -751,48 +745,48 @@ StructMetaData get_struct_Entity_info() {
     data.members[13].type_name = "b32";
     data.members[14].name = "aiming";
     data.members[14].type_name = "b32";
-    data.members[15].name = "shape";
-    data.members[15].type_name = "CollisionShape";
-    data.members[16].name = "scene_id";
-    data.members[16].type_name = "SceneID";
-    data.members[17].name = "scene_transform";
-    data.members[17].type_name = "mat4";
-    data.members[18].name = "disable_collision";
-    data.members[18].type_name = "bool";
-    data.members[19].name = "curr_anim";
-    data.members[19].type_name = "Animation*";
-    data.members[20].name = "next_anim";
+    data.members[15].name = "ellipsoid_collision_shape";
+    data.members[15].type_name = "bool";
+    data.members[16].name = "ellipsoid_radius";
+    data.members[16].type_name = "v3";
+    data.members[17].name = "scene_id";
+    data.members[17].type_name = "SceneID";
+    data.members[18].name = "scene_transform";
+    data.members[18].type_name = "mat4";
+    data.members[19].name = "disable_collision";
+    data.members[19].type_name = "bool";
+    data.members[20].name = "curr_anim";
     data.members[20].type_name = "Animation*";
-    data.members[21].name = "anim_time";
-    data.members[21].type_name = "float";
-    data.members[22].name = "blend_time";
+    data.members[21].name = "next_anim";
+    data.members[21].type_name = "Animation*";
+    data.members[22].name = "anim_time";
     data.members[22].type_name = "float";
-    data.members[23].name = "animation";
-    data.members[23].type_name = "Animation*";
-    data.members[24].name = "speed";
-    data.members[24].type_name = "float";
-    data.members[25].name = "height_above_ground";
+    data.members[23].name = "blend_time";
+    data.members[23].type_name = "float";
+    data.members[24].name = "animation";
+    data.members[24].type_name = "Animation*";
+    data.members[25].name = "speed";
     data.members[25].type_name = "float";
-    data.members[26].name = "point_light_scale";
+    data.members[26].name = "height_above_ground";
     data.members[26].type_name = "float";
-    data.members[27].name = "z_rot";
+    data.members[27].name = "point_light_scale";
     data.members[27].type_name = "float";
-    data.members[28].name = "last_move";
-    data.members[28].type_name = "int";
-    data.members[29].name = "last_gun_time";
-    data.members[29].type_name = "float";
+    data.members[28].name = "z_rot";
+    data.members[28].type_name = "float";
+    data.members[29].name = "last_move";
+    data.members[29].type_name = "int";
+    data.members[30].name = "last_gun_time";
+    data.members[30].type_name = "float";
     return data;
 }
-StructMetaData get_struct_CollisionTriangle_info() {
+StructMetaData get_struct_CollisionMesh_info() {
     StructMetaData data = {};
-    data.name = "CollisionTriangle";
-    data.member_count = 3;
-    data.members[0].name = "v0";
-    data.members[0].type_name = "v3";
-    data.members[1].name = "v1";
-    data.members[1].type_name = "v3";
-    data.members[2].name = "v2";
-    data.members[2].type_name = "v3";
+    data.name = "CollisionMesh";
+    data.member_count = 2;
+    data.members[0].name = "vertices";
+    data.members[0].type_name = "Array<v3>";
+    data.members[1].name = "scene";
+    data.members[1].type_name = "SceneID";
     return data;
 }
 StructMetaData get_struct_Scene_info() {
@@ -920,21 +914,17 @@ StructMetaData get_struct_Platform_info() {
 StructMetaData get_struct_CollisionShape_info() {
     StructMetaData data = {};
     data.name = "CollisionShape";
-    data.member_count = 7;
-    data.members[0].name = "type";
-    data.members[0].type_name = "CollisionShapeType";
-    data.members[1].name = "triangles";
-    data.members[1].type_name = "Array<CollisionTriangle>";
-    data.members[2].name = "ellipsoid_radius";
-    data.members[2].type_name = "v3";
-    data.members[3].name = "box_radius";
-    data.members[3].type_name = "v3";
-    data.members[4].name = "transform";
-    data.members[4].type_name = "mat4";
-    data.members[5].name = "scale";
-    data.members[5].type_name = "v3";
-    data.members[6].name = "entity";
-    data.members[6].type_name = "entity_id";
+    data.member_count = 5;
+    data.members[0].name = "collision_mesh";
+    data.members[0].type_name = "CollisionMesh";
+    data.members[1].name = "ellipsoid_radius";
+    data.members[1].type_name = "v3";
+    data.members[2].name = "ellipsoid";
+    data.members[2].type_name = "bool";
+    data.members[3].name = "transform";
+    data.members[3].type_name = "mat4";
+    data.members[4].name = "scale";
+    data.members[4].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_GameInput_info() {
@@ -1447,26 +1437,6 @@ static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 6);
     x = items_type[curr];
 }
-static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
-    const char *items[3];
-    GizmoMode items_type[3];
-    int curr = 0;
-    items[0] = "GIZMO_TRANSLATION";
-    items_type[0] = GIZMO_TRANSLATION;
-    if (x == GIZMO_TRANSLATION)
-        curr = 0;
-    items[1] = "GIZMO_SCALE";
-    items_type[1] = GIZMO_SCALE;
-    if (x == GIZMO_SCALE)
-        curr = 1;
-    items[2] = "GIZMO_ROTATION";
-    items_type[2] = GIZMO_ROTATION;
-    if (x == GIZMO_ROTATION)
-        curr = 2;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 3);
-    x = items_type[curr];
-}
 static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
     const char *items[2];
     PrimitiveType items_type[2];
@@ -1812,23 +1782,6 @@ static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
         ImGui::ListBox(name, &curr, items, 3);
     x = items_type[curr];
 }
-static void imgui_edit_enum_CollisionShapeType(CollisionShapeType &x,
-                                               const char *name) {
-    const char *items[2];
-    CollisionShapeType items_type[2];
-    int curr = 0;
-    items[0] = "COLLISION_SHAPE_TRIANGLES";
-    items_type[0] = COLLISION_SHAPE_TRIANGLES;
-    if (x == COLLISION_SHAPE_TRIANGLES)
-        curr = 0;
-    items[1] = "COLLISION_SHAPE_ELLIPSOID";
-    items_type[1] = COLLISION_SHAPE_ELLIPSOID;
-    if (x == COLLISION_SHAPE_ELLIPSOID)
-        curr = 1;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 2);
-    x = items_type[curr];
-}
 static void imgui_edit_enum_AnimationType(AnimationType &x, const char *name) {
     const char *items[7];
     AnimationType items_type[7];
@@ -1919,6 +1872,26 @@ static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
+static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
+    const char *items[3];
+    GizmoMode items_type[3];
+    int curr = 0;
+    items[0] = "GIZMO_TRANSLATION";
+    items_type[0] = GIZMO_TRANSLATION;
+    if (x == GIZMO_TRANSLATION)
+        curr = 0;
+    items[1] = "GIZMO_SCALE";
+    items_type[1] = GIZMO_SCALE;
+    if (x == GIZMO_SCALE)
+        curr = 1;
+    items[2] = "GIZMO_ROTATION";
+    items_type[2] = GIZMO_ROTATION;
+    if (x == GIZMO_ROTATION)
+        curr = 2;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
+}
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
                                 Arena *arena = 0) {}
 static void serialize_SoundState(FILE *fd, bool w, SoundState &x,
@@ -1929,9 +1902,9 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
                                      bool collapsed = true) {
     if (!collapsed || ImGui::CollapsingHeader(name)) {
         {
-            bool tmp = x.edit_scene;
-            ImGui::Checkbox("edit_scene", &tmp);
-            x.edit_scene = tmp;
+            bool tmp = x.edit_collision_mesh;
+            ImGui::Checkbox("edit_collision_mesh", &tmp);
+            x.edit_collision_mesh = tmp;
         }
         {
             bool tmp = x.in_gizmo;
@@ -2008,6 +1981,23 @@ static void serialize_World(FILE *fd, bool w, World &x, Arena *arena = 0) {
     serialize_v3(fd, w, x.editor_camera_p);
     serialize_v3(fd, w, x.editor_camera_rotation);
     serialize_size_t(fd, w, x.player_id);
+    if (w) {
+        serialize_size_t(fd, w, x.collision_meshes.capacity);
+        serialize_size_t(fd, w, x.collision_meshes.count);
+        for (int i = 0; i < x.collision_meshes.count; i++)
+            serialize_CollisionMesh(fd, w, x.collision_meshes.data[i], arena);
+    } else {
+        assert(arena);
+        usize capacity, count;
+        serialize_size_t(fd, w, capacity);
+        serialize_size_t(fd, w, count);
+        x.collision_meshes = make_array_max<CollisionMesh>(arena, capacity);
+        for (int i = 0; i < count; i++) {
+            CollisionMesh y = {};
+            serialize_CollisionMesh(fd, w, y, arena);
+            x.collision_meshes.push(y);
+        }
+    }
 }
 static void imgui_edit_struct_Entity(Entity &x, const char *name,
                                      bool collapsed = true) {
@@ -2054,7 +2044,12 @@ static void imgui_edit_struct_Entity(Entity &x, const char *name,
             ImGui::Checkbox("aiming", &tmp);
             x.aiming = tmp;
         }
-        imgui_edit_struct_CollisionShape(x.shape, "shape", true);
+        {
+            bool tmp = x.ellipsoid_collision_shape;
+            ImGui::Checkbox("ellipsoid_collision_shape", &tmp);
+            x.ellipsoid_collision_shape = tmp;
+        }
+        ImGui::InputFloat3("ellipsoid_radius", x.ellipsoid_radius.e);
         ImGui::InputScalar("scene_id", ImGuiDataType_U64, &x.scene_id);
         {
             bool tmp = x.disable_collision;
@@ -2085,27 +2080,34 @@ static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena = 0) {
     serialize_int32_t(fd, w, x.on_ground);
     serialize_int32_t(fd, w, x.pressing_jump);
     serialize_int32_t(fd, w, x.aiming);
-    serialize_CollisionShape(fd, w, x.shape, arena);
+    serialize_bool(fd, w, x.ellipsoid_collision_shape);
+    serialize_v3(fd, w, x.ellipsoid_radius);
     serialize_size_t(fd, w, x.scene_id);
     serialize_mat4(fd, w, x.scene_transform);
     serialize_bool(fd, w, x.disable_collision);
     serialize_float(fd, w, x.height_above_ground);
     serialize_float(fd, w, x.point_light_scale);
 }
-static void imgui_edit_struct_CollisionTriangle(CollisionTriangle &x,
-                                                const char *name,
-                                                bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        ImGui::InputFloat3("v0", x.v0.e);
-        ImGui::InputFloat3("v1", x.v1.e);
-        ImGui::InputFloat3("v2", x.v2.e);
+static void serialize_CollisionMesh(FILE *fd, bool w, CollisionMesh &x,
+                                    Arena *arena = 0) {
+    if (w) {
+        serialize_size_t(fd, w, x.vertices.capacity);
+        serialize_size_t(fd, w, x.vertices.count);
+        for (int i = 0; i < x.vertices.count; i++)
+            serialize_v3(fd, w, x.vertices.data[i], arena);
+    } else {
+        assert(arena);
+        usize capacity, count;
+        serialize_size_t(fd, w, capacity);
+        serialize_size_t(fd, w, count);
+        x.vertices = make_array_max<v3>(arena, capacity);
+        for (int i = 0; i < count; i++) {
+            v3 y = {};
+            serialize_v3(fd, w, y, arena);
+            x.vertices.push(y);
+        }
     }
-}
-static void serialize_CollisionTriangle(FILE *fd, bool w, CollisionTriangle &x,
-                                        Arena *arena = 0) {
-    serialize_v3(fd, w, x.v0);
-    serialize_v3(fd, w, x.v1);
-    serialize_v3(fd, w, x.v2);
+    serialize_size_t(fd, w, x.scene);
 }
 static void imgui_edit_struct_Scene(Scene &x, const char *name,
                                     bool collapsed = true) {
@@ -2131,49 +2133,8 @@ static void serialize_VertexInputElement(FILE *fd, bool w,
                                          Arena *arena = 0) {}
 static void serialize_Platform(FILE *fd, bool w, Platform &x,
                                Arena *arena = 0) {}
-static void imgui_edit_struct_CollisionShape(CollisionShape &x,
-                                             const char *name,
-                                             bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        imgui_edit_enum_CollisionShapeType(x.type, "type");
-        if (ImGui::CollapsingHeader("triangles")) {
-            for (int i = 0; i < x.triangles.count; i++) {
-                char elem_name[32];
-                snprintf(elem_name, sizeof(elem_name), "triangles[%d]", i);
-                imgui_edit_struct_CollisionTriangle(x.triangles.data[i],
-                                                    elem_name, true);
-            }
-        }
-        ImGui::InputFloat3("ellipsoid_radius", x.ellipsoid_radius.e);
-    }
-}
 static void serialize_CollisionShape(FILE *fd, bool w, CollisionShape &x,
-                                     Arena *arena = 0) {
-    {
-        int tmp = x.type;
-        serialize_int(fd, w, tmp);
-        if (!w)
-            x.type = (CollisionShapeType)tmp;
-    }
-    if (w) {
-        serialize_size_t(fd, w, x.triangles.capacity);
-        serialize_size_t(fd, w, x.triangles.count);
-        for (int i = 0; i < x.triangles.count; i++)
-            serialize_CollisionTriangle(fd, w, x.triangles.data[i], arena);
-    } else {
-        assert(arena);
-        usize capacity, count;
-        serialize_size_t(fd, w, capacity);
-        serialize_size_t(fd, w, count);
-        x.triangles = make_array_max<CollisionTriangle>(arena, capacity);
-        for (int i = 0; i < count; i++) {
-            CollisionTriangle y = {};
-            serialize_CollisionTriangle(fd, w, y, arena);
-            x.triangles.push(y);
-        }
-    }
-    serialize_v3(fd, w, x.ellipsoid_radius);
-}
+                                     Arena *arena = 0) {}
 static void serialize_GameInput(FILE *fd, bool w, GameInput &x,
                                 Arena *arena = 0) {}
 static void serialize_ConstantBuffer(FILE *fd, bool w, ConstantBuffer &x,

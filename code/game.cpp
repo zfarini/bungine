@@ -303,22 +303,29 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		if (!fd) {
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5)));
-			ground->scale = ground->shape.box_radius;
-			ground->shape = make_box_shape(memory, V3(1));
+			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5));
+			ground->scale = V3(100, 100, 0.5);
 			ground->color = V3(0.3f);
 
 			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, make_cstring("Ybot.fbx")),
-					V3(0, 0, 4), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
-			player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
+					V3(0, 0, 4));
+			player->ellipsoid_radius = V3(0.55f, 0.55f, 0.95f);
+			player->ellipsoid_collision_shape = true;
+			player->scene_transform = translate(0, 0, -player->ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
 			player->color = V3(0, 1, 1);
+
 			world.player_id = player->id;
 			world.editor_camera_p = V3(0, 0, 3);
+
+			world.collision_meshes = make_array_max<CollisionMesh>(&world.arena, game.scenes.capacity);
 		}
 		else {
 			serialize_World(fd, false, world, &world.arena);
 			for (int i = 0; i < world.entities.count; i++)
 				world.entities_id_map[world.entities[i].id] = i;
+			for (int i = 0; i < world.collision_meshes.count; i++)
+				world.scene_collision_mesh[world.collision_meshes[i].scene] = i;
+
 			fclose(fd);
 		}
 		
@@ -466,13 +473,15 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
 					get_scene_id_by_name(game, make_cstring("cube.fbx")), game_camera.position
-					+ game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
+					+ game_camera.forward * 4);
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
 					get_scene_id_by_name(game, make_cstring("sphere.fbx")), game_camera.position
-					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
+					+ game_camera.forward * 4);
+			entity->ellipsoid_radius = V3(1);
+			entity->ellipsoid_collision_shape = true;
 			world.editor.selected_entity = entity->id;
 		}
 

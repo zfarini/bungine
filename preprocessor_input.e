@@ -20,7 +20,7 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
-#define __OPTIMIZE__ 1
+#define __SANITIZE_ADDRESS__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -355,8 +355,8 @@
 #define __DEC128_SUBNORMAL_MIN__ 0.000000000000000000000000000000001E-6143DL
 #define __REGISTER_PREFIX__ 
 #define __USER_LABEL_PREFIX__ 
-#define _FORTIFY_SOURCE 2
 #define __GNUC_STDC_INLINE__ 1
+#define __NO_INLINE__ 1
 #define __STRICT_ANSI__ 1
 #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 1
 #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 1
@@ -1079,9 +1079,15 @@ namespace __gnu_cxx
 
 
 #define __USE_GNU 1
-# 422 "/usr/include/features.h" 3 4
-#define __USE_FORTIFY_LEVEL 2
-# 436 "/usr/include/features.h" 3 4
+# 428 "/usr/include/features.h" 3 4
+#define __USE_FORTIFY_LEVEL 0
+
+
+
+
+
+
+
 #define __GLIBC_USE_DEPRECATED_GETS 0
 # 459 "/usr/include/features.h" 3 4
 #define __GLIBC_USE_DEPRECATED_SCANF 0
@@ -1282,10 +1288,15 @@ namespace __gnu_cxx
 #define __returns_nonnull __attribute__ ((__returns_nonnull__))
 # 406 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
 #define __attribute_warn_unused_result__ __attribute__ ((__warn_unused_result__))
+# 415 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+#define __wur 
 
 
-#define __wur __attribute_warn_unused_result__
-# 423 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+
+
+
+
+
 #undef __always_inline
 #define __always_inline __inline __attribute__ ((__always_inline__))
 # 433 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
@@ -1380,15 +1391,7 @@ namespace __gnu_cxx
 
 #define __attribute_returns_twice__ __attribute__ ((__returns_twice__))
 # 487 "/usr/include/features.h" 2 3 4
-# 502 "/usr/include/features.h" 3 4
-#define __USE_EXTERN_INLINES 1
-
-
-
-
-
-
-
+# 510 "/usr/include/features.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
 # 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
@@ -3094,22 +3097,22 @@ extern int fclose (FILE *__stream);
 
 
 extern FILE *tmpfile (void)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 # 200 "/usr/include/stdio.h" 3 4
 extern FILE *tmpfile64 (void)
-   __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+   __attribute__ ((__malloc__)) ;
 
 
 
-extern char *tmpnam (char[20]) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern char *tmpnam (char[20]) noexcept (true) ;
 
 
 
 
-extern char *tmpnam_r (char __s[20]) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern char *tmpnam_r (char __s[20]) noexcept (true) ;
 # 222 "/usr/include/stdio.h" 3 4
 extern char *tempnam (const char *__dir, const char *__pfx)
-   noexcept (true) __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__)) ;
+   noexcept (true) __attribute__ ((__malloc__)) ;
 
 
 
@@ -3124,27 +3127,27 @@ extern int fcloseall (void);
 # 258 "/usr/include/stdio.h" 3 4
 extern FILE *fopen (const char *__restrict __filename,
       const char *__restrict __modes)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 
 
 
 
 extern FILE *freopen (const char *__restrict __filename,
         const char *__restrict __modes,
-        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+        FILE *__restrict __stream) ;
 # 283 "/usr/include/stdio.h" 3 4
 extern FILE *fopen64 (const char *__restrict __filename,
         const char *__restrict __modes)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 extern FILE *freopen64 (const char *__restrict __filename,
    const char *__restrict __modes,
-   FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+   FILE *__restrict __stream) ;
 
 
 
 
 extern FILE *fdopen (int __fd, const char *__modes) noexcept (true)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 
 
 
@@ -3153,19 +3156,19 @@ extern FILE *fdopen (int __fd, const char *__modes) noexcept (true)
 extern FILE *fopencookie (void *__restrict __magic_cookie,
      const char *__restrict __modes,
      cookie_io_functions_t __io_funcs) noexcept (true)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 
 
 
 
 extern FILE *fmemopen (void *__s, size_t __len, const char *__modes)
-  noexcept (true) __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  noexcept (true) __attribute__ ((__malloc__)) ;
 
 
 
 
 extern FILE *open_memstream (char **__bufloc, size_t *__sizeloc) noexcept (true)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 # 328 "/usr/include/stdio.h" 3 4
 extern void setbuf (FILE *__restrict __stream, char *__restrict __buf) noexcept (true);
 
@@ -3231,13 +3234,13 @@ extern int vsnprintf (char *__restrict __s, size_t __maxlen,
 
 extern int vasprintf (char **__restrict __ptr, const char *__restrict __f,
         __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0))) __attribute__ ((__warn_unused_result__));
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0))) ;
 extern int __asprintf (char **__restrict __ptr,
          const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) __attribute__ ((__warn_unused_result__));
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
 extern int asprintf (char **__restrict __ptr,
        const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) __attribute__ ((__warn_unused_result__));
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
 
 
 
@@ -3255,12 +3258,12 @@ extern int dprintf (int __fd, const char *__restrict __fmt, ...)
 
 
 extern int fscanf (FILE *__restrict __stream,
-     const char *__restrict __format, ...) __attribute__ ((__warn_unused_result__));
+     const char *__restrict __format, ...) ;
 
 
 
 
-extern int scanf (const char *__restrict __format, ...) __attribute__ ((__warn_unused_result__));
+extern int scanf (const char *__restrict __format, ...) ;
 
 extern int sscanf (const char *__restrict __s,
      const char *__restrict __format, ...) noexcept (true);
@@ -3365,23 +3368,23 @@ typedef long double _Float64x;
 
 extern int fscanf (FILE *__restrict __stream, const char *__restrict __format, ...) __asm__ ("" "__isoc99_fscanf")
 
-                          __attribute__ ((__warn_unused_result__));
+                               ;
 extern int scanf (const char *__restrict __format, ...) __asm__ ("" "__isoc99_scanf")
-                         __attribute__ ((__warn_unused_result__));
+                              ;
 extern int sscanf (const char *__restrict __s, const char *__restrict __format, ...) noexcept (true) __asm__ ("" "__isoc99_sscanf")
 
                       ;
 # 459 "/usr/include/stdio.h" 3 4
 extern int vfscanf (FILE *__restrict __s, const char *__restrict __format,
       __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 2, 0))) __attribute__ ((__warn_unused_result__));
+     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
 
 
 
 
 
 extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 1, 0))) __attribute__ ((__warn_unused_result__));
+     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
 
 
 extern int vsscanf (const char *__restrict __s,
@@ -3396,10 +3399,10 @@ extern int vfscanf (FILE *__restrict __s, const char *__restrict __format, __gnu
 
 
 
-     __attribute__ ((__format__ (__scanf__, 2, 0))) __attribute__ ((__warn_unused_result__));
+     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
 extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vscanf")
 
-     __attribute__ ((__format__ (__scanf__, 1, 0))) __attribute__ ((__warn_unused_result__));
+     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
 extern int vsscanf (const char *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) noexcept (true) __asm__ ("" "__isoc99_vsscanf")
 
 
@@ -3462,18 +3465,18 @@ extern int putw (int __w, FILE *__stream);
 
 
 extern char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
-     __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
+     __attribute__ ((__access__ (__write_only__, 1, 2)));
 # 615 "/usr/include/stdio.h" 3 4
 extern char *fgets_unlocked (char *__restrict __s, int __n,
-        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__))
+        FILE *__restrict __stream)
     __attribute__ ((__access__ (__write_only__, 1, 2)));
 # 632 "/usr/include/stdio.h" 3 4
 extern __ssize_t __getdelim (char **__restrict __lineptr,
                              size_t *__restrict __n, int __delimiter,
-                             FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+                             FILE *__restrict __stream) ;
 extern __ssize_t getdelim (char **__restrict __lineptr,
                            size_t *__restrict __n, int __delimiter,
-                           FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+                           FILE *__restrict __stream) ;
 
 
 
@@ -3483,7 +3486,7 @@ extern __ssize_t getdelim (char **__restrict __lineptr,
 
 extern __ssize_t getline (char **__restrict __lineptr,
                           size_t *__restrict __n,
-                          FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+                          FILE *__restrict __stream) ;
 
 
 
@@ -3512,7 +3515,7 @@ extern int ungetc (int __c, FILE *__stream);
 
 
 extern size_t fread (void *__restrict __ptr, size_t __size,
-       size_t __n, FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+       size_t __n, FILE *__restrict __stream) ;
 
 
 
@@ -3524,7 +3527,7 @@ extern int fputs_unlocked (const char *__restrict __s,
       FILE *__restrict __stream);
 # 702 "/usr/include/stdio.h" 3 4
 extern size_t fread_unlocked (void *__restrict __ptr, size_t __size,
-         size_t __n, FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+         size_t __n, FILE *__restrict __stream) ;
 extern size_t fwrite_unlocked (const void *__restrict __ptr, size_t __size,
           size_t __n, FILE *__restrict __stream);
 
@@ -3539,7 +3542,7 @@ extern int fseek (FILE *__stream, long int __off, int __whence);
 
 
 
-extern long int ftell (FILE *__stream) __attribute__ ((__warn_unused_result__));
+extern long int ftell (FILE *__stream) ;
 
 
 
@@ -3551,7 +3554,7 @@ extern int fseeko (FILE *__stream, __off_t __off, int __whence);
 
 
 
-extern __off_t ftello (FILE *__stream) __attribute__ ((__warn_unused_result__));
+extern __off_t ftello (FILE *__stream) ;
 # 760 "/usr/include/stdio.h" 3 4
 extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
 
@@ -3561,7 +3564,7 @@ extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
 extern int fsetpos (FILE *__stream, const fpos_t *__pos);
 # 779 "/usr/include/stdio.h" 3 4
 extern int fseeko64 (FILE *__stream, __off64_t __off, int __whence);
-extern __off64_t ftello64 (FILE *__stream) __attribute__ ((__warn_unused_result__));
+extern __off64_t ftello64 (FILE *__stream) ;
 extern int fgetpos64 (FILE *__restrict __stream, fpos64_t *__restrict __pos);
 extern int fsetpos64 (FILE *__stream, const fpos64_t *__pos);
 
@@ -3569,15 +3572,15 @@ extern int fsetpos64 (FILE *__stream, const fpos64_t *__pos);
 
 extern void clearerr (FILE *__stream) noexcept (true);
 
-extern int feof (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int feof (FILE *__stream) noexcept (true) ;
 
-extern int ferror (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int ferror (FILE *__stream) noexcept (true) ;
 
 
 
 extern void clearerr_unlocked (FILE *__stream) noexcept (true);
-extern int feof_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
-extern int ferror_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int feof_unlocked (FILE *__stream) noexcept (true) ;
+extern int ferror_unlocked (FILE *__stream) noexcept (true) ;
 
 
 
@@ -3590,12 +3593,12 @@ extern void perror (const char *__s);
 
 
 
-extern int fileno (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int fileno (FILE *__stream) noexcept (true) ;
 
 
 
 
-extern int fileno_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int fileno_unlocked (FILE *__stream) noexcept (true) ;
 # 823 "/usr/include/stdio.h" 3 4
 extern int pclose (FILE *__stream);
 
@@ -3604,7 +3607,7 @@ extern int pclose (FILE *__stream);
 
 
 extern FILE *popen (const char *__command, const char *__modes)
-  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
+  __attribute__ ((__malloc__)) ;
 
 
 
@@ -3645,461 +3648,14 @@ extern void flockfile (FILE *__stream) noexcept (true);
 
 
 
-extern int ftrylockfile (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int ftrylockfile (FILE *__stream) noexcept (true) ;
 
 
 extern void funlockfile (FILE *__stream) noexcept (true);
 # 885 "/usr/include/stdio.h" 3 4
 extern int __uflow (FILE *);
 extern int __overflow (FILE *, int);
-
-
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 1 3 4
-# 20 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
-#define _BITS_STDIO_H 1
-# 29 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
-#define __STDIO_INLINE __extern_inline
-# 46 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
-extern __inline __attribute__ ((__gnu_inline__)) int
-getchar (void)
-{
-  return getc (stdin);
-}
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-fgetc_unlocked (FILE *__fp)
-{
-  return (__builtin_expect (((__fp)->_IO_read_ptr >= (__fp)->_IO_read_end), 0) ? __uflow (__fp) : *(unsigned char *) (__fp)->_IO_read_ptr++);
-}
-
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-getc_unlocked (FILE *__fp)
-{
-  return (__builtin_expect (((__fp)->_IO_read_ptr >= (__fp)->_IO_read_end), 0) ? __uflow (__fp) : *(unsigned char *) (__fp)->_IO_read_ptr++);
-}
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-getchar_unlocked (void)
-{
-  return (__builtin_expect (((stdin)->_IO_read_ptr >= (stdin)->_IO_read_end), 0) ? __uflow (stdin) : *(unsigned char *) (stdin)->_IO_read_ptr++);
-}
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-putchar (int __c)
-{
-  return putc (__c, stdout);
-}
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-fputc_unlocked (int __c, FILE *__stream)
-{
-  return (__builtin_expect (((__stream)->_IO_write_ptr >= (__stream)->_IO_write_end), 0) ? __overflow (__stream, (unsigned char) (__c)) : (unsigned char) (*(__stream)->_IO_write_ptr++ = (__c)));
-}
-
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-putc_unlocked (int __c, FILE *__stream)
-{
-  return (__builtin_expect (((__stream)->_IO_write_ptr >= (__stream)->_IO_write_end), 0) ? __overflow (__stream, (unsigned char) (__c)) : (unsigned char) (*(__stream)->_IO_write_ptr++ = (__c)));
-}
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-putchar_unlocked (int __c)
-{
-  return (__builtin_expect (((stdout)->_IO_write_ptr >= (stdout)->_IO_write_end), 0) ? __overflow (stdout, (unsigned char) (__c)) : (unsigned char) (*(stdout)->_IO_write_ptr++ = (__c)));
-}
-
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) __ssize_t
-getline (char **__lineptr, size_t *__n, FILE *__stream)
-{
-  return __getdelim (__lineptr, __n, '\n', __stream);
-}
-
-
-
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-__attribute__ ((__leaf__)) feof_unlocked (FILE *__stream) noexcept (true)
-{
-  return (((__stream)->_flags & 0x0010) != 0);
-}
-
-
-extern __inline __attribute__ ((__gnu_inline__)) int
-__attribute__ ((__leaf__)) ferror_unlocked (FILE *__stream) noexcept (true)
-{
-  return (((__stream)->_flags & 0x0020) != 0);
-}
-# 193 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
-#undef __STDIO_INLINE
-# 892 "/usr/include/stdio.h" 2 3 4
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 1 3 4
-# 20 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
-#define _BITS_STDIO2_H 1
-
-
-
-
-
-extern int __sprintf_chk (char *__restrict __s, int __flag, size_t __slen,
-     const char *__restrict __format, ...) noexcept (true)
-    __attribute__ ((__access__ (__write_only__, 1, 3)));
-extern int __vsprintf_chk (char *__restrict __s, int __flag, size_t __slen,
-      const char *__restrict __format,
-      __gnuc_va_list __ap) noexcept (true)
-    __attribute__ ((__access__ (__write_only__, 1, 3)));
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) sprintf (char *__restrict __s, const char *__restrict __fmt, ...) noexcept (true)
-{
-  return __builtin___sprintf_chk (__s, 2 - 1,
-      __builtin_object_size (__s, 2 > 1), __fmt,
-      __builtin_va_arg_pack ());
-}
-
-
-
-
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) vsprintf (char *__restrict __s, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
-
-{
-  return __builtin___vsprintf_chk (__s, 2 - 1,
-       __builtin_object_size (__s, 2 > 1), __fmt, __ap);
-}
-
-
-
-extern int __snprintf_chk (char *__restrict __s, size_t __n, int __flag,
-      size_t __slen, const char *__restrict __format,
-      ...) noexcept (true)
-    __attribute__ ((__access__ (__write_only__, 1, 2)));
-extern int __vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
-       size_t __slen, const char *__restrict __format,
-       __gnuc_va_list __ap) noexcept (true);
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) snprintf (char *__restrict __s, size_t __n, const char *__restrict __fmt, ...) noexcept (true)
-
-{
-  return __builtin___snprintf_chk (__s, __n, 2 - 1,
-       __builtin_object_size (__s, 2 > 1), __fmt,
-       __builtin_va_arg_pack ());
-}
-
-
-
-
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) vsnprintf (char *__restrict __s, size_t __n, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
-
-{
-  return __builtin___vsnprintf_chk (__s, __n, 2 - 1,
-        __builtin_object_size (__s, 2 > 1), __fmt, __ap);
-}
-
-
-
-
-
-extern int __fprintf_chk (FILE *__restrict __stream, int __flag,
-     const char *__restrict __format, ...);
-extern int __printf_chk (int __flag, const char *__restrict __format, ...);
-extern int __vfprintf_chk (FILE *__restrict __stream, int __flag,
-      const char *__restrict __format, __gnuc_va_list __ap);
-extern int __vprintf_chk (int __flag, const char *__restrict __format,
-     __gnuc_va_list __ap);
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-fprintf (FILE *__restrict __stream, const char *__restrict __fmt, ...)
-{
-  return __fprintf_chk (__stream, 2 - 1, __fmt,
-   __builtin_va_arg_pack ());
-}
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-printf (const char *__restrict __fmt, ...)
-{
-  return __printf_chk (2 - 1, __fmt, __builtin_va_arg_pack ());
-}
-
-
-
-
-
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-vprintf (const char *__restrict __fmt, __gnuc_va_list __ap)
-{
-
-  return __vfprintf_chk (stdout, 2 - 1, __fmt, __ap);
-
-
-
-}
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-vfprintf (FILE *__restrict __stream,
-   const char *__restrict __fmt, __gnuc_va_list __ap)
-{
-  return __vfprintf_chk (__stream, 2 - 1, __fmt, __ap);
-}
-
-
-extern int __dprintf_chk (int __fd, int __flag, const char *__restrict __fmt,
-     ...) __attribute__ ((__format__ (__printf__, 3, 4)));
-extern int __vdprintf_chk (int __fd, int __flag,
-      const char *__restrict __fmt, __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__printf__, 3, 0)));
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-dprintf (int __fd, const char *__restrict __fmt, ...)
-{
-  return __dprintf_chk (__fd, 2 - 1, __fmt,
-   __builtin_va_arg_pack ());
-}
-
-
-
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-vdprintf (int __fd, const char *__restrict __fmt, __gnuc_va_list __ap)
-{
-  return __vdprintf_chk (__fd, 2 - 1, __fmt, __ap);
-}
-
-
-
-
-extern int __asprintf_chk (char **__restrict __ptr, int __flag,
-      const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 4))) __attribute__ ((__warn_unused_result__));
-extern int __vasprintf_chk (char **__restrict __ptr, int __flag,
-       const char *__restrict __fmt, __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 0))) __attribute__ ((__warn_unused_result__));
-extern int __obstack_printf_chk (struct obstack *__restrict __obstack,
-     int __flag, const char *__restrict __format,
-     ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 4)));
-extern int __obstack_vprintf_chk (struct obstack *__restrict __obstack,
-      int __flag,
-      const char *__restrict __format,
-      __gnuc_va_list __args)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 0)));
-
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) asprintf (char **__restrict __ptr, const char *__restrict __fmt, ...) noexcept (true)
-{
-  return __asprintf_chk (__ptr, 2 - 1, __fmt,
-    __builtin_va_arg_pack ());
-}
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) __asprintf (char **__restrict __ptr, const char *__restrict __fmt, ...) noexcept (true)
-
-{
-  return __asprintf_chk (__ptr, 2 - 1, __fmt,
-    __builtin_va_arg_pack ());
-}
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) obstack_printf (struct obstack *__restrict __obstack, const char *__restrict __fmt, ...) noexcept (true)
-
-{
-  return __obstack_printf_chk (__obstack, 2 - 1, __fmt,
-          __builtin_va_arg_pack ());
-}
-# 214 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) vasprintf (char **__restrict __ptr, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
-
-{
-  return __vasprintf_chk (__ptr, 2 - 1, __fmt, __ap);
-}
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
-__attribute__ ((__leaf__)) obstack_vprintf (struct obstack *__restrict __obstack, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
-
-{
-  return __obstack_vprintf_chk (__obstack, 2 - 1, __fmt,
-    __ap);
-}
-# 248 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
-extern char *__fgets_chk (char *__restrict __s, size_t __size, int __n,
-     FILE *__restrict __stream)
-    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 3)));
-extern char *__fgets_alias (char *__restrict __s, int __n, FILE *__restrict __stream) __asm__ ("" "fgets")
-
-
-    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
-extern char *__fgets_chk_warn (char *__restrict __s, size_t __size, int __n, FILE *__restrict __stream) __asm__ ("" "__fgets_chk")
-
-
-     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fgets called with bigger size than length " "of destination buffer")))
-                                 ;
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2))) char *
-fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-  size_t sz = __builtin_object_size (__s, 2 > 1);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && (((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
-    return __fgets_alias (__s, __n, __stream);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && !(((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
-    return __fgets_chk_warn (__s, sz, __n, __stream);
-  return __fgets_chk (__s, sz, __n, __stream);
-}
-
-extern size_t __fread_chk (void *__restrict __ptr, size_t __ptrlen,
-      size_t __size, size_t __n,
-      FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
-extern size_t __fread_alias (void *__restrict __ptr, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "fread")
-
-
-            __attribute__ ((__warn_unused_result__));
-extern size_t __fread_chk_warn (void *__restrict __ptr, size_t __ptrlen, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "__fread_chk")
-
-
-
-
-     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fread called with bigger size * nmemb than length " "of destination buffer")))
-                                 ;
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) size_t
-fread (void *__restrict __ptr, size_t __size, size_t __n,
-       FILE *__restrict __stream)
-{
-  size_t sz = __builtin_object_size (__ptr, 0);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && (((long unsigned int) (__n)) <= (sz) / (__size))))
-    return __fread_alias (__ptr, __size, __n, __stream);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && !(((long unsigned int) (__n)) <= (sz) / (__size))))
-    return __fread_chk_warn (__ptr, sz, __size, __n, __stream);
-  return __fread_chk (__ptr, sz, __size, __n, __stream);
-}
-
-
-extern char *__fgets_unlocked_chk (char *__restrict __s, size_t __size,
-       int __n, FILE *__restrict __stream)
-    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 3)));
-extern char *__fgets_unlocked_alias (char *__restrict __s, int __n, FILE *__restrict __stream) __asm__ ("" "fgets_unlocked")
-
-
-    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
-extern char *__fgets_unlocked_chk_warn (char *__restrict __s, size_t __size, int __n, FILE *__restrict __stream) __asm__ ("" "__fgets_unlocked_chk")
-
-
-     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fgets_unlocked called with bigger size than length " "of destination buffer")))
-                                 ;
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2))) char *
-fgets_unlocked (char *__restrict __s, int __n, FILE *__restrict __stream)
-{
-  size_t sz = __builtin_object_size (__s, 2 > 1);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && (((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
-    return __fgets_unlocked_alias (__s, __n, __stream);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && !(((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
-    return __fgets_unlocked_chk_warn (__s, sz, __n, __stream);
-  return __fgets_unlocked_chk (__s, sz, __n, __stream);
-}
-
-
-
-#undef fread_unlocked
-extern size_t __fread_unlocked_chk (void *__restrict __ptr, size_t __ptrlen,
-        size_t __size, size_t __n,
-        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
-extern size_t __fread_unlocked_alias (void *__restrict __ptr, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "fread_unlocked")
-
-
-                     __attribute__ ((__warn_unused_result__));
-extern size_t __fread_unlocked_chk_warn (void *__restrict __ptr, size_t __ptrlen, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "__fread_unlocked_chk")
-
-
-
-
-     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fread_unlocked called with bigger size * nmemb than " "length of destination buffer")))
-                                        ;
-
-extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) size_t
-fread_unlocked (void *__restrict __ptr, size_t __size, size_t __n,
-  FILE *__restrict __stream)
-{
-  size_t sz = __builtin_object_size (__ptr, 0);
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && (((long unsigned int) (__n)) <= (sz) / (__size))))
-    {
-
-      if (__builtin_constant_p (__size)
-   && __builtin_constant_p (__n)
-   && (__size | __n) < (((size_t) 1) << (8 * sizeof (size_t) / 2))
-   && __size * __n <= 8)
- {
-   size_t __cnt = __size * __n;
-   char *__cptr = (char *) __ptr;
-   if (__cnt == 0)
-     return 0;
-
-   for (; __cnt > 0; --__cnt)
-     {
-       int __c = getc_unlocked (__stream);
-       if (__c == (-1))
-  break;
-       *__cptr++ = __c;
-     }
-   return (__cptr - (char *) __ptr) / __size;
- }
-
-      return __fread_unlocked_alias (__ptr, __size, __n, __stream);
-    }
-  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && !(((long unsigned int) (__n)) <= (sz) / (__size))))
-    return __fread_unlocked_chk_warn (__ptr, sz, __size, __n, __stream);
-  return __fread_unlocked_chk (__ptr, sz, __size, __n, __stream);
-
-}
-# 895 "/usr/include/stdio.h" 2 3 4
-
-
-
-
-
-
-
+# 902 "/usr/include/stdio.h" 3 4
 }
 # 43 "/usr/include/c++/10/cstdio" 2 3
 
@@ -5990,6 +5546,20 @@ struct Scene {
 
 #define WORLD_UP V3(0, 0, 1)
 
+struct CollisionMesh {
+ meta(serialize) Array<v3> vertices;
+ meta(serialize) SceneID scene;
+};
+
+struct CollisionShape
+{
+ CollisionMesh collision_mesh;
+ v3 ellipsoid_radius;
+ bool ellipsoid;
+
+ mat4 transform;
+ v3 scale;
+};
 
 struct CollisionInfo
 {
@@ -6007,31 +5577,7 @@ enum EntityType {
     EntityType_Count,
 };
 
-enum CollisionShapeType {
-    COLLISION_SHAPE_TRIANGLES,
-    COLLISION_SHAPE_ELLIPSOID,
-};
-
-struct CollisionTriangle {
-    meta(ui, serialize) v3 v0;
- meta(ui, serialize) v3 v1;
- meta(ui, serialize) v3 v2;
-};
-
 typedef usize entity_id;
-
-struct CollisionShape {
-    meta(ui: const, serialize) CollisionShapeType type;
-    meta(ui, serialize) Array<CollisionTriangle> triangles;
-    meta(ui, serialize) v3 ellipsoid_radius;
-
- v3 box_radius;
-    mat4 transform;
-    v3 scale;
-    entity_id entity;
-};
-
-
 
 struct Entity {
     meta(ui: const, serialize) entity_id id;
@@ -6055,13 +5601,14 @@ struct Entity {
     meta(ui, serialize) b32 pressing_jump;
     meta(ui, serialize) b32 aiming;
 
-    meta(ui, serialize) CollisionShape shape;
+ meta(ui, serialize) bool ellipsoid_collision_shape;
+ meta(ui, serialize) v3 ellipsoid_radius;
 
     meta(ui, serialize) SceneID scene_id;
+
     meta(ui, serialize) mat4 scene_transform;
 
  meta(ui, serialize) bool disable_collision;
-
 
 
     Animation *curr_anim;
@@ -6169,7 +5716,7 @@ struct Editor {
 
     Entity init_entity;
 
- meta(ui) bool edit_scene;
+ meta(ui) bool edit_collision_mesh;
 
     meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
@@ -6206,6 +5753,7 @@ struct World {
     meta(ui, serialize) Array<Entity> entities;
 
     std::unordered_map<entity_id, usize> entities_id_map;
+ std::unordered_map<SceneID, int> scene_collision_mesh;
 
     meta(serialize) entity_id next_entity_id;
 
@@ -6224,6 +5772,8 @@ struct World {
     Camera last_game_camera;
 
     float aim_camera_transition_t;
+
+ meta(serialize) Array<CollisionMesh> collision_meshes;
 };
 
 struct LoadedSound
@@ -7473,64 +7023,6 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 #define SLIDE_ITERATION_COUNT 4
 #define SLIDE_COEFF 1.2f
 
-CollisionShape make_ellipsoid_shape(v3 radius)
-{
- CollisionShape shape = {};
-
- shape.type = COLLISION_SHAPE_ELLIPSOID;
- shape.ellipsoid_radius = radius;
- return shape;
-}
-
-CollisionShape make_triangles_shape(Array<CollisionTriangle> triangles)
-{
- CollisionShape shape = {};
-
- shape.type = COLLISION_SHAPE_TRIANGLES;
- shape.triangles = triangles;
- return shape;
-}
-
-CollisionShape make_box_shape(Arena *arena, v3 radius)
-{
- Array<CollisionTriangle> triangles = make_array_max<CollisionTriangle>(arena, 12);
-
- v3 p00 = V3(-radius.x, -radius.y, -radius.z);
- v3 p01 = V3(+radius.x, -radius.y, -radius.z);
- v3 p02 = V3(+radius.x, +radius.y, -radius.z);
- v3 p03 = V3(-radius.x, +radius.y, -radius.z);
- v3 p10 = V3(-radius.x, -radius.y, +radius.z);
- v3 p11 = V3(+radius.x, -radius.y, +radius.z);
- v3 p12 = V3(+radius.x, +radius.y, +radius.z);
- v3 p13 = V3(-radius.x, +radius.y, +radius.z);
-
-
- triangles.push({p00, p02, p01});
- triangles.push({p00, p03, p02});
-
- triangles.push({p10, p11, p12});
- triangles.push({p10, p12, p13});
-
- triangles.push({p00, p10, p13});
- triangles.push({p00, p13, p03});
-
- triangles.push({p01, p12, p11});
- triangles.push({p01, p02, p12});
-
- triangles.push({p00, p01, p11});
- triangles.push({p00, p11, p10});
-
- triangles.push({p03, p12, p02});
- triangles.push({p03, p13, p12});
-
- CollisionShape shape = {};
-
- shape.type = COLLISION_SHAPE_TRIANGLES;
- shape.triangles = triangles;
- shape.box_radius = radius;
- return shape;
-}
-
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {
  v3 D = dir;
@@ -7607,7 +7099,7 @@ void intersect_triangle_plane(v3 v0, v3 v1, v3 v2, v3 dir, CollisionInfo &info)
 
   v3 p = t * dir;
   p = v0 + (p-v0)-dot(p - v0, normal)*normal;
-# 147 "code/collision.cpp"
+# 89 "code/collision.cpp"
   float A = dot(cross(p - v0, v), n) * one_over_length_n_sq;
   float B = -dot(cross(p - v0, u), n) * one_over_length_n_sq;
 
@@ -7627,7 +7119,7 @@ CollisionInfo ellipsoid_intersect_triangle(v3 targetP, v3 ep, v3 er, v3 v0, v3 v
  info.t = FLT_MAX;
 
  v3 inv_r = V3(1/er.x, 1/er.y, 1/er.z);
-# 176 "code/collision.cpp"
+# 118 "code/collision.cpp"
  v3 t0 = inv_r * (v0 - ep);
  v3 t1 = inv_r * (v1 - ep);
  v3 t2 = inv_r * (v2 - ep);
@@ -7701,7 +7193,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 {
  CollisionInfo first_hit = {};
 
- v3 e_radius = e.scale * e.shape.ellipsoid_radius;
+ v3 e_radius = e.scale * e.ellipsoid_radius;
 
  for (int itr = 0; itr < 4; itr++) {
   if (length_sq(delta_p) < 0.01f*0.01f)
@@ -7713,11 +7205,11 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
   for (int i = 0; i < shapes.count; i++) {
    CollisionInfo info;
 
-   if (shapes[i].type == COLLISION_SHAPE_TRIANGLES) {
-    for (int j = 0; j < shapes[i].triangles.count; j++) {
-     v3 p0 = (shapes[i].transform * V4(shapes[i].triangles[j].v0, 1)).xyz;
-     v3 p1 = (shapes[i].transform * V4(shapes[i].triangles[j].v1, 1)).xyz;
-     v3 p2 = (shapes[i].transform * V4(shapes[i].triangles[j].v2, 1)).xyz;
+   if (!shapes[i].ellipsoid) {
+    for (int j = 0; j + 2 < shapes[i].collision_mesh.vertices.count; j += 3) {
+     v3 p0 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 0], 1)).xyz;
+     v3 p1 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 1], 1)).xyz;
+     v3 p2 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 2], 1)).xyz;
 
      info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
        p0, p1, p2);
@@ -7725,7 +7217,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
       hit_info = info;
     }
    }
-   else if (shapes[i].type == COLLISION_SHAPE_ELLIPSOID) {
+   else {
     info = ellipsoid_intersect_ellipsoid(e.position + delta_p, e.position, e_radius,
       V3(shapes[i].transform.e[0][3],
        shapes[i].transform.e[1][3],
@@ -7735,8 +7227,6 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
     if (info.t < hit_info.t)
      hit_info = info;
    }
-   else
-    assert(0);
   }
 
   if (!itr)
@@ -7766,7 +7256,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 void move_entity(World &world, Entity &e, v3 delta_p)
 {
- assert(e.shape.type == COLLISION_SHAPE_ELLIPSOID);
+ assert(e.ellipsoid_collision_shape);
 
  Arena *temp = begin_temp_memory();
 
@@ -7778,15 +7268,22 @@ void move_entity(World &world, Entity &e, v3 delta_p)
   if (test.id == e.id || test.disable_collision)
    continue ;
 
-  CollisionShape shape = test.shape;
-  shape.transform = get_entity_transform(world, test);
-
-  if (shape.type == COLLISION_SHAPE_ELLIPSOID)
+  CollisionShape shape = {};
+  if (test.ellipsoid_collision_shape) {
+   shape.ellipsoid = true;
+   shape.ellipsoid_radius = test.ellipsoid_radius;
+   shape.transform = get_entity_transform(world, test);
    shape.scale = test.scale;
-
+  }
+  else {
+   if (!world.scene_collision_mesh.count(test.scene_id))
+    continue ;
+   shape.collision_mesh = world.collision_meshes[world.scene_collision_mesh[test.scene_id]];
+   shape.transform = get_entity_transform(world, test) * test.scene_transform;
+  }
   shapes.push(shape);
  }
-# 342 "code/collision.cpp"
+# 289 "code/collision.cpp"
  v3 old_p = e.position;
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
@@ -7809,7 +7306,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 
 
- float height_above_ground = e.position.z - collision.hit_p.z - e.scale.z*e.shape.ellipsoid_radius.z
+ float height_above_ground = e.position.z - collision.hit_p.z - e.scale.z*e.ellipsoid_radius.z
   - 0.01f;
  if (collision.t < 0 || collision.t == FLT_MAX)
   height_above_ground = 10000;
@@ -7837,7 +7334,7 @@ Entity *make_entity(World &world)
  return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, mat4 scene_transform = identity())
 {
  Entity *e = make_entity(world);
 
@@ -7845,7 +7342,6 @@ Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position
  e->position = position;
  e->scene_id = scene_id;
  e->scene_transform = scene_transform;
- e->shape = shape;
  e->color = V3(1);
  e->scale = V3(1);
  e->rotation = identity_quat();
@@ -7990,32 +7486,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
   mat4 entity_transform = get_entity_transform(world, e);
   mat4 scene_transform = entity_transform * e.scene_transform;
 
-
-
-
-  bool outline = !shadow_map_pass
-   && (e.id == world.editor_selected_entity);
   render_scene(game, world, e.scene_id, camera, scene_transform, 0, 0, e.color);
-
-  if (game.debug_collision) {
-
-   v3 color = e.id == world.editor_selected_entity ? V3(1, 1, 0) : V3(1, 0, 0);
-   if (e.shape.type == COLLISION_SHAPE_TRIANGLES) {
-    for (int j = 0; j < e.shape.triangles.count; j++) {
-     v3 p0 = (entity_transform * V4(e.shape.triangles[j].v0, 1)).xyz;
-     v3 p1 = (entity_transform * V4(e.shape.triangles[j].v1, 1)).xyz;
-     v3 p2 = (entity_transform * V4(e.shape.triangles[j].v2, 1)).xyz;
-
-     v3 n = normalize(cross(p1 - p0, p2 - p0));
-     v3 o = n * 0.01f;
-     push_triangle_outline(p0 + o, p1 + o, p2 + o, color);
-    }
-   }
-   else if (e.shape.type == COLLISION_SHAPE_ELLIPSOID) {
-    push_ellipsoid_outline(
-      get_world_p(world, e.id), e.scale * e.shape.ellipsoid_radius, color);
-   }
-  }
  }
 
 }
@@ -8117,7 +7588,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 302 "code/world.cpp"
+# 276 "code/world.cpp"
   {
 
 
@@ -8242,16 +7713,16 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
    float o = camera_rot.x;
 
    float t[4] = {-3.14159265359f/2, 0, 3.14159265359f/2.5, 3.14159265359f/2};
-   assert(player->shape.type == COLLISION_SHAPE_ELLIPSOID);
+   assert(player->ellipsoid_collision_shape);
 
    v3 player_p = get_world_p(world, player->id);
 
    v3 v[4] = {
-    player_p + V3(0, 0, player->shape.ellipsoid_radius.z*3),
-    player_p - player_forward * 3 + V3(0, 0, player->shape.ellipsoid_radius.z * 0.5),
+    player_p + V3(0, 0, player->ellipsoid_radius.z*3),
+    player_p - player_forward * 3 + V3(0, 0, player->ellipsoid_radius.z * 0.5),
     player_p - player_forward * 1.5
-     + V3(0, 0, -player->shape.ellipsoid_radius.z +0.2),
-    player_p - V3(0, 0, player->shape.ellipsoid_radius.z-0.1),
+     + V3(0, 0, -player->ellipsoid_radius.z +0.2),
+    player_p - V3(0, 0, player->ellipsoid_radius.z-0.1),
 
    };
 
@@ -8291,7 +7762,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     world.player_camera_p += (15 + 40) * dt * (target_camera_p - world.player_camera_p);
 
    world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
-# 488 "code/world.cpp"
+# 462 "code/world.cpp"
   }
  }
 
@@ -8342,7 +7813,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 
  camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
-# 553 "code/world.cpp"
+# 527 "code/world.cpp"
  return camera;
 }
 # 107 "code/game.cpp" 2
@@ -8419,8 +7890,9 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
   }
  }
 
- if (hit_id)
+ if (hit_id) {
   push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
+ }
  hit_t = min_t;
  return hit_id;
 }
@@ -8543,7 +8015,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    }
    if (e)
     imgui_edit_struct_Entity(*e, "selected entity", false);
-# 245 "code/editor.cpp"
+# 246 "code/editor.cpp"
    ImGui::End();
   }
  }
@@ -8563,6 +8035,13 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   if ((input.buttons[BUTTON_T].is_down)) editor.gizmo_mode = GIZMO_TRANSLATION;
   else if ((input.buttons[BUTTON_R].is_down)) editor.gizmo_mode = GIZMO_ROTATION;
   else if ((input.buttons[BUTTON_S].is_down)) editor.gizmo_mode = GIZMO_SCALE;
+
+  if (((input.buttons[BUTTON_Q].is_down) && !(input.buttons[BUTTON_Q].was_down))) {
+
+   editor.edit_collision_mesh = !editor.edit_collision_mesh;
+   if (editor.edit_collision_mesh)
+    editor.in_gizmo = 0;
+  }
  }
  float rotation_inner_radius = 1.5;
  float rotation_outer_radius = 2;
@@ -8585,12 +8064,12 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   }
  }
 
- if ((input.buttons[BUTTON_MOUSE_RIGHT].is_down)) {
+ if (!editor.edit_collision_mesh && (input.buttons[BUTTON_MOUSE_RIGHT].is_down)) {
   float min_hit_t;
   int hit_entity_mesh_index;
   entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
 
-  if (editor.selected_entity && !editor.in_gizmo) {
+  if (editor.selected_entity && !editor.in_gizmo && !editor.edit_collision_mesh) {
    Entity *e = get_entity(world, editor.selected_entity);
    if (e) {
     float min_axis_t = FLT_MAX;
@@ -8748,8 +8227,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     if (e)
      editor.init_entity = *e;
    }
-  }
-  else {
+
+ }
+ else {
    if (editor.in_gizmo && editor.did_drag) {
     EditorOp op = {};
     Entity *e = get_entity(world, editor.selected_entity);
@@ -8781,7 +8261,65 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    editor.in_gizmo = 0;
    if (get_entity(world, editor.selected_entity))
     editor.init_entity = *get_entity(world, editor.selected_entity);
+ }
+ if (editor.edit_collision_mesh) {
+
+  float min_hit_t;
+  int hit_entity_mesh_index;
+  entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
+
+  Entity *e = get_entity(world, hit_entity);
+
+  if (e && e->scene_id) {
+
+   mat4 to_world = get_entity_transform(world, *e) * e->scene_transform;
+   mat4 to_object = inverse(to_world);
+
+   if (!world.scene_collision_mesh.count(e->scene_id)) {
+    CollisionMesh cmesh = {};
+
+    cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
+    cmesh.scene = e->scene_id;
+    world.collision_meshes.push(cmesh);
+    world.scene_collision_mesh[e->scene_id] = world.collision_meshes.count - 1;
+   }
+
+   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+
+   v3 hit_p = ray_origin + min_hit_t * ray_dir;
+
+   float dist_to_snap = 0.03f * length(hit_p - camera.position);
+   float size = dist_to_snap;
+
+   if (((input.buttons[BUTTON_MOUSE_RIGHT].is_down) && !(input.buttons[BUTTON_MOUSE_RIGHT].was_down))) {
+
+    hit_p = (to_object * V4(hit_p, 1)).xyz;
+
+    float closest_dist = FLT_MAX;
+    int best_p = 0;
+    for (int i = 0; i < cmesh.vertices.count; i++) {
+     float dist = length_sq(cmesh.vertices[i] - hit_p);
+     if (dist < closest_dist) {
+      closest_dist = dist;
+      best_p = i;
+     }
+    }
+    if (closest_dist < dist_to_snap * dist_to_snap)
+     hit_p = cmesh.vertices[best_p];
+    cmesh.vertices.push(hit_p);
+    hit_p = (to_world * V4(hit_p, 1)).xyz;
+   }
+   push_cube_outline(hit_p, V3(size), V3(1, 1, 0));
+   for (int i = 0; i < cmesh.vertices.count; i++)
+    push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(size), V3(1, 0, 0));
+
+   for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+     push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
+            (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
+            (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, V3(1, 0, 0));
+   }
   }
+ }
  {
   Entity *e = get_entity(world, editor.selected_entity);
   if (e) {
@@ -8859,8 +8397,6 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    do_editor_op(game, world, editor, op);
   }
  }
-
-
 
  if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down))) {
@@ -9061,22 +8597,29 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   if (!fd) {
    world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-   Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5)));
-   ground->scale = ground->shape.box_radius;
-   ground->shape = make_box_shape(memory, V3(1));
+   Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5));
+   ground->scale = V3(100, 100, 0.5);
    ground->color = V3(0.3f);
 
    Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, make_cstring("Ybot.fbx")),
-     V3(0, 0, 4), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
-   player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
+     V3(0, 0, 4));
+   player->ellipsoid_radius = V3(0.55f, 0.55f, 0.95f);
+   player->ellipsoid_collision_shape = true;
+   player->scene_transform = translate(0, 0, -player->ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
    player->color = V3(0, 1, 1);
+
    world.player_id = player->id;
    world.editor_camera_p = V3(0, 0, 3);
+
+   world.collision_meshes = make_array_max<CollisionMesh>(&world.arena, game.scenes.capacity);
   }
   else {
    serialize_World(fd, false, world, &world.arena);
    for (int i = 0; i < world.entities.count; i++)
     world.entities_id_map[world.entities[i].id] = i;
+   for (int i = 0; i < world.collision_meshes.count; i++)
+    world.scene_collision_mesh[world.collision_meshes[i].scene] = i;
+
    fclose(fd);
   }
 
@@ -9224,13 +8767,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   if (ImGui::Button("new cube")) {
    Entity *entity = make_entity(world, EntityType_Static,
      get_scene_id_by_name(game, make_cstring("cube.fbx")), game_camera.position
-     + game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
+     + game_camera.forward * 4);
    world.editor.selected_entity = entity->id;
   }
   if (ImGui::Button("new sphere")) {
    Entity *entity = make_entity(world, EntityType_Static,
      get_scene_id_by_name(game, make_cstring("sphere.fbx")), game_camera.position
-     + game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
+     + game_camera.forward * 4);
+   entity->ellipsoid_radius = V3(1);
+   entity->ellipsoid_collision_shape = true;
    world.editor.selected_entity = entity->id;
   }
 
@@ -9258,9 +8803,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  game.time += dt;
 
  if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(
-# 502 "code/game.cpp" 3 4
+# 511 "code/game.cpp" 3 4
                                                               __null
-# 502 "code/game.cpp"
+# 511 "code/game.cpp"
                                                                   );
  game.frame++;
 }
