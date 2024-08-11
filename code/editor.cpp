@@ -51,27 +51,21 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 				v3 normal = cross(u, v);
 
 				float hit_t;
-				if (ray_hit_plane(ray_origin, ray_dir, normal, v0, &hit_t)
-						&& hit_t < min_t) {
-					float one_over_length_n_sq = 1.f/dot(normal, normal);
-					v3 p = ray_origin + hit_t * ray_dir;
-					float A = dot(cross(p - v0, v), normal) * one_over_length_n_sq;
-					float B = -dot(cross(p - v0, u), normal) * one_over_length_n_sq;
-					if (A >= 0 && B >= 0 && A + B <= 1) {
-						min_t = hit_t;
-						hit_id = e.id;
-						hit_triangle[0] = v0;
-						hit_triangle[1] = v1;
-						hit_triangle[2] = v2;
-						mesh_index = (int)j;
-					}
+				if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t) &&
+						hit_t < min_t) {
+					min_t = hit_t;
+					hit_id = e.id;
+					hit_triangle[0] = v0;
+					hit_triangle[1] = v1;
+					hit_triangle[2] = v2;
+					mesh_index = (int)j;
 				}
 			}
 		}
 	}
 
 	if (hit_id) {
-	//	push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
+		push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
 	}
 	hit_t = min_t;
 	return hit_id;
@@ -87,6 +81,16 @@ void do_editor_op(Game &game, World &world, Editor &editor, EditorOp &op)
 			e->rotation = op.rotate.new_rot;
 		else if (op.type == EDITOR_OP_SCALE_ENTITY)
 			e->scale = op.scale.new_scale;
+		else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
+			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+			cmesh.vertices.push(op.place_collision_vertex.pos);
+		}
+		else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
+			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+			for (int i = op.delete_collision_triangle.index + 3; i < cmesh.vertices.count; i++)
+				cmesh.vertices[i - 3] = cmesh.vertices[i];
+			cmesh.vertices.count -= 3;
+		}
 	}
 	if (op.type == EDITOR_OP_PASTE_ENTITY) {
 		Entity *copy_from = get_entity(world, op.paste.copy_from);
@@ -162,6 +166,22 @@ void undo_editor_op(Game &game, World &world, Editor &editor)
 			e->rotation = op.rotate.prev_rot;
 		else if (op.type == EDITOR_OP_SCALE_ENTITY)
 			e->scale = op.scale.prev_scale;
+		else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
+			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+			assert(cmesh.vertices.count > 0);
+			cmesh.vertices.count--;
+		}
+		else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
+			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+
+			cmesh.vertices.count += 3;
+			for (int i = cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
+				cmesh.vertices[i] = cmesh.vertices[i - 3];
+
+			cmesh.vertices[op.delete_collision_triangle.index + 0] = op.delete_collision_triangle.v0;
+			cmesh.vertices[op.delete_collision_triangle.index + 1] = op.delete_collision_triangle.v1;
+			cmesh.vertices[op.delete_collision_triangle.index + 2] = op.delete_collision_triangle.v2;
+		}
 	}
 	if (op.type == EDITOR_OP_PASTE_ENTITY)
 		remove_entity(world, op.paste.id);
@@ -515,8 +535,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 			v3 hit_p = ray_origin + min_hit_t * ray_dir;
 
-			float dist_to_snap = 0.03f * length(hit_p - camera.position);
-			dist_to_snap = 0.1f;
+			float dist_to_snap = 0.01f * length(hit_p - camera.position);
 			float size = dist_to_snap;
 
 			if (IsDownFirstTime(input, BUTTON_MOUSE_RIGHT)) {
@@ -534,17 +553,54 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				}
 				if (closest_dist < dist_to_snap * dist_to_snap)
 					hit_p = cmesh.vertices[best_p];
-				cmesh.vertices.push(hit_p);
+				//cmesh.vertices.push(hit_p);
+				EditorOp op = {};
+				op.type = EDITOR_OP_CREATE_MESH_COLLISION_VERTEX;
+				op.entity = hit_entity;
+				op.place_collision_vertex.pos = hit_p;
+
+				do_editor_op(game, world, editor, op);
+
 				hit_p = (to_world * V4(hit_p, 1)).xyz;
 			}
+			int hit_triangle = -1;
+			{
+				float min_t = FLT_MAX;
+				for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+					v3 v0 = (to_world * V4(cmesh.vertices[i + 0], 1)).xyz;
+					v3 v1 = (to_world * V4(cmesh.vertices[i + 1], 1)).xyz;
+					v3 v2 = (to_world * V4(cmesh.vertices[i + 2], 1)).xyz;
+
+					float hit_t;
+					if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t)
+							&& hit_t < min_t) {
+						min_t = hit_t;
+						hit_triangle = i;
+					}
+				}
+			}
+			if (IsDownFirstTime(input, BUTTON_DELETE)) {
+				if (hit_triangle != -1) {
+					EditorOp op = {};
+					op.type = EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE;
+					op.entity = hit_entity;
+					op.delete_collision_triangle.index = hit_triangle;
+					op.delete_collision_triangle.v0 = cmesh.vertices[hit_triangle + 0]; 
+					op.delete_collision_triangle.v1 = cmesh.vertices[hit_triangle + 1]; 
+					op.delete_collision_triangle.v2 = cmesh.vertices[hit_triangle + 2]; 
+					do_editor_op(game, world, editor, op);
+				}
+			}
+
 			push_cube_outline(hit_p, V3(size), V3(1, 1, 0));
-			for (int i = 0; i < cmesh.vertices.count; i++)
+			for (int i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
 				push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(size), V3(1, 0, 0));
 
 			for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
-					push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
-										  (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
-										  (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, V3(1, 0, 0));
+				v3 color = i == hit_triangle ? V3(1, 1, 0) : V3(1, 0, 0);
+				push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
+							(to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
+							(to_world * V4(cmesh.vertices[i + 2], 1)).xyz, color);
 			}
 		}
 	}

@@ -483,10 +483,10 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
 	opts.target_unit_meters = 1;
 	//TODO: this needs to use thread local storage
-	opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	opts.temp_allocator.allocator.user = temp;
-	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	opts.result_allocator.allocator.user = temp;
+	//opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	//opts.temp_allocator.allocator.user = temp;
+	//opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	//opts.result_allocator.allocator.user = temp;
 	opts.generate_missing_normals = true;
 	opts.load_external_files = true;
 	//opts.obj_merge_objects = true;

@@ -427,7 +427,7 @@
 #define __STDC_ISO_10646__ 201706L
 # 1 "<command-line>" 2
 # 1 "code/game.cpp"
-# 15 "code/game.cpp"
+# 16 "code/game.cpp"
 # 1 "code/common.h" 1
        
 
@@ -449,7 +449,7 @@ typedef float f32;
 typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
-# 16 "code/game.cpp" 2
+# 17 "code/game.cpp" 2
 # 1 "code/arena.h" 1
        
 
@@ -520,7 +520,7 @@ static void end_temp_memory()
  assert(g_temp_arena->last_used_count > 0);
  g_temp_arena->arena.used = g_temp_arena->last_used[--g_temp_arena->last_used_count];
 }
-# 17 "code/game.cpp" 2
+# 18 "code/game.cpp" 2
 # 1 "code/utils.h" 1
 #define Kilobyte(x) (1024ULL * x)
 #define Megabyte(x) (1024ULL * Kilobyte(x))
@@ -648,3153 +648,6 @@ String concact_string(Arena *arena, String a, String b) {
 }
 #define str_format(str) (int)str.count, str.data
 
-# 1 "/usr/include/c++/10/cstdio" 1 3
-# 39 "/usr/include/c++/10/cstdio" 3
-       
-# 40 "/usr/include/c++/10/cstdio" 3
-
-# 1 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 1 3
-# 31 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_CXX_CONFIG_H 1
-
-
-#define _GLIBCXX_RELEASE 10
-
-
-#define __GLIBCXX__ 20230707
-# 46 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_PURE __attribute__ ((__pure__))
-
-
-
-#define _GLIBCXX_CONST __attribute__ ((__const__))
-
-
-
-#define _GLIBCXX_NORETURN __attribute__ ((__noreturn__))
-# 67 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY 1
-
-
-#define _GLIBCXX_VISIBILITY(V) __attribute__ ((__visibility__ (#V)))
-# 84 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_USE_DEPRECATED 1
-
-
-
-#define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
-#define _GLIBCXX_DEPRECATED_SUGGEST(ALT) __attribute__ ((__deprecated__ ("use '" ALT "' instead")))
-
-
-
-
-
-
-
-#define _GLIBCXX17_DEPRECATED [[__deprecated__]]
-
-
-
-
-
-
-
-#define _GLIBCXX20_DEPRECATED(MSG) 
-
-
-
-
-#define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
-
-
-
-
-#define _GLIBCXX_NODISCARD [[__nodiscard__]]
-# 127 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_CONSTEXPR constexpr
-#define _GLIBCXX_USE_CONSTEXPR constexpr
-# 137 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX14_CONSTEXPR constexpr
-
-
-
-
-
-
-
-#define _GLIBCXX17_CONSTEXPR constexpr
-# 155 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX20_CONSTEXPR 
-
-
-
-
-
-#define _GLIBCXX17_INLINE inline
-# 170 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_NOEXCEPT noexcept
-#define _GLIBCXX_NOEXCEPT_IF(...) noexcept(__VA_ARGS__)
-#define _GLIBCXX_USE_NOEXCEPT noexcept
-#define _GLIBCXX_THROW(_EXC) 
-# 183 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_NOTHROW _GLIBCXX_USE_NOEXCEPT
-
-
-
-
-#define _GLIBCXX_THROW_OR_ABORT(_EXC) (throw (_EXC))
-
-
-
-
-
-
-#define _GLIBCXX_NOEXCEPT_PARM , bool _NE
-#define _GLIBCXX_NOEXCEPT_QUAL noexcept (_NE)
-# 212 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_EXTERN_TEMPLATE 1
-# 262 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-
-# 262 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-namespace std
-{
-  typedef long unsigned int size_t;
-  typedef long int ptrdiff_t;
-
-
-  typedef decltype(nullptr) nullptr_t;
-
-}
-
-#define _GLIBCXX_USE_DUAL_ABI 1
-
-
-
-
-
-
-
-#define _GLIBCXX_USE_CXX11_ABI 1
-
-
-
-namespace std
-{
-  inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
-}
-namespace __gnu_cxx
-{
-  inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
-}
-#define _GLIBCXX_NAMESPACE_CXX11 __cxx11::
-#define _GLIBCXX_BEGIN_NAMESPACE_CXX11 namespace __cxx11 {
-#define _GLIBCXX_END_NAMESPACE_CXX11 }
-#define _GLIBCXX_DEFAULT_ABI_TAG _GLIBCXX_ABI_TAG_CXX11
-# 304 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_INLINE_VERSION 0
-# 334 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_BEGIN_NAMESPACE_VERSION 
-#define _GLIBCXX_END_NAMESPACE_VERSION 
-# 393 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_STD_C std
-#define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER 
-#define _GLIBCXX_END_NAMESPACE_CONTAINER 
-# 404 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_STD_A std
-#define _GLIBCXX_BEGIN_NAMESPACE_ALGO 
-#define _GLIBCXX_END_NAMESPACE_ALGO 
-
-
-
-
-#undef _GLIBCXX_LONG_DOUBLE_COMPAT
-# 423 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_NAMESPACE_LDBL 
-#define _GLIBCXX_BEGIN_NAMESPACE_LDBL 
-#define _GLIBCXX_END_NAMESPACE_LDBL 
-
-
-#define _GLIBCXX_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_NAMESPACE_CXX11
-#define _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_BEGIN_NAMESPACE_CXX11
-#define _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11 _GLIBCXX_END_NAMESPACE_CXX11
-# 476 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define __glibcxx_assert(_Condition) 
-# 501 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) 
-
-
-#define _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A) 
-
-
-
-#define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
-#define _GLIBCXX_END_EXTERN_C }
-
-#define _GLIBCXX_USE_ALLOCATOR_NEW 1
-# 522 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-# 1 "/usr/include/x86_64-linux-gnu/c++/10/bits/os_defines.h" 1 3
-# 31 "/usr/include/x86_64-linux-gnu/c++/10/bits/os_defines.h" 3
-#define _GLIBCXX_OS_DEFINES 1
-
-
-
-
-
-#define __NO_CTYPE 1
-
-# 1 "/usr/include/features.h" 1 3 4
-# 19 "/usr/include/features.h" 3 4
-#define _FEATURES_H 1
-# 126 "/usr/include/features.h" 3 4
-#undef __USE_ISOC11
-#undef __USE_ISOC99
-#undef __USE_ISOC95
-#undef __USE_ISOCXX11
-#undef __USE_POSIX
-#undef __USE_POSIX2
-#undef __USE_POSIX199309
-#undef __USE_POSIX199506
-#undef __USE_XOPEN
-#undef __USE_XOPEN_EXTENDED
-#undef __USE_UNIX98
-#undef __USE_XOPEN2K
-#undef __USE_XOPEN2KXSI
-#undef __USE_XOPEN2K8
-#undef __USE_XOPEN2K8XSI
-#undef __USE_LARGEFILE
-#undef __USE_LARGEFILE64
-#undef __USE_FILE_OFFSET64
-#undef __USE_MISC
-#undef __USE_ATFILE
-#undef __USE_DYNAMIC_STACK_SIZE
-#undef __USE_GNU
-#undef __USE_FORTIFY_LEVEL
-#undef __KERNEL_STRICT_NAMES
-#undef __GLIBC_USE_ISOC2X
-#undef __GLIBC_USE_DEPRECATED_GETS
-#undef __GLIBC_USE_DEPRECATED_SCANF
-
-
-
-
-#define __KERNEL_STRICT_NAMES 
-# 168 "/usr/include/features.h" 3 4
-#define __GNUC_PREREQ(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-# 182 "/usr/include/features.h" 3 4
-#define __glibc_clang_prereq(maj,min) 0
-
-
-
-#define __GLIBC_USE(F) __GLIBC_USE_ ## F
-# 201 "/usr/include/features.h" 3 4
-#undef _ISOC95_SOURCE
-#define _ISOC95_SOURCE 1
-#undef _ISOC99_SOURCE
-#define _ISOC99_SOURCE 1
-#undef _ISOC11_SOURCE
-#define _ISOC11_SOURCE 1
-#undef _ISOC2X_SOURCE
-#define _ISOC2X_SOURCE 1
-#undef _POSIX_SOURCE
-#define _POSIX_SOURCE 1
-#undef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#undef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 700
-#undef _XOPEN_SOURCE_EXTENDED
-#define _XOPEN_SOURCE_EXTENDED 1
-#undef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE 1
-#undef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE 1
-#undef _ATFILE_SOURCE
-#define _ATFILE_SOURCE 1
-#undef _DYNAMIC_STACK_SIZE_SOURCE
-#define _DYNAMIC_STACK_SIZE_SOURCE 1
-# 235 "/usr/include/features.h" 3 4
-#undef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE 1
-
-
-
-
-
-#define __GLIBC_USE_ISOC2X 1
-
-
-
-
-
-
-
-#define __USE_ISOC11 1
-
-
-
-
-
-
-#define __USE_ISOC99 1
-
-
-
-
-
-
-#define __USE_ISOC95 1
-
-
-
-
-
-#define __USE_ISOC11 1
-
-
-
-
-#define __USE_ISOCXX11 1
-#define __USE_ISOC99 1
-# 287 "/usr/include/features.h" 3 4
-#undef _POSIX_SOURCE
-#define _POSIX_SOURCE 1
-#undef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-# 325 "/usr/include/features.h" 3 4
-#define __USE_POSIX 1
-
-
-
-#define __USE_POSIX2 1
-
-
-
-#define __USE_POSIX199309 1
-
-
-
-#define __USE_POSIX199506 1
-
-
-
-#define __USE_XOPEN2K 1
-#undef __USE_ISOC95
-#define __USE_ISOC95 1
-#undef __USE_ISOC99
-#define __USE_ISOC99 1
-
-
-
-#define __USE_XOPEN2K8 1
-#undef _ATFILE_SOURCE
-#define _ATFILE_SOURCE 1
-
-
-
-#define __USE_XOPEN 1
-
-#define __USE_XOPEN_EXTENDED 1
-#define __USE_UNIX98 1
-#undef _LARGEFILE_SOURCE
-#define _LARGEFILE_SOURCE 1
-
-
-#define __USE_XOPEN2K8 1
-#define __USE_XOPEN2K8XSI 1
-
-#define __USE_XOPEN2K 1
-#define __USE_XOPEN2KXSI 1
-#undef __USE_ISOC95
-#define __USE_ISOC95 1
-#undef __USE_ISOC99
-#define __USE_ISOC99 1
-# 381 "/usr/include/features.h" 3 4
-#define __USE_LARGEFILE 1
-
-
-
-#define __USE_LARGEFILE64 1
-
-
-
-
-
-
-# 1 "/usr/include/features-time64.h" 1 3 4
-# 20 "/usr/include/features-time64.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-
-
-
-#define __WORDSIZE 64
-
-
-
-
-
-
-
-#define __WORDSIZE_TIME64_COMPAT32 1
-
-#define __SYSCALL_WORDSIZE 64
-# 21 "/usr/include/features-time64.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 1 3 4
-# 19 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-
-
-
-#define __WORDSIZE 64
-
-
-
-
-
-
-
-#define __WORDSIZE_TIME64_COMPAT32 1
-
-#define __SYSCALL_WORDSIZE 64
-# 20 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 2 3 4
-
-
-
-
-
-
-#define __TIMESIZE __WORDSIZE
-# 22 "/usr/include/features-time64.h" 2 3 4
-# 393 "/usr/include/features.h" 2 3 4
-
-
-#define __USE_MISC 1
-
-
-
-#define __USE_ATFILE 1
-
-
-
-#define __USE_DYNAMIC_STACK_SIZE 1
-
-
-
-#define __USE_GNU 1
-# 428 "/usr/include/features.h" 3 4
-#define __USE_FORTIFY_LEVEL 0
-
-
-
-
-
-
-
-#define __GLIBC_USE_DEPRECATED_GETS 0
-# 459 "/usr/include/features.h" 3 4
-#define __GLIBC_USE_DEPRECATED_SCANF 0
-# 472 "/usr/include/features.h" 3 4
-#undef __GNU_LIBRARY__
-#define __GNU_LIBRARY__ 6
-
-
-
-#define __GLIBC__ 2
-#define __GLIBC_MINOR__ 35
-
-#define __GLIBC_PREREQ(maj,min) ((__GLIBC__ << 16) + __GLIBC_MINOR__ >= ((maj) << 16) + (min))
-
-
-
-
-
-# 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
-# 20 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define _SYS_CDEFS_H 1
-# 35 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#undef __P
-#undef __PMT
-# 45 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_has_attribute(attr) __has_attribute (attr)
-
-
-
-
-#define __glibc_has_builtin(name) __has_builtin (name)
-
-
-
-
-
-
-#define __glibc_has_extension(ext) 0
-
-
-
-
-
-
-
-#define __LEAF , __leaf__
-#define __LEAF_ATTR __attribute__ ((__leaf__))
-# 86 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __THROW noexcept (true)
-
-
-
-#define __THROWNL __THROW
-#define __NTH(fct) __LEAF_ATTR fct __THROW
-#define __NTHNL(fct) fct __THROW
-# 118 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __P(args) args
-#define __PMT(args) args
-
-
-
-
-#define __CONCAT(x,y) x ## y
-#define __STRING(x) #x
-
-
-#define __ptr_t void *
-
-
-
-
-#define __BEGIN_DECLS extern "C" {
-#define __END_DECLS }
-
-
-
-
-
-
-
-#define __bos(ptr) __builtin_object_size (ptr, __USE_FORTIFY_LEVEL > 1)
-#define __bos0(ptr) __builtin_object_size (ptr, 0)
-
-
-
-
-
-
-
-#define __glibc_objsize0(__o) __bos0 (__o)
-#define __glibc_objsize(__o) __bos (__o)
-
-
-
-
-
-
-#define __glibc_safe_len_cond(__l,__s,__osz) ((__l) <= (__osz) / (__s))
-#define __glibc_unsigned_or_positive(__l) ((__typeof (__l)) 0 < (__typeof (__l)) -1 || (__builtin_constant_p (__l) && (__l) > 0))
-
-
-
-
-
-
-#define __glibc_safe_or_unknown_len(__l,__s,__osz) (__glibc_unsigned_or_positive (__l) && __builtin_constant_p (__glibc_safe_len_cond ((__SIZE_TYPE__) (__l), __s, __osz)) && __glibc_safe_len_cond ((__SIZE_TYPE__) (__l), __s, __osz))
-# 176 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_unsafe_len(__l,__s,__osz) (__glibc_unsigned_or_positive (__l) && __builtin_constant_p (__glibc_safe_len_cond ((__SIZE_TYPE__) (__l), __s, __osz)) && !__glibc_safe_len_cond ((__SIZE_TYPE__) (__l), __s, __osz))
-# 185 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_fortify(f,__l,__s,__osz,...) (__glibc_safe_or_unknown_len (__l, __s, __osz) ? __ ## f ## _alias (__VA_ARGS__) : (__glibc_unsafe_len (__l, __s, __osz) ? __ ## f ## _chk_warn (__VA_ARGS__, __osz) : __ ## f ## _chk (__VA_ARGS__, __osz)))
-# 195 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_fortify_n(f,__l,__s,__osz,...) (__glibc_safe_or_unknown_len (__l, __s, __osz) ? __ ## f ## _alias (__VA_ARGS__) : (__glibc_unsafe_len (__l, __s, __osz) ? __ ## f ## _chk_warn (__VA_ARGS__, (__osz) / (__s)) : __ ## f ## _chk (__VA_ARGS__, (__osz) / (__s))))
-
-
-
-
-
-
-
-#define __warnattr(msg) __attribute__((__warning__ (msg)))
-#define __errordecl(name,msg) extern void name (void) __attribute__((__error__ (msg)))
-# 221 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __flexarr []
-#define __glibc_c99_flexarr_available 1
-# 247 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __REDIRECT(name,proto,alias) name proto __asm__ (__ASMNAME (#alias))
-
-#define __REDIRECT_NTH(name,proto,alias) name proto __THROW __asm__ (__ASMNAME (#alias))
-
-#define __REDIRECT_NTHNL(name,proto,alias) name proto __THROWNL __asm__ (__ASMNAME (#alias))
-
-
-
-
-
-
-
-#define __ASMNAME(cname) __ASMNAME2 (__USER_LABEL_PREFIX__, cname)
-#define __ASMNAME2(prefix,cname) __STRING (prefix) cname
-# 281 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_malloc__ __attribute__ ((__malloc__))
-
-
-
-
-
-
-
-#define __attribute_alloc_size__(params) __attribute__ ((__alloc_size__ params))
-# 298 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_alloc_align__(param) __attribute__ ((__alloc_align__ param))
-# 308 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_pure__ __attribute__ ((__pure__))
-
-
-
-
-
-
-#define __attribute_const__ __attribute__ ((__const__))
-
-
-
-
-
-#define __attribute_maybe_unused__ __attribute__ ((__unused__))
-# 330 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_used__ __attribute__ ((__used__))
-#define __attribute_noinline__ __attribute__ ((__noinline__))
-
-
-
-
-
-
-
-#define __attribute_deprecated__ __attribute__ ((__deprecated__))
-# 349 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_deprecated_msg__(msg) __attribute__ ((__deprecated__ (msg)))
-# 362 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_format_arg__(x) __attribute__ ((__format_arg__ (x)))
-# 372 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_format_strfmon__(a,b) __attribute__ ((__format__ (__strfmon__, a, b)))
-# 384 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_nonnull__(params) __attribute__ ((__nonnull__ params))
-
-
-
-
-
-#define __nonnull(params) __attribute_nonnull__ (params)
-
-
-
-
-
-
-#define __returns_nonnull __attribute__ ((__returns_nonnull__))
-# 406 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_warn_unused_result__ __attribute__ ((__warn_unused_result__))
-# 415 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __wur 
-
-
-
-
-
-
-
-#undef __always_inline
-#define __always_inline __inline __attribute__ ((__always_inline__))
-# 433 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_artificial__ __attribute__ ((__artificial__))
-# 451 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __extern_inline extern __inline __attribute__ ((__gnu_inline__))
-#define __extern_always_inline extern __always_inline __attribute__ ((__gnu_inline__))
-# 461 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __fortify_function __extern_always_inline __attribute_artificial__
-
-
-
-
-
-#define __va_arg_pack() __builtin_va_arg_pack ()
-#define __va_arg_pack_len() __builtin_va_arg_pack_len ()
-# 498 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __restrict_arr 
-# 510 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_unlikely(cond) __builtin_expect ((cond), 0)
-#define __glibc_likely(cond) __builtin_expect ((cond), 1)
-# 532 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attribute_nonstring__ __attribute__ ((__nonstring__))
-
-
-
-
-
-#undef __attribute_copy__
-
-
-
-#define __attribute_copy__(arg) __attribute__ ((__copy__ (arg)))
-# 559 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-
-
-
-#define __WORDSIZE 64
-
-
-
-
-
-
-
-#define __WORDSIZE_TIME64_COMPAT32 1
-
-#define __SYSCALL_WORDSIZE 64
-# 560 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 1 3 4
-# 21 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 3 4
-#define __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI 0
-# 561 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
-# 616 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __LDBL_REDIR1(name,proto,alias) name proto
-#define __LDBL_REDIR(name,proto) name proto
-#define __LDBL_REDIR1_NTH(name,proto,alias) name proto __THROW
-#define __LDBL_REDIR_NTH(name,proto) name proto __THROW
-#define __LDBL_REDIR2_DECL(name) 
-#define __LDBL_REDIR_DECL(name) 
-
-#define __REDIRECT_LDBL(name,proto,alias) __REDIRECT (name, proto, alias)
-#define __REDIRECT_NTH_LDBL(name,proto,alias) __REDIRECT_NTH (name, proto, alias)
-# 635 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __glibc_macro_warning1(message) _Pragma (#message)
-#define __glibc_macro_warning(message) __glibc_macro_warning1 (GCC warning message)
-# 656 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __HAVE_GENERIC_SELECTION 0
-# 665 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attr_access(x) __attribute__ ((__access__ x))
-
-
-
-
-
-
-
-#define __fortified_attr_access(a,o,s) __attr_access ((a, o, s))
-
-
-
-
-#define __attr_access_none(argno) 
-# 693 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __attr_dealloc(dealloc,argno) 
-#define __attr_dealloc_free 
-
-
-
-
-
-#define __attribute_returns_twice__ __attribute__ ((__returns_twice__))
-# 487 "/usr/include/features.h" 2 3 4
-# 510 "/usr/include/features.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
-# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
-# 10 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 3 4
-#define __stub___compat_bdflush 
-#define __stub_chflags 
-#define __stub_fchflags 
-#define __stub_gtty 
-#define __stub_revoke 
-#define __stub_setlogin 
-#define __stub_sigreturn 
-#define __stub_stty 
-# 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
-# 511 "/usr/include/features.h" 2 3 4
-# 40 "/usr/include/x86_64-linux-gnu/c++/10/bits/os_defines.h" 2 3
-
-
-
-
-
-#undef _GLIBCXX_HAVE_GETS
-
-
-
-
-#define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
-
-
-
-
-#define _GLIBCXX_NATIVE_THREAD_ID pthread_self()
-# 69 "/usr/include/x86_64-linux-gnu/c++/10/bits/os_defines.h" 3
-#define _GLIBCXX_GTHREAD_USE_WEAK 0
-# 523 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 2 3
-
-
-# 1 "/usr/include/x86_64-linux-gnu/c++/10/bits/cpu_defines.h" 1 3
-# 31 "/usr/include/x86_64-linux-gnu/c++/10/bits/cpu_defines.h" 3
-#define _GLIBCXX_CPU_DEFINES 1
-# 526 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 2 3
-
-
-
-
-#define _GLIBCXX_PSEUDO_VISIBILITY(V) 
-
-
-
-
-
-
-#define _GLIBCXX_WEAK_DEFINITION 
-
-
-
-
-
-
-
-#define _GLIBCXX_USE_WEAK_REF __GXX_WEAK__
-# 558 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_TXN_SAFE 
-#define _GLIBCXX_TXN_SAFE_DYN 
-
-
-
-
-#define _GLIBCXX_USE_STD_SPEC_FUNCS 1
-# 577 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_FAST_MATH 0
-
-
-
-
-
-
-#define __N(msgid) (msgid)
-
-
-#undef min
-#undef max
-
-
-
-
-
-#define _GLIBCXX_USE_C99_MATH _GLIBCXX11_USE_C99_MATH
-
-
-#define _GLIBCXX_USE_C99_COMPLEX _GLIBCXX11_USE_C99_COMPLEX
-
-
-#define _GLIBCXX_USE_C99_STDIO _GLIBCXX11_USE_C99_STDIO
-
-
-#define _GLIBCXX_USE_C99_STDLIB _GLIBCXX11_USE_C99_STDLIB
-
-
-#define _GLIBCXX_USE_C99_WCHAR _GLIBCXX11_USE_C99_WCHAR
-# 639 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_USE_FLOAT128 1
-
-
-
-
-#define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-#define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-#define _GLIBCXX_BUILTIN_IS_SAME_AS(T,U) __is_same_as(T, U)
-
-#define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-# 680 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_USE_TBB_PAR_BACKEND __has_include(<tbb/tbb.h>)
-
-
-
-
-
-#define _PSTL_PAR_BACKEND_SERIAL 
-
-
-#define _PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
-#define _PSTL_ASSERT_MSG(_Condition,_Message) __glibcxx_assert(_Condition)
-
-# 1 "/usr/include/c++/10/pstl/pstl_config.h" 1 3
-# 11 "/usr/include/c++/10/pstl/pstl_config.h" 3
-#define _PSTL_CONFIG_H 
-
-
-#define _PSTL_VERSION 9000
-#define _PSTL_VERSION_MAJOR (_PSTL_VERSION / 1000)
-#define _PSTL_VERSION_MINOR ((_PSTL_VERSION % 1000) / 10)
-#define _PSTL_VERSION_PATCH (_PSTL_VERSION % 10)
-# 29 "/usr/include/c++/10/pstl/pstl_config.h" 3
-#define _PSTL_USAGE_WARNINGS 0
-
-
-
-
-
-
-#define _PSTL_PRAGMA(x) _Pragma(#x)
-
-
-#define _PSTL_STRING_AUX(x) #x
-#define _PSTL_STRING(x) _PSTL_STRING_AUX(x)
-#define _PSTL_STRING_CONCAT(x,y) x #y
-
-
-
-#define _PSTL_GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-# 54 "/usr/include/c++/10/pstl/pstl_config.h" 3
-#define _PSTL_PRAGMA_SIMD _PSTL_PRAGMA(omp simd)
-#define _PSTL_PRAGMA_DECLARE_SIMD _PSTL_PRAGMA(omp declare simd)
-#define _PSTL_PRAGMA_SIMD_REDUCTION(PRM) _PSTL_PRAGMA(omp simd reduction(PRM))
-# 70 "/usr/include/c++/10/pstl/pstl_config.h" 3
-#define _PSTL_PRAGMA_FORCEINLINE 
-
-
-
-#define _PSTL_PRAGMA_SIMD_SCAN(PRM) _PSTL_PRAGMA(omp simd reduction(inscan, PRM))
-#define _PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan inclusive(PRM))
-#define _PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan exclusive(PRM))
-
-
-
-
-
-
-
-#define _PSTL_CPP17_EXECUTION_POLICIES_PRESENT (_MSC_VER >= 1912)
-
-#define _PSTL_CPP14_2RANGE_MISMATCH_EQUAL_PRESENT (_MSC_VER >= 1900 || __cplusplus >= 201300L || __cpp_lib_robust_nonmodifying_seq_ops == 201304)
-
-#define _PSTL_CPP14_MAKE_REVERSE_ITERATOR_PRESENT (_MSC_VER >= 1900 || __cplusplus >= 201402L || __cpp_lib_make_reverse_iterator == 201402)
-
-#define _PSTL_CPP14_INTEGER_SEQUENCE_PRESENT (_MSC_VER >= 1900 || __cplusplus >= 201402L)
-#define _PSTL_CPP14_VARIABLE_TEMPLATES_PRESENT (!__INTEL_COMPILER || __INTEL_COMPILER >= 1700) && (_MSC_FULL_VER >= 190023918 || __cplusplus >= 201402L)
-
-
-#define _PSTL_EARLYEXIT_PRESENT (__INTEL_COMPILER >= 1800)
-#define _PSTL_MONOTONIC_PRESENT (__INTEL_COMPILER >= 1800)
-
-
-#define _PSTL_UDR_PRESENT 1
-
-
-
-
-
-#define _PSTL_UDS_PRESENT 1
-
-
-
-
-
-
-
-#define _PSTL_PRAGMA_SIMD_EARLYEXIT 
-
-
-
-
-
-
-#define _PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC(PRM) 
-#define _PSTL_PRAGMA_SIMD_ORDERED_MONOTONIC_2ARGS(PRM1,PRM2) 
-# 130 "/usr/include/c++/10/pstl/pstl_config.h" 3
-#define _PSTL_PRAGMA_DECLARE_REDUCTION(NAME,OP) _PSTL_PRAGMA(omp declare reduction(NAME:OP : omp_out(omp_in)) initializer(omp_priv = omp_orig))
-
-
-
-
-
-#define _PSTL_PRAGMA_VECTOR_UNALIGNED 
-
-
-
-
-
-
-#define _PSTL_USE_NONTEMPORAL_STORES_IF_ALLOWED 
-
-
-
-
-
-#define _PSTL_PRAGMA_LOCATION " [Parallel STL message]: "
-
-
-#define _PSTL_PRAGMA_MESSAGE_IMPL(x) _PSTL_PRAGMA(message(_PSTL_STRING_CONCAT(_PSTL_PRAGMA_LOCATION, x)))
-
-
-
-
-
-#define _PSTL_PRAGMA_MESSAGE(x) 
-#define _PSTL_PRAGMA_MESSAGE_POLICIES(x) 
-
-
-
-#define _PSTL_CPP11_STD_ROTATE_BROKEN ((__GLIBCXX__ && __GLIBCXX__ < 20150716) || (_MSC_VER && _MSC_VER < 1800))
-
-#define _PSTL_ICC_18_OMP_SIMD_BROKEN (__INTEL_COMPILER == 1800)
-# 693 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 2 3
-# 701 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_ACOSF 1
-
-
-#define _GLIBCXX_HAVE_ACOSL 1
-
-
-#define _GLIBCXX_HAVE_ALIGNED_ALLOC 1
-
-
-#define _GLIBCXX_HAVE_ARPA_INET_H 1
-
-
-#define _GLIBCXX_HAVE_ASINF 1
-
-
-#define _GLIBCXX_HAVE_ASINL 1
-
-
-#define _GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE 1
-
-
-#define _GLIBCXX_HAVE_ATAN2F 1
-
-
-#define _GLIBCXX_HAVE_ATAN2L 1
-
-
-#define _GLIBCXX_HAVE_ATANF 1
-
-
-#define _GLIBCXX_HAVE_ATANL 1
-
-
-#define _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY 1
-
-
-#define _GLIBCXX_HAVE_AT_QUICK_EXIT 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_CEILF 1
-
-
-#define _GLIBCXX_HAVE_CEILL 1
-
-
-#define _GLIBCXX_HAVE_COMPLEX_H 1
-
-
-#define _GLIBCXX_HAVE_COSF 1
-
-
-#define _GLIBCXX_HAVE_COSHF 1
-
-
-#define _GLIBCXX_HAVE_COSHL 1
-
-
-#define _GLIBCXX_HAVE_COSL 1
-
-
-#define _GLIBCXX_HAVE_DIRENT_H 1
-
-
-#define _GLIBCXX_HAVE_DLFCN_H 1
-
-
-#define _GLIBCXX_HAVE_ENDIAN_H 1
-
-
-#define _GLIBCXX_HAVE_EXCEPTION_PTR_SINCE_GCC46 1
-
-
-#define _GLIBCXX_HAVE_EXECINFO_H 1
-
-
-#define _GLIBCXX_HAVE_EXPF 1
-
-
-#define _GLIBCXX_HAVE_EXPL 1
-
-
-#define _GLIBCXX_HAVE_FABSF 1
-
-
-#define _GLIBCXX_HAVE_FABSL 1
-
-
-#define _GLIBCXX_HAVE_FCNTL_H 1
-
-
-#define _GLIBCXX_HAVE_FENV_H 1
-
-
-#define _GLIBCXX_HAVE_FINITE 1
-
-
-#define _GLIBCXX_HAVE_FINITEF 1
-
-
-#define _GLIBCXX_HAVE_FINITEL 1
-
-
-#define _GLIBCXX_HAVE_FLOAT_H 1
-
-
-#define _GLIBCXX_HAVE_FLOORF 1
-
-
-#define _GLIBCXX_HAVE_FLOORL 1
-
-
-#define _GLIBCXX_HAVE_FMODF 1
-
-
-#define _GLIBCXX_HAVE_FMODL 1
-# 827 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_FREXPF 1
-
-
-#define _GLIBCXX_HAVE_FREXPL 1
-
-
-#define _GLIBCXX_HAVE_GETIPINFO 1
-
-
-#define _GLIBCXX_HAVE_GETS 1
-
-
-#define _GLIBCXX_HAVE_HYPOT 1
-
-
-#define _GLIBCXX_HAVE_HYPOTF 1
-
-
-#define _GLIBCXX_HAVE_HYPOTL 1
-
-
-#define _GLIBCXX_HAVE_ICONV 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_INT64_T 1
-
-
-#define _GLIBCXX_HAVE_INT64_T_LONG 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_INTTYPES_H 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_ISINFF 1
-
-
-#define _GLIBCXX_HAVE_ISINFL 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_ISNANF 1
-
-
-#define _GLIBCXX_HAVE_ISNANL 1
-
-
-#define _GLIBCXX_HAVE_ISWBLANK 1
-
-
-#define _GLIBCXX_HAVE_LC_MESSAGES 1
-
-
-#define _GLIBCXX_HAVE_LDEXPF 1
-
-
-#define _GLIBCXX_HAVE_LDEXPL 1
-
-
-#define _GLIBCXX_HAVE_LIBINTL_H 1
-
-
-#define _GLIBCXX_HAVE_LIMIT_AS 1
-
-
-#define _GLIBCXX_HAVE_LIMIT_DATA 1
-
-
-#define _GLIBCXX_HAVE_LIMIT_FSIZE 1
-
-
-#define _GLIBCXX_HAVE_LIMIT_RSS 1
-
-
-#define _GLIBCXX_HAVE_LIMIT_VMEM 0
-
-
-#define _GLIBCXX_HAVE_LINK 1
-
-
-#define _GLIBCXX_HAVE_LINUX_FUTEX 1
-
-
-#define _GLIBCXX_HAVE_LINUX_RANDOM_H 1
-
-
-#define _GLIBCXX_HAVE_LINUX_TYPES_H 1
-
-
-#define _GLIBCXX_HAVE_LOCALE_H 1
-
-
-#define _GLIBCXX_HAVE_LOG10F 1
-
-
-#define _GLIBCXX_HAVE_LOG10L 1
-
-
-#define _GLIBCXX_HAVE_LOGF 1
-
-
-#define _GLIBCXX_HAVE_LOGL 1
-# 947 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_MBSTATE_T 1
-
-
-#define _GLIBCXX_HAVE_MEMALIGN 1
-
-
-#define _GLIBCXX_HAVE_MEMORY_H 1
-
-
-#define _GLIBCXX_HAVE_MODF 1
-
-
-#define _GLIBCXX_HAVE_MODFF 1
-
-
-#define _GLIBCXX_HAVE_MODFL 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_NETDB_H 1
-
-
-#define _GLIBCXX_HAVE_NETINET_IN_H 1
-
-
-#define _GLIBCXX_HAVE_NETINET_TCP_H 1
-# 983 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_POLL 1
-
-
-#define _GLIBCXX_HAVE_POLL_H 1
-
-
-#define _GLIBCXX_HAVE_POSIX_MEMALIGN 1
-
-
-#define _GLIBCXX_HAVE_POWF 1
-
-
-#define _GLIBCXX_HAVE_POWL 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_QUICK_EXIT 1
-
-
-#define _GLIBCXX_HAVE_READLINK 1
-
-
-#define _GLIBCXX_HAVE_SETENV 1
-
-
-#define _GLIBCXX_HAVE_SINCOS 1
-
-
-#define _GLIBCXX_HAVE_SINCOSF 1
-
-
-#define _GLIBCXX_HAVE_SINCOSL 1
-
-
-#define _GLIBCXX_HAVE_SINF 1
-
-
-#define _GLIBCXX_HAVE_SINHF 1
-
-
-#define _GLIBCXX_HAVE_SINHL 1
-
-
-#define _GLIBCXX_HAVE_SINL 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_SOCKATMARK 1
-
-
-#define _GLIBCXX_HAVE_SQRTF 1
-
-
-#define _GLIBCXX_HAVE_SQRTL 1
-
-
-#define _GLIBCXX_HAVE_STDALIGN_H 1
-
-
-#define _GLIBCXX_HAVE_STDBOOL_H 1
-
-
-#define _GLIBCXX_HAVE_STDINT_H 1
-
-
-#define _GLIBCXX_HAVE_STDLIB_H 1
-
-
-#define _GLIBCXX_HAVE_STRERROR_L 1
-
-
-#define _GLIBCXX_HAVE_STRERROR_R 1
-
-
-#define _GLIBCXX_HAVE_STRINGS_H 1
-
-
-#define _GLIBCXX_HAVE_STRING_H 1
-
-
-#define _GLIBCXX_HAVE_STRTOF 1
-
-
-#define _GLIBCXX_HAVE_STRTOLD 1
-
-
-#define _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE 1
-
-
-#define _GLIBCXX_HAVE_STRXFRM_L 1
-
-
-#define _GLIBCXX_HAVE_SYMLINK 1
-
-
-
-#define _GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_SYS_IOCTL_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_IPC_H 1
-# 1101 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE_SYS_PARAM_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_RESOURCE_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_SDT_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_SEM_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_SOCKET_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_STATVFS_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_STAT_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_SYSINFO_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_TIME_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_TYPES_H 1
-
-
-#define _GLIBCXX_HAVE_SYS_UIO_H 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_S_ISREG 1
-
-
-#define _GLIBCXX_HAVE_TANF 1
-
-
-#define _GLIBCXX_HAVE_TANHF 1
-
-
-#define _GLIBCXX_HAVE_TANHL 1
-
-
-#define _GLIBCXX_HAVE_TANL 1
-
-
-#define _GLIBCXX_HAVE_TGMATH_H 1
-
-
-#define _GLIBCXX_HAVE_TIMESPEC_GET 1
-
-
-#define _GLIBCXX_HAVE_TLS 1
-
-
-#define _GLIBCXX_HAVE_TRUNCATE 1
-
-
-#define _GLIBCXX_HAVE_UCHAR_H 1
-
-
-#define _GLIBCXX_HAVE_UNISTD_H 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_UTIME_H 1
-
-
-#define _GLIBCXX_HAVE_VFWSCANF 1
-
-
-#define _GLIBCXX_HAVE_VSWSCANF 1
-
-
-#define _GLIBCXX_HAVE_VWSCANF 1
-
-
-#define _GLIBCXX_HAVE_WCHAR_H 1
-
-
-#define _GLIBCXX_HAVE_WCSTOF 1
-
-
-#define _GLIBCXX_HAVE_WCTYPE_H 1
-
-
-
-
-
-#define _GLIBCXX_HAVE_WRITEV 1
-# 1395 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_HAVE___CXA_THREAD_ATEXIT_IMPL 1
-
-
-#define _GLIBCXX_ICONV_CONST 
-
-
-
-#define _GLIBCXX_LT_OBJDIR ".libs/"
-
-
-
-
-
-#define _GLIBCXX_PACKAGE_BUGREPORT ""
-
-
-#define _GLIBCXX_PACKAGE_NAME "package-unused"
-
-
-#define _GLIBCXX_PACKAGE_STRING "package-unused version-unused"
-
-
-#define _GLIBCXX_PACKAGE_TARNAME "libstdc++"
-
-
-#define _GLIBCXX_PACKAGE_URL ""
-
-
-#define _GLIBCXX_PACKAGE__GLIBCXX_VERSION "version-unused"
-# 1441 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_STDC_HEADERS 1
-
-
-
-
-
-
-#define _GLIBCXX_DARWIN_USE_64_BIT_INODE 1
-# 1457 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX11_USE_C99_COMPLEX 1
-
-
-
-#define _GLIBCXX11_USE_C99_MATH 1
-
-
-
-#define _GLIBCXX11_USE_C99_STDIO 1
-
-
-
-#define _GLIBCXX11_USE_C99_STDLIB 1
-
-
-
-#define _GLIBCXX11_USE_C99_WCHAR 1
-
-
-
-
-#define _GLIBCXX98_USE_C99_COMPLEX 1
-
-
-
-#define _GLIBCXX98_USE_C99_MATH 1
-
-
-
-#define _GLIBCXX98_USE_C99_STDIO 1
-
-
-
-#define _GLIBCXX98_USE_C99_STDLIB 1
-
-
-
-#define _GLIBCXX98_USE_C99_WCHAR 1
-
-
-#define _GLIBCXX_ATOMIC_BUILTINS 1
-
-
-
-
-
-
-#define _GLIBCXX_FULLY_DYNAMIC_STRING 0
-
-
-#define _GLIBCXX_HAS_GTHREADS 1
-
-
-#define _GLIBCXX_HOSTED 1
-
-
-
-
-#define _GLIBCXX_MANGLE_SIZE_T m
-# 1524 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_RES_LIMITS 1
-
-
-
-
-
-#define _GLIBCXX_STDIO_EOF -1
-
-
-#define _GLIBCXX_STDIO_SEEK_CUR 1
-
-
-#define _GLIBCXX_STDIO_SEEK_END 2
-
-
-#define _GLIBCXX_SYMVER 1
-
-
-
-
-
-#define _GLIBCXX_SYMVER_GNU 1
-# 1555 "/usr/include/x86_64-linux-gnu/c++/10/bits/c++config.h" 3
-#define _GLIBCXX_USE_C11_UCHAR_CXX11 1
-
-
-
-#define _GLIBCXX_USE_C99 1
-
-
-
-
-#define _GLIBCXX_USE_C99_COMPLEX_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_CTYPE_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_FENV_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_INTTYPES_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_MATH_TR1 1
-
-
-
-#define _GLIBCXX_USE_C99_STDINT_TR1 1
-
-
-
-
-
-
-#define _GLIBCXX_USE_CLOCK_MONOTONIC 1
-
-
-#define _GLIBCXX_USE_CLOCK_REALTIME 1
-
-
-
-#define _GLIBCXX_USE_DECIMAL_FLOAT 1
-
-
-
-#define _GLIBCXX_USE_DEV_RANDOM 1
-
-
-#define _GLIBCXX_USE_FCHMOD 1
-
-
-#define _GLIBCXX_USE_FCHMODAT 1
-
-
-#define _GLIBCXX_USE_GETTIMEOFDAY 1
-
-
-#define _GLIBCXX_USE_GET_NPROCS 1
-
-
-#define _GLIBCXX_USE_INT128 1
-
-
-#define _GLIBCXX_USE_LFS 1
-
-
-#define _GLIBCXX_USE_LONG_LONG 1
-
-
-#define _GLIBCXX_USE_LSTAT 1
-
-
-#define _GLIBCXX_USE_NANOSLEEP 1
-
-
-#define _GLIBCXX_USE_NLS 1
-
-
-
-
-
-#define _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT 1
-
-
-#define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK 1
-
-
-
-#define _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK 1
-
-
-#define _GLIBCXX_USE_PTHREAD_RWLOCK_T 1
-
-
-
-#define _GLIBCXX_USE_RANDOM_TR1 1
-
-
-#define _GLIBCXX_USE_REALPATH 1
-
-
-#define _GLIBCXX_USE_SCHED_YIELD 1
-
-
-#define _GLIBCXX_USE_SC_NPROCESSORS_ONLN 1
-
-
-
-
-
-#define _GLIBCXX_USE_SENDFILE 1
-
-
-#define _GLIBCXX_USE_ST_MTIM 1
-
-
-
-
-
-#define _GLIBCXX_USE_TMPNAM 1
-
-
-#define _GLIBCXX_USE_UTIME 1
-
-
-
-#define _GLIBCXX_USE_UTIMENSAT 1
-
-
-#define _GLIBCXX_USE_WCHAR_T 1
-
-
-#define _GLIBCXX_VERBOSE 1
-
-
-#define _GLIBCXX_X86_RDRAND 1
-
-
-#define _GLIBCXX_X86_RDSEED 1
-
-
-#define _GTHREAD_USE_MUTEX_TIMEDLOCK 1
-# 42 "/usr/include/c++/10/cstdio" 2 3
-# 1 "/usr/include/stdio.h" 1 3 4
-# 24 "/usr/include/stdio.h" 3 4
-#define _STDIO_H 1
-
-#define __GLIBC_INTERNAL_STARTING_HEADER_IMPLEMENTATION 
-# 1 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 1 3 4
-# 31 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 3 4
-#undef __GLIBC_INTERNAL_STARTING_HEADER_IMPLEMENTATION
-
-
-
-
-
-#undef __GLIBC_USE_LIB_EXT2
-
-
-#define __GLIBC_USE_LIB_EXT2 1
-# 67 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 3 4
-#undef __GLIBC_USE_IEC_60559_BFP_EXT
-
-#define __GLIBC_USE_IEC_60559_BFP_EXT 1
-
-
-
-#undef __GLIBC_USE_IEC_60559_BFP_EXT_C2X
-
-#define __GLIBC_USE_IEC_60559_BFP_EXT_C2X 1
-
-
-
-#undef __GLIBC_USE_IEC_60559_EXT
-
-#define __GLIBC_USE_IEC_60559_EXT 1
-# 90 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 3 4
-#undef __GLIBC_USE_IEC_60559_FUNCS_EXT
-
-#define __GLIBC_USE_IEC_60559_FUNCS_EXT 1
-
-
-
-#undef __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X
-
-#define __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X 1
-
-
-
-
-
-
-#undef __GLIBC_USE_IEC_60559_TYPES_EXT
-
-#define __GLIBC_USE_IEC_60559_TYPES_EXT 1
-# 28 "/usr/include/stdio.h" 2 3 4
-
-extern "C" {
-
-#define __need_size_t 
-#define __need_NULL 
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stddef.h" 1 3 4
-# 181 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stddef.h" 3 4
-#define __size_t__ 
-#define __SIZE_T__ 
-#define _SIZE_T 
-#define _SYS_SIZE_T_H 
-#define _T_SIZE_ 
-#define _T_SIZE 
-#define __SIZE_T 
-#define _SIZE_T_ 
-#define _BSD_SIZE_T_ 
-#define _SIZE_T_DEFINED_ 
-#define _SIZE_T_DEFINED 
-#define _BSD_SIZE_T_DEFINED_ 
-#define _SIZE_T_DECLARED 
-#define ___int_size_t_h 
-#define _GCC_SIZE_T 
-#define _SIZET_ 
-
-
-
-
-
-
-#define __size_t 
-
-
-
-
-
-typedef long unsigned int size_t;
-# 231 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stddef.h" 3 4
-#undef __need_size_t
-# 390 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stddef.h" 3 4
-#undef NULL
-
-#define NULL __null
-# 401 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stddef.h" 3 4
-#undef __need_NULL
-# 34 "/usr/include/stdio.h" 2 3 4
-
-#define __need___va_list 
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stdarg.h" 1 3 4
-# 34 "/usr/lib/gcc/x86_64-linux-gnu/10/include/stdarg.h" 3 4
-#undef __need___va_list
-
-
-
-
-#define __GNUC_VA_LIST 
-typedef __builtin_va_list __gnuc_va_list;
-# 37 "/usr/include/stdio.h" 2 3 4
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/types.h" 1 3 4
-# 24 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
-#define _BITS_TYPES_H 1
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-
-
-
-#define __WORDSIZE 64
-
-
-
-
-
-
-
-#define __WORDSIZE_TIME64_COMPAT32 1
-
-#define __SYSCALL_WORDSIZE 64
-# 28 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 1 3 4
-# 19 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-
-
-
-#define __WORDSIZE 64
-
-
-
-
-
-
-
-#define __WORDSIZE_TIME64_COMPAT32 1
-
-#define __SYSCALL_WORDSIZE 64
-# 20 "/usr/include/x86_64-linux-gnu/bits/timesize.h" 2 3 4
-
-
-
-
-
-
-#define __TIMESIZE __WORDSIZE
-# 29 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
-
-
-typedef unsigned char __u_char;
-typedef unsigned short int __u_short;
-typedef unsigned int __u_int;
-typedef unsigned long int __u_long;
-
-
-typedef signed char __int8_t;
-typedef unsigned char __uint8_t;
-typedef signed short int __int16_t;
-typedef unsigned short int __uint16_t;
-typedef signed int __int32_t;
-typedef unsigned int __uint32_t;
-
-typedef signed long int __int64_t;
-typedef unsigned long int __uint64_t;
-
-
-
-
-
-
-typedef __int8_t __int_least8_t;
-typedef __uint8_t __uint_least8_t;
-typedef __int16_t __int_least16_t;
-typedef __uint16_t __uint_least16_t;
-typedef __int32_t __int_least32_t;
-typedef __uint32_t __uint_least32_t;
-typedef __int64_t __int_least64_t;
-typedef __uint64_t __uint_least64_t;
-
-
-
-typedef long int __quad_t;
-typedef unsigned long int __u_quad_t;
-
-
-
-
-
-
-
-typedef long int __intmax_t;
-typedef unsigned long int __uintmax_t;
-# 109 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
-#define __S16_TYPE short int
-#define __U16_TYPE unsigned short int
-#define __S32_TYPE int
-#define __U32_TYPE unsigned int
-#define __SLONGWORD_TYPE long int
-#define __ULONGWORD_TYPE unsigned long int
-# 128 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
-#define __SQUAD_TYPE long int
-#define __UQUAD_TYPE unsigned long int
-#define __SWORD_TYPE long int
-#define __UWORD_TYPE unsigned long int
-#define __SLONG32_TYPE int
-#define __ULONG32_TYPE unsigned int
-#define __S64_TYPE long int
-#define __U64_TYPE unsigned long int
-
-#define __STD_TYPE typedef
-
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
-# 24 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 3 4
-#define _BITS_TYPESIZES_H 1
-# 34 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 3 4
-#define __SYSCALL_SLONG_TYPE __SLONGWORD_TYPE
-#define __SYSCALL_ULONG_TYPE __ULONGWORD_TYPE
-
-
-#define __DEV_T_TYPE __UQUAD_TYPE
-#define __UID_T_TYPE __U32_TYPE
-#define __GID_T_TYPE __U32_TYPE
-#define __INO_T_TYPE __SYSCALL_ULONG_TYPE
-#define __INO64_T_TYPE __UQUAD_TYPE
-#define __MODE_T_TYPE __U32_TYPE
-
-#define __NLINK_T_TYPE __SYSCALL_ULONG_TYPE
-#define __FSWORD_T_TYPE __SYSCALL_SLONG_TYPE
-
-
-
-
-#define __OFF_T_TYPE __SYSCALL_SLONG_TYPE
-#define __OFF64_T_TYPE __SQUAD_TYPE
-#define __PID_T_TYPE __S32_TYPE
-#define __RLIM_T_TYPE __SYSCALL_ULONG_TYPE
-#define __RLIM64_T_TYPE __UQUAD_TYPE
-#define __BLKCNT_T_TYPE __SYSCALL_SLONG_TYPE
-#define __BLKCNT64_T_TYPE __SQUAD_TYPE
-#define __FSBLKCNT_T_TYPE __SYSCALL_ULONG_TYPE
-#define __FSBLKCNT64_T_TYPE __UQUAD_TYPE
-#define __FSFILCNT_T_TYPE __SYSCALL_ULONG_TYPE
-#define __FSFILCNT64_T_TYPE __UQUAD_TYPE
-#define __ID_T_TYPE __U32_TYPE
-#define __CLOCK_T_TYPE __SYSCALL_SLONG_TYPE
-#define __TIME_T_TYPE __SYSCALL_SLONG_TYPE
-#define __USECONDS_T_TYPE __U32_TYPE
-#define __SUSECONDS_T_TYPE __SYSCALL_SLONG_TYPE
-#define __SUSECONDS64_T_TYPE __SQUAD_TYPE
-#define __DADDR_T_TYPE __S32_TYPE
-#define __KEY_T_TYPE __S32_TYPE
-#define __CLOCKID_T_TYPE __S32_TYPE
-#define __TIMER_T_TYPE void *
-#define __BLKSIZE_T_TYPE __SYSCALL_SLONG_TYPE
-#define __FSID_T_TYPE struct { int __val[2]; }
-#define __SSIZE_T_TYPE __SWORD_TYPE
-#define __CPU_MASK_TYPE __SYSCALL_ULONG_TYPE
-
-
-
-
-
-#define __OFF_T_MATCHES_OFF64_T 1
-
-
-#define __INO_T_MATCHES_INO64_T 1
-
-
-#define __RLIM_T_MATCHES_RLIM64_T 1
-
-
-#define __STATFS_MATCHES_STATFS64 1
-
-
-#define __KERNEL_OLD_TIMEVAL_MATCHES_TIMEVAL64 1
-# 103 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 3 4
-#define __FD_SETSIZE 1024
-# 142 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/time64.h" 1 3 4
-# 24 "/usr/include/x86_64-linux-gnu/bits/time64.h" 3 4
-#define _BITS_TIME64_H 1
-
-
-
-
-
-#define __TIME64_T_TYPE __TIME_T_TYPE
-# 143 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
-
-
-typedef unsigned long int __dev_t;
-typedef unsigned int __uid_t;
-typedef unsigned int __gid_t;
-typedef unsigned long int __ino_t;
-typedef unsigned long int __ino64_t;
-typedef unsigned int __mode_t;
-typedef unsigned long int __nlink_t;
-typedef long int __off_t;
-typedef long int __off64_t;
-typedef int __pid_t;
-typedef struct { int __val[2]; } __fsid_t;
-typedef long int __clock_t;
-typedef unsigned long int __rlim_t;
-typedef unsigned long int __rlim64_t;
-typedef unsigned int __id_t;
-typedef long int __time_t;
-typedef unsigned int __useconds_t;
-typedef long int __suseconds_t;
-typedef long int __suseconds64_t;
-
-typedef int __daddr_t;
-typedef int __key_t;
-
-
-typedef int __clockid_t;
-
-
-typedef void * __timer_t;
-
-
-typedef long int __blksize_t;
-
-
-
-
-typedef long int __blkcnt_t;
-typedef long int __blkcnt64_t;
-
-
-typedef unsigned long int __fsblkcnt_t;
-typedef unsigned long int __fsblkcnt64_t;
-
-
-typedef unsigned long int __fsfilcnt_t;
-typedef unsigned long int __fsfilcnt64_t;
-
-
-typedef long int __fsword_t;
-
-typedef long int __ssize_t;
-
-
-typedef long int __syscall_slong_t;
-
-typedef unsigned long int __syscall_ulong_t;
-
-
-
-typedef __off64_t __loff_t;
-typedef char *__caddr_t;
-
-
-typedef long int __intptr_t;
-
-
-typedef unsigned int __socklen_t;
-
-
-
-
-typedef int __sig_atomic_t;
-# 226 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
-#undef __STD_TYPE
-# 39 "/usr/include/stdio.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h" 1 3 4
-
-#define _____fpos_t_defined 1
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h" 1 3 4
-
-#define ____mbstate_t_defined 1
-# 13 "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h" 3 4
-typedef struct
-{
-  int __count;
-  union
-  {
-    unsigned int __wch;
-    char __wchb[4];
-  } __value;
-} __mbstate_t;
-# 6 "/usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h" 2 3 4
-
-
-
-
-typedef struct _G_fpos_t
-{
-  __off_t __pos;
-  __mbstate_t __state;
-} __fpos_t;
-# 40 "/usr/include/stdio.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h" 1 3 4
-
-#define _____fpos64_t_defined 1
-
-
-
-
-
-
-
-typedef struct _G_fpos64_t
-{
-  __off64_t __pos;
-  __mbstate_t __state;
-} __fpos64_t;
-# 41 "/usr/include/stdio.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/__FILE.h" 1 3 4
-
-#define ____FILE_defined 1
-
-struct _IO_FILE;
-typedef struct _IO_FILE __FILE;
-# 42 "/usr/include/stdio.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/FILE.h" 1 3 4
-
-#define __FILE_defined 1
-
-struct _IO_FILE;
-
-
-typedef struct _IO_FILE FILE;
-# 43 "/usr/include/stdio.h" 2 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h" 1 3 4
-# 19 "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h" 3 4
-#define __struct_FILE_defined 1
-# 35 "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h" 3 4
-struct _IO_FILE;
-struct _IO_marker;
-struct _IO_codecvt;
-struct _IO_wide_data;
-
-
-
-
-typedef void _IO_lock_t;
-
-
-
-
-
-struct _IO_FILE
-{
-  int _flags;
-
-
-  char *_IO_read_ptr;
-  char *_IO_read_end;
-  char *_IO_read_base;
-  char *_IO_write_base;
-  char *_IO_write_ptr;
-  char *_IO_write_end;
-  char *_IO_buf_base;
-  char *_IO_buf_end;
-
-
-  char *_IO_save_base;
-  char *_IO_backup_base;
-  char *_IO_save_end;
-
-  struct _IO_marker *_markers;
-
-  struct _IO_FILE *_chain;
-
-  int _fileno;
-  int _flags2;
-  __off_t _old_offset;
-
-
-  unsigned short _cur_column;
-  signed char _vtable_offset;
-  char _shortbuf[1];
-
-  _IO_lock_t *_lock;
-
-
-
-
-
-
-
-  __off64_t _offset;
-
-  struct _IO_codecvt *_codecvt;
-  struct _IO_wide_data *_wide_data;
-  struct _IO_FILE *_freeres_list;
-  void *_freeres_buf;
-  size_t __pad5;
-  int _mode;
-
-  char _unused2[15 * sizeof (int) - 4 * sizeof (void *) - sizeof (size_t)];
-};
-
-
-#define __getc_unlocked_body(_fp) (__glibc_unlikely ((_fp)->_IO_read_ptr >= (_fp)->_IO_read_end) ? __uflow (_fp) : *(unsigned char *) (_fp)->_IO_read_ptr++)
-
-
-
-#define __putc_unlocked_body(_ch,_fp) (__glibc_unlikely ((_fp)->_IO_write_ptr >= (_fp)->_IO_write_end) ? __overflow (_fp, (unsigned char) (_ch)) : (unsigned char) (*(_fp)->_IO_write_ptr++ = (_ch)))
-
-
-
-
-#define _IO_EOF_SEEN 0x0010
-#define __feof_unlocked_body(_fp) (((_fp)->_flags & _IO_EOF_SEEN) != 0)
-
-#define _IO_ERR_SEEN 0x0020
-#define __ferror_unlocked_body(_fp) (((_fp)->_flags & _IO_ERR_SEEN) != 0)
-
-#define _IO_USER_LOCK 0x8000
-# 44 "/usr/include/stdio.h" 2 3 4
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h" 1 3 4
-# 19 "/usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h" 3 4
-#define __cookie_io_functions_t_defined 1
-
-
-
-
-
-
-
-typedef __ssize_t cookie_read_function_t (void *__cookie, char *__buf,
-                                          size_t __nbytes);
-
-
-
-
-
-
-
-typedef __ssize_t cookie_write_function_t (void *__cookie, const char *__buf,
-                                           size_t __nbytes);
-
-
-
-
-
-
-
-typedef int cookie_seek_function_t (void *__cookie, __off64_t *__pos, int __w);
-
-
-typedef int cookie_close_function_t (void *__cookie);
-
-
-
-
-
-
-typedef struct _IO_cookie_io_functions_t
-{
-  cookie_read_function_t *read;
-  cookie_write_function_t *write;
-  cookie_seek_function_t *seek;
-  cookie_close_function_t *close;
-} cookie_io_functions_t;
-# 47 "/usr/include/stdio.h" 2 3 4
-
-
-
-
-
-typedef __gnuc_va_list va_list;
-#define _VA_LIST_DEFINED 
-# 63 "/usr/include/stdio.h" 3 4
-typedef __off_t off_t;
-
-
-
-#define __off_t_defined 
-
-
-typedef __off64_t off64_t;
-#define __off64_t_defined 
-
-
-
-
-
-typedef __ssize_t ssize_t;
-#define __ssize_t_defined 
-
-
-
-
-
-typedef __fpos_t fpos_t;
-
-
-
-
-typedef __fpos64_t fpos64_t;
-
-
-
-#define _IOFBF 0
-#define _IOLBF 1
-#define _IONBF 2
-
-
-
-#define BUFSIZ 8192
-
-
-
-
-#define EOF (-1)
-
-
-
-
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
-
-#define SEEK_DATA 3
-#define SEEK_HOLE 4
-
-
-
-
-
-#define P_tmpdir "/tmp"
-# 133 "/usr/include/stdio.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h" 1 3 4
-# 19 "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h" 3 4
-#define _BITS_STDIO_LIM_H 1
-
-
-
-
-
-#define L_tmpnam 20
-#define TMP_MAX 238328
-#define FILENAME_MAX 4096
-
-
-#define L_ctermid 9
-
-#define L_cuserid 9
-
-
-
-#undef FOPEN_MAX
-#define FOPEN_MAX 16
-# 134 "/usr/include/stdio.h" 2 3 4
-
-
-
-
-#define _PRINTF_NAN_LEN_MAX 4
-
-
-
-
-extern FILE *stdin;
-extern FILE *stdout;
-extern FILE *stderr;
-
-#define stdin stdin
-#define stdout stdout
-#define stderr stderr
-
-
-extern int remove (const char *__filename) noexcept (true);
-
-extern int rename (const char *__old, const char *__new) noexcept (true);
-
-
-
-extern int renameat (int __oldfd, const char *__old, int __newfd,
-       const char *__new) noexcept (true);
-
-
-
-
-#define RENAME_NOREPLACE (1 << 0)
-#define RENAME_EXCHANGE (1 << 1)
-#define RENAME_WHITEOUT (1 << 2)
-
-
-
-extern int renameat2 (int __oldfd, const char *__old, int __newfd,
-        const char *__new, unsigned int __flags) noexcept (true);
-
-
-
-
-
-
-extern int fclose (FILE *__stream);
-
-#undef __attr_dealloc_fclose
-#define __attr_dealloc_fclose __attr_dealloc (fclose, 1)
-
-
-
-
-
-
-extern FILE *tmpfile (void)
-  __attribute__ ((__malloc__)) ;
-# 200 "/usr/include/stdio.h" 3 4
-extern FILE *tmpfile64 (void)
-   __attribute__ ((__malloc__)) ;
-
-
-
-extern char *tmpnam (char[20]) noexcept (true) ;
-
-
-
-
-extern char *tmpnam_r (char __s[20]) noexcept (true) ;
-# 222 "/usr/include/stdio.h" 3 4
-extern char *tempnam (const char *__dir, const char *__pfx)
-   noexcept (true) __attribute__ ((__malloc__)) ;
-
-
-
-
-
-
-extern int fflush (FILE *__stream);
-# 239 "/usr/include/stdio.h" 3 4
-extern int fflush_unlocked (FILE *__stream);
-# 249 "/usr/include/stdio.h" 3 4
-extern int fcloseall (void);
-# 258 "/usr/include/stdio.h" 3 4
-extern FILE *fopen (const char *__restrict __filename,
-      const char *__restrict __modes)
-  __attribute__ ((__malloc__)) ;
-
-
-
-
-extern FILE *freopen (const char *__restrict __filename,
-        const char *__restrict __modes,
-        FILE *__restrict __stream) ;
-# 283 "/usr/include/stdio.h" 3 4
-extern FILE *fopen64 (const char *__restrict __filename,
-        const char *__restrict __modes)
-  __attribute__ ((__malloc__)) ;
-extern FILE *freopen64 (const char *__restrict __filename,
-   const char *__restrict __modes,
-   FILE *__restrict __stream) ;
-
-
-
-
-extern FILE *fdopen (int __fd, const char *__modes) noexcept (true)
-  __attribute__ ((__malloc__)) ;
-
-
-
-
-
-extern FILE *fopencookie (void *__restrict __magic_cookie,
-     const char *__restrict __modes,
-     cookie_io_functions_t __io_funcs) noexcept (true)
-  __attribute__ ((__malloc__)) ;
-
-
-
-
-extern FILE *fmemopen (void *__s, size_t __len, const char *__modes)
-  noexcept (true) __attribute__ ((__malloc__)) ;
-
-
-
-
-extern FILE *open_memstream (char **__bufloc, size_t *__sizeloc) noexcept (true)
-  __attribute__ ((__malloc__)) ;
-# 328 "/usr/include/stdio.h" 3 4
-extern void setbuf (FILE *__restrict __stream, char *__restrict __buf) noexcept (true);
-
-
-
-extern int setvbuf (FILE *__restrict __stream, char *__restrict __buf,
-      int __modes, size_t __n) noexcept (true);
-
-
-
-
-extern void setbuffer (FILE *__restrict __stream, char *__restrict __buf,
-         size_t __size) noexcept (true);
-
-
-extern void setlinebuf (FILE *__stream) noexcept (true);
-
-
-
-
-
-
-
-extern int fprintf (FILE *__restrict __stream,
-      const char *__restrict __format, ...);
-
-
-
-
-extern int printf (const char *__restrict __format, ...);
-
-extern int sprintf (char *__restrict __s,
-      const char *__restrict __format, ...) noexcept (true);
-
-
-
-
-
-extern int vfprintf (FILE *__restrict __s, const char *__restrict __format,
-       __gnuc_va_list __arg);
-
-
-
-
-extern int vprintf (const char *__restrict __format, __gnuc_va_list __arg);
-
-extern int vsprintf (char *__restrict __s, const char *__restrict __format,
-       __gnuc_va_list __arg) noexcept (true);
-
-
-
-extern int snprintf (char *__restrict __s, size_t __maxlen,
-       const char *__restrict __format, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 4)));
-
-extern int vsnprintf (char *__restrict __s, size_t __maxlen,
-        const char *__restrict __format, __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 0)));
-
-
-
-
-
-extern int vasprintf (char **__restrict __ptr, const char *__restrict __f,
-        __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0))) ;
-extern int __asprintf (char **__restrict __ptr,
-         const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
-extern int asprintf (char **__restrict __ptr,
-       const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
-
-
-
-
-extern int vdprintf (int __fd, const char *__restrict __fmt,
-       __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__printf__, 2, 0)));
-extern int dprintf (int __fd, const char *__restrict __fmt, ...)
-     __attribute__ ((__format__ (__printf__, 2, 3)));
-
-
-
-
-
-
-
-extern int fscanf (FILE *__restrict __stream,
-     const char *__restrict __format, ...) ;
-
-
-
-
-extern int scanf (const char *__restrict __format, ...) ;
-
-extern int sscanf (const char *__restrict __s,
-     const char *__restrict __format, ...) noexcept (true);
-
-
-
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 1 3 4
-# 20 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-#define _BITS_FLOATN_H 
-# 32 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-#define __HAVE_FLOAT128 1
-
-
-
-
-
-
-
-#define __HAVE_DISTINCT_FLOAT128 1
-
-
-
-
-
-
-
-#define __HAVE_FLOAT64X 1
-
-
-
-
-
-#define __HAVE_FLOAT64X_LONG_DOUBLE 1
-# 63 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-#define __f128(x) x ##q
-# 74 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-typedef _Complex float __cfloat128 __attribute__ ((__mode__ (__TC__)));
-#define __CFLOAT128 __cfloat128
-# 86 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-typedef __float128 _Float128;
-# 119 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 1 3 4
-# 21 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define _BITS_FLOATN_COMMON_H 
-
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 1 3 4
-# 21 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 3 4
-#define __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI 0
-# 25 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 2 3 4
-# 34 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __HAVE_FLOAT16 0
-#define __HAVE_FLOAT32 1
-#define __HAVE_FLOAT64 1
-#define __HAVE_FLOAT32X 1
-#define __HAVE_FLOAT128X 0
-# 52 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __HAVE_DISTINCT_FLOAT16 __HAVE_FLOAT16
-#define __HAVE_DISTINCT_FLOAT32 0
-#define __HAVE_DISTINCT_FLOAT64 0
-#define __HAVE_DISTINCT_FLOAT32X 0
-#define __HAVE_DISTINCT_FLOAT64X 0
-#define __HAVE_DISTINCT_FLOAT128X __HAVE_FLOAT128X
-
-
-
-
-
-#define __HAVE_FLOAT128_UNLIKE_LDBL (__HAVE_DISTINCT_FLOAT128 && __LDBL_MANT_DIG__ != 113)
-# 72 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __HAVE_FLOATN_NOT_TYPEDEF 0
-# 91 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __f32(x) x ##f
-# 102 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __f64(x) x
-# 111 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __f32x(x) x
-# 120 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __f64x(x) x ##l
-# 149 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __CFLOAT32 _Complex float
-# 160 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __CFLOAT64 _Complex double
-# 169 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __CFLOAT32X _Complex double
-# 178 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-#define __CFLOAT64X _Complex long double
-# 214 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-typedef float _Float32;
-# 251 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-typedef double _Float64;
-# 268 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-typedef double _Float32x;
-# 285 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
-typedef long double _Float64x;
-# 120 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 2 3 4
-# 431 "/usr/include/stdio.h" 2 3 4
-
-
-
-extern int fscanf (FILE *__restrict __stream, const char *__restrict __format, ...) __asm__ ("" "__isoc99_fscanf")
-
-                               ;
-extern int scanf (const char *__restrict __format, ...) __asm__ ("" "__isoc99_scanf")
-                              ;
-extern int sscanf (const char *__restrict __s, const char *__restrict __format, ...) noexcept (true) __asm__ ("" "__isoc99_sscanf")
-
-                      ;
-# 459 "/usr/include/stdio.h" 3 4
-extern int vfscanf (FILE *__restrict __s, const char *__restrict __format,
-      __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
-
-
-
-
-
-extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
-
-
-extern int vsscanf (const char *__restrict __s,
-      const char *__restrict __format, __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__scanf__, 2, 0)));
-
-
-
-
-
-extern int vfscanf (FILE *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vfscanf")
-
-
-
-     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
-extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vscanf")
-
-     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
-extern int vsscanf (const char *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) noexcept (true) __asm__ ("" "__isoc99_vsscanf")
-
-
-
-     __attribute__ ((__format__ (__scanf__, 2, 0)));
-# 513 "/usr/include/stdio.h" 3 4
-extern int fgetc (FILE *__stream);
-extern int getc (FILE *__stream);
-
-
-
-
-
-extern int getchar (void);
-
-
-
-
-
-
-extern int getc_unlocked (FILE *__stream);
-extern int getchar_unlocked (void);
-# 538 "/usr/include/stdio.h" 3 4
-extern int fgetc_unlocked (FILE *__stream);
-# 549 "/usr/include/stdio.h" 3 4
-extern int fputc (int __c, FILE *__stream);
-extern int putc (int __c, FILE *__stream);
-
-
-
-
-
-extern int putchar (int __c);
-# 565 "/usr/include/stdio.h" 3 4
-extern int fputc_unlocked (int __c, FILE *__stream);
-
-
-
-
-
-
-
-extern int putc_unlocked (int __c, FILE *__stream);
-extern int putchar_unlocked (int __c);
-
-
-
-
-
-
-extern int getw (FILE *__stream);
-
-
-extern int putw (int __w, FILE *__stream);
-
-
-
-
-
-
-
-extern char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
-     __attribute__ ((__access__ (__write_only__, 1, 2)));
-# 615 "/usr/include/stdio.h" 3 4
-extern char *fgets_unlocked (char *__restrict __s, int __n,
-        FILE *__restrict __stream)
-    __attribute__ ((__access__ (__write_only__, 1, 2)));
-# 632 "/usr/include/stdio.h" 3 4
-extern __ssize_t __getdelim (char **__restrict __lineptr,
-                             size_t *__restrict __n, int __delimiter,
-                             FILE *__restrict __stream) ;
-extern __ssize_t getdelim (char **__restrict __lineptr,
-                           size_t *__restrict __n, int __delimiter,
-                           FILE *__restrict __stream) ;
-
-
-
-
-
-
-
-extern __ssize_t getline (char **__restrict __lineptr,
-                          size_t *__restrict __n,
-                          FILE *__restrict __stream) ;
-
-
-
-
-
-
-
-extern int fputs (const char *__restrict __s, FILE *__restrict __stream);
-
-
-
-
-
-extern int puts (const char *__s);
-
-
-
-
-
-
-extern int ungetc (int __c, FILE *__stream);
-
-
-
-
-
-
-extern size_t fread (void *__restrict __ptr, size_t __size,
-       size_t __n, FILE *__restrict __stream) ;
-
-
-
-
-extern size_t fwrite (const void *__restrict __ptr, size_t __size,
-        size_t __n, FILE *__restrict __s);
-# 691 "/usr/include/stdio.h" 3 4
-extern int fputs_unlocked (const char *__restrict __s,
-      FILE *__restrict __stream);
-# 702 "/usr/include/stdio.h" 3 4
-extern size_t fread_unlocked (void *__restrict __ptr, size_t __size,
-         size_t __n, FILE *__restrict __stream) ;
-extern size_t fwrite_unlocked (const void *__restrict __ptr, size_t __size,
-          size_t __n, FILE *__restrict __stream);
-
-
-
-
-
-
-
-extern int fseek (FILE *__stream, long int __off, int __whence);
-
-
-
-
-extern long int ftell (FILE *__stream) ;
-
-
-
-
-extern void rewind (FILE *__stream);
-# 736 "/usr/include/stdio.h" 3 4
-extern int fseeko (FILE *__stream, __off_t __off, int __whence);
-
-
-
-
-extern __off_t ftello (FILE *__stream) ;
-# 760 "/usr/include/stdio.h" 3 4
-extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
-
-
-
-
-extern int fsetpos (FILE *__stream, const fpos_t *__pos);
-# 779 "/usr/include/stdio.h" 3 4
-extern int fseeko64 (FILE *__stream, __off64_t __off, int __whence);
-extern __off64_t ftello64 (FILE *__stream) ;
-extern int fgetpos64 (FILE *__restrict __stream, fpos64_t *__restrict __pos);
-extern int fsetpos64 (FILE *__stream, const fpos64_t *__pos);
-
-
-
-extern void clearerr (FILE *__stream) noexcept (true);
-
-extern int feof (FILE *__stream) noexcept (true) ;
-
-extern int ferror (FILE *__stream) noexcept (true) ;
-
-
-
-extern void clearerr_unlocked (FILE *__stream) noexcept (true);
-extern int feof_unlocked (FILE *__stream) noexcept (true) ;
-extern int ferror_unlocked (FILE *__stream) noexcept (true) ;
-
-
-
-
-
-
-
-extern void perror (const char *__s);
-
-
-
-
-extern int fileno (FILE *__stream) noexcept (true) ;
-
-
-
-
-extern int fileno_unlocked (FILE *__stream) noexcept (true) ;
-# 823 "/usr/include/stdio.h" 3 4
-extern int pclose (FILE *__stream);
-
-
-
-
-
-extern FILE *popen (const char *__command, const char *__modes)
-  __attribute__ ((__malloc__)) ;
-
-
-
-
-
-
-extern char *ctermid (char *__s) noexcept (true)
-  __attribute__ ((__access__ (__write_only__, 1)));
-
-
-
-
-
-extern char *cuserid (char *__s)
-  __attribute__ ((__access__ (__write_only__, 1)));
-
-
-
-
-struct obstack;
-
-
-extern int obstack_printf (struct obstack *__restrict __obstack,
-      const char *__restrict __format, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3)));
-extern int obstack_vprintf (struct obstack *__restrict __obstack,
-       const char *__restrict __format,
-       __gnuc_va_list __args)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0)));
-
-
-
-
-
-
-
-extern void flockfile (FILE *__stream) noexcept (true);
-
-
-
-extern int ftrylockfile (FILE *__stream) noexcept (true) ;
-
-
-extern void funlockfile (FILE *__stream) noexcept (true);
-# 885 "/usr/include/stdio.h" 3 4
-extern int __uflow (FILE *);
-extern int __overflow (FILE *, int);
-# 902 "/usr/include/stdio.h" 3 4
-}
-# 43 "/usr/include/c++/10/cstdio" 2 3
-
-
-#define _GLIBCXX_CSTDIO 1
-
-
-
-
-
-
-#undef clearerr
-#undef fclose
-#undef feof
-#undef ferror
-#undef fflush
-#undef fgetc
-#undef fgetpos
-#undef fgets
-#undef fopen
-#undef fprintf
-#undef fputc
-#undef fputs
-#undef fread
-#undef freopen
-#undef fscanf
-#undef fseek
-#undef fsetpos
-#undef ftell
-#undef fwrite
-#undef getc
-#undef getchar
-
-
-
-#undef perror
-#undef printf
-#undef putc
-#undef putchar
-#undef puts
-#undef remove
-#undef rename
-#undef rewind
-#undef scanf
-#undef setbuf
-#undef setvbuf
-#undef sprintf
-#undef sscanf
-#undef tmpfile
-#undef tmpnam
-#undef ungetc
-#undef vfprintf
-#undef vprintf
-#undef vsprintf
-
-namespace std
-{
-  using ::FILE;
-  using ::fpos_t;
-
-  using ::clearerr;
-  using ::fclose;
-  using ::feof;
-  using ::ferror;
-  using ::fflush;
-  using ::fgetc;
-  using ::fgetpos;
-  using ::fgets;
-  using ::fopen;
-  using ::fprintf;
-  using ::fputc;
-  using ::fputs;
-  using ::fread;
-  using ::freopen;
-  using ::fscanf;
-  using ::fseek;
-  using ::fsetpos;
-  using ::ftell;
-  using ::fwrite;
-  using ::getc;
-  using ::getchar;
-
-
-
-
-  using ::perror;
-  using ::printf;
-  using ::putc;
-  using ::putchar;
-  using ::puts;
-  using ::remove;
-  using ::rename;
-  using ::rewind;
-  using ::scanf;
-  using ::setbuf;
-  using ::setvbuf;
-  using ::sprintf;
-  using ::sscanf;
-  using ::tmpfile;
-
-  using ::tmpnam;
-
-  using ::ungetc;
-  using ::vfprintf;
-  using ::vprintf;
-  using ::vsprintf;
-}
-
-
-
-#undef snprintf
-#undef vfscanf
-#undef vscanf
-#undef vsnprintf
-#undef vsscanf
-
-namespace __gnu_cxx
-{
-# 175 "/usr/include/c++/10/cstdio" 3
-  using ::snprintf;
-  using ::vfscanf;
-  using ::vscanf;
-  using ::vsnprintf;
-  using ::vsscanf;
-
-}
-
-namespace std
-{
-  using ::__gnu_cxx::snprintf;
-  using ::__gnu_cxx::vfscanf;
-  using ::__gnu_cxx::vscanf;
-  using ::__gnu_cxx::vsnprintf;
-  using ::__gnu_cxx::vsscanf;
-}
-# 128 "code/utils.h" 2
-
-
-# 129 "code/utils.h"
 String load_entire_file(Arena *arena, String filename) {
     assert(filename.count < filename.capacity &&
            filename.data[filename.count] == 0);
@@ -3806,17 +659,9 @@ String load_entire_file(Arena *arena, String filename) {
         assert(0);
         return result;
     }
-    fseek(file, 0, 
-# 140 "code/utils.h" 3 4
-                  2
-# 140 "code/utils.h"
-                          );
+    fseek(file, 0, SEEK_END);
     usize size = ftell(file);
-    fseek(file, 0, 
-# 142 "code/utils.h" 3 4
-                  0
-# 142 "code/utils.h"
-                          );
+    fseek(file, 0, SEEK_SET);
 
     result = make_string(arena, size);
 
@@ -3833,7 +678,7 @@ String load_entire_file(Arena *arena, String filename) {
 int align_to(int x, int alignement) {
     return alignement * ((x + alignement - 1) / alignement);
 }
-# 18 "code/game.cpp" 2
+# 19 "code/game.cpp" 2
 # 1 "code/math.h" 1
        
 
@@ -4440,6 +1285,29 @@ bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
     return false;
 }
 
+bool ray_hit_triangle(v3 ray_origin, v3 ray_dir, v3 v0, v3 v1, v3 v2, float *hit_t)
+{
+ v3 u = v1 - v0;
+ v3 v = v2 - v0;
+ v3 normal = cross(u, v);
+
+ float t;
+ if (!ray_hit_plane(ray_origin, ray_dir, normal, v0, &t))
+  return false;
+
+ float one_over_length_n_sq = 1.f/dot(normal, normal);
+ v3 p = ray_origin + t * ray_dir - v0;
+ float alpha = dot(cross(p, v), normal) * one_over_length_n_sq;
+ float beta = -dot(cross(p, u), normal) * one_over_length_n_sq;
+
+ if (alpha >= 0 && beta >= 0 && alpha + beta <= 1) {
+  if (hit_t)
+   *hit_t = t;
+  return true;
+ }
+ return false;
+}
+
 void push_cube_outline(v3 p, v3 r, v3 color);
 
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
@@ -4503,7 +1371,7 @@ quat rotate_around_axis_quat(v3 axis, float a) {
 quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
 
 quat identity_quat() { return Quat(0, 0, 0, 1); }
-# 19 "code/game.cpp" 2
+# 20 "code/game.cpp" 2
 # 1 "code/platform.h" 1
        
 
@@ -4535,6 +1403,7 @@ enum GameButtonType {
     BUTTON_Y,
     BUTTON_Z,
 
+ BUTTON_DELETE,
     BUTTON_LEFT_CONTROL,
     BUTTON_LEFT_SHIFT,
     BUTTON_MOUSE_LEFT,
@@ -4587,7 +1456,7 @@ struct GameInput {
 
 
 #define GL_FUNCTIONS(X) X(PFNGLENABLEPROC, glEnable) X(PFNGLDISABLEPROC, glDisable) X(PFNGLBLENDFUNCPROC, glBlendFunc) X(PFNGLVIEWPORTPROC, glViewport) X(PFNGLCLEARCOLORPROC, glClearColor) X(PFNGLCLEARPROC, glClear) X(PFNGLDRAWARRAYSPROC, glDrawArrays) X(PFNGLCREATEBUFFERSPROC, glCreateBuffers) X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage) X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays) X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding) X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer) X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat) X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib) X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv) X(PFNGLGETPROGRAMIVPROC, glGetProgramiv) X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog) X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines) X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages) X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline) X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv) X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) X(PFNGLCREATETEXTURESPROC, glCreateTextures) X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback) X(PFNGLGETINTEGERVPROC, glGetIntegerv) X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl) X(PFNGLCREATESHADERPROC, glCreateShader) X(PFNGLSHADERSOURCEPROC, glShaderSource) X(PFNGLCOMPILESHADERPROC, glCompileShader) X(PFNGLGETSHADERIVPROC, glGetShaderiv) X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog) X(PFNGLACTIVETEXTUREPROC, glActiveTexture) X(PFNGLBINDTEXTUREPROC, glBindTexture) X(PFNGLGENTEXTURESPROC, glGenTextures) X(PFNGLTEXIMAGE2DPROC, glTexImage2D) X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap) X(PFNGLTEXPARAMETERIPROC, glTexParameteri) X(PFNGLCLEARDEPTHPROC, glClearDepth) X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer) X(PFNGLCULLFACEPROC, glCullFace) X(PFNGLCREATEPROGRAMPROC, glCreateProgram) X(PFNGLATTACHSHADERPROC, glAttachShader) X(PFNGLLINKPROGRAMPROC, glLinkProgram) X(PFNGLUSEPROGRAMPROC, glUseProgram) X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) X(PFNGLGENBUFFERSPROC, glGenBuffers) X(PFNGLBINDBUFFERPROC, glBindBuffer) X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase) X(PFNGLBUFFERDATAPROC, glBufferData) X(PFNGLBUFFERSUBDATAPROC, glBufferSubData) X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer) X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray) X(PFNGLPOLYGONMODEPROC, glPolygonMode)
-# 143 "code/platform.h"
+# 144 "code/platform.h"
 #define THREAD_WORK_FUNC(name) void name(void *data)
 
 typedef void ThreadWorkFn(void *data);
@@ -4617,7 +1486,7 @@ struct Platform {
 #define GAME_UPDATE_AND_RENDER(name) void name(Platform &platform, Arena *memory, GameInput &input, float dt)
 
 typedef void game_update_and_render_fn(Platform &platform, Arena *memory, GameInput &input, float dt);
-# 20 "code/game.cpp" 2
+# 21 "code/game.cpp" 2
 # 1 "code/renderer.h" 1
        
 
@@ -4844,7 +1713,7 @@ struct ConstantBuffer {
     uint32_t id;
 
 };
-# 21 "code/game.cpp" 2
+# 22 "code/game.cpp" 2
 
 
 static RenderContext *g_rc;
@@ -5070,6 +1939,7 @@ void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
  glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+
 IndexBuffer create_index_buffer(usize size, uint32_t *indices)
 {
  IndexBuffer result = {};
@@ -5221,18 +2091,18 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
  for (int i = 0; i < elements.count; i++) {
   result.elements[i] = elements[i];
 
+  offset = align_to(offset, get_type_alignement(elements[i]));
+  printf("%d %d\n", i, offset);
   if (elements[i].array_size) {
 
 
-   offset = align_to(offset, get_type_alignement(elements[i]));
    int stride = align_to(get_type_size(elements[i]), sizeof(v4));
    offset += stride * elements[i].array_size;
    offset = align_to(offset, get_type_alignement(elements[i]));
   }
   else
-   offset = align_to(offset, get_type_alignement(elements[i])) + get_type_size(elements[i]);
+   offset += get_type_size(elements[i]);
  }
- printf("%d\n", offset);
 
  result.element_count = (int)elements.count;
  result.size = offset;
@@ -5346,13 +2216,14 @@ void init_render_context_opengl(RenderContext &rc, Platform &platform)
  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(gl_debug_output, nullptr);
+  glDebugMessageCallback(gl_debug_output, 0);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
-    nullptr, GL_TRUE);
+    0, GL_TRUE);
  }
 
  rc.window_framebuffer.id = 0;
  glEnable(GL_FRAMEBUFFER_SRGB);
+
  glLineWidth(1.5f);
 }
 
@@ -5367,6 +2238,7 @@ Texture create_depth_texture(int width, int height)
  glBindTexture(GL_TEXTURE_2D, texture);
  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
    0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -5416,7 +2288,7 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
    texture.id, 0);
 }
-# 29 "code/game.cpp" 2
+# 30 "code/game.cpp" 2
 
 
 # 1 "code/scene.h" 1
@@ -5540,7 +2412,7 @@ struct Scene {
  meta(ui) String name;
  Array<Mesh> meshes;
 };
-# 32 "code/game.cpp" 2
+# 33 "code/game.cpp" 2
 # 1 "code/game.h" 1
        
 
@@ -5679,6 +2551,9 @@ enum EditorOpType {
     EDITOR_OP_PASTE_ENTITY,
     EDITOR_OP_DELETE_ENTITY,
     EDITOR_OP_SPAWN_ENTITY,
+
+ EDITOR_OP_CREATE_MESH_COLLISION_VERTEX,
+ EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE,
 };
 
 struct EditorOp {
@@ -5707,6 +2582,13 @@ struct EditorOp {
         struct {
             Entity entity_data;
         } del;
+  struct {
+   v3 pos;
+  } place_collision_vertex;
+  struct {
+   int index;
+   v3 v0, v1, v2;
+  } delete_collision_triangle;
     };
 };
 
@@ -5861,22 +2743,21 @@ struct Constants {
     mat4 light_transform;
     mat4 bones[96];
 
- int point_light_count;
  v4 point_light_color[8];
  v4 point_light_position[8];
+ int point_light_count;
 
     v3 camera_p;
     v3 player_p;
     v3 color;
     float diffuse_factor;
-
     float specular_factor;
     float specular_exponent_factor;
     int skinned;
     int has_normal_map;
     int show_normals;
 };
-# 33 "code/game.cpp" 2
+# 34 "code/game.cpp" 2
 # 1 "code/scene.cpp" 1
 
 
@@ -6307,11 +3188,7 @@ Animation load_animation(Arena *arena, Game &game, const char *filename)
  ufbx_error error;
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
-  fprintf(
-# 454 "code/scene.cpp" 3 4
-         stderr
-# 454 "code/scene.cpp"
-               , "Failed to load animation %s: %s\n", filename, error.description.data);
+  fprintf(stderr, "Failed to load animation %s: %s\n", filename, error.description.data);
   exit(1);
  }
  assert(uscene->anim_stacks.count);
@@ -6331,7 +3208,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
     slash = i;
   }
 
-  int len = strlen(filename);
+  int len = (int)strlen(filename);
   scene.path = make_string(arena, slash + 1, filename);
   scene.name = make_string(arena, len - (slash + 1), filename + slash + 1);
  }
@@ -6343,10 +3220,10 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
  opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
  opts.target_unit_meters = 1;
 
- opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
- opts.temp_allocator.allocator.user = temp;
- opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
- opts.result_allocator.allocator.user = temp;
+
+
+
+
  opts.generate_missing_normals = true;
  opts.load_external_files = true;
 
@@ -6356,11 +3233,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
  ufbx_error error;
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
-  fprintf(
-# 499 "code/scene.cpp" 3 4
-         stderr
-# 499 "code/scene.cpp"
-               , "Failed to load %s: %s\n", filename, error.description.data);
+  fprintf(stderr, "Failed to load %s: %s\n", filename, error.description.data);
   exit(1);
  }
 
@@ -6399,7 +3272,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
  game.scenes.push(scene);
  return &game.scenes[game.scenes.count - 1];
 }
-# 34 "code/game.cpp" 2
+# 35 "code/game.cpp" 2
 
 SceneID get_scene_id_by_name(Game &game, String name)
 {
@@ -6643,7 +3516,7 @@ void update_sound(Game &game, World &world)
  int new_write_index = (write_index + max_samples_to_write) % state.sample_count;
  state.write_index = new_write_index;
 }
-# 104 "code/game.cpp" 2
+# 105 "code/game.cpp" 2
 # 1 "code/renderer.cpp" 1
 void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 {
@@ -7017,7 +3890,7 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
   }
  }
 }
-# 105 "code/game.cpp" 2
+# 106 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
 #define SMALLEST_VELOCITY 0.01f
 #define SLIDE_ITERATION_COUNT 4
@@ -7198,7 +4071,7 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
   N = (transpose(to_ep) * V4(N, 0)).xyz;
   info.hit_p = tp + N;
 
-  push_cube_outline(info.hit_p, V3(0.1f), V3(1));
+
 
  }
  return info;
@@ -7302,7 +4175,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
  v3 old_p = e.position;
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
- int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*4.5f));
+ int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*3.5f));
  for (int i = 0; i < itr; i++)
   move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 
@@ -7337,7 +4210,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
  end_temp_memory();
 }
-# 106 "code/game.cpp" 2
+# 107 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
 Entity *make_entity(World &world)
 {
@@ -7831,7 +4704,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 # 527 "code/world.cpp"
  return camera;
 }
-# 107 "code/game.cpp" 2
+# 108 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
   float &hit_t, int &mesh_index)
@@ -7886,20 +4759,14 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
     v3 normal = cross(u, v);
 
     float hit_t;
-    if (ray_hit_plane(ray_origin, ray_dir, normal, v0, &hit_t)
-      && hit_t < min_t) {
-     float one_over_length_n_sq = 1.f/dot(normal, normal);
-     v3 p = ray_origin + hit_t * ray_dir;
-     float A = dot(cross(p - v0, v), normal) * one_over_length_n_sq;
-     float B = -dot(cross(p - v0, u), normal) * one_over_length_n_sq;
-     if (A >= 0 && B >= 0 && A + B <= 1) {
-      min_t = hit_t;
-      hit_id = e.id;
-      hit_triangle[0] = v0;
-      hit_triangle[1] = v1;
-      hit_triangle[2] = v2;
-      mesh_index = (int)j;
-     }
+    if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t) &&
+      hit_t < min_t) {
+     min_t = hit_t;
+     hit_id = e.id;
+     hit_triangle[0] = v0;
+     hit_triangle[1] = v1;
+     hit_triangle[2] = v2;
+     mesh_index = (int)j;
     }
    }
   }
@@ -7922,6 +4789,16 @@ void do_editor_op(Game &game, World &world, Editor &editor, EditorOp &op)
    e->rotation = op.rotate.new_rot;
   else if (op.type == EDITOR_OP_SCALE_ENTITY)
    e->scale = op.scale.new_scale;
+  else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
+   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+   cmesh.vertices.push(op.place_collision_vertex.pos);
+  }
+  else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
+   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+   for (int i = op.delete_collision_triangle.index + 3; i < cmesh.vertices.count; i++)
+    cmesh.vertices[i - 3] = cmesh.vertices[i];
+   cmesh.vertices.count -= 3;
+  }
  }
  if (op.type == EDITOR_OP_PASTE_ENTITY) {
   Entity *copy_from = get_entity(world, op.paste.copy_from);
@@ -7997,6 +4874,22 @@ void undo_editor_op(Game &game, World &world, Editor &editor)
    e->rotation = op.rotate.prev_rot;
   else if (op.type == EDITOR_OP_SCALE_ENTITY)
    e->scale = op.scale.prev_scale;
+  else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
+   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+   assert(cmesh.vertices.count > 0);
+   cmesh.vertices.count--;
+  }
+  else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
+   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+
+   cmesh.vertices.count += 3;
+   for (int i = cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
+    cmesh.vertices[i] = cmesh.vertices[i - 3];
+
+   cmesh.vertices[op.delete_collision_triangle.index + 0] = op.delete_collision_triangle.v0;
+   cmesh.vertices[op.delete_collision_triangle.index + 1] = op.delete_collision_triangle.v1;
+   cmesh.vertices[op.delete_collision_triangle.index + 2] = op.delete_collision_triangle.v2;
+  }
  }
  if (op.type == EDITOR_OP_PASTE_ENTITY)
   remove_entity(world, op.paste.id);
@@ -8030,7 +4923,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    }
    if (e)
     imgui_edit_struct_Entity(*e, "selected entity", false);
-# 246 "code/editor.cpp"
+# 266 "code/editor.cpp"
    ImGui::End();
   }
  }
@@ -8303,7 +5196,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
    v3 hit_p = ray_origin + min_hit_t * ray_dir;
 
-   float dist_to_snap = 0.03f * length(hit_p - camera.position);
+   float dist_to_snap = 0.01f * length(hit_p - camera.position);
    float size = dist_to_snap;
 
    if (((input.buttons[BUTTON_MOUSE_RIGHT].is_down) && !(input.buttons[BUTTON_MOUSE_RIGHT].was_down))) {
@@ -8321,20 +5214,58 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     }
     if (closest_dist < dist_to_snap * dist_to_snap)
      hit_p = cmesh.vertices[best_p];
-    cmesh.vertices.push(hit_p);
+
+    EditorOp op = {};
+    op.type = EDITOR_OP_CREATE_MESH_COLLISION_VERTEX;
+    op.entity = hit_entity;
+    op.place_collision_vertex.pos = hit_p;
+
+    do_editor_op(game, world, editor, op);
+
     hit_p = (to_world * V4(hit_p, 1)).xyz;
    }
+   int hit_triangle = -1;
+   {
+    float min_t = FLT_MAX;
+    for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+     v3 v0 = (to_world * V4(cmesh.vertices[i + 0], 1)).xyz;
+     v3 v1 = (to_world * V4(cmesh.vertices[i + 1], 1)).xyz;
+     v3 v2 = (to_world * V4(cmesh.vertices[i + 2], 1)).xyz;
+
+     float hit_t;
+     if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t)
+       && hit_t < min_t) {
+      min_t = hit_t;
+      hit_triangle = i;
+     }
+    }
+   }
+   if (((input.buttons[BUTTON_DELETE].is_down) && !(input.buttons[BUTTON_DELETE].was_down))) {
+    if (hit_triangle != -1) {
+     EditorOp op = {};
+     op.type = EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE;
+     op.entity = hit_entity;
+     op.delete_collision_triangle.index = hit_triangle;
+     op.delete_collision_triangle.v0 = cmesh.vertices[hit_triangle + 0];
+     op.delete_collision_triangle.v1 = cmesh.vertices[hit_triangle + 1];
+     op.delete_collision_triangle.v2 = cmesh.vertices[hit_triangle + 2];
+     do_editor_op(game, world, editor, op);
+    }
+   }
+
    push_cube_outline(hit_p, V3(size), V3(1, 1, 0));
-   for (int i = 0; i < cmesh.vertices.count; i++)
+   for (int i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
     push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(size), V3(1, 0, 0));
 
    for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
-     push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
-            (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
-            (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, V3(1, 0, 0));
+    v3 color = i == hit_triangle ? V3(1, 1, 0) : V3(1, 0, 0);
+    push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
+       (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
+       (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, color);
    }
   }
  }
+ if (!editor.edit_collision_mesh)
  {
   Entity *e = get_entity(world, editor.selected_entity);
   if (e) {
@@ -8422,7 +5353,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   redo_editor_op(game, world, editor);
  }
 }
-# 108 "code/game.cpp" 2
+# 109 "code/game.cpp" 2
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
@@ -8467,7 +5398,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 1024));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 152, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 153, memory, temp_arena_size), temp_arena_size);
 
 
   game.scenes = make_array_max<Scene>(memory, 1024);
@@ -8479,11 +5410,11 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 164, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 165, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
   world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
   world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 168, memory, (1024ULL * (1024ULL * 2048))), (1024ULL * (1024ULL * 2048)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 169, memory, (1024ULL * (1024ULL * 2048))), (1024ULL * (1024ULL * 2048)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -8592,8 +5523,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
   load_scene(&game.asset_arena, game, "data/cube.fbx");
   load_scene(&game.asset_arena, game, "data/sphere.fbx");
-  load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
-  load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
+
+
 
 
   load_scene(&game.asset_arena, game, "data/Ybot.fbx");
@@ -8607,7 +5538,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.animations[ANIMATION_FORWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
   game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
   game.animations[ANIMATION_GUN_IDLE] = load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
-# 302 "code/game.cpp"
+# 303 "code/game.cpp"
   FILE *fd = fopen("world.bin", "rb");
   if (!fd) {
    world.entities = make_array_max<Entity>(&world.arena, 4096);
@@ -8750,6 +5681,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
 
 
+
+
  }
  end_render_pass();
 
@@ -8817,10 +5750,6 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  game.time += dt;
 
- if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(
-# 511 "code/game.cpp" 3 4
-                                                              __null
-# 511 "code/game.cpp"
-                                                                  );
+ if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(NULL);
  game.frame++;
 }

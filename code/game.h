@@ -135,6 +135,9 @@ enum EditorOpType {
     EDITOR_OP_PASTE_ENTITY,
     EDITOR_OP_DELETE_ENTITY,
     EDITOR_OP_SPAWN_ENTITY,
+
+	EDITOR_OP_CREATE_MESH_COLLISION_VERTEX,
+	EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE,
 };
 
 struct EditorOp {
@@ -163,6 +166,13 @@ struct EditorOp {
         struct {
             Entity entity_data;
         } del;
+		struct {
+			v3 pos;
+		} place_collision_vertex;
+		struct {
+			int index;
+			v3 v0, v1, v2;
+		} delete_collision_triangle;
     };
 };
 

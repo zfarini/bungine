@@ -215,6 +215,7 @@ void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+// TODO: does this require a vao to be bound?
 IndexBuffer create_index_buffer(usize size, uint32_t *indices)
 {
 	IndexBuffer result = {};
@@ -491,13 +492,14 @@ void init_render_context_opengl(RenderContext &rc, Platform &platform)
 	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(gl_debug_output, nullptr);
+		glDebugMessageCallback(gl_debug_output, 0);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
-				nullptr, GL_TRUE);
+				0, GL_TRUE);
 	}
 #endif
 	rc.window_framebuffer.id = 0;
 	glEnable(GL_FRAMEBUFFER_SRGB);
+	// TODO: cleanup
 	glLineWidth(1.5f);
 }
 
@@ -512,6 +514,7 @@ Texture create_depth_texture(int width, int height)
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
 			0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	// TODO: cleanup, give the ability to change these
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

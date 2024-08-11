@@ -38,6 +38,7 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	button_map[BUTTON_SPACE] = GLFW_KEY_SPACE;
 	button_map[BUTTON_LEFT_SHIFT] = GLFW_KEY_LEFT_SHIFT;
 	button_map[BUTTON_LEFT_CONTROL] = GLFW_KEY_LEFT_CONTROL;
+	button_map[BUTTON_DELETE] = GLFW_KEY_DELETE;
 
 	for (int i = BUTTON_F1; i < BUTTON_COUNT; i++)
 		button_map[i] = GLFW_KEY_F1 + (i - BUTTON_F1);
@@ -66,11 +67,21 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 
 GAME_UPDATE_AND_RENDER(game_update_and_render);
 
+#include <sys/mman.h>
+
 int main()
 {
 	// TODO: change to mmap
 	usize memory_size = GigaByte(4);
-	Arena memory = make_arena(calloc(4, memory_size), memory_size);
+	//memory_size = 4096;
+	void *memory_ptr;
+#ifdef _WIN32
+	memory_ptr = VirtualAlloc(0, memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+#else
+	memory_ptr = mmap(0, memory_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+#endif
+
+	Arena memory = make_arena(memory_ptr, memory_size);
 
 	ma_device sound_device;
 	{
@@ -100,7 +111,7 @@ int main()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
 
-	GLFWwindow *window = glfwCreateWindow(1920, 960, "game",  0, 0);
+	GLFWwindow *window = glfwCreateWindow(1600, 900, "game",  0, 0);
 //	glfwSetWindowSize(window, 1920, 1080);
 	if (!window)
 		assert(0);

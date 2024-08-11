@@ -1,6 +1,4 @@
 day 1:
-undo/redo for editing collision mesh
-improve collision mesh dist_to_snap calculation
 uniform scaling
 fix rotation when the plane of rotation is ..
 snap movement in editor (for all gizmo types)
@@ -43,5 +41,7 @@ day 8:
 	make levels to showcase
 
 other:
+* investigate why sponza show differently in windows vs linux
 serialization version
 replace unoredred_map
+

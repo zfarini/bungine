@@ -603,6 +603,29 @@ bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
     return false;
 }
 
+bool ray_hit_triangle(v3 ray_origin, v3 ray_dir, v3 v0, v3 v1, v3 v2, float *hit_t)
+{
+	v3 u = v1 - v0;
+	v3 v = v2 - v0;
+	v3 normal = cross(u, v);
+
+	float t;
+	if (!ray_hit_plane(ray_origin, ray_dir, normal, v0, &t))
+		return false;
+
+	float one_over_length_n_sq = 1.f/dot(normal, normal);
+	v3 p = ray_origin + t * ray_dir - v0;
+	float alpha = dot(cross(p, v), normal) * one_over_length_n_sq;
+	float beta = -dot(cross(p, u), normal) * one_over_length_n_sq;
+
+	if (alpha >= 0 && beta >= 0 && alpha + beta <= 1) {
+		if (hit_t)
+			*hit_t = t;
+		return true;
+	}
+	return false;
+}
+
 void push_cube_outline(v3 p, v3 r, v3 color);
 
 float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
