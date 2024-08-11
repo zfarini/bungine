@@ -243,26 +243,16 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 	return anim_bones;
 }
 
-
-void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
-		Animation *anim, float anim_time, v3 color)
+void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1))
 {
-	if (node->skip_render)
+	if (!scene_id)
 		return ;
+	if (anim)
+		anim_time = fmod(anim_time, anim->duration);
+	Scene &scene = get_scene_by_id(game, scene_id);
 
-	mat4 local_transform = node->local_transform;
-	if (anim) {
-		for (usize j = 0; j < anim->nodes.count; j++) {
-			if (strings_equal(anim->nodes[j].name, node->name)) {
-				local_transform = anim->nodes[j].transform;//get_animated_node_transform(*anim, anim->nodes[j], anim_time);
-				break ;
-			}
-		}
-	}
-	node_transform = node_transform * local_transform;
-
-	if (node->mesh) {
-		Mesh &mesh = *node->mesh;
+	for (usize mesh_idx = 0; mesh_idx < scene.meshes.count; mesh_idx++) {
+		Mesh &mesh = scene.meshes[mesh_idx];
 
 		Constants constants = {};
 		constants.view = camera.view;
@@ -288,8 +278,7 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 			}
 		}
 
-		mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
-
+		mat4 mesh_transform = transform * mesh.transform;
 		
 		constants.model = mesh_transform;
 		//constants.normal_transform = inverse(transpose(constants.model));
@@ -390,60 +379,5 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
 				draw_indexed((int)part.offset, (int)part.indices_count);
 			}
 		}
-
-		// v3 box_min = (mesh_transform * V4(mesh.box_min, 1)).xyz;
-		// v3 box_max = (mesh_transform * V4(mesh.box_max, 1)).xyz;
-		// v3 X = (mesh_transform * V4(0.5f * (box_max.x - box_min.x), 0, 0, 0)).xyz;
-		// v3 Y = (mesh_transform * V4(0, 0.5f * (box_max.y - box_min.y), 0, 0)).xyz;
-		// v3 Z = (mesh_transform * V4(0, 0, 0.5f * (box_max.z - box_min.z), 0)).xyz;
-
-		// push_box_outline((box_max + box_min) * 0.5f, X, Y, Z);
 	}
-
-	for (usize i = 0; i < node->childs.count; i++)
-		render_scene(game, world, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
-}
-
-void render_scene(Game &game, World &world, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
-		bool outline = false)
-{
-	/*
-		clear stencil
-		render scene (set stencil to some value X)
-		render scene again but scale it along normals and
-			use some static color as fragment shader
-			and only render if the stencil value is not equal to X
-	*/
-	// TODO: why am I doing this here?
-	if (anim)
-		anim_time = fmod(anim_time, anim->duration);
-#if 0
-	if (!outline) {
-		render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-		return ;
-	}
-
-	glEnable(GL_STENCIL_TEST);    
-	glStencilMask(0xFF);
-	glClear(GL_STENCIL_BUFFER_BIT);
-
-	glStencilFunc(GL_ALWAYS, 250, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-
-	glStencilFunc(GL_NOTEQUAL, 250, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilMask(0x00);
-	
-	end_render_pass();
-	begin_render_pass(game.outline_render_pass);
-	render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-	end_render_pass();
-	begin_render_pass(game.mesh_render_pass);
-
-	glStencilFunc(GL_ALWAYS, 0, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-#else
-	render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-#endif
 }

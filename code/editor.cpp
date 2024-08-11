@@ -1,7 +1,11 @@
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
-		float &hit_t)
+		float &hit_t, int &mesh_index)
 {
 	entity_id hit_id = 0;
+
+	v3 hit_triangle[3];
+
+	mesh_index = -1;
 	float min_t = FLT_MAX;
 
 	for (usize i = 0; i < world.entities.count; i++) {
@@ -9,41 +13,70 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 		if (!e.scene_id)
 			continue ;
 
-		Scene &scene = game.scenes[e.scene_id];
+		Scene &scene = get_scene_by_id(game, e.scene_id);
 		mat4 transform = get_entity_transform(world, e) * e.scene_transform;
 		for (usize j = 0; j < scene.meshes.count; j++) {
 			Mesh &mesh = scene.meshes[j];
 			mat4 mesh_transform = transform * mesh.transform;
 
-			v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
-			v3 y_axis = normalize((mesh_transform * V4(0, 1, 0, 0)).xyz);
-			v3 z_axis = normalize((mesh_transform * V4(0, 0, 1, 0)).xyz);
+			{
+				v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
+				v3 y_axis = normalize((mesh_transform * V4(0, 1, 0, 0)).xyz);
+				v3 z_axis = normalize((mesh_transform * V4(0, 0, 1, 0)).xyz);
 
-			v3 a = (mesh_transform * V4(mesh.box_min, 1)).xyz;
-			v3 b = (mesh_transform * V4(mesh.box_max, 1)).xyz;
+				v3 a = (mesh_transform * V4(mesh.box_min, 1)).xyz;
+				v3 b = (mesh_transform * V4(mesh.box_max, 1)).xyz;
 
-			v3 c = (a + b) * 0.5f;
+				v3 c = (a + b) * 0.5f;
 
-			x_axis *= fabsf(dot((b - a)*0.5f, x_axis));
-			y_axis *= fabsf(dot((b - a)*0.5f, y_axis));
-			z_axis *= fabsf(dot((b - a)*0.5f, z_axis));
+				x_axis *= fabsf(dot((b - a)*0.5f, x_axis));
+				y_axis *= fabsf(dot((b - a)*0.5f, y_axis));
+				z_axis *= fabsf(dot((b - a)*0.5f, z_axis));
 
 
-			//push_box_outline(c, x_axis, y_axis, z_axis);
-			float t = ray_hit_box(ray_origin, ray_dir, c, x_axis, y_axis, z_axis);
-			if (t >= 0 && t < min_t) {
-				hit_id = e.id;
-				min_t = t;
+				//push_box_outline(c, x_axis, y_axis, z_axis);
+				float t = ray_hit_box(ray_origin, ray_dir, c, x_axis, y_axis, z_axis);
+				if (t < 0)
+					continue ;
 			}
 
-			//ray_hit_box();
+			// TODO: cleanup, is there a better way to do this?
+			for (usize t = 0; t < mesh.indices.count; t += 3) {
+				v3 v0 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+0]], 1)).xyz;
+				v3 v1 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+1]], 1)).xyz;
+				v3 v2 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+2]], 1)).xyz;
+
+				v3 u = v1 - v0;
+				v3 v = v2 - v0;
+				v3 normal = cross(u, v);
+
+				float hit_t;
+				if (ray_hit_plane(ray_origin, ray_dir, normal, v0, &hit_t)
+						&& hit_t < min_t) {
+					float one_over_length_n_sq = 1.f/dot(normal, normal);
+					v3 p = ray_origin + hit_t * ray_dir;
+					float A = dot(cross(p - v0, v), normal) * one_over_length_n_sq;
+					float B = -dot(cross(p - v0, u), normal) * one_over_length_n_sq;
+					if (A >= 0 && B >= 0 && A + B <= 1) {
+						min_t = hit_t;
+						hit_id = e.id;
+						hit_triangle[0] = v0;
+						hit_triangle[1] = v1;
+						hit_triangle[2] = v2;
+						mesh_index = (int)j;
+					}
+				}
+			}
 		}
 	}
+
+	if (hit_id)
+		push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
 	hit_t = min_t;
 	return hit_id;
 }
 
-void do_editor_op(World &world, Editor &editor, EditorOp &op)
+void do_editor_op(Game &game, World &world, Editor &editor, EditorOp &op)
 {
 	Entity *e = get_entity(world, op.entity);
 	if (e) {
@@ -60,11 +93,13 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
 			// NOTE: if op.pase.id is not zero this means we are redoing this operation
 			// the first time we will create then entity with any id but the second 
 			// we should assign the same previous id
+			Entity *copied;
+
 			if (op.paste.id) {
 				Entity p = *copy_from;
 				p.id = op.paste.id;
-				p.position = op.paste.p;
 				world.entities.push(p);
+				copied = &world.entities[world.entities.count - 1];
 				world.entities_id_map[p.id] = world.entities.count - 1;
 			}
 			else {
@@ -72,8 +107,25 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
 				entity_id id = p->id;
 				*p = *copy_from;
 				p->id = id;
-				p->position = op.paste.p;
 				op.paste.id = p->id;
+				copied = p;
+			}
+			copied->position = op.paste.p;
+			if (op.paste.mesh_index >= 0) {
+				Scene scene = {};
+				scene.id = ++game.next_scene_id;
+				Scene &s = get_scene_by_id(game, copied->scene_id);
+				assert(op.paste.mesh_index < s.meshes.count);
+				// TODO: cleanup, @leak
+				scene.meshes = make_array<Mesh>(&world.arena, 1);
+				scene.meshes[0] = s.meshes[op.paste.mesh_index];
+				
+				copied->scene_transform = identity();
+
+				scene.meshes[0].transform = scene.meshes[0].default_transform;
+
+				game.scenes.push(scene);
+				copied->scene_id = scene.id;
 			}
 		}
 	}
@@ -83,17 +135,17 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
 	editor.ops.push(op);
 }
 
-void redo_editor_op(World &world, Editor &editor)
+void redo_editor_op(Game &game, World &world, Editor &editor)
 {
 	if (!editor.undos.count)
 		return ;
 	EditorOp op = editor.undos[editor.undos.count - 1];
 	editor.undos.count--;
 
-	do_editor_op(world, editor, op);
+	do_editor_op(game, world, editor, op);
 }
 
-void undo_editor_op(World &world, Editor &editor)
+void undo_editor_op(Game &game, World &world, Editor &editor)
 {
 	if (!editor.ops.count)
 		return ;
@@ -137,7 +189,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				op.entity = e->id;
 				op.type = EDITOR_OP_DELETE_ENTITY;
 				op.del.entity_data = *e;
-				do_editor_op(world, editor, op);
+				do_editor_op(game, world, editor, op);
 				e = 0;
 			}
 			if (e)
@@ -233,7 +285,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 	if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
 		float min_hit_t;
-		entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+		int hit_entity_mesh_index;
+		entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
 
 		if (editor.selected_entity && !editor.in_gizmo) {
 			Entity *e = get_entity(world, editor.selected_entity);
@@ -388,6 +441,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				//	editor.selected_entity = 0;
 				//else
 				editor.selected_entity = hit_entity;
+				editor.selected_entity_mesh = hit_entity_mesh_index;
 				Entity *e = get_entity(world, hit_entity);
 				if (e)
 					editor.init_entity = *e;
@@ -419,7 +473,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
 					}
 					if (push)
-						do_editor_op(world, editor, op);
+						do_editor_op(game, world, editor, op);
 				}
 			}
 			editor.in_gizmo = 0;
@@ -476,6 +530,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		IsDownFirstTime(input, BUTTON_C) &&
 		editor.selected_entity) {
 		editor.copied_entity = editor.selected_entity;
+		editor.copy_entity_mesh = IsDown(input, BUTTON_LEFT_SHIFT);
 	}
 	if (IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_V)) {
@@ -484,9 +539,14 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			EditorOp op = {};
 			op.type = EDITOR_OP_PASTE_ENTITY;
 			op.paste.copy_from = copy_from->id;
+			if (editor.copy_entity_mesh)
+				op.paste.mesh_index = editor.selected_entity_mesh;
+			else
+				op.paste.mesh_index = -1;
 
 			float min_hit_t;
-			entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+			int hit_mesh_index;
+			entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_mesh_index);
 			if (hit_entity) {
 				op.paste.p = ray_origin + min_hit_t * ray_dir
 					+ V3(0, 0, copy_from->scale.z);
@@ -494,7 +554,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				op.paste.p = camera.position + camera.forward * 2
 					* max(copy_from->scale.x, max(copy_from->scale.y, copy_from->scale.z));
 			
-			do_editor_op(world, editor, op);
+			do_editor_op(game, world, editor, op);
 		}
 	}
 
@@ -502,10 +562,10 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	
 	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_Z)) {
-		undo_editor_op(world, editor);
+		undo_editor_op(game, world, editor);
 	}
 	if (!editor.in_gizmo && IsDown(input, BUTTON_LEFT_CONTROL) &&
 		IsDownFirstTime(input, BUTTON_X)) {
-		redo_editor_op(world, editor);
+		redo_editor_op(game, world, editor);
 	}
 }

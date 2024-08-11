@@ -2,12 +2,16 @@
 
 #define MAX_BONE_WEIGHTS 4
 
+typedef usize SceneID;
+
 // TODO: send indices/weights in another buffer?
 struct Vertex {
     v3 position;
     v3 normal;
     v2 uv;
     // v4 weights;
+	// TODO: cleanup, don't send these with non-skinned meshes & 
+	// in the case of skinned meshes send only one int/float
     float weights[MAX_BONE_WEIGHTS];
     float indices[MAX_BONE_WEIGHTS]; //[MAX_BONE_WEIGHTS];
 };
@@ -59,9 +63,14 @@ struct Mesh {
     v3 box_min;
     v3 box_max;
     mat4 transform;
+	mat4 default_transform;
 
     usize vertices_count;
     usize indices_count;
+
+	// used in hit testing for now
+    Array<v3> vertices;
+	Array<u32> indices;
 };
 
 struct NodeAnimation {
@@ -104,15 +113,8 @@ struct MeshTriangle {
 };
 
 struct Scene {
-    Array<SceneNode> nodes;
-    Array<Mesh> meshes;
-
-    SceneNode *root;
-    Array<Animation> animations;
-    String path;
-
-
-    Array<MeshTriangle> triangles;
-
-    int is_loaded;
+	meta(ui: const) SceneID id;
+    meta(ui) String path;
+	meta(ui) String name;
+	Array<Mesh> meshes;
 };

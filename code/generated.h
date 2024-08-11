@@ -13,65 +13,81 @@ struct StructMetaData {
 void serialize_float(FILE *fd, bool w, float &x) {
     if (w)
         fwrite(&x, sizeof(float), 1, fd);
-    else
-        fread(&x, sizeof(float), 1, fd);
+    else {
+        (void)fread(&x, sizeof(float), 1, fd);
+    }
 }
 void serialize_double(FILE *fd, bool w, double &x) {
     if (w)
         fwrite(&x, sizeof(double), 1, fd);
-    else
-        fread(&x, sizeof(double), 1, fd);
+    else {
+        (void)fread(&x, sizeof(double), 1, fd);
+    }
 }
 void serialize_mat4(FILE *fd, bool w, mat4 &x) {
     if (w)
         fwrite(&x, sizeof(mat4), 1, fd);
-    else
-        fread(&x, sizeof(mat4), 1, fd);
+    else {
+        (void)fread(&x, sizeof(mat4), 1, fd);
+    }
 }
 void serialize_quat(FILE *fd, bool w, quat &x) {
     if (w)
         fwrite(&x, sizeof(quat), 1, fd);
-    else
-        fread(&x, sizeof(quat), 1, fd);
+    else {
+        (void)fread(&x, sizeof(quat), 1, fd);
+    }
+}
+void serialize_char(FILE *fd, bool w, char &x) {
+    if (w)
+        fwrite(&x, sizeof(char), 1, fd);
+    else {
+        (void)fread(&x, sizeof(char), 1, fd);
+    }
 }
 void serialize_v3(FILE *fd, bool w, v3 &x) {
     if (w)
         fwrite(&x, sizeof(v3), 1, fd);
-    else
-        fread(&x, sizeof(v3), 1, fd);
+    else {
+        (void)fread(&x, sizeof(v3), 1, fd);
+    }
 }
 void serialize_bool(FILE *fd, bool w, bool &x) {
     int v = x;
     if (w)
-        fwrite(&v, sizeof("int"), 1, fd);
+        fwrite(&v, sizeof(int), 1, fd);
     else {
-        fread(&v, sizeof("int"), 1, fd);
+        (void)fread(&v, sizeof(int), 1, fd);
         x = v;
     }
 }
 void serialize_v2(FILE *fd, bool w, v2 &x) {
     if (w)
         fwrite(&x, sizeof(v2), 1, fd);
-    else
-        fread(&x, sizeof(v2), 1, fd);
+    else {
+        (void)fread(&x, sizeof(v2), 1, fd);
+    }
 }
 void serialize_size_t(FILE *fd, bool w, size_t &x) {
     if (w)
         fwrite(&x, sizeof(size_t), 1, fd);
-    else
-        fread(&x, sizeof(size_t), 1, fd);
+    else {
+        (void)fread(&x, sizeof(size_t), 1, fd);
+    }
 }
 void serialize_int32_t(FILE *fd, bool w, int32_t &x) {
     if (w)
         fwrite(&x, sizeof(int32_t), 1, fd);
-    else
-        fread(&x, sizeof(int32_t), 1, fd);
+    else {
+        (void)fread(&x, sizeof(int32_t), 1, fd);
+    }
 }
 void serialize_int(FILE *fd, bool w, int &x) {
     if (w)
         fwrite(&x, sizeof(int), 1, fd);
-    else
-        fread(&x, sizeof(int), 1, fd);
+    else {
+        (void)fread(&x, sizeof(int), 1, fd);
+    }
 }
 static StructMetaData get_struct_Constants_info();
 static void imgui_edit_struct_Constants(Constants &x, const char *name,
@@ -94,6 +110,13 @@ static StructMetaData get_struct_Camera_info();
 static void imgui_edit_struct_Camera(Camera &x, const char *name,
                                      bool collapsed);
 static void serialize_Camera(FILE *fd, bool w, Camera &x, Arena *arena);
+static StructMetaData get_struct_World_info();
+static void imgui_edit_struct_World(World &x, const char *name, bool collapsed);
+static void serialize_World(FILE *fd, bool w, World &x, Arena *arena);
+static StructMetaData get_struct_Entity_info();
+static void imgui_edit_struct_Entity(Entity &x, const char *name,
+                                     bool collapsed);
+static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena);
 static StructMetaData get_struct_CollisionTriangle_info();
 static void imgui_edit_struct_CollisionTriangle(CollisionTriangle &x,
                                                 const char *name,
@@ -103,18 +126,40 @@ static void serialize_CollisionTriangle(FILE *fd, bool w, CollisionTriangle &x,
 static StructMetaData get_struct_Scene_info();
 static void imgui_edit_struct_Scene(Scene &x, const char *name, bool collapsed);
 static void serialize_Scene(FILE *fd, bool w, Scene &x, Arena *arena);
-static StructMetaData get_struct_MeshTriangle_info();
-static void imgui_edit_struct_MeshTriangle(MeshTriangle &x, const char *name,
-                                           bool collapsed);
-static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
-                                   Arena *arena);
-static StructMetaData get_struct_SceneNode_info();
-static void imgui_edit_struct_SceneNode(SceneNode &x, const char *name,
-                                        bool collapsed);
-static void serialize_SceneNode(FILE *fd, bool w, SceneNode &x, Arena *arena);
+static StructMetaData get_struct_CollisionInfo_info();
+static void imgui_edit_struct_CollisionInfo(CollisionInfo &x, const char *name,
+                                            bool collapsed);
+static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,
+                                    Arena *arena);
+static StructMetaData get_struct_FrameBuffer_info();
+static void imgui_edit_struct_FrameBuffer(FrameBuffer &x, const char *name,
+                                          bool collapsed);
+static void serialize_FrameBuffer(FILE *fd, bool w, FrameBuffer &x,
+                                  Arena *arena);
+static StructMetaData get_struct_VertexInputLayout_info();
+static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
+                                                const char *name,
+                                                bool collapsed);
+static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+                                        Arena *arena);
+static StructMetaData get_struct_Vertex_info();
+static void imgui_edit_struct_Vertex(Vertex &x, const char *name,
+                                     bool collapsed);
+static void serialize_Vertex(FILE *fd, bool w, Vertex &x, Arena *arena);
+static StructMetaData get_struct_IndexBuffer_info();
+static void imgui_edit_struct_IndexBuffer(IndexBuffer &x, const char *name,
+                                          bool collapsed);
+static void serialize_IndexBuffer(FILE *fd, bool w, IndexBuffer &x,
+                                  Arena *arena);
 static StructMetaData get_struct_Bone_info();
 static void imgui_edit_struct_Bone(Bone &x, const char *name, bool collapsed);
 static void serialize_Bone(FILE *fd, bool w, Bone &x, Arena *arena);
+static StructMetaData get_struct_VertexInputElement_info();
+static void imgui_edit_struct_VertexInputElement(VertexInputElement &x,
+                                                 const char *name,
+                                                 bool collapsed);
+static void serialize_VertexInputElement(FILE *fd, bool w,
+                                         VertexInputElement &x, Arena *arena);
 static StructMetaData get_struct_Platform_info();
 static void imgui_edit_struct_Platform(Platform &x, const char *name,
                                        bool collapsed);
@@ -133,44 +178,10 @@ static void imgui_edit_struct_ConstantBuffer(ConstantBuffer &x,
                                              const char *name, bool collapsed);
 static void serialize_ConstantBuffer(FILE *fd, bool w, ConstantBuffer &x,
                                      Arena *arena);
-static StructMetaData get_struct_Texture_info();
-static void imgui_edit_struct_Texture(Texture &x, const char *name,
-                                      bool collapsed);
-static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena);
-static StructMetaData get_struct_Arena_info();
-static void imgui_edit_struct_Arena(Arena &x, const char *name, bool collapsed);
-static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena);
-static StructMetaData get_struct_Game_info();
-static void imgui_edit_struct_Game(Game &x, const char *name, bool collapsed);
-static void serialize_Game(FILE *fd, bool w, Game &x, Arena *arena);
-static StructMetaData get_struct_DepthStencilState_info();
-static void imgui_edit_struct_DepthStencilState(DepthStencilState &x,
-                                                const char *name,
-                                                bool collapsed);
-static void serialize_DepthStencilState(FILE *fd, bool w, DepthStencilState &x,
-                                        Arena *arena);
 static StructMetaData get_struct__IO_FILE_info();
 static void imgui_edit_struct__IO_FILE(_IO_FILE &x, const char *name,
                                        bool collapsed);
 static void serialize__IO_FILE(FILE *fd, bool w, _IO_FILE &x, Arena *arena);
-static StructMetaData get_struct_VertexInputElement_info();
-static void imgui_edit_struct_VertexInputElement(VertexInputElement &x,
-                                                 const char *name,
-                                                 bool collapsed);
-static void serialize_VertexInputElement(FILE *fd, bool w,
-                                         VertexInputElement &x, Arena *arena);
-static StructMetaData get_struct_World_info();
-static void imgui_edit_struct_World(World &x, const char *name, bool collapsed);
-static void serialize_World(FILE *fd, bool w, World &x, Arena *arena);
-static StructMetaData get_struct_Entity_info();
-static void imgui_edit_struct_Entity(Entity &x, const char *name,
-                                     bool collapsed);
-static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena);
-static StructMetaData get_struct__G_fpos64_t_info();
-static void imgui_edit_struct__G_fpos64_t(_G_fpos64_t &x, const char *name,
-                                          bool collapsed);
-static void serialize__G_fpos64_t(FILE *fd, bool w, _G_fpos64_t &x,
-                                  Arena *arena);
 static StructMetaData get_struct_Shader_info();
 static void imgui_edit_struct_Shader(Shader &x, const char *name,
                                      bool collapsed);
@@ -196,38 +207,22 @@ static void imgui_edit_struct_RenderContext(RenderContext &x, const char *name,
                                             bool collapsed);
 static void serialize_RenderContext(FILE *fd, bool w, RenderContext &x,
                                     Arena *arena);
-static StructMetaData get_struct_IndexBuffer_info();
-static void imgui_edit_struct_IndexBuffer(IndexBuffer &x, const char *name,
-                                          bool collapsed);
-static void serialize_IndexBuffer(FILE *fd, bool w, IndexBuffer &x,
-                                  Arena *arena);
-static StructMetaData get_struct_CollisionInfo_info();
-static void imgui_edit_struct_CollisionInfo(CollisionInfo &x, const char *name,
-                                            bool collapsed);
-static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,
-                                    Arena *arena);
-static StructMetaData get_struct_FrameBuffer_info();
-static void imgui_edit_struct_FrameBuffer(FrameBuffer &x, const char *name,
-                                          bool collapsed);
-static void serialize_FrameBuffer(FILE *fd, bool w, FrameBuffer &x,
-                                  Arena *arena);
-static StructMetaData get_struct_VertexInputLayout_info();
-static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
+static StructMetaData get_struct_Texture_info();
+static void imgui_edit_struct_Texture(Texture &x, const char *name,
+                                      bool collapsed);
+static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena);
+static StructMetaData get_struct_Arena_info();
+static void imgui_edit_struct_Arena(Arena &x, const char *name, bool collapsed);
+static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena);
+static StructMetaData get_struct_Game_info();
+static void imgui_edit_struct_Game(Game &x, const char *name, bool collapsed);
+static void serialize_Game(FILE *fd, bool w, Game &x, Arena *arena);
+static StructMetaData get_struct_DepthStencilState_info();
+static void imgui_edit_struct_DepthStencilState(DepthStencilState &x,
                                                 const char *name,
                                                 bool collapsed);
-static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+static void serialize_DepthStencilState(FILE *fd, bool w, DepthStencilState &x,
                                         Arena *arena);
-static StructMetaData get_struct__IO_cookie_io_functions_t_info();
-static void
-imgui_edit_struct__IO_cookie_io_functions_t(_IO_cookie_io_functions_t &x,
-                                            const char *name, bool collapsed);
-static void serialize__IO_cookie_io_functions_t(FILE *fd, bool w,
-                                                _IO_cookie_io_functions_t &x,
-                                                Arena *arena);
-static StructMetaData get_struct_Vertex_info();
-static void imgui_edit_struct_Vertex(Vertex &x, const char *name,
-                                     bool collapsed);
-static void serialize_Vertex(FILE *fd, bool w, Vertex &x, Arena *arena);
 static StructMetaData get_struct_VertexBuffer_info();
 static void imgui_edit_struct_VertexBuffer(VertexBuffer &x, const char *name,
                                            bool collapsed);
@@ -250,18 +245,23 @@ static void imgui_edit_struct_SoundPlaying(SoundPlaying &x, const char *name,
                                            bool collapsed);
 static void serialize_SoundPlaying(FILE *fd, bool w, SoundPlaying &x,
                                    Arena *arena);
-static StructMetaData get_struct__G_fpos_t_info();
-static void imgui_edit_struct__G_fpos_t(_G_fpos_t &x, const char *name,
-                                        bool collapsed);
-static void serialize__G_fpos_t(FILE *fd, bool w, _G_fpos_t &x, Arena *arena);
 static StructMetaData get_struct_Material_info();
 static void imgui_edit_struct_Material(Material &x, const char *name,
                                        bool collapsed);
 static void serialize_Material(FILE *fd, bool w, Material &x, Arena *arena);
+static StructMetaData get_struct_SceneNode_info();
+static void imgui_edit_struct_SceneNode(SceneNode &x, const char *name,
+                                        bool collapsed);
+static void serialize_SceneNode(FILE *fd, bool w, SceneNode &x, Arena *arena);
 static StructMetaData get_struct_MeshPart_info();
 static void imgui_edit_struct_MeshPart(MeshPart &x, const char *name,
                                        bool collapsed);
 static void serialize_MeshPart(FILE *fd, bool w, MeshPart &x, Arena *arena);
+static StructMetaData get_struct_MeshTriangle_info();
+static void imgui_edit_struct_MeshTriangle(MeshTriangle &x, const char *name,
+                                           bool collapsed);
+static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
+                                   Arena *arena);
 static StructMetaData get_struct_EditorOp_info();
 static void imgui_edit_struct_EditorOp(EditorOp &x, const char *name,
                                        bool collapsed);
@@ -269,10 +269,6 @@ static void serialize_EditorOp(FILE *fd, bool w, EditorOp &x, Arena *arena);
 static StructMetaData get_struct_Mesh_info();
 static void imgui_edit_struct_Mesh(Mesh &x, const char *name, bool collapsed);
 static void serialize_Mesh(FILE *fd, bool w, Mesh &x, Arena *arena);
-static StructMetaData get_struct_Animation_info();
-static void imgui_edit_struct_Animation(Animation &x, const char *name,
-                                        bool collapsed);
-static void serialize_Animation(FILE *fd, bool w, Animation &x, Arena *arena);
 static StructMetaData get_struct_ThreadWork_info();
 static void imgui_edit_struct_ThreadWork(ThreadWork &x, const char *name,
                                          bool collapsed);
@@ -282,6 +278,10 @@ static void imgui_edit_struct_NodeAnimation(NodeAnimation &x, const char *name,
                                             bool collapsed);
 static void serialize_NodeAnimation(FILE *fd, bool w, NodeAnimation &x,
                                     Arena *arena);
+static StructMetaData get_struct_Animation_info();
+static void imgui_edit_struct_Animation(Animation &x, const char *name,
+                                        bool collapsed);
+static void serialize_Animation(FILE *fd, bool w, Animation &x, Arena *arena);
 static const char *get_enum_EditorOpType_str(int value) {
     switch (value) {
     case EDITOR_OP_TRANSLATE_ENTITY:
@@ -309,15 +309,6 @@ static const char *get_enum_GizmoMode_str(int value) {
         return "GIZMO_ROTATION";
     }
     return "Enum_GizmoMode_Unknown";
-}
-static const char *get_enum_CameraType_str(int value) {
-    switch (value) {
-    case CAMERA_TYPE_PERSPECTIVE:
-        return "CAMERA_TYPE_PERSPECTIVE";
-    case CAMERA_TYPE_ORTHOGRAPHIC:
-        return "CAMERA_TYPE_ORTHOGRAPHIC";
-    }
-    return "Enum_CameraType_Unknown";
 }
 static const char *get_enum_PrimitiveType_str(int value) {
     switch (value) {
@@ -545,26 +536,14 @@ static const char *get_enum_ConstantBufferElementType_str(int value) {
     }
     return "Enum_ConstantBufferElementType_Unknown";
 }
-static const char *get_enum_SceneType_str(int value) {
+static const char *get_enum_CameraType_str(int value) {
     switch (value) {
-    case SCENE_PLAYER:
-        return "SCENE_PLAYER";
-    case SCENE_CUBE:
-        return "SCENE_CUBE";
-    case SCENE_SPHERE:
-        return "SCENE_SPHERE";
-    case SCENE_WOOD_CRATE:
-        return "SCENE_WOOD_CRATE";
-    case SCENE_FENCE_PACK:
-        return "SCENE_FENCE_PACK";
-    case SCENE_SPONZA:
-        return "SCENE_SPONZA";
-    case SCENE_BISTRO:
-        return "SCENE_BISTRO";
-    case SCENE_TEST:
-        return "SCENE_TEST";
+    case CAMERA_TYPE_PERSPECTIVE:
+        return "CAMERA_TYPE_PERSPECTIVE";
+    case CAMERA_TYPE_ORTHOGRAPHIC:
+        return "CAMERA_TYPE_ORTHOGRAPHIC";
     }
-    return "Enum_SceneType_Unknown";
+    return "Enum_CameraType_Unknown";
 }
 StructMetaData get_struct_Constants_info() {
     StructMetaData data = {};
@@ -639,7 +618,7 @@ StructMetaData get_struct_LoadedSound_info() {
 StructMetaData get_struct_Editor_info() {
     StructMetaData data = {};
     data.name = "Editor";
-    data.member_count = 19;
+    data.member_count = 21;
     data.members[0].name = "ops";
     data.members[0].type_name = "Array<EditorOp>";
     data.members[1].name = "undos";
@@ -652,32 +631,36 @@ StructMetaData get_struct_Editor_info() {
     data.members[4].type_name = "bool";
     data.members[5].name = "selected_entity";
     data.members[5].type_name = "entity_id";
-    data.members[6].name = "copied_entity";
-    data.members[6].type_name = "entity_id";
-    data.members[7].name = "gizmo_mode";
-    data.members[7].type_name = "GizmoMode";
-    data.members[8].name = "dragging_axis";
-    data.members[8].type_name = "int";
-    data.members[9].name = "did_drag";
-    data.members[9].type_name = "bool";
-    data.members[10].name = "p_init_drag";
-    data.members[10].type_name = "v3";
-    data.members[11].name = "s_init_scale";
-    data.members[11].type_name = "float";
-    data.members[12].name = "s_init_drag";
+    data.members[6].name = "selected_entity_mesh";
+    data.members[6].type_name = "int";
+    data.members[7].name = "copied_entity";
+    data.members[7].type_name = "entity_id";
+    data.members[8].name = "gizmo_mode";
+    data.members[8].type_name = "GizmoMode";
+    data.members[9].name = "dragging_axis";
+    data.members[9].type_name = "int";
+    data.members[10].name = "did_drag";
+    data.members[10].type_name = "bool";
+    data.members[11].name = "p_init_drag";
+    data.members[11].type_name = "v3";
+    data.members[12].name = "s_init_scale";
     data.members[12].type_name = "float";
-    data.members[13].name = "r_init_rot";
-    data.members[13].type_name = "quat";
-    data.members[14].name = "r_init_drag";
-    data.members[14].type_name = "float";
-    data.members[15].name = "r_right_axis";
-    data.members[15].type_name = "v3";
-    data.members[16].name = "r_up_axis";
+    data.members[13].name = "s_init_drag";
+    data.members[13].type_name = "float";
+    data.members[14].name = "r_init_rot";
+    data.members[14].type_name = "quat";
+    data.members[15].name = "r_init_drag";
+    data.members[15].type_name = "float";
+    data.members[16].name = "r_right_axis";
     data.members[16].type_name = "v3";
-    data.members[17].name = "r_axis";
+    data.members[17].name = "r_up_axis";
     data.members[17].type_name = "v3";
-    data.members[18].name = "last_camera_p";
+    data.members[18].name = "r_axis";
     data.members[18].type_name = "v3";
+    data.members[19].name = "last_camera_p";
+    data.members[19].type_name = "v3";
+    data.members[20].name = "copy_entity_mesh";
+    data.members[20].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_Camera_info() {
@@ -696,302 +679,6 @@ StructMetaData get_struct_Camera_info() {
     data.members[4].type_name = "float";
     data.members[5].name = "forward";
     data.members[5].type_name = "v3";
-    return data;
-}
-StructMetaData get_struct_CollisionTriangle_info() {
-    StructMetaData data = {};
-    data.name = "CollisionTriangle";
-    data.member_count = 3;
-    data.members[0].name = "v0";
-    data.members[0].type_name = "v3";
-    data.members[1].name = "v1";
-    data.members[1].type_name = "v3";
-    data.members[2].name = "v2";
-    data.members[2].type_name = "v3";
-    return data;
-}
-StructMetaData get_struct_Scene_info() {
-    StructMetaData data = {};
-    data.name = "Scene";
-    data.member_count = 7;
-    data.members[0].name = "nodes";
-    data.members[0].type_name = "Array<SceneNode>";
-    data.members[1].name = "meshes";
-    data.members[1].type_name = "Array<Mesh>";
-    data.members[2].name = "root";
-    data.members[2].type_name = "SceneNode*";
-    data.members[3].name = "animations";
-    data.members[3].type_name = "Array<Animation>";
-    data.members[4].name = "path";
-    data.members[4].type_name = "String";
-    data.members[5].name = "triangles";
-    data.members[5].type_name = "Array<MeshTriangle>";
-    data.members[6].name = "is_loaded";
-    data.members[6].type_name = "int";
-    return data;
-}
-StructMetaData get_struct_MeshTriangle_info() {
-    StructMetaData data = {};
-    data.name = "MeshTriangle";
-    data.member_count = 1;
-    data.members[0].name = "v0";
-    data.members[0].type_name = "v3";
-    return data;
-}
-StructMetaData get_struct_SceneNode_info() {
-    StructMetaData data = {};
-    data.name = "SceneNode";
-    data.member_count = 8;
-    data.members[0].name = "name";
-    data.members[0].type_name = "String";
-    data.members[1].name = "parent";
-    data.members[1].type_name = "SceneNode*";
-    data.members[2].name = "childs";
-    data.members[2].type_name = "Array<SceneNode*>";
-    data.members[3].name = "mesh";
-    data.members[3].type_name = "Mesh*";
-    data.members[4].name = "local_transform";
-    data.members[4].type_name = "mat4";
-    data.members[5].name = "geometry_transform";
-    data.members[5].type_name = "mat4";
-    data.members[6].name = "id";
-    data.members[6].type_name = "int";
-    data.members[7].name = "skip_render";
-    data.members[7].type_name = "b32";
-    return data;
-}
-StructMetaData get_struct_Bone_info() {
-    StructMetaData data = {};
-    data.name = "Bone";
-    data.member_count = 4;
-    data.members[0].name = "name";
-    data.members[0].type_name = "String";
-    data.members[1].name = "transform";
-    data.members[1].type_name = "mat4";
-    data.members[2].name = "inv_bind";
-    data.members[2].type_name = "mat4";
-    data.members[3].name = "parent";
-    data.members[3].type_name = "int";
-    return data;
-}
-StructMetaData get_struct_Platform_info() {
-    StructMetaData data = {};
-    data.name = "Platform";
-    data.member_count = 4;
-    data.members[0].name = "render_context";
-    data.members[0].type_name = "void*";
-    data.members[1].name = "imgui_context";
-    data.members[1].type_name = "void*";
-    data.members[2].name = "temp_arena";
-    data.members[2].type_name = "TempArena";
-    data.members[3].name = "add_thread_work";
-    data.members[3].type_name = "AddThreadWorkFn*";
-    return data;
-}
-StructMetaData get_struct_CollisionShape_info() {
-    StructMetaData data = {};
-    data.name = "CollisionShape";
-    data.member_count = 7;
-    data.members[0].name = "type";
-    data.members[0].type_name = "CollisionShapeType";
-    data.members[1].name = "triangles";
-    data.members[1].type_name = "Array<CollisionTriangle>";
-    data.members[2].name = "ellipsoid_radius";
-    data.members[2].type_name = "v3";
-    data.members[3].name = "box_radius";
-    data.members[3].type_name = "v3";
-    data.members[4].name = "transform";
-    data.members[4].type_name = "mat4";
-    data.members[5].name = "scale";
-    data.members[5].type_name = "v3";
-    data.members[6].name = "entity";
-    data.members[6].type_name = "entity_id";
-    return data;
-}
-StructMetaData get_struct_GameInput_info() {
-    StructMetaData data = {};
-    data.name = "GameInput";
-    data.member_count = 4;
-    data.members[0].name = "buttons";
-    data.members[0].type_name = "GameButton";
-    data.members[0].is_array = 1;
-    data.members[0].array_size = BUTTON_COUNT;
-    data.members[1].name = "mouse_dp";
-    data.members[1].type_name = "v2";
-    data.members[2].name = "mouse_p";
-    data.members[2].type_name = "v2";
-    data.members[3].name = "last_mouse_p";
-    data.members[3].type_name = "v2";
-    return data;
-}
-StructMetaData get_struct_ConstantBuffer_info() {
-    StructMetaData data = {};
-    data.name = "ConstantBuffer";
-    data.member_count = 4;
-    data.members[0].name = "size";
-    data.members[0].type_name = "usize";
-    data.members[1].name = "elements";
-    data.members[1].type_name = "ConstantBufferElement";
-    data.members[1].is_array = 1;
-    data.members[1].array_size = 64;
-    data.members[2].name = "element_count";
-    data.members[2].type_name = "int";
-    data.members[3].name = "id";
-    data.members[3].type_name = "uint32_t";
-    return data;
-}
-StructMetaData get_struct_Texture_info() {
-    StructMetaData data = {};
-    data.name = "Texture";
-    data.member_count = 6;
-    data.members[0].name = "id";
-    data.members[0].type_name = "uint32_t";
-    data.members[1].name = "name";
-    data.members[1].type_name = "String";
-    data.members[2].name = "width";
-    data.members[2].type_name = "int";
-    data.members[3].name = "height";
-    data.members[3].type_name = "int";
-    data.members[4].name = "valid";
-    data.members[4].type_name = "b32";
-    data.members[5].name = "state";
-    data.members[5].type_name = "int";
-    return data;
-}
-StructMetaData get_struct_Arena_info() {
-    StructMetaData data = {};
-    data.name = "Arena";
-    data.member_count = 3;
-    data.members[0].name = "data";
-    data.members[0].type_name = "void*";
-    data.members[1].name = "used";
-    data.members[1].type_name = "usize";
-    data.members[2].name = "size";
-    data.members[2].type_name = "usize";
-    return data;
-}
-StructMetaData get_struct_Game_info() {
-    StructMetaData data = {};
-    data.name = "Game";
-    data.member_count = 30;
-    data.members[0].name = "memory";
-    data.members[0].type_name = "Arena*";
-    data.members[1].name = "is_initialized";
-    data.members[1].type_name = "std::atomic_bool";
-    data.members[2].name = "world";
-    data.members[2].type_name = "World*";
-    data.members[3].name = "shadow_map";
-    data.members[3].type_name = "ShadowMap";
-    data.members[4].name = "mesh_render_pass";
-    data.members[4].type_name = "RenderPass";
-    data.members[5].name = "shadow_map_render_pass";
-    data.members[5].type_name = "RenderPass";
-    data.members[6].name = "outline_render_pass";
-    data.members[6].type_name = "RenderPass";
-    data.members[7].name = "constant_buffer";
-    data.members[7].type_name = "ConstantBuffer";
-    data.members[8].name = "debug_lines_render_pass";
-    data.members[8].type_name = "RenderPass";
-    data.members[9].name = "debug_lines_vertex_buffer";
-    data.members[9].type_name = "VertexBuffer";
-    data.members[10].name = "debug_lines_constant_buffer";
-    data.members[10].type_name = "ConstantBuffer";
-    data.members[11].name = "asset_arena";
-    data.members[11].type_name = "Arena";
-    data.members[12].name = "scenes";
-    data.members[12].type_name = "Scene";
-    data.members[12].is_array = 1;
-    data.members[12].array_size = 16;
-    data.members[13].name = "animations";
-    data.members[13].type_name = "Animation";
-    data.members[13].is_array = 1;
-    data.members[13].array_size = ANIMATION_COUNT;
-    data.members[14].name = "in_editor";
-    data.members[14].type_name = "b32";
-    data.members[15].name = "debug_collision";
-    data.members[15].type_name = "bool";
-    data.members[16].name = "frame";
-    data.members[16].type_name = "int";
-    data.members[17].name = "time";
-    data.members[17].type_name = "float";
-    data.members[18].name = "default_rasterizer_state";
-    data.members[18].type_name = "RasterizerState";
-    data.members[19].name = "default_depth_stencil_state";
-    data.members[19].type_name = "DepthStencilState";
-    data.members[20].name = "disable_depth_state";
-    data.members[20].type_name = "DepthStencilState";
-    data.members[21].name = "debug_asset_fb";
-    data.members[21].type_name = "FrameBuffer";
-    data.members[22].name = "debug_asset_tex";
-    data.members[22].type_name = "Texture";
-    data.members[23].name = "sound_state";
-    data.members[23].type_name = "SoundState";
-    data.members[24].name = "first_playing_sound";
-    data.members[24].type_name = "SoundPlaying*";
-    data.members[25].name = "loaded_sounds";
-    data.members[25].type_name = "LoadedSound";
-    data.members[25].is_array = 1;
-    data.members[25].array_size = 32;
-    data.members[26].name = "show_normals";
-    data.members[26].type_name = "bool";
-    data.members[27].name = "render_bones";
-    data.members[27].type_name = "bool";
-    data.members[28].name = "frustum_culling";
-    data.members[28].type_name = "bool";
-    data.members[29].name = "master_volume";
-    data.members[29].type_name = "float";
-    return data;
-}
-StructMetaData get_struct_DepthStencilState_info() {
-    StructMetaData data = {};
-    data.name = "DepthStencilState";
-    data.member_count = 1;
-    data.members[0].name = "enable_depth";
-    data.members[0].type_name = "bool";
-    return data;
-}
-StructMetaData get_struct__IO_FILE_info() {
-    StructMetaData data = {};
-    data.name = "_IO_FILE";
-    data.member_count = 12;
-    data.members[0].name = "_flags";
-    data.members[0].type_name = "int";
-    data.members[1].name = "_IO_read_ptr";
-    data.members[1].type_name = "char*";
-    data.members[2].name = "_IO_read_end";
-    data.members[2].type_name = "char*";
-    data.members[3].name = "_IO_read_base";
-    data.members[3].type_name = "char*";
-    data.members[4].name = "_IO_write_base";
-    data.members[4].type_name = "char*";
-    data.members[5].name = "_IO_write_ptr";
-    data.members[5].type_name = "char*";
-    data.members[6].name = "_IO_write_end";
-    data.members[6].type_name = "char*";
-    data.members[7].name = "_IO_buf_base";
-    data.members[7].type_name = "char*";
-    data.members[8].name = "_IO_buf_end";
-    data.members[8].type_name = "char*";
-    data.members[9].name = "_IO_save_base";
-    data.members[9].type_name = "char*";
-    data.members[10].name = "_IO_backup_base";
-    data.members[10].type_name = "char*";
-    data.members[11].name = "_IO_save_end";
-    data.members[11].type_name = "char*";
-    return data;
-}
-StructMetaData get_struct_VertexInputElement_info() {
-    StructMetaData data = {};
-    data.name = "VertexInputElement";
-    data.member_count = 4;
-    data.members[0].name = "offset";
-    data.members[0].type_name = "int";
-    data.members[1].name = "count";
-    data.members[1].type_name = "int";
-    data.members[2].name = "type";
-    data.members[2].type_name = "InputElementType";
-    data.members[3].name = "char";
-    data.members[3].type_name = "const";
     return data;
 }
 StructMetaData get_struct_World_info() {
@@ -1067,7 +754,7 @@ StructMetaData get_struct_Entity_info() {
     data.members[15].name = "shape";
     data.members[15].type_name = "CollisionShape";
     data.members[16].name = "scene_id";
-    data.members[16].type_name = "SceneType";
+    data.members[16].type_name = "SceneID";
     data.members[17].name = "scene_transform";
     data.members[17].type_name = "mat4";
     data.members[18].name = "disable_collision";
@@ -1096,14 +783,220 @@ StructMetaData get_struct_Entity_info() {
     data.members[29].type_name = "float";
     return data;
 }
-StructMetaData get_struct__G_fpos64_t_info() {
+StructMetaData get_struct_CollisionTriangle_info() {
     StructMetaData data = {};
-    data.name = "_G_fpos64_t";
-    data.member_count = 2;
-    data.members[0].name = "__pos";
-    data.members[0].type_name = "__off64_t";
-    data.members[1].name = "__state";
-    data.members[1].type_name = "__mbstate_t";
+    data.name = "CollisionTriangle";
+    data.member_count = 3;
+    data.members[0].name = "v0";
+    data.members[0].type_name = "v3";
+    data.members[1].name = "v1";
+    data.members[1].type_name = "v3";
+    data.members[2].name = "v2";
+    data.members[2].type_name = "v3";
+    return data;
+}
+StructMetaData get_struct_Scene_info() {
+    StructMetaData data = {};
+    data.name = "Scene";
+    data.member_count = 4;
+    data.members[0].name = "id";
+    data.members[0].type_name = "SceneID";
+    data.members[1].name = "path";
+    data.members[1].type_name = "String";
+    data.members[2].name = "name";
+    data.members[2].type_name = "String";
+    data.members[3].name = "meshes";
+    data.members[3].type_name = "Array<Mesh>";
+    return data;
+}
+StructMetaData get_struct_CollisionInfo_info() {
+    StructMetaData data = {};
+    data.name = "CollisionInfo";
+    data.member_count = 3;
+    data.members[0].name = "hit_p";
+    data.members[0].type_name = "v3";
+    data.members[1].name = "hit_normal";
+    data.members[1].type_name = "v3";
+    data.members[2].name = "t";
+    data.members[2].type_name = "float";
+    return data;
+}
+StructMetaData get_struct_FrameBuffer_info() {
+    StructMetaData data = {};
+    data.name = "FrameBuffer";
+    data.member_count = 3;
+    data.members[0].name = "id";
+    data.members[0].type_name = "uint32_t";
+    data.members[1].name = "color_texture";
+    data.members[1].type_name = "Texture";
+    data.members[2].name = "depth_texture";
+    data.members[2].type_name = "Texture";
+    return data;
+}
+StructMetaData get_struct_VertexInputLayout_info() {
+    StructMetaData data = {};
+    data.name = "VertexInputLayout";
+    data.member_count = 3;
+    data.members[0].name = "elements";
+    data.members[0].type_name = "VertexInputElement";
+    data.members[0].is_array = 1;
+    data.members[0].array_size = 64;
+    data.members[1].name = "element_count";
+    data.members[1].type_name = "int";
+    data.members[2].name = "vertex_size";
+    data.members[2].type_name = "int";
+    return data;
+}
+StructMetaData get_struct_Vertex_info() {
+    StructMetaData data = {};
+    data.name = "Vertex";
+    data.member_count = 5;
+    data.members[0].name = "position";
+    data.members[0].type_name = "v3";
+    data.members[1].name = "normal";
+    data.members[1].type_name = "v3";
+    data.members[2].name = "uv";
+    data.members[2].type_name = "v2";
+    data.members[3].name = "weights";
+    data.members[3].type_name = "float";
+    data.members[3].is_array = 1;
+    data.members[3].array_size = 4;
+    data.members[4].name = "indices";
+    data.members[4].type_name = "float";
+    data.members[4].is_array = 1;
+    data.members[4].array_size = 4;
+    return data;
+}
+StructMetaData get_struct_IndexBuffer_info() {
+    StructMetaData data = {};
+    data.name = "IndexBuffer";
+    data.member_count = 1;
+    data.members[0].name = "ebo";
+    data.members[0].type_name = "uint32_t";
+    return data;
+}
+StructMetaData get_struct_Bone_info() {
+    StructMetaData data = {};
+    data.name = "Bone";
+    data.member_count = 4;
+    data.members[0].name = "name";
+    data.members[0].type_name = "String";
+    data.members[1].name = "transform";
+    data.members[1].type_name = "mat4";
+    data.members[2].name = "inv_bind";
+    data.members[2].type_name = "mat4";
+    data.members[3].name = "parent";
+    data.members[3].type_name = "int";
+    return data;
+}
+StructMetaData get_struct_VertexInputElement_info() {
+    StructMetaData data = {};
+    data.name = "VertexInputElement";
+    data.member_count = 4;
+    data.members[0].name = "offset";
+    data.members[0].type_name = "int";
+    data.members[1].name = "count";
+    data.members[1].type_name = "int";
+    data.members[2].name = "type";
+    data.members[2].type_name = "InputElementType";
+    data.members[3].name = "char";
+    data.members[3].type_name = "const";
+    return data;
+}
+StructMetaData get_struct_Platform_info() {
+    StructMetaData data = {};
+    data.name = "Platform";
+    data.member_count = 4;
+    data.members[0].name = "render_context";
+    data.members[0].type_name = "void*";
+    data.members[1].name = "imgui_context";
+    data.members[1].type_name = "void*";
+    data.members[2].name = "temp_arena";
+    data.members[2].type_name = "TempArena";
+    data.members[3].name = "add_thread_work";
+    data.members[3].type_name = "AddThreadWorkFn*";
+    return data;
+}
+StructMetaData get_struct_CollisionShape_info() {
+    StructMetaData data = {};
+    data.name = "CollisionShape";
+    data.member_count = 7;
+    data.members[0].name = "type";
+    data.members[0].type_name = "CollisionShapeType";
+    data.members[1].name = "triangles";
+    data.members[1].type_name = "Array<CollisionTriangle>";
+    data.members[2].name = "ellipsoid_radius";
+    data.members[2].type_name = "v3";
+    data.members[3].name = "box_radius";
+    data.members[3].type_name = "v3";
+    data.members[4].name = "transform";
+    data.members[4].type_name = "mat4";
+    data.members[5].name = "scale";
+    data.members[5].type_name = "v3";
+    data.members[6].name = "entity";
+    data.members[6].type_name = "entity_id";
+    return data;
+}
+StructMetaData get_struct_GameInput_info() {
+    StructMetaData data = {};
+    data.name = "GameInput";
+    data.member_count = 4;
+    data.members[0].name = "buttons";
+    data.members[0].type_name = "GameButton";
+    data.members[0].is_array = 1;
+    data.members[0].array_size = BUTTON_COUNT;
+    data.members[1].name = "mouse_dp";
+    data.members[1].type_name = "v2";
+    data.members[2].name = "mouse_p";
+    data.members[2].type_name = "v2";
+    data.members[3].name = "last_mouse_p";
+    data.members[3].type_name = "v2";
+    return data;
+}
+StructMetaData get_struct_ConstantBuffer_info() {
+    StructMetaData data = {};
+    data.name = "ConstantBuffer";
+    data.member_count = 4;
+    data.members[0].name = "size";
+    data.members[0].type_name = "usize";
+    data.members[1].name = "elements";
+    data.members[1].type_name = "ConstantBufferElement";
+    data.members[1].is_array = 1;
+    data.members[1].array_size = 64;
+    data.members[2].name = "element_count";
+    data.members[2].type_name = "int";
+    data.members[3].name = "id";
+    data.members[3].type_name = "uint32_t";
+    return data;
+}
+StructMetaData get_struct__IO_FILE_info() {
+    StructMetaData data = {};
+    data.name = "_IO_FILE";
+    data.member_count = 12;
+    data.members[0].name = "_flags";
+    data.members[0].type_name = "int";
+    data.members[1].name = "_IO_read_ptr";
+    data.members[1].type_name = "char*";
+    data.members[2].name = "_IO_read_end";
+    data.members[2].type_name = "char*";
+    data.members[3].name = "_IO_read_base";
+    data.members[3].type_name = "char*";
+    data.members[4].name = "_IO_write_base";
+    data.members[4].type_name = "char*";
+    data.members[5].name = "_IO_write_ptr";
+    data.members[5].type_name = "char*";
+    data.members[6].name = "_IO_write_end";
+    data.members[6].type_name = "char*";
+    data.members[7].name = "_IO_buf_base";
+    data.members[7].type_name = "char*";
+    data.members[8].name = "_IO_buf_end";
+    data.members[8].type_name = "char*";
+    data.members[9].name = "_IO_save_base";
+    data.members[9].type_name = "char*";
+    data.members[10].name = "_IO_backup_base";
+    data.members[10].type_name = "char*";
+    data.members[11].name = "_IO_save_end";
+    data.members[11].type_name = "char*";
     return data;
 }
 StructMetaData get_struct_Shader_info() {
@@ -1206,84 +1099,116 @@ StructMetaData get_struct_RenderContext_info() {
     data.members[7].type_name = "uintptr_t";
     return data;
 }
-StructMetaData get_struct_IndexBuffer_info() {
+StructMetaData get_struct_Texture_info() {
     StructMetaData data = {};
-    data.name = "IndexBuffer";
-    data.member_count = 1;
-    data.members[0].name = "ebo";
-    data.members[0].type_name = "uint32_t";
-    return data;
-}
-StructMetaData get_struct_CollisionInfo_info() {
-    StructMetaData data = {};
-    data.name = "CollisionInfo";
-    data.member_count = 3;
-    data.members[0].name = "hit_p";
-    data.members[0].type_name = "v3";
-    data.members[1].name = "hit_normal";
-    data.members[1].type_name = "v3";
-    data.members[2].name = "t";
-    data.members[2].type_name = "float";
-    return data;
-}
-StructMetaData get_struct_FrameBuffer_info() {
-    StructMetaData data = {};
-    data.name = "FrameBuffer";
-    data.member_count = 3;
+    data.name = "Texture";
+    data.member_count = 6;
     data.members[0].name = "id";
     data.members[0].type_name = "uint32_t";
-    data.members[1].name = "color_texture";
-    data.members[1].type_name = "Texture";
-    data.members[2].name = "depth_texture";
-    data.members[2].type_name = "Texture";
-    return data;
-}
-StructMetaData get_struct_VertexInputLayout_info() {
-    StructMetaData data = {};
-    data.name = "VertexInputLayout";
-    data.member_count = 3;
-    data.members[0].name = "elements";
-    data.members[0].type_name = "VertexInputElement";
-    data.members[0].is_array = 1;
-    data.members[0].array_size = 64;
-    data.members[1].name = "element_count";
-    data.members[1].type_name = "int";
-    data.members[2].name = "vertex_size";
+    data.members[1].name = "name";
+    data.members[1].type_name = "String";
+    data.members[2].name = "width";
     data.members[2].type_name = "int";
+    data.members[3].name = "height";
+    data.members[3].type_name = "int";
+    data.members[4].name = "valid";
+    data.members[4].type_name = "b32";
+    data.members[5].name = "state";
+    data.members[5].type_name = "int";
     return data;
 }
-StructMetaData get_struct__IO_cookie_io_functions_t_info() {
+StructMetaData get_struct_Arena_info() {
     StructMetaData data = {};
-    data.name = "_IO_cookie_io_functions_t";
-    data.member_count = 4;
-    data.members[0].name = "read";
-    data.members[0].type_name = "cookie_read_function_t*";
-    data.members[1].name = "write";
-    data.members[1].type_name = "cookie_write_function_t*";
-    data.members[2].name = "seek";
-    data.members[2].type_name = "cookie_seek_function_t*";
-    data.members[3].name = "close";
-    data.members[3].type_name = "cookie_close_function_t*";
+    data.name = "Arena";
+    data.member_count = 3;
+    data.members[0].name = "data";
+    data.members[0].type_name = "void*";
+    data.members[1].name = "used";
+    data.members[1].type_name = "usize";
+    data.members[2].name = "size";
+    data.members[2].type_name = "usize";
     return data;
 }
-StructMetaData get_struct_Vertex_info() {
+StructMetaData get_struct_Game_info() {
     StructMetaData data = {};
-    data.name = "Vertex";
-    data.member_count = 5;
-    data.members[0].name = "position";
-    data.members[0].type_name = "v3";
-    data.members[1].name = "normal";
-    data.members[1].type_name = "v3";
-    data.members[2].name = "uv";
-    data.members[2].type_name = "v2";
-    data.members[3].name = "weights";
-    data.members[3].type_name = "float";
-    data.members[3].is_array = 1;
-    data.members[3].array_size = 4;
-    data.members[4].name = "indices";
-    data.members[4].type_name = "float";
-    data.members[4].is_array = 1;
-    data.members[4].array_size = 4;
+    data.name = "Game";
+    data.member_count = 32;
+    data.members[0].name = "memory";
+    data.members[0].type_name = "Arena*";
+    data.members[1].name = "is_initialized";
+    data.members[1].type_name = "std::atomic_bool";
+    data.members[2].name = "world";
+    data.members[2].type_name = "World*";
+    data.members[3].name = "shadow_map";
+    data.members[3].type_name = "ShadowMap";
+    data.members[4].name = "mesh_render_pass";
+    data.members[4].type_name = "RenderPass";
+    data.members[5].name = "shadow_map_render_pass";
+    data.members[5].type_name = "RenderPass";
+    data.members[6].name = "outline_render_pass";
+    data.members[6].type_name = "RenderPass";
+    data.members[7].name = "constant_buffer";
+    data.members[7].type_name = "ConstantBuffer";
+    data.members[8].name = "debug_lines_render_pass";
+    data.members[8].type_name = "RenderPass";
+    data.members[9].name = "debug_lines_vertex_buffer";
+    data.members[9].type_name = "VertexBuffer";
+    data.members[10].name = "debug_lines_constant_buffer";
+    data.members[10].type_name = "ConstantBuffer";
+    data.members[11].name = "asset_arena";
+    data.members[11].type_name = "Arena";
+    data.members[12].name = "scenes";
+    data.members[12].type_name = "Array<Scene>";
+    data.members[13].name = "next_scene_id";
+    data.members[13].type_name = "usize";
+    data.members[14].name = "animations";
+    data.members[14].type_name = "Animation";
+    data.members[14].is_array = 1;
+    data.members[14].array_size = ANIMATION_COUNT;
+    data.members[15].name = "in_editor";
+    data.members[15].type_name = "b32";
+    data.members[16].name = "debug_collision";
+    data.members[16].type_name = "bool";
+    data.members[17].name = "frame";
+    data.members[17].type_name = "int";
+    data.members[18].name = "time";
+    data.members[18].type_name = "float";
+    data.members[19].name = "default_rasterizer_state";
+    data.members[19].type_name = "RasterizerState";
+    data.members[20].name = "default_depth_stencil_state";
+    data.members[20].type_name = "DepthStencilState";
+    data.members[21].name = "disable_depth_state";
+    data.members[21].type_name = "DepthStencilState";
+    data.members[22].name = "debug_asset_fb";
+    data.members[22].type_name = "FrameBuffer";
+    data.members[23].name = "debug_asset_tex";
+    data.members[23].type_name = "Texture";
+    data.members[24].name = "sound_state";
+    data.members[24].type_name = "SoundState";
+    data.members[25].name = "first_playing_sound";
+    data.members[25].type_name = "SoundPlaying*";
+    data.members[26].name = "loaded_sounds";
+    data.members[26].type_name = "LoadedSound";
+    data.members[26].is_array = 1;
+    data.members[26].array_size = 32;
+    data.members[27].name = "default_scene";
+    data.members[27].type_name = "Scene";
+    data.members[28].name = "show_normals";
+    data.members[28].type_name = "bool";
+    data.members[29].name = "render_bones";
+    data.members[29].type_name = "bool";
+    data.members[30].name = "frustum_culling";
+    data.members[30].type_name = "bool";
+    data.members[31].name = "master_volume";
+    data.members[31].type_name = "float";
+    return data;
+}
+StructMetaData get_struct_DepthStencilState_info() {
+    StructMetaData data = {};
+    data.name = "DepthStencilState";
+    data.member_count = 1;
+    data.members[0].name = "enable_depth";
+    data.members[0].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_VertexBuffer_info() {
@@ -1336,16 +1261,6 @@ StructMetaData get_struct_SoundPlaying_info() {
     data.members[4].type_name = "SoundPlaying*";
     return data;
 }
-StructMetaData get_struct__G_fpos_t_info() {
-    StructMetaData data = {};
-    data.name = "_G_fpos_t";
-    data.member_count = 2;
-    data.members[0].name = "__pos";
-    data.members[0].type_name = "__off_t";
-    data.members[1].name = "__state";
-    data.members[1].type_name = "__mbstate_t";
-    return data;
-}
 StructMetaData get_struct_Material_info() {
     StructMetaData data = {};
     data.name = "Material";
@@ -1368,6 +1283,28 @@ StructMetaData get_struct_Material_info() {
     data.members[7].type_name = "float";
     return data;
 }
+StructMetaData get_struct_SceneNode_info() {
+    StructMetaData data = {};
+    data.name = "SceneNode";
+    data.member_count = 8;
+    data.members[0].name = "name";
+    data.members[0].type_name = "String";
+    data.members[1].name = "parent";
+    data.members[1].type_name = "SceneNode*";
+    data.members[2].name = "childs";
+    data.members[2].type_name = "Array<SceneNode*>";
+    data.members[3].name = "mesh";
+    data.members[3].type_name = "Mesh*";
+    data.members[4].name = "local_transform";
+    data.members[4].type_name = "mat4";
+    data.members[5].name = "geometry_transform";
+    data.members[5].type_name = "mat4";
+    data.members[6].name = "id";
+    data.members[6].type_name = "int";
+    data.members[7].name = "skip_render";
+    data.members[7].type_name = "b32";
+    return data;
+}
 StructMetaData get_struct_MeshPart_info() {
     StructMetaData data = {};
     data.name = "MeshPart";
@@ -1378,6 +1315,14 @@ StructMetaData get_struct_MeshPart_info() {
     data.members[1].type_name = "usize";
     data.members[2].name = "offset";
     data.members[2].type_name = "usize";
+    return data;
+}
+StructMetaData get_struct_MeshTriangle_info() {
+    StructMetaData data = {};
+    data.name = "MeshTriangle";
+    data.member_count = 1;
+    data.members[0].name = "v0";
+    data.members[0].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_EditorOp_info() {
@@ -1393,7 +1338,7 @@ StructMetaData get_struct_EditorOp_info() {
 StructMetaData get_struct_Mesh_info() {
     StructMetaData data = {};
     data.name = "Mesh";
-    data.member_count = 10;
+    data.member_count = 13;
     data.members[0].name = "name";
     data.members[0].type_name = "String";
     data.members[1].name = "parts";
@@ -1410,26 +1355,16 @@ StructMetaData get_struct_Mesh_info() {
     data.members[6].type_name = "v3";
     data.members[7].name = "transform";
     data.members[7].type_name = "mat4";
-    data.members[8].name = "vertices_count";
-    data.members[8].type_name = "usize";
-    data.members[9].name = "indices_count";
+    data.members[8].name = "default_transform";
+    data.members[8].type_name = "mat4";
+    data.members[9].name = "vertices_count";
     data.members[9].type_name = "usize";
-    return data;
-}
-StructMetaData get_struct_Animation_info() {
-    StructMetaData data = {};
-    data.name = "Animation";
-    data.member_count = 5;
-    data.members[0].name = "timebegin";
-    data.members[0].type_name = "float";
-    data.members[1].name = "duration";
-    data.members[1].type_name = "float";
-    data.members[2].name = "frametime";
-    data.members[2].type_name = "float";
-    data.members[3].name = "frame_count";
-    data.members[3].type_name = "int";
-    data.members[4].name = "nodes";
-    data.members[4].type_name = "Array<NodeAnimation>";
+    data.members[10].name = "indices_count";
+    data.members[10].type_name = "usize";
+    data.members[11].name = "vertices";
+    data.members[11].type_name = "Array<v3>";
+    data.members[12].name = "indices";
+    data.members[12].type_name = "Array<u32>";
     return data;
 }
 StructMetaData get_struct_ThreadWork_info() {
@@ -1462,6 +1397,22 @@ StructMetaData get_struct_NodeAnimation_info() {
     data.members[6].type_name = "quat";
     data.members[7].name = "transform";
     data.members[7].type_name = "mat4";
+    return data;
+}
+StructMetaData get_struct_Animation_info() {
+    StructMetaData data = {};
+    data.name = "Animation";
+    data.member_count = 5;
+    data.members[0].name = "timebegin";
+    data.members[0].type_name = "float";
+    data.members[1].name = "duration";
+    data.members[1].type_name = "float";
+    data.members[2].name = "frametime";
+    data.members[2].type_name = "float";
+    data.members[3].name = "frame_count";
+    data.members[3].type_name = "int";
+    data.members[4].name = "nodes";
+    data.members[4].type_name = "Array<NodeAnimation>";
     return data;
 }
 static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
@@ -1514,22 +1465,6 @@ static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
         curr = 2;
     if (ImGui::CollapsingHeader(name))
         ImGui::ListBox(name, &curr, items, 3);
-    x = items_type[curr];
-}
-static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
-    const char *items[2];
-    CameraType items_type[2];
-    int curr = 0;
-    items[0] = "CAMERA_TYPE_PERSPECTIVE";
-    items_type[0] = CAMERA_TYPE_PERSPECTIVE;
-    if (x == CAMERA_TYPE_PERSPECTIVE)
-        curr = 0;
-    items[1] = "CAMERA_TYPE_ORTHOGRAPHIC";
-    items_type[1] = CAMERA_TYPE_ORTHOGRAPHIC;
-    if (x == CAMERA_TYPE_ORTHOGRAPHIC)
-        curr = 1;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
 static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
@@ -1968,44 +1903,20 @@ imgui_edit_enum_ConstantBufferElementType(ConstantBufferElementType &x,
         ImGui::ListBox(name, &curr, items, 7);
     x = items_type[curr];
 }
-static void imgui_edit_enum_SceneType(SceneType &x, const char *name) {
-    const char *items[8];
-    SceneType items_type[8];
+static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
+    const char *items[2];
+    CameraType items_type[2];
     int curr = 0;
-    items[0] = "SCENE_PLAYER";
-    items_type[0] = SCENE_PLAYER;
-    if (x == SCENE_PLAYER)
+    items[0] = "CAMERA_TYPE_PERSPECTIVE";
+    items_type[0] = CAMERA_TYPE_PERSPECTIVE;
+    if (x == CAMERA_TYPE_PERSPECTIVE)
         curr = 0;
-    items[1] = "SCENE_CUBE";
-    items_type[1] = SCENE_CUBE;
-    if (x == SCENE_CUBE)
+    items[1] = "CAMERA_TYPE_ORTHOGRAPHIC";
+    items_type[1] = CAMERA_TYPE_ORTHOGRAPHIC;
+    if (x == CAMERA_TYPE_ORTHOGRAPHIC)
         curr = 1;
-    items[2] = "SCENE_SPHERE";
-    items_type[2] = SCENE_SPHERE;
-    if (x == SCENE_SPHERE)
-        curr = 2;
-    items[3] = "SCENE_WOOD_CRATE";
-    items_type[3] = SCENE_WOOD_CRATE;
-    if (x == SCENE_WOOD_CRATE)
-        curr = 3;
-    items[4] = "SCENE_FENCE_PACK";
-    items_type[4] = SCENE_FENCE_PACK;
-    if (x == SCENE_FENCE_PACK)
-        curr = 4;
-    items[5] = "SCENE_SPONZA";
-    items_type[5] = SCENE_SPONZA;
-    if (x == SCENE_SPONZA)
-        curr = 5;
-    items[6] = "SCENE_BISTRO";
-    items_type[6] = SCENE_BISTRO;
-    if (x == SCENE_BISTRO)
-        curr = 6;
-    items[7] = "SCENE_TEST";
-    items_type[7] = SCENE_TEST;
-    if (x == SCENE_TEST)
-        curr = 7;
     if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 8);
+        ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
@@ -2027,8 +1938,11 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
             ImGui::Checkbox("in_gizmo", &tmp);
             x.in_gizmo = tmp;
         }
-        ImGui::Text("selected_entity = %lu", x.selected_entity);
-        ImGui::Text("copied_entity = %lu", x.copied_entity);
+        ImGui::InputScalar("selected_entity", ImGuiDataType_U64,
+                           &x.selected_entity);
+        ImGui::InputInt("selected_entity_mesh", &x.selected_entity_mesh);
+        ImGui::InputScalar("copied_entity", ImGuiDataType_U64,
+                           &x.copied_entity);
         imgui_edit_enum_GizmoMode(x.gizmo_mode, "gizmo_mode");
         ImGui::InputInt("dragging_axis", &x.dragging_axis);
         {
@@ -2045,122 +1959,19 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
         ImGui::InputFloat3("r_up_axis", x.r_up_axis.e);
         ImGui::InputFloat3("r_axis", x.r_axis.e);
         ImGui::InputFloat3("last_camera_p", x.last_camera_p.e);
+        {
+            bool tmp = x.copy_entity_mesh;
+            ImGui::Checkbox("copy_entity_mesh", &tmp);
+            x.copy_entity_mesh = tmp;
+        }
     }
 }
 static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena = 0) {}
 static void serialize_Camera(FILE *fd, bool w, Camera &x, Arena *arena = 0) {}
-static void imgui_edit_struct_CollisionTriangle(CollisionTriangle &x,
-                                                const char *name,
-                                                bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        ImGui::InputFloat3("v0", x.v0.e);
-        ImGui::InputFloat3("v1", x.v1.e);
-        ImGui::InputFloat3("v2", x.v2.e);
-    }
-}
-static void serialize_CollisionTriangle(FILE *fd, bool w, CollisionTriangle &x,
-                                        Arena *arena = 0) {
-    serialize_v3(fd, w, x.v0);
-    serialize_v3(fd, w, x.v1);
-    serialize_v3(fd, w, x.v2);
-}
-static void serialize_Scene(FILE *fd, bool w, Scene &x, Arena *arena = 0) {}
-static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
-                                   Arena *arena = 0) {}
-static void serialize_SceneNode(FILE *fd, bool w, SceneNode &x,
-                                Arena *arena = 0) {}
-static void serialize_Bone(FILE *fd, bool w, Bone &x, Arena *arena = 0) {}
-static void serialize_Platform(FILE *fd, bool w, Platform &x,
-                               Arena *arena = 0) {}
-static void imgui_edit_struct_CollisionShape(CollisionShape &x,
-                                             const char *name,
-                                             bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        imgui_edit_enum_CollisionShapeType(x.type, "type");
-        if (ImGui::CollapsingHeader("triangles")) {
-            for (int i = 0; i < x.triangles.count; i++) {
-                char elem_name[32];
-                snprintf(elem_name, sizeof(elem_name), "triangles[%d]", i);
-                imgui_edit_struct_CollisionTriangle(x.triangles.data[i],
-                                                    elem_name, true);
-            }
-        }
-        ImGui::InputFloat3("ellipsoid_radius", x.ellipsoid_radius.e);
-    }
-}
-static void serialize_CollisionShape(FILE *fd, bool w, CollisionShape &x,
-                                     Arena *arena = 0) {
-    {
-        int tmp = x.type;
-        serialize_int(fd, w, tmp);
-        if (!w)
-            x.type = (CollisionShapeType)tmp;
-    }
-    if (w) {
-        serialize_size_t(fd, w, x.triangles.capacity);
-        serialize_size_t(fd, w, x.triangles.count);
-        for (int i = 0; i < x.triangles.count; i++)
-            serialize_CollisionTriangle(fd, w, x.triangles.data[i], arena);
-    } else {
-        assert(arena);
-        usize capacity, count;
-        serialize_size_t(fd, w, capacity);
-        serialize_size_t(fd, w, count);
-        x.triangles = make_array_max<CollisionTriangle>(arena, capacity);
-        for (int i = 0; i < count; i++) {
-            CollisionTriangle y = {};
-            serialize_CollisionTriangle(fd, w, y, arena);
-            x.triangles.push(y);
-        }
-    }
-    serialize_v3(fd, w, x.ellipsoid_radius);
-}
-static void serialize_GameInput(FILE *fd, bool w, GameInput &x,
-                                Arena *arena = 0) {}
-static void serialize_ConstantBuffer(FILE *fd, bool w, ConstantBuffer &x,
-                                     Arena *arena = 0) {}
-static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena = 0) {}
-static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena = 0) {}
-static void imgui_edit_struct_Game(Game &x, const char *name,
-                                   bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        {
-            bool tmp = x.debug_collision;
-            ImGui::Checkbox("debug_collision", &tmp);
-            x.debug_collision = tmp;
-        }
-        ImGui::InputInt("frame", &x.frame);
-        ImGui::InputFloat("time", &x.time);
-        {
-            bool tmp = x.show_normals;
-            ImGui::Checkbox("show_normals", &tmp);
-            x.show_normals = tmp;
-        }
-        {
-            bool tmp = x.render_bones;
-            ImGui::Checkbox("render_bones", &tmp);
-            x.render_bones = tmp;
-        }
-        {
-            bool tmp = x.frustum_culling;
-            ImGui::Checkbox("frustum_culling", &tmp);
-            x.frustum_culling = tmp;
-        }
-        ImGui::InputFloat("master_volume", &x.master_volume);
-    }
-}
-static void serialize_Game(FILE *fd, bool w, Game &x, Arena *arena = 0) {}
-static void serialize_DepthStencilState(FILE *fd, bool w, DepthStencilState &x,
-                                        Arena *arena = 0) {}
-static void serialize__IO_FILE(FILE *fd, bool w, _IO_FILE &x,
-                               Arena *arena = 0) {}
-static void serialize_VertexInputElement(FILE *fd, bool w,
-                                         VertexInputElement &x,
-                                         Arena *arena = 0) {}
 static void imgui_edit_struct_World(World &x, const char *name,
                                     bool collapsed = true) {
     if (!collapsed || ImGui::CollapsingHeader(name)) {
-        imgui_edit_struct_Editor(x.editor, "editor");
+        imgui_edit_struct_Editor(x.editor, "editor", true);
         if (ImGui::CollapsingHeader("entities")) {
             for (int i = 0; i < x.entities.count; i++) {
                 char elem_name[32];
@@ -2168,7 +1979,8 @@ static void imgui_edit_struct_World(World &x, const char *name,
                 imgui_edit_struct_Entity(x.entities.data[i], elem_name, true);
             }
         }
-        ImGui::Text("editor_selected_entity = %lu", x.editor_selected_entity);
+        ImGui::InputScalar("editor_selected_entity", ImGuiDataType_U64,
+                           &x.editor_selected_entity);
     }
 }
 static void serialize_World(FILE *fd, bool w, World &x, Arena *arena = 0) {
@@ -2242,8 +2054,8 @@ static void imgui_edit_struct_Entity(Entity &x, const char *name,
             ImGui::Checkbox("aiming", &tmp);
             x.aiming = tmp;
         }
-        imgui_edit_struct_CollisionShape(x.shape, "shape");
-        imgui_edit_enum_SceneType(x.scene_id, "scene_id");
+        imgui_edit_struct_CollisionShape(x.shape, "shape", true);
+        ImGui::InputScalar("scene_id", ImGuiDataType_U64, &x.scene_id);
         {
             bool tmp = x.disable_collision;
             ImGui::Checkbox("disable_collision", &tmp);
@@ -2274,19 +2086,100 @@ static void serialize_Entity(FILE *fd, bool w, Entity &x, Arena *arena = 0) {
     serialize_int32_t(fd, w, x.pressing_jump);
     serialize_int32_t(fd, w, x.aiming);
     serialize_CollisionShape(fd, w, x.shape, arena);
-    {
-        int tmp = x.scene_id;
-        serialize_int(fd, w, tmp);
-        if (!w)
-            x.scene_id = (SceneType)tmp;
-    }
+    serialize_size_t(fd, w, x.scene_id);
     serialize_mat4(fd, w, x.scene_transform);
     serialize_bool(fd, w, x.disable_collision);
     serialize_float(fd, w, x.height_above_ground);
     serialize_float(fd, w, x.point_light_scale);
 }
-static void serialize__G_fpos64_t(FILE *fd, bool w, _G_fpos64_t &x,
+static void imgui_edit_struct_CollisionTriangle(CollisionTriangle &x,
+                                                const char *name,
+                                                bool collapsed = true) {
+    if (!collapsed || ImGui::CollapsingHeader(name)) {
+        ImGui::InputFloat3("v0", x.v0.e);
+        ImGui::InputFloat3("v1", x.v1.e);
+        ImGui::InputFloat3("v2", x.v2.e);
+    }
+}
+static void serialize_CollisionTriangle(FILE *fd, bool w, CollisionTriangle &x,
+                                        Arena *arena = 0) {
+    serialize_v3(fd, w, x.v0);
+    serialize_v3(fd, w, x.v1);
+    serialize_v3(fd, w, x.v2);
+}
+static void imgui_edit_struct_Scene(Scene &x, const char *name,
+                                    bool collapsed = true) {
+    if (!collapsed || ImGui::CollapsingHeader(name)) {
+        ImGui::Text("id = %lu", x.id);
+        ImGui::Text("path: \"%.*s\"", (int)x.path.count, x.path.data);
+        ImGui::Text("name: \"%.*s\"", (int)x.name.count, x.name.data);
+    }
+}
+static void serialize_Scene(FILE *fd, bool w, Scene &x, Arena *arena = 0) {}
+static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,
+                                    Arena *arena = 0) {}
+static void serialize_FrameBuffer(FILE *fd, bool w, FrameBuffer &x,
                                   Arena *arena = 0) {}
+static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+                                        Arena *arena = 0) {}
+static void serialize_Vertex(FILE *fd, bool w, Vertex &x, Arena *arena = 0) {}
+static void serialize_IndexBuffer(FILE *fd, bool w, IndexBuffer &x,
+                                  Arena *arena = 0) {}
+static void serialize_Bone(FILE *fd, bool w, Bone &x, Arena *arena = 0) {}
+static void serialize_VertexInputElement(FILE *fd, bool w,
+                                         VertexInputElement &x,
+                                         Arena *arena = 0) {}
+static void serialize_Platform(FILE *fd, bool w, Platform &x,
+                               Arena *arena = 0) {}
+static void imgui_edit_struct_CollisionShape(CollisionShape &x,
+                                             const char *name,
+                                             bool collapsed = true) {
+    if (!collapsed || ImGui::CollapsingHeader(name)) {
+        imgui_edit_enum_CollisionShapeType(x.type, "type");
+        if (ImGui::CollapsingHeader("triangles")) {
+            for (int i = 0; i < x.triangles.count; i++) {
+                char elem_name[32];
+                snprintf(elem_name, sizeof(elem_name), "triangles[%d]", i);
+                imgui_edit_struct_CollisionTriangle(x.triangles.data[i],
+                                                    elem_name, true);
+            }
+        }
+        ImGui::InputFloat3("ellipsoid_radius", x.ellipsoid_radius.e);
+    }
+}
+static void serialize_CollisionShape(FILE *fd, bool w, CollisionShape &x,
+                                     Arena *arena = 0) {
+    {
+        int tmp = x.type;
+        serialize_int(fd, w, tmp);
+        if (!w)
+            x.type = (CollisionShapeType)tmp;
+    }
+    if (w) {
+        serialize_size_t(fd, w, x.triangles.capacity);
+        serialize_size_t(fd, w, x.triangles.count);
+        for (int i = 0; i < x.triangles.count; i++)
+            serialize_CollisionTriangle(fd, w, x.triangles.data[i], arena);
+    } else {
+        assert(arena);
+        usize capacity, count;
+        serialize_size_t(fd, w, capacity);
+        serialize_size_t(fd, w, count);
+        x.triangles = make_array_max<CollisionTriangle>(arena, capacity);
+        for (int i = 0; i < count; i++) {
+            CollisionTriangle y = {};
+            serialize_CollisionTriangle(fd, w, y, arena);
+            x.triangles.push(y);
+        }
+    }
+    serialize_v3(fd, w, x.ellipsoid_radius);
+}
+static void serialize_GameInput(FILE *fd, bool w, GameInput &x,
+                                Arena *arena = 0) {}
+static void serialize_ConstantBuffer(FILE *fd, bool w, ConstantBuffer &x,
+                                     Arena *arena = 0) {}
+static void serialize__IO_FILE(FILE *fd, bool w, _IO_FILE &x,
+                               Arena *arena = 0) {}
 static void serialize_Shader(FILE *fd, bool w, Shader &x, Arena *arena = 0) {}
 static void serialize_GameButton(FILE *fd, bool w, GameButton &x,
                                  Arena *arena = 0) {}
@@ -2298,18 +2191,46 @@ static void serialize_TempArena(FILE *fd, bool w, TempArena &x,
                                 Arena *arena = 0) {}
 static void serialize_RenderContext(FILE *fd, bool w, RenderContext &x,
                                     Arena *arena = 0) {}
-static void serialize_IndexBuffer(FILE *fd, bool w, IndexBuffer &x,
-                                  Arena *arena = 0) {}
-static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,
-                                    Arena *arena = 0) {}
-static void serialize_FrameBuffer(FILE *fd, bool w, FrameBuffer &x,
-                                  Arena *arena = 0) {}
-static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena = 0) {}
+static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena = 0) {}
+static void imgui_edit_struct_Game(Game &x, const char *name,
+                                   bool collapsed = true) {
+    if (!collapsed || ImGui::CollapsingHeader(name)) {
+        if (ImGui::CollapsingHeader("scenes")) {
+            for (int i = 0; i < x.scenes.count; i++) {
+                char elem_name[32];
+                snprintf(elem_name, sizeof(elem_name), "scenes[%d]", i);
+                imgui_edit_struct_Scene(x.scenes.data[i], elem_name, true);
+            }
+        }
+        {
+            bool tmp = x.debug_collision;
+            ImGui::Checkbox("debug_collision", &tmp);
+            x.debug_collision = tmp;
+        }
+        ImGui::InputInt("frame", &x.frame);
+        ImGui::InputFloat("time", &x.time);
+        {
+            bool tmp = x.show_normals;
+            ImGui::Checkbox("show_normals", &tmp);
+            x.show_normals = tmp;
+        }
+        {
+            bool tmp = x.render_bones;
+            ImGui::Checkbox("render_bones", &tmp);
+            x.render_bones = tmp;
+        }
+        {
+            bool tmp = x.frustum_culling;
+            ImGui::Checkbox("frustum_culling", &tmp);
+            x.frustum_culling = tmp;
+        }
+        ImGui::InputFloat("master_volume", &x.master_volume);
+    }
+}
+static void serialize_Game(FILE *fd, bool w, Game &x, Arena *arena = 0) {}
+static void serialize_DepthStencilState(FILE *fd, bool w, DepthStencilState &x,
                                         Arena *arena = 0) {}
-static void serialize__IO_cookie_io_functions_t(FILE *fd, bool w,
-                                                _IO_cookie_io_functions_t &x,
-                                                Arena *arena = 0) {}
-static void serialize_Vertex(FILE *fd, bool w, Vertex &x, Arena *arena = 0) {}
 static void serialize_VertexBuffer(FILE *fd, bool w, VertexBuffer &x,
                                    Arena *arena = 0) {}
 static void serialize_RasterizerState(FILE *fd, bool w, RasterizerState &x,
@@ -2319,19 +2240,21 @@ static void serialize_ConstantBufferElement(FILE *fd, bool w,
                                             Arena *arena = 0) {}
 static void serialize_SoundPlaying(FILE *fd, bool w, SoundPlaying &x,
                                    Arena *arena = 0) {}
-static void serialize__G_fpos_t(FILE *fd, bool w, _G_fpos_t &x,
-                                Arena *arena = 0) {}
 static void serialize_Material(FILE *fd, bool w, Material &x,
                                Arena *arena = 0) {}
+static void serialize_SceneNode(FILE *fd, bool w, SceneNode &x,
+                                Arena *arena = 0) {}
 static void serialize_MeshPart(FILE *fd, bool w, MeshPart &x,
                                Arena *arena = 0) {}
+static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
+                                   Arena *arena = 0) {}
 static void serialize_EditorOp(FILE *fd, bool w, EditorOp &x,
                                Arena *arena = 0) {}
 static void serialize_Mesh(FILE *fd, bool w, Mesh &x, Arena *arena = 0) {}
-static void serialize_Animation(FILE *fd, bool w, Animation &x,
-                                Arena *arena = 0) {}
 static void serialize_ThreadWork(FILE *fd, bool w, ThreadWork &x,
                                  Arena *arena = 0) {}
 static void serialize_NodeAnimation(FILE *fd, bool w, NodeAnimation &x,
                                     Arena *arena = 0) {}
+static void serialize_Animation(FILE *fd, bool w, Animation &x,
+                                Arena *arena = 0) {}
 #endif

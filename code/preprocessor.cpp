@@ -304,19 +304,22 @@ string generate()
 	header += "};";
 
 	unordered_set<string> base_types = {
-		"int", "int32_t", "size_t", "bool", "v2", "v3", "quat", "mat4", "float", "double"
+		"int", "int32_t", "size_t", "bool", "v2", "v3", "quat", "mat4", "float", "double", "char"
 	};
 
 	for (auto type: base_types) {
 		header += "void serialize_" + type + "(FILE *fd, bool w, " + type + "&x) {";
 		if (type == "bool") {
 			header += "int v = x;";
-			header += "if (w) fwrite(&v, sizeof(\"int\"), 1, fd);";
-			header += "else { fread(&v, sizeof(\"int\"), 1, fd); x = v; }";
+			header += "if (w) fwrite(&v, sizeof(int), 1, fd);";
+			header += "else {";
+			header += "(void)fread(&v, sizeof(int), 1, fd);";
+			header += "x = v;";
+			header += "}";
 		}
 		else {
 			header += "if (w) fwrite(&x, sizeof(" + type + "), 1, fd);";
-			header += "else  fread(&x, sizeof(" + type + "), 1, fd);";
+			header += "else {(void)fread(&x, sizeof(" + type + "), 1, fd);}";
 		}
 		header += "}";
 	}
@@ -355,13 +358,18 @@ string generate()
 			if (sdata.valid)
 				structs[sdata.name] = sdata;
 		}
-		else if (tokens[ti].str == "typedef" && tokens[ti + 1].type == TOKEN_IDENTIFIER
-				&& tokens[ti + 2].type == TOKEN_IDENTIFIER && tokens[ti + 3].type == ';') {
-			if (!typedefed_structs.count(tokens[ti + 1].str))
-				typedefed_structs[tokens[ti + 2].str] = tokens[ti + 1].str;
+		else if (tokens[ti].str == "typedef") {
+			ti++;
+			string type1;
+			while (ti + 1 < tokens.size() && tokens[ti + 1].type != ';')
+				type1 += tokens[ti++].str;
+			string type2 = tokens[ti++].str;
+			skip_token(';');
+			
+			if (!typedefed_structs.count(type1))
+				typedefed_structs[type2] = type1;
 			else
-				typedefed_structs[tokens[ti + 2].str] = typedefed_structs[tokens[ti + 1].str];
-			ti += 4;
+				typedefed_structs[type2] = typedefed_structs[type1];
 		}
 		else
 			ti++;
@@ -443,24 +451,29 @@ string generate()
 				+ v + " = tmp; }";
 		}
 		else if (type_name == "int32_t" || type_name == "int") {
-			s += "ImGui::InputInt(\"" + m.name + "\", &" + v + ");";
+			s += "ImGui::InputInt(\"" + name + "\", &" + v + ");";
 		}
 		else if (type_name == "uint32_t") {
 
 		}
-		else if (type_name == "size_t") {
-			//if (m.meta.ui.is_const)
-				s += "ImGui::Text(\"" + m.name + " = %lu\"," + v + ");";
-			//else
-			//	s += "ImGui::InputScalar(\"" + m.name + "\", ImGuiDataType_U64, &"  + v + ");"; 
+		else if (type_name == "size_t" || type_name == "longunsignedint") {
+			if (m.meta.ui.is_const)
+				s += "ImGui::Text(\"" + name + " = %lu\"," + v + ");";
+			else
+				s += "ImGui::InputScalar(\"" + name + "\", ImGuiDataType_U64, &"  + v + ");"; 
 		}
 		else if (type_name == "float") {
 			s += "ImGui::InputFloat(\"" + name + "\", &" + v + ");";
+		}
+		else if (struct_name == "String") {
+			s += "ImGui::Text(\"" + name + ": \\\"" + "%.*s\\\"\", (int)" + v + ".count, " + v + ".data);";
 		}
 		else if (type_name.substr(0, 6) == "Array<") {
 			assert(is_child);
 			string type = type_name.substr(6);
 			type.pop_back();
+
+			string org_type = type;
 
 			s += "if (ImGui::CollapsingHeader(\"" + name + "\")) {";
 
@@ -474,8 +487,9 @@ string generate()
 
 				s += "imgui_edit_struct_" + type + "(" + aname + ".data[i], elem_name, true);";
 			}
-			else
+			else {
 				s += self(self, type, "", true, aname + ".data[i]", m);
+			}
 			s += "}";
 			s += "}";
 		}
@@ -487,7 +501,7 @@ string generate()
 			if (!structs.count(type_name))
 				return "";
 			if (is_child) {
-				s += "imgui_edit_struct_" + type_name + "(" + aname + ", \"" + name + "\");";
+				s += "imgui_edit_struct_" + type_name + "(" + aname + ", \"" + name + "\", true);";
 			}
 			else {
 				s += "if (!collapsed || ImGui::CollapsingHeader(name)){";

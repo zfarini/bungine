@@ -169,6 +169,7 @@ void make_bones_transform_relative_to_parent(Array<Bone> bones, usize index, Arr
 Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 {
 	ufbx_mesh *umesh = unode->mesh;
+	
 	Mesh mesh = {};
 
 	mesh.name = make_string(arena, unode->name.length, unode->name.data);
@@ -263,6 +264,17 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	mesh.vertices_count = vertices.count;
 	mesh.indices_count = indices.count;
 	
+	mesh.vertices = make_array<v3>(arena, vertices.count);
+	
+
+	for (usize i = 0; i < vertices.count; i++) {
+		mesh.vertices[i] = vertices[i].position;
+	}
+
+
+	mesh.indices = clone_array(arena, indices);
+
+
 	// printf("INDICES COUNT: %d, VERTICES COUNT: %d, %d %d %d\n",  indices.count,  vertices.count, umesh->num_vertices,
 	// 	umesh->vertex_position.values.count, umesh->vertex_normal.values.count);
 	//assert(vertices.count % 3 == 0);
@@ -419,20 +431,38 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 	return anim;
 }
 
-void compute_meshes_transform(Scene &scene, SceneNode *node, mat4 transform)
+Animation load_animation(Arena *arena, Game &game, const char *filename)
 {
-	transform = transform * node->local_transform;
-	if (node->mesh)
-		node->mesh->transform = transform * node->geometry_transform;
-	for (usize i = 0; i < node->childs.count; i++)
-		compute_meshes_transform(scene, node->childs[i], transform);
-}
-
-Scene load_scene(Arena *arena, const char *filename)
-{
-	Arena *temp = begin_temp_memory();
 	Scene scene = {};
 
+	Arena *temp = begin_temp_memory();
+
+	ufbx_load_opts opts = {};
+
+	opts.target_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+	opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+	opts.target_unit_meters = 1;
+	opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.temp_allocator.allocator.user = temp;
+	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.result_allocator.allocator.user = temp;
+
+	ufbx_error error;
+	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
+	if (!uscene) {
+		fprintf(stderr, "Failed to load animation %s: %s\n", filename, error.description.data);
+		exit(1);
+	}
+	assert(uscene->anim_stacks.count);
+	return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
+}
+
+Scene *load_scene(Arena *arena, Game &game, const char *filename)
+{
+	Scene scene = {};
+
+	Arena *temp = begin_temp_memory();
 	{
 		int slash = -1;
 
@@ -440,7 +470,10 @@ Scene load_scene(Arena *arena, const char *filename)
 			if (filename[i] == '/' || filename[i] == '\\')
 				slash = i;
 		}
+		// TODO: cleanup
+		int len = strlen(filename);
 		scene.path = make_string(arena, slash + 1, filename);
+		scene.name = make_string(arena, len - (slash + 1), filename + slash + 1);
 	}
 
 	ufbx_load_opts opts = {};
@@ -475,59 +508,30 @@ Scene load_scene(Arena *arena, const char *filename)
 	
 	printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
 
+	mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 
-	scene.triangles = make_array_max<MeshTriangle>(arena, total_num_triangles);
-	scene.nodes  = make_array<SceneNode>(arena, uscene->nodes.count);
-	scene.meshes = make_array<Mesh>(arena, uscene->meshes.count);
-	scene.root = &scene.nodes[(int)uscene->root_node->typed_id];
+	scene.meshes = make_array_max<Mesh>(arena, uscene->meshes.count);
 
-	for (size_t i = 0; i < uscene->nodes.count; i++) {
-		ufbx_node *unode = uscene->nodes.data[i];
-		assert(unode->typed_id == i);
+	for (usize i = 0; i < uscene->nodes.count; i++) {
+		if (uscene->nodes.data[i]->mesh) {
+			Mesh mesh = load_mesh(arena, scene, uscene->nodes.data[i]);
+			mesh.transform = ufbx_to_mat4(uscene->nodes.data[i]->geometry_to_world);
 
-		scene.nodes[i].id = (int)i;
-		scene.nodes[i].local_transform = ufbx_to_mat4(unode->node_to_parent);	
-		scene.nodes[i].geometry_transform = ufbx_to_mat4(unode->geometry_to_node);
-		scene.nodes[i].name = make_string(arena, unode->name.length, unode->name.data);
+			double center[3] = {};
+			for (usize j = 0; j < mesh.vertices.count; j++)
+				for (int k = 0; k < 3; k++)
+					center[k] += mesh.vertices[j].e[k];
+			for (int k = 0; k < 3; k++)
+				center[k] /= mesh.vertices.count;
 
-		if (unode->parent)
-			scene.nodes[i].parent = &scene.nodes[(int)unode->parent->typed_id];
+			mesh.default_transform = root_transform * translate(-V3(center[0], center[1], center[2]));
 
-		if (unode->parent)
-			assert(unode->parent->typed_id < i);
-
-		if (scene.nodes[i].parent)
-			scene.nodes[i].skip_render |= scene.nodes[i].parent->skip_render;
-
-		if (unode->light || unode->bone || unode->camera)
-			scene.nodes[i].skip_render = true;
-
-		if (unode->mesh) {
-			scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, unode);
-			scene.nodes[i].mesh = &scene.meshes[(int)unode->mesh->typed_id];
-			assert(!scene.nodes[i].skip_render);
+			scene.meshes.push(mesh);
 		}
-		scene.nodes[i].childs = make_array<SceneNode *>(arena, unode->children.count);
-
-		for (usize j = 0; j < unode->children.count; j++)
-			scene.nodes[i].childs[j] = &scene.nodes[(int)unode->children.data[j]->typed_id];
 	}
-
-	scene.animations = make_array_max<Animation>(arena, uscene->anim_stacks.count);
-	for (usize i = 0; i < uscene->anim_stacks.count; i++) {
-		Animation anim = load_animation(arena, uscene, uscene->anim_stacks.data[i]);
-		bool const_anim = true;
-		for (usize j = 0; j < anim.nodes.count; j++)
-			if (anim.nodes[j].position.count || 
-					anim.nodes[j].rotation.count ||
-					anim.nodes[j].scale.count)
-				const_anim = false;
-		if (!const_anim)
-			scene.animations.push(anim);
-	}
-
-	compute_meshes_transform(scene, scene.root, identity());
 
 	end_temp_memory();
-	return scene;
+	scene.id = ++game.next_scene_id;
+	game.scenes.push(scene);
+	return &game.scenes[game.scenes.count - 1];
 }

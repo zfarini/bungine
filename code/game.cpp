@@ -19,6 +19,7 @@
 #include "platform.h"
 #include "renderer.h"
 
+// TODO: cleanup
 global RenderContext *g_rc;
 #define RENDERER_DEBUG
 #ifdef RENDERER_DX11
@@ -28,8 +29,27 @@ global RenderContext *g_rc;
 #endif
 
 #include "scene.h"
-#include "scene.cpp"
 #include "game.h"
+#include "scene.cpp"
+
+SceneID get_scene_id_by_name(Game &game, String name)
+{
+	for (int i = 0; i < game.scenes.count; i++) {
+		if (strings_equal(game.scenes[i].name, name))
+			return game.scenes[i].id;
+	}
+	printf("WARN: couldn't find scene %.*s\n", str_format(name));
+	return 0;
+}
+
+Scene &get_scene_by_id(Game &game, SceneID id)
+{
+	for (int i = 0; i < game.scenes.count; i++) {
+		if (game.scenes[i].id == id)
+			return game.scenes[i];
+	}
+	return game.default_scene;
+}
 
 Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
@@ -72,213 +92,15 @@ Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width,
 	return camera;
 }
 
-SceneType get_scene(Game &game, SceneType type)
-{
-	assert(type > 0 && type < ARRAY_SIZE(game.scenes));
-	return type;
-}
-
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
 v3 get_world_p(World &world, entity_id id);
-
-#define SOUND_CHANNEL_COUNT 2
-#define SOUND_SAMPLE_RATE 48000
-
-LoadedSound load_wav_file(Arena *arena, const char *filename)
-{
-    ma_decoder_config config = ma_decoder_config_init(ma_format_f32, SOUND_CHANNEL_COUNT, SOUND_SAMPLE_RATE);
-
-    ma_decoder decoder;
-    ma_result result = ma_decoder_init_file(filename, &config, &decoder);
-    if (result != MA_SUCCESS)
-        assert(0);
-    LoadedSound sound = {};
-    //sound.samples = (float *)calloc(1, 2 * sizeof(float) * 48000 * 60);
-    ma_uint64 samplesToRead = 1024;
-	sound.samples = (float *)arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
-
-    while (1) {
-        ma_uint64 samplesRead = 0;
-        result = ma_decoder_read_pcm_frames(&decoder, sound.samples + sound.sample_count*SOUND_CHANNEL_COUNT, 
-			samplesToRead, &samplesRead);
-        sound.sample_count += samplesRead;
-        if (samplesRead < samplesToRead)
-            break ;
-		// @HACK: kinda, I'm just assuming stuff will be continuous with no random alignement jumps
-		arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
-    }
-	printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
-    return sound;
-}
-
-void audio_write_callback(ma_device* device, void* output, const void* input, ma_uint32 frame_count)
-{
-	Game &game = *((Game *)device->pUserData);
-	if (!game.is_initialized) 
-		return ;
-
-	int read_index = game.sound_state.read_index;
-	int write_index = game.sound_state.write_index;
-	//printf("read: %d %d %d\n", read_index, write_index, game.sound_state.sample_count);
-
-	if (read_index == write_index)
-		return ;
-
-	if (read_index < write_index) {
-		int samples_to_read = min(write_index - read_index, (int)frame_count);
-		memcpy(output, game.sound_state.buffer + read_index * SOUND_CHANNEL_COUNT,
-			samples_to_read * SOUND_CHANNEL_COUNT * sizeof(float));
-		game.sound_state.read_index = read_index + samples_to_read;
-	}
-	else {
-		int samples_to_copy = min((int)frame_count, game.sound_state.sample_count - read_index);
-		memcpy(output, game.sound_state.buffer + read_index * SOUND_CHANNEL_COUNT,
-			samples_to_copy * SOUND_CHANNEL_COUNT * sizeof(float));
-		frame_count -= samples_to_copy;
-		memcpy(output, game.sound_state.buffer, 
-			min(write_index, (int)frame_count) * SOUND_CHANNEL_COUNT * sizeof(float));
-
-		game.sound_state.read_index = (read_index + samples_to_copy
-			+ min(write_index, (int)frame_count)) % game.sound_state.sample_count;
-	}
-
-	// for (int i = 0; i < frame_count; i++)
-    // {
-
-    //     float *out0 = (float *)output;
-    //     output = (float *)output + 1;
-    //     float *out1 = (float *)output;
-    //     output = (float *)output + 1;
-
-	// 	//*out0 = 0;
-	// 	//*out1 = 0;
-    //     // if (sample >= g_sound_file.sampleCount*2)
-    //     //     sample = 0;
-		
-    //     // float value0 = g_sound_file.samples[sample++];
-    //     // float value1 = g_sound_file.samples[sample++];
-	// 	// float value = sinf(((float)sample / SOUND_SAMPLE_RATE) * 2 * 3.14159265359f * 300);
-    //     // *out0 = value;
-    //     // *out1 = value;
-	// 	// sample++;
-    // }
-}
-
-void play_sound(Game &game, LoadedSound &loaded_sound, entity_id entity = 0)
-{
-	SoundPlaying *sound = (SoundPlaying *)arena_alloc_zero(game.memory, sizeof(SoundPlaying));
-	sound->sound = &loaded_sound;
-	sound->entity = entity;
-
-	sound->next = game.first_playing_sound;
-	if (game.first_playing_sound)
-		game.first_playing_sound->prev = sound;
-	game.first_playing_sound = sound;
-}
-
-void update_sound(Game &game, World &world)
-{
-	if (!game.first_playing_sound)
-		return ;
-
-	SoundState &state = game.sound_state;
-
-	int frames_to_write = 1;
-	int fps = 60;
-	int max_samples_to_write =  ((SOUND_SAMPLE_RATE * frames_to_write) / fps);
-
-
-	int write_index = state.write_index;
-	int read_index = state.read_index;
-	//printf("write %d %d %d\n", read_index, write_index, state.sample_count);
-
-	int can_write = 0;
-	if (read_index <= write_index)
-		can_write = read_index + state.sample_count - write_index; 
-	else
-		can_write = read_index - write_index;
-	
-	can_write -= 1;
-
-	max_samples_to_write = min(max_samples_to_write, can_write);
-
-	if (max_samples_to_write <= 0)
-		return ;
-
-	Entity *player = get_entity(world, world.player_id);
-	v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
-	v3 player_up = WORLD_UP;
-	v3 player_right = normalize(cross(player_forward, player_up));
-		
-	int index = write_index;
-	for (int sample = 0; sample < max_samples_to_write; sample++) {
-		for (int i = 0; i < SOUND_CHANNEL_COUNT; i++)
-			state.buffer[index * SOUND_CHANNEL_COUNT + i] = 0;
-		index++;
-		if (index == state.sample_count)
-			index = 0;
-	}
-	//printf("INIT JUMP SOUND %d %d\n", max_samples_to_write, game.first_playing_sound->sound->sample_count);
-
-	for (SoundPlaying *playing_sound = game.first_playing_sound; 
-		playing_sound;) {
-
-		Entity *e = get_entity(world, playing_sound->entity);
-		float volume[2] = {1, 1};
-		if (e) {
-			v3 to_e = normalize(e->position - world.player_camera_p);
-			float x = dot(to_e, player_right);
-			float y = dot(to_e, player_forward);
-			float a = fabsf(atan2(y, x));
-			a = a / PI;
-			volume[0] = a;
-			volume[1] = 1 - a;
-
-			float dist = 1 - logf(length(e->position - world.player_camera_p)) / 5;
-			if (dist < 0)
-				dist = 0;
-			volume[0] *= dist;
-			volume[1] *= dist;
-		}
-		
-		int samples_to_write = min(max_samples_to_write, 
-		playing_sound->sound->sample_count - playing_sound->samples_played);
-
-		index = write_index;
-		for (int sample = 0; sample < samples_to_write; sample++) {
-			for (int i = 0; i < SOUND_CHANNEL_COUNT; i++) {
-				state.buffer[index * SOUND_CHANNEL_COUNT + i] += 
-					playing_sound->sound->samples[playing_sound->samples_played
-						* SOUND_CHANNEL_COUNT + i] * volume[i] * game.master_volume;
-			}
-			playing_sound->samples_played++;
-			index++;
-			if (index == state.sample_count)
-				index = 0;
-		}
-		SoundPlaying *next = playing_sound->next;
-		if (playing_sound->samples_played == playing_sound->sound->sample_count) {
-			if (next)
-				next->prev = playing_sound->prev;
-			if (playing_sound->prev)
-				playing_sound->prev->next = next;
-			if (game.first_playing_sound == playing_sound)
-				game.first_playing_sound = next;
-		}
-		playing_sound = next;
-	}
-	//printf("finished? %d\n", game.first_playing_sound == 0);
-	//printf("END JUMP SOUND\n");
-	int new_write_index = (write_index + max_samples_to_write) % state.sample_count;
-	state.write_index = new_write_index;
-}
-
 
 #ifndef DISABLE_PREPROCESSOR
 #include "generated.h"
 #endif
 
+#include "sound.cpp"
 #include "renderer.cpp"
 #include "collision.cpp"
 #include "world.cpp"
@@ -329,6 +151,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		usize temp_arena_size = Megabyte(1024);
 		g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
 
+
+		game.scenes = make_array_max<Scene>(memory, 1024);
 
 		//memory->used += sizeof(game);
 
@@ -446,27 +270,25 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			end_temp_memory();
 		}
 		
-#if 1
-		game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
-#else
-#endif
-		game.scenes[SCENE_SPONZA] = load_scene(&game.asset_arena, "data/Sponza/Sponza.fbx");
-		game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
-		game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
-		game.scenes[SCENE_WOOD_CRATE] = load_scene(&game.asset_arena, "data/wood-crates/source/BoxPack1.fbx");
-		game.scenes[SCENE_FENCE_PACK] = load_scene(&game.asset_arena, "data/PrivacyFencePack/PrivacyFencePack.fbx");
-	//	game.scenes[SCENE_BISTRO] = load_scene(&game.asset_arena, "data/Bistro_v5_2/BistroExterior.fbx");
+		load_scene(&game.asset_arena, game, "data/parking/zma_carpark_b2.obj");
+		load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
+		load_scene(&game.asset_arena, game, "data/cube.fbx");
+		load_scene(&game.asset_arena, game, "data/sphere.fbx");
+		load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
+		load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
 
 #if 1
-		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
-		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
-		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
-		// TODO: remove this
+		load_scene(&game.asset_arena, game, "data/Ybot.fbx");
+
+		// TODO: cleanup
+		game.animations[ANIMATION_JUMP] = load_animation(&game.asset_arena, game, "data/jump.fbx");
+		game.animations[ANIMATION_SHOOT] = load_animation(&game.asset_arena, game, "data/shoot.fbx");
+		// TODO: cleanup remove this
 		game.animations[ANIMATION_SHOOT].duration *= 0.6;
-		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
-		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
-		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
-		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
+		game.animations[ANIMATION_RUN] = load_animation(&game.asset_arena, game, "data/run.fbx");
+		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
+		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
+		game.animations[ANIMATION_GUN_IDLE] = load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
 #else
 		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Swat.fbx");
 		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/SwatRifleJump.fbx").animations[0];
@@ -479,51 +301,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 		FILE *fd = fopen("world.bin", "rb");
 		if (!fd) {
-
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-			Entity *boxes[] = {
-				make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
+			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5)));
+			ground->scale = ground->shape.box_radius;
+			ground->shape = make_box_shape(memory, V3(1));
+			ground->color = V3(0.3f);
 
-				
-				//make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(25, 25, 0.5))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 25, 0), make_box_shape(memory, (V3(25, 0.5, 25)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1), make_box_shape(memory, (V3(5, 5.8, 0.3)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1.3), make_box_shape(memory, (V3(2.5, 2.5, 0.3)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(10, 6, 1.6), make_box_shape(memory, (V3(1.25, 1.25, 0.3)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(-10, 6, 1), make_box_shape(memory, (V3(7, 7, 0.3)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(1, 6, 0),  make_box_shape(memory, (V3(4, 1, 2)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, -7, 1), make_box_shape(memory, (V3(4, 4, 0.3)))),
-				// make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, -7, 1.6), make_box_shape(memory, (V3(2, 2, 0.3)))),
-
-				//make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(7, -7, 0.1), make_box_shape(memory, (V3(3, 3, 0.1)))),
-			};
-			world.moving_box = 7;
-
-			for (int i = 0; i < ARRAY_SIZE(boxes); i++) {
-				//boxes[i]->scene_transform = scale();
-				boxes[i]->scale = boxes[i]->shape.box_radius;
-				boxes[i]->shape = make_box_shape(memory, V3(1));
-
-				float r = (float)rand() / RAND_MAX;
-				float g = (float)rand() / RAND_MAX;
-				float b = (float)rand() / RAND_MAX;
-
-				boxes[i]->color = V3(r, g, b);
-
-			}
-			Entity *player = make_entity(world, EntityType_Player, get_scene(game, SCENE_PLAYER), V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
-			world.player_id = player->id;
-			//player->scene = &game.sphere_asset;
-			//player->scene = 0;
-			//player->shape.ellipsoid_radius = V3(0.2, 0.2, 0.2); 
-			//player->scene_transform =  scale(player->shape.ellipsoid_radius);
+			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, make_cstring("Ybot.fbx")),
+					V3(0, 0, 4), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
 			player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*PI/2) * scale(V3(1.1));
 			player->color = V3(0, 1, 1);
-
-			Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
-			test->rotation = rotate_around_axis_quat(V3(1, 0, 0), PI/2);
-
+			world.player_id = player->id;
 			world.editor_camera_p = V3(0, 0, 3);
 		}
 		else {
@@ -532,7 +321,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 				world.entities_id_map[world.entities[i].id] = i;
 			fclose(fd);
 		}
-
 		
 		{
 			game.debug_asset_fb = create_frame_buffer(false, true);
@@ -553,6 +341,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
 		game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
 
+		// TODO: cleanup
 		game.loaded_sounds[0] = load_wav_file(memory, "data/music.wav");
 		game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
 
@@ -564,14 +353,19 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	game.memory = memory;
 
 
-	if (game.frame == 0) {
+	if (game.frame == 0)
 		play_sound(game, game.loaded_sounds[0], 0);
-	}
 
 	World &world = *game.world;
 
 	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON))
 		game.in_editor = !game.in_editor;
+
+	if (ImGui::GetIO().WantCaptureKeyboard) {
+		for (int i = 0; i < BUTTON_COUNT; i++)
+			if (IsKeyboardButton(i))
+				input.buttons[i].is_down = false;
+	}
 
 	begin_render_frame();
 
@@ -671,13 +465,13 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene(game, SCENE_CUBE), game_camera.position
+					get_scene_id_by_name(game, make_cstring("cube.fbx")), game_camera.position
 					+ game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene(game, SCENE_SPHERE), game_camera.position
+					get_scene_id_by_name(game, make_cstring("sphere.fbx")), game_camera.position
 					+ game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
 			world.editor.selected_entity = entity->id;
 		}
@@ -705,7 +499,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	game.time += dt;
 	// @HACK
-	if (game.frame == 0 || !game.in_editor)
-		ImGui::SetWindowFocus(NULL);
+	if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(NULL);
 	game.frame++;
 }

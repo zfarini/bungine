@@ -90,7 +90,8 @@ template <typename T> Array<T> clone_array(Arena *arena, Array<T> &array) {
 // 	return true;
 // }
 
-using String = Array<char>;
+typedef Array<char> String;
+
 String make_string(Arena *arena, usize count, const char *data = 0) {
     return make_array<char>(arena, count, data);
 }

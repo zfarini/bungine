@@ -73,6 +73,7 @@ struct GameInput {
 };
 
 #define IsDown(input, button) (input.buttons[button].is_down)
+#define IsKeyboardButton(button) (button != BUTTON_MOUSE_LEFT && button != BUTTON_MOUSE_RIGHT)
 #define WasDown(input, button) (input.buttons[button].was_down)
 #define IsDownFirstTime(input, button)                                         \
     (IsDown(input, button) && !WasDown(input, button))

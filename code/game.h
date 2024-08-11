@@ -2,16 +2,6 @@
 
 #define WORLD_UP V3(0, 0, 1)
 
-enum SceneType {
-    SCENE_PLAYER = 1,
-    SCENE_CUBE,
-    SCENE_SPHERE,
-	SCENE_WOOD_CRATE,
-	SCENE_FENCE_PACK,
-	SCENE_SPONZA,
-	SCENE_BISTRO,
-    SCENE_TEST,
-};
 
 struct CollisionInfo
 {
@@ -79,7 +69,7 @@ struct Entity {
 
     meta(ui, serialize) CollisionShape shape;
 
-    meta(ui, serialize) SceneType scene_id;
+    meta(ui, serialize) SceneID scene_id;
     meta(ui, serialize) mat4 scene_transform;
 
 	meta(ui, serialize) bool disable_collision;
@@ -101,7 +91,6 @@ struct Entity {
 
     float z_rot;
     int last_move;
-
 
     float last_gun_time;
 };
@@ -177,6 +166,7 @@ struct EditorOp {
         struct {
             entity_id copy_from;
             entity_id id;
+			int mesh_index;
             v3 p;
         } paste;
         struct {
@@ -195,6 +185,8 @@ struct Editor {
 
     meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
+	meta(ui) int selected_entity_mesh;
+
     meta(ui) entity_id copied_entity;
 
     meta(ui) GizmoMode gizmo_mode;
@@ -214,6 +206,8 @@ struct Editor {
     meta(ui) v3 r_axis;
 
     meta(ui) v3 last_camera_p;
+
+	meta(ui) bool copy_entity_mesh;
 };
 
 struct World {
@@ -291,7 +285,8 @@ struct Game {
 
     Arena asset_arena;
 
-    Scene scenes[16];
+	meta(ui) Array<Scene> scenes;
+	usize next_scene_id;
 
     Animation animations[ANIMATION_COUNT];
 
@@ -312,6 +307,8 @@ struct Game {
     
     SoundPlaying *first_playing_sound;
     LoadedSound loaded_sounds[32];
+
+	Scene default_scene;
 
     meta(ui) bool show_normals;
     meta(ui) bool render_bones;

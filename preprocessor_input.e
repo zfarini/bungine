@@ -20,6 +20,7 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
+#define __OPTIMIZE__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -354,8 +355,8 @@
 #define __DEC128_SUBNORMAL_MIN__ 0.000000000000000000000000000000001E-6143DL
 #define __REGISTER_PREFIX__ 
 #define __USER_LABEL_PREFIX__ 
+#define _FORTIFY_SOURCE 2
 #define __GNUC_STDC_INLINE__ 1
-#define __NO_INLINE__ 1
 #define __STRICT_ANSI__ 1
 #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 1
 #define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 1
@@ -613,7 +614,8 @@ template <typename T> Array<T> clone_array(Arena *arena, Array<T> &array) {
 
 
 
-using String = Array<char>;
+typedef Array<char> String;
+
 String make_string(Arena *arena, usize count, const char *data = 0) {
     return make_array<char>(arena, count, data);
 }
@@ -1077,15 +1079,9 @@ namespace __gnu_cxx
 
 
 #define __USE_GNU 1
-# 428 "/usr/include/features.h" 3 4
-#define __USE_FORTIFY_LEVEL 0
-
-
-
-
-
-
-
+# 422 "/usr/include/features.h" 3 4
+#define __USE_FORTIFY_LEVEL 2
+# 436 "/usr/include/features.h" 3 4
 #define __GLIBC_USE_DEPRECATED_GETS 0
 # 459 "/usr/include/features.h" 3 4
 #define __GLIBC_USE_DEPRECATED_SCANF 0
@@ -1286,15 +1282,10 @@ namespace __gnu_cxx
 #define __returns_nonnull __attribute__ ((__returns_nonnull__))
 # 406 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
 #define __attribute_warn_unused_result__ __attribute__ ((__warn_unused_result__))
-# 415 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
-#define __wur 
 
 
-
-
-
-
-
+#define __wur __attribute_warn_unused_result__
+# 423 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
 #undef __always_inline
 #define __always_inline __inline __attribute__ ((__always_inline__))
 # 433 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
@@ -1389,7 +1380,15 @@ namespace __gnu_cxx
 
 #define __attribute_returns_twice__ __attribute__ ((__returns_twice__))
 # 487 "/usr/include/features.h" 2 3 4
-# 510 "/usr/include/features.h" 3 4
+# 502 "/usr/include/features.h" 3 4
+#define __USE_EXTERN_INLINES 1
+
+
+
+
+
+
+
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
 # 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
@@ -3095,22 +3094,22 @@ extern int fclose (FILE *__stream);
 
 
 extern FILE *tmpfile (void)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 # 200 "/usr/include/stdio.h" 3 4
 extern FILE *tmpfile64 (void)
-   __attribute__ ((__malloc__)) ;
+   __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
-extern char *tmpnam (char[20]) noexcept (true) ;
+extern char *tmpnam (char[20]) noexcept (true) __attribute__ ((__warn_unused_result__));
 
 
 
 
-extern char *tmpnam_r (char __s[20]) noexcept (true) ;
+extern char *tmpnam_r (char __s[20]) noexcept (true) __attribute__ ((__warn_unused_result__));
 # 222 "/usr/include/stdio.h" 3 4
 extern char *tempnam (const char *__dir, const char *__pfx)
-   noexcept (true) __attribute__ ((__malloc__)) ;
+   noexcept (true) __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__)) ;
 
 
 
@@ -3125,27 +3124,27 @@ extern int fcloseall (void);
 # 258 "/usr/include/stdio.h" 3 4
 extern FILE *fopen (const char *__restrict __filename,
       const char *__restrict __modes)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
 
 extern FILE *freopen (const char *__restrict __filename,
         const char *__restrict __modes,
-        FILE *__restrict __stream) ;
+        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 # 283 "/usr/include/stdio.h" 3 4
 extern FILE *fopen64 (const char *__restrict __filename,
         const char *__restrict __modes)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 extern FILE *freopen64 (const char *__restrict __filename,
    const char *__restrict __modes,
-   FILE *__restrict __stream) ;
+   FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 
 
 
 
 extern FILE *fdopen (int __fd, const char *__modes) noexcept (true)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3154,19 +3153,19 @@ extern FILE *fdopen (int __fd, const char *__modes) noexcept (true)
 extern FILE *fopencookie (void *__restrict __magic_cookie,
      const char *__restrict __modes,
      cookie_io_functions_t __io_funcs) noexcept (true)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
 
 extern FILE *fmemopen (void *__s, size_t __len, const char *__modes)
-  noexcept (true) __attribute__ ((__malloc__)) ;
+  noexcept (true) __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
 
 extern FILE *open_memstream (char **__bufloc, size_t *__sizeloc) noexcept (true)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 # 328 "/usr/include/stdio.h" 3 4
 extern void setbuf (FILE *__restrict __stream, char *__restrict __buf) noexcept (true);
 
@@ -3232,13 +3231,13 @@ extern int vsnprintf (char *__restrict __s, size_t __maxlen,
 
 extern int vasprintf (char **__restrict __ptr, const char *__restrict __f,
         __gnuc_va_list __arg)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0))) ;
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 0))) __attribute__ ((__warn_unused_result__));
 extern int __asprintf (char **__restrict __ptr,
          const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) __attribute__ ((__warn_unused_result__));
 extern int asprintf (char **__restrict __ptr,
        const char *__restrict __fmt, ...)
-     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) ;
+     noexcept (true) __attribute__ ((__format__ (__printf__, 2, 3))) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3256,12 +3255,12 @@ extern int dprintf (int __fd, const char *__restrict __fmt, ...)
 
 
 extern int fscanf (FILE *__restrict __stream,
-     const char *__restrict __format, ...) ;
+     const char *__restrict __format, ...) __attribute__ ((__warn_unused_result__));
 
 
 
 
-extern int scanf (const char *__restrict __format, ...) ;
+extern int scanf (const char *__restrict __format, ...) __attribute__ ((__warn_unused_result__));
 
 extern int sscanf (const char *__restrict __s,
      const char *__restrict __format, ...) noexcept (true);
@@ -3366,23 +3365,23 @@ typedef long double _Float64x;
 
 extern int fscanf (FILE *__restrict __stream, const char *__restrict __format, ...) __asm__ ("" "__isoc99_fscanf")
 
-                               ;
+                          __attribute__ ((__warn_unused_result__));
 extern int scanf (const char *__restrict __format, ...) __asm__ ("" "__isoc99_scanf")
-                              ;
+                         __attribute__ ((__warn_unused_result__));
 extern int sscanf (const char *__restrict __s, const char *__restrict __format, ...) noexcept (true) __asm__ ("" "__isoc99_sscanf")
 
                       ;
 # 459 "/usr/include/stdio.h" 3 4
 extern int vfscanf (FILE *__restrict __s, const char *__restrict __format,
       __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
+     __attribute__ ((__format__ (__scanf__, 2, 0))) __attribute__ ((__warn_unused_result__));
 
 
 
 
 
 extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg)
-     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
+     __attribute__ ((__format__ (__scanf__, 1, 0))) __attribute__ ((__warn_unused_result__));
 
 
 extern int vsscanf (const char *__restrict __s,
@@ -3397,10 +3396,10 @@ extern int vfscanf (FILE *__restrict __s, const char *__restrict __format, __gnu
 
 
 
-     __attribute__ ((__format__ (__scanf__, 2, 0))) ;
+     __attribute__ ((__format__ (__scanf__, 2, 0))) __attribute__ ((__warn_unused_result__));
 extern int vscanf (const char *__restrict __format, __gnuc_va_list __arg) __asm__ ("" "__isoc99_vscanf")
 
-     __attribute__ ((__format__ (__scanf__, 1, 0))) ;
+     __attribute__ ((__format__ (__scanf__, 1, 0))) __attribute__ ((__warn_unused_result__));
 extern int vsscanf (const char *__restrict __s, const char *__restrict __format, __gnuc_va_list __arg) noexcept (true) __asm__ ("" "__isoc99_vsscanf")
 
 
@@ -3463,18 +3462,18 @@ extern int putw (int __w, FILE *__stream);
 
 
 extern char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
-     __attribute__ ((__access__ (__write_only__, 1, 2)));
+     __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
 # 615 "/usr/include/stdio.h" 3 4
 extern char *fgets_unlocked (char *__restrict __s, int __n,
-        FILE *__restrict __stream)
+        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__))
     __attribute__ ((__access__ (__write_only__, 1, 2)));
 # 632 "/usr/include/stdio.h" 3 4
 extern __ssize_t __getdelim (char **__restrict __lineptr,
                              size_t *__restrict __n, int __delimiter,
-                             FILE *__restrict __stream) ;
+                             FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 extern __ssize_t getdelim (char **__restrict __lineptr,
                            size_t *__restrict __n, int __delimiter,
-                           FILE *__restrict __stream) ;
+                           FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3484,7 +3483,7 @@ extern __ssize_t getdelim (char **__restrict __lineptr,
 
 extern __ssize_t getline (char **__restrict __lineptr,
                           size_t *__restrict __n,
-                          FILE *__restrict __stream) ;
+                          FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3513,7 +3512,7 @@ extern int ungetc (int __c, FILE *__stream);
 
 
 extern size_t fread (void *__restrict __ptr, size_t __size,
-       size_t __n, FILE *__restrict __stream) ;
+       size_t __n, FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3525,7 +3524,7 @@ extern int fputs_unlocked (const char *__restrict __s,
       FILE *__restrict __stream);
 # 702 "/usr/include/stdio.h" 3 4
 extern size_t fread_unlocked (void *__restrict __ptr, size_t __size,
-         size_t __n, FILE *__restrict __stream) ;
+         size_t __n, FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
 extern size_t fwrite_unlocked (const void *__restrict __ptr, size_t __size,
           size_t __n, FILE *__restrict __stream);
 
@@ -3540,7 +3539,7 @@ extern int fseek (FILE *__stream, long int __off, int __whence);
 
 
 
-extern long int ftell (FILE *__stream) ;
+extern long int ftell (FILE *__stream) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3552,7 +3551,7 @@ extern int fseeko (FILE *__stream, __off_t __off, int __whence);
 
 
 
-extern __off_t ftello (FILE *__stream) ;
+extern __off_t ftello (FILE *__stream) __attribute__ ((__warn_unused_result__));
 # 760 "/usr/include/stdio.h" 3 4
 extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
 
@@ -3562,7 +3561,7 @@ extern int fgetpos (FILE *__restrict __stream, fpos_t *__restrict __pos);
 extern int fsetpos (FILE *__stream, const fpos_t *__pos);
 # 779 "/usr/include/stdio.h" 3 4
 extern int fseeko64 (FILE *__stream, __off64_t __off, int __whence);
-extern __off64_t ftello64 (FILE *__stream) ;
+extern __off64_t ftello64 (FILE *__stream) __attribute__ ((__warn_unused_result__));
 extern int fgetpos64 (FILE *__restrict __stream, fpos64_t *__restrict __pos);
 extern int fsetpos64 (FILE *__stream, const fpos64_t *__pos);
 
@@ -3570,15 +3569,15 @@ extern int fsetpos64 (FILE *__stream, const fpos64_t *__pos);
 
 extern void clearerr (FILE *__stream) noexcept (true);
 
-extern int feof (FILE *__stream) noexcept (true) ;
+extern int feof (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 
-extern int ferror (FILE *__stream) noexcept (true) ;
+extern int ferror (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 
 
 
 extern void clearerr_unlocked (FILE *__stream) noexcept (true);
-extern int feof_unlocked (FILE *__stream) noexcept (true) ;
-extern int ferror_unlocked (FILE *__stream) noexcept (true) ;
+extern int feof_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
+extern int ferror_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3591,12 +3590,12 @@ extern void perror (const char *__s);
 
 
 
-extern int fileno (FILE *__stream) noexcept (true) ;
+extern int fileno (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 
 
 
 
-extern int fileno_unlocked (FILE *__stream) noexcept (true) ;
+extern int fileno_unlocked (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 # 823 "/usr/include/stdio.h" 3 4
 extern int pclose (FILE *__stream);
 
@@ -3605,7 +3604,7 @@ extern int pclose (FILE *__stream);
 
 
 extern FILE *popen (const char *__command, const char *__modes)
-  __attribute__ ((__malloc__)) ;
+  __attribute__ ((__malloc__)) __attribute__ ((__warn_unused_result__));
 
 
 
@@ -3646,14 +3645,461 @@ extern void flockfile (FILE *__stream) noexcept (true);
 
 
 
-extern int ftrylockfile (FILE *__stream) noexcept (true) ;
+extern int ftrylockfile (FILE *__stream) noexcept (true) __attribute__ ((__warn_unused_result__));
 
 
 extern void funlockfile (FILE *__stream) noexcept (true);
 # 885 "/usr/include/stdio.h" 3 4
 extern int __uflow (FILE *);
 extern int __overflow (FILE *, int);
-# 902 "/usr/include/stdio.h" 3 4
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 1 3 4
+# 20 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
+#define _BITS_STDIO_H 1
+# 29 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
+#define __STDIO_INLINE __extern_inline
+# 46 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
+extern __inline __attribute__ ((__gnu_inline__)) int
+getchar (void)
+{
+  return getc (stdin);
+}
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+fgetc_unlocked (FILE *__fp)
+{
+  return (__builtin_expect (((__fp)->_IO_read_ptr >= (__fp)->_IO_read_end), 0) ? __uflow (__fp) : *(unsigned char *) (__fp)->_IO_read_ptr++);
+}
+
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+getc_unlocked (FILE *__fp)
+{
+  return (__builtin_expect (((__fp)->_IO_read_ptr >= (__fp)->_IO_read_end), 0) ? __uflow (__fp) : *(unsigned char *) (__fp)->_IO_read_ptr++);
+}
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+getchar_unlocked (void)
+{
+  return (__builtin_expect (((stdin)->_IO_read_ptr >= (stdin)->_IO_read_end), 0) ? __uflow (stdin) : *(unsigned char *) (stdin)->_IO_read_ptr++);
+}
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+putchar (int __c)
+{
+  return putc (__c, stdout);
+}
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+fputc_unlocked (int __c, FILE *__stream)
+{
+  return (__builtin_expect (((__stream)->_IO_write_ptr >= (__stream)->_IO_write_end), 0) ? __overflow (__stream, (unsigned char) (__c)) : (unsigned char) (*(__stream)->_IO_write_ptr++ = (__c)));
+}
+
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+putc_unlocked (int __c, FILE *__stream)
+{
+  return (__builtin_expect (((__stream)->_IO_write_ptr >= (__stream)->_IO_write_end), 0) ? __overflow (__stream, (unsigned char) (__c)) : (unsigned char) (*(__stream)->_IO_write_ptr++ = (__c)));
+}
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+putchar_unlocked (int __c)
+{
+  return (__builtin_expect (((stdout)->_IO_write_ptr >= (stdout)->_IO_write_end), 0) ? __overflow (stdout, (unsigned char) (__c)) : (unsigned char) (*(stdout)->_IO_write_ptr++ = (__c)));
+}
+
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) __ssize_t
+getline (char **__lineptr, size_t *__n, FILE *__stream)
+{
+  return __getdelim (__lineptr, __n, '\n', __stream);
+}
+
+
+
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+__attribute__ ((__leaf__)) feof_unlocked (FILE *__stream) noexcept (true)
+{
+  return (((__stream)->_flags & 0x0010) != 0);
+}
+
+
+extern __inline __attribute__ ((__gnu_inline__)) int
+__attribute__ ((__leaf__)) ferror_unlocked (FILE *__stream) noexcept (true)
+{
+  return (((__stream)->_flags & 0x0020) != 0);
+}
+# 193 "/usr/include/x86_64-linux-gnu/bits/stdio.h" 3 4
+#undef __STDIO_INLINE
+# 892 "/usr/include/stdio.h" 2 3 4
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 1 3 4
+# 20 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
+#define _BITS_STDIO2_H 1
+
+
+
+
+
+extern int __sprintf_chk (char *__restrict __s, int __flag, size_t __slen,
+     const char *__restrict __format, ...) noexcept (true)
+    __attribute__ ((__access__ (__write_only__, 1, 3)));
+extern int __vsprintf_chk (char *__restrict __s, int __flag, size_t __slen,
+      const char *__restrict __format,
+      __gnuc_va_list __ap) noexcept (true)
+    __attribute__ ((__access__ (__write_only__, 1, 3)));
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) sprintf (char *__restrict __s, const char *__restrict __fmt, ...) noexcept (true)
+{
+  return __builtin___sprintf_chk (__s, 2 - 1,
+      __builtin_object_size (__s, 2 > 1), __fmt,
+      __builtin_va_arg_pack ());
+}
+
+
+
+
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) vsprintf (char *__restrict __s, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
+
+{
+  return __builtin___vsprintf_chk (__s, 2 - 1,
+       __builtin_object_size (__s, 2 > 1), __fmt, __ap);
+}
+
+
+
+extern int __snprintf_chk (char *__restrict __s, size_t __n, int __flag,
+      size_t __slen, const char *__restrict __format,
+      ...) noexcept (true)
+    __attribute__ ((__access__ (__write_only__, 1, 2)));
+extern int __vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
+       size_t __slen, const char *__restrict __format,
+       __gnuc_va_list __ap) noexcept (true);
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) snprintf (char *__restrict __s, size_t __n, const char *__restrict __fmt, ...) noexcept (true)
+
+{
+  return __builtin___snprintf_chk (__s, __n, 2 - 1,
+       __builtin_object_size (__s, 2 > 1), __fmt,
+       __builtin_va_arg_pack ());
+}
+
+
+
+
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) vsnprintf (char *__restrict __s, size_t __n, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
+
+{
+  return __builtin___vsnprintf_chk (__s, __n, 2 - 1,
+        __builtin_object_size (__s, 2 > 1), __fmt, __ap);
+}
+
+
+
+
+
+extern int __fprintf_chk (FILE *__restrict __stream, int __flag,
+     const char *__restrict __format, ...);
+extern int __printf_chk (int __flag, const char *__restrict __format, ...);
+extern int __vfprintf_chk (FILE *__restrict __stream, int __flag,
+      const char *__restrict __format, __gnuc_va_list __ap);
+extern int __vprintf_chk (int __flag, const char *__restrict __format,
+     __gnuc_va_list __ap);
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+fprintf (FILE *__restrict __stream, const char *__restrict __fmt, ...)
+{
+  return __fprintf_chk (__stream, 2 - 1, __fmt,
+   __builtin_va_arg_pack ());
+}
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+printf (const char *__restrict __fmt, ...)
+{
+  return __printf_chk (2 - 1, __fmt, __builtin_va_arg_pack ());
+}
+
+
+
+
+
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+vprintf (const char *__restrict __fmt, __gnuc_va_list __ap)
+{
+
+  return __vfprintf_chk (stdout, 2 - 1, __fmt, __ap);
+
+
+
+}
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+vfprintf (FILE *__restrict __stream,
+   const char *__restrict __fmt, __gnuc_va_list __ap)
+{
+  return __vfprintf_chk (__stream, 2 - 1, __fmt, __ap);
+}
+
+
+extern int __dprintf_chk (int __fd, int __flag, const char *__restrict __fmt,
+     ...) __attribute__ ((__format__ (__printf__, 3, 4)));
+extern int __vdprintf_chk (int __fd, int __flag,
+      const char *__restrict __fmt, __gnuc_va_list __arg)
+     __attribute__ ((__format__ (__printf__, 3, 0)));
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+dprintf (int __fd, const char *__restrict __fmt, ...)
+{
+  return __dprintf_chk (__fd, 2 - 1, __fmt,
+   __builtin_va_arg_pack ());
+}
+
+
+
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+vdprintf (int __fd, const char *__restrict __fmt, __gnuc_va_list __ap)
+{
+  return __vdprintf_chk (__fd, 2 - 1, __fmt, __ap);
+}
+
+
+
+
+extern int __asprintf_chk (char **__restrict __ptr, int __flag,
+      const char *__restrict __fmt, ...)
+     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 4))) __attribute__ ((__warn_unused_result__));
+extern int __vasprintf_chk (char **__restrict __ptr, int __flag,
+       const char *__restrict __fmt, __gnuc_va_list __arg)
+     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 0))) __attribute__ ((__warn_unused_result__));
+extern int __obstack_printf_chk (struct obstack *__restrict __obstack,
+     int __flag, const char *__restrict __format,
+     ...)
+     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 4)));
+extern int __obstack_vprintf_chk (struct obstack *__restrict __obstack,
+      int __flag,
+      const char *__restrict __format,
+      __gnuc_va_list __args)
+     noexcept (true) __attribute__ ((__format__ (__printf__, 3, 0)));
+
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) asprintf (char **__restrict __ptr, const char *__restrict __fmt, ...) noexcept (true)
+{
+  return __asprintf_chk (__ptr, 2 - 1, __fmt,
+    __builtin_va_arg_pack ());
+}
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) __asprintf (char **__restrict __ptr, const char *__restrict __fmt, ...) noexcept (true)
+
+{
+  return __asprintf_chk (__ptr, 2 - 1, __fmt,
+    __builtin_va_arg_pack ());
+}
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) obstack_printf (struct obstack *__restrict __obstack, const char *__restrict __fmt, ...) noexcept (true)
+
+{
+  return __obstack_printf_chk (__obstack, 2 - 1, __fmt,
+          __builtin_va_arg_pack ());
+}
+# 214 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) vasprintf (char **__restrict __ptr, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
+
+{
+  return __vasprintf_chk (__ptr, 2 - 1, __fmt, __ap);
+}
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) int
+__attribute__ ((__leaf__)) obstack_vprintf (struct obstack *__restrict __obstack, const char *__restrict __fmt, __gnuc_va_list __ap) noexcept (true)
+
+{
+  return __obstack_vprintf_chk (__obstack, 2 - 1, __fmt,
+    __ap);
+}
+# 248 "/usr/include/x86_64-linux-gnu/bits/stdio2.h" 3 4
+extern char *__fgets_chk (char *__restrict __s, size_t __size, int __n,
+     FILE *__restrict __stream)
+    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 3)));
+extern char *__fgets_alias (char *__restrict __s, int __n, FILE *__restrict __stream) __asm__ ("" "fgets")
+
+
+    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
+extern char *__fgets_chk_warn (char *__restrict __s, size_t __size, int __n, FILE *__restrict __stream) __asm__ ("" "__fgets_chk")
+
+
+     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fgets called with bigger size than length " "of destination buffer")))
+                                 ;
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2))) char *
+fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
+{
+  size_t sz = __builtin_object_size (__s, 2 > 1);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && (((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
+    return __fgets_alias (__s, __n, __stream);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && !(((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
+    return __fgets_chk_warn (__s, sz, __n, __stream);
+  return __fgets_chk (__s, sz, __n, __stream);
+}
+
+extern size_t __fread_chk (void *__restrict __ptr, size_t __ptrlen,
+      size_t __size, size_t __n,
+      FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+extern size_t __fread_alias (void *__restrict __ptr, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "fread")
+
+
+            __attribute__ ((__warn_unused_result__));
+extern size_t __fread_chk_warn (void *__restrict __ptr, size_t __ptrlen, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "__fread_chk")
+
+
+
+
+     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fread called with bigger size * nmemb than length " "of destination buffer")))
+                                 ;
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) size_t
+fread (void *__restrict __ptr, size_t __size, size_t __n,
+       FILE *__restrict __stream)
+{
+  size_t sz = __builtin_object_size (__ptr, 0);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && (((long unsigned int) (__n)) <= (sz) / (__size))))
+    return __fread_alias (__ptr, __size, __n, __stream);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && !(((long unsigned int) (__n)) <= (sz) / (__size))))
+    return __fread_chk_warn (__ptr, sz, __size, __n, __stream);
+  return __fread_chk (__ptr, sz, __size, __n, __stream);
+}
+
+
+extern char *__fgets_unlocked_chk (char *__restrict __s, size_t __size,
+       int __n, FILE *__restrict __stream)
+    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 3)));
+extern char *__fgets_unlocked_alias (char *__restrict __s, int __n, FILE *__restrict __stream) __asm__ ("" "fgets_unlocked")
+
+
+    __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2)));
+extern char *__fgets_unlocked_chk_warn (char *__restrict __s, size_t __size, int __n, FILE *__restrict __stream) __asm__ ("" "__fgets_unlocked_chk")
+
+
+     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fgets_unlocked called with bigger size than length " "of destination buffer")))
+                                 ;
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) __attribute__ ((__access__ (__write_only__, 1, 2))) char *
+fgets_unlocked (char *__restrict __s, int __n, FILE *__restrict __stream)
+{
+  size_t sz = __builtin_object_size (__s, 2 > 1);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && (((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
+    return __fgets_unlocked_alias (__s, __n, __stream);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (sizeof (char)))) && !(((long unsigned int) (__n)) <= (sz) / (sizeof (char)))))
+    return __fgets_unlocked_chk_warn (__s, sz, __n, __stream);
+  return __fgets_unlocked_chk (__s, sz, __n, __stream);
+}
+
+
+
+#undef fread_unlocked
+extern size_t __fread_unlocked_chk (void *__restrict __ptr, size_t __ptrlen,
+        size_t __size, size_t __n,
+        FILE *__restrict __stream) __attribute__ ((__warn_unused_result__));
+extern size_t __fread_unlocked_alias (void *__restrict __ptr, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "fread_unlocked")
+
+
+                     __attribute__ ((__warn_unused_result__));
+extern size_t __fread_unlocked_chk_warn (void *__restrict __ptr, size_t __ptrlen, size_t __size, size_t __n, FILE *__restrict __stream) __asm__ ("" "__fread_unlocked_chk")
+
+
+
+
+     __attribute__ ((__warn_unused_result__)) __attribute__((__warning__ ("fread_unlocked called with bigger size * nmemb than " "length of destination buffer")))
+                                        ;
+
+extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__)) __attribute__ ((__artificial__)) __attribute__ ((__warn_unused_result__)) size_t
+fread_unlocked (void *__restrict __ptr, size_t __size, size_t __n,
+  FILE *__restrict __stream)
+{
+  size_t sz = __builtin_object_size (__ptr, 0);
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && (((long unsigned int) (__n)) <= (sz) / (__size))))
+    {
+
+      if (__builtin_constant_p (__size)
+   && __builtin_constant_p (__n)
+   && (__size | __n) < (((size_t) 1) << (8 * sizeof (size_t) / 2))
+   && __size * __n <= 8)
+ {
+   size_t __cnt = __size * __n;
+   char *__cptr = (char *) __ptr;
+   if (__cnt == 0)
+     return 0;
+
+   for (; __cnt > 0; --__cnt)
+     {
+       int __c = getc_unlocked (__stream);
+       if (__c == (-1))
+  break;
+       *__cptr++ = __c;
+     }
+   return (__cptr - (char *) __ptr) / __size;
+ }
+
+      return __fread_unlocked_alias (__ptr, __size, __n, __stream);
+    }
+  if ((((__typeof (__n)) 0 < (__typeof (__n)) -1 || (__builtin_constant_p (__n) && (__n) > 0)) && __builtin_constant_p ((((long unsigned int) (__n)) <= (sz) / (__size))) && !(((long unsigned int) (__n)) <= (sz) / (__size))))
+    return __fread_unlocked_chk_warn (__ptr, sz, __size, __n, __stream);
+  return __fread_unlocked_chk (__ptr, sz, __size, __n, __stream);
+
+}
+# 895 "/usr/include/stdio.h" 2 3 4
+
+
+
+
+
+
+
 }
 # 43 "/usr/include/c++/10/cstdio" 2 3
 
@@ -3789,10 +4235,10 @@ namespace std
   using ::__gnu_cxx::vsnprintf;
   using ::__gnu_cxx::vsscanf;
 }
-# 127 "code/utils.h" 2
+# 128 "code/utils.h" 2
 
 
-# 128 "code/utils.h"
+# 129 "code/utils.h"
 String load_entire_file(Arena *arena, String filename) {
     assert(filename.count < filename.capacity &&
            filename.data[filename.count] == 0);
@@ -3805,15 +4251,15 @@ String load_entire_file(Arena *arena, String filename) {
         return result;
     }
     fseek(file, 0, 
-# 139 "code/utils.h" 3 4
+# 140 "code/utils.h" 3 4
                   2
-# 139 "code/utils.h"
+# 140 "code/utils.h"
                           );
     usize size = ftell(file);
     fseek(file, 0, 
-# 141 "code/utils.h" 3 4
+# 142 "code/utils.h" 3 4
                   0
-# 141 "code/utils.h"
+# 142 "code/utils.h"
                           );
 
     result = make_string(arena, size);
@@ -4578,13 +5024,14 @@ struct GameInput {
 };
 
 #define IsDown(input,button) (input.buttons[button].is_down)
+#define IsKeyboardButton(button) (button != BUTTON_MOUSE_LEFT && button != BUTTON_MOUSE_RIGHT)
 #define WasDown(input,button) (input.buttons[button].was_down)
 #define IsDownFirstTime(input,button) (IsDown(input, button) && !WasDown(input, button))
 
 
 
 #define GL_FUNCTIONS(X) X(PFNGLENABLEPROC, glEnable) X(PFNGLDISABLEPROC, glDisable) X(PFNGLBLENDFUNCPROC, glBlendFunc) X(PFNGLVIEWPORTPROC, glViewport) X(PFNGLCLEARCOLORPROC, glClearColor) X(PFNGLCLEARPROC, glClear) X(PFNGLDRAWARRAYSPROC, glDrawArrays) X(PFNGLCREATEBUFFERSPROC, glCreateBuffers) X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage) X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays) X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding) X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer) X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat) X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib) X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv) X(PFNGLGETPROGRAMIVPROC, glGetProgramiv) X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog) X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines) X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages) X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline) X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv) X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) X(PFNGLCREATETEXTURESPROC, glCreateTextures) X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback) X(PFNGLGETINTEGERVPROC, glGetIntegerv) X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl) X(PFNGLCREATESHADERPROC, glCreateShader) X(PFNGLSHADERSOURCEPROC, glShaderSource) X(PFNGLCOMPILESHADERPROC, glCompileShader) X(PFNGLGETSHADERIVPROC, glGetShaderiv) X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog) X(PFNGLACTIVETEXTUREPROC, glActiveTexture) X(PFNGLBINDTEXTUREPROC, glBindTexture) X(PFNGLGENTEXTURESPROC, glGenTextures) X(PFNGLTEXIMAGE2DPROC, glTexImage2D) X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap) X(PFNGLTEXPARAMETERIPROC, glTexParameteri) X(PFNGLCLEARDEPTHPROC, glClearDepth) X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer) X(PFNGLCULLFACEPROC, glCullFace) X(PFNGLCREATEPROGRAMPROC, glCreateProgram) X(PFNGLATTACHSHADERPROC, glAttachShader) X(PFNGLLINKPROGRAMPROC, glLinkProgram) X(PFNGLUSEPROGRAMPROC, glUseProgram) X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) X(PFNGLGENBUFFERSPROC, glGenBuffers) X(PFNGLBINDBUFFERPROC, glBindBuffer) X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase) X(PFNGLBUFFERDATAPROC, glBufferData) X(PFNGLBUFFERSUBDATAPROC, glBufferSubData) X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer) X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray) X(PFNGLPOLYGONMODEPROC, glPolygonMode)
-# 142 "code/platform.h"
+# 143 "code/platform.h"
 #define THREAD_WORK_FUNC(name) void name(void *data)
 
 typedef void ThreadWorkFn(void *data);
@@ -4842,6 +5289,7 @@ struct ConstantBuffer {
 
 };
 # 21 "code/game.cpp" 2
+
 
 static RenderContext *g_rc;
 #define RENDERER_DEBUG 
@@ -5412,7 +5860,7 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
    texture.id, 0);
 }
-# 28 "code/game.cpp" 2
+# 29 "code/game.cpp" 2
 
 
 # 1 "code/scene.h" 1
@@ -5420,11 +5868,15 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
 
 #define MAX_BONE_WEIGHTS 4
 
+typedef usize SceneID;
+
 
 struct Vertex {
     v3 position;
     v3 normal;
     v2 uv;
+
+
 
     float weights[4];
     float indices[4];
@@ -5477,9 +5929,14 @@ struct Mesh {
     v3 box_min;
     v3 box_max;
     mat4 transform;
+ mat4 default_transform;
 
     usize vertices_count;
     usize indices_count;
+
+
+    Array<v3> vertices;
+ Array<u32> indices;
 };
 
 struct NodeAnimation {
@@ -5522,19 +5979,354 @@ struct MeshTriangle {
 };
 
 struct Scene {
-    Array<SceneNode> nodes;
-    Array<Mesh> meshes;
-
-    SceneNode *root;
-    Array<Animation> animations;
-    String path;
-
-
-    Array<MeshTriangle> triangles;
-
-    int is_loaded;
+ meta(ui: const) SceneID id;
+    meta(ui) String path;
+ meta(ui) String name;
+ Array<Mesh> meshes;
 };
-# 31 "code/game.cpp" 2
+# 32 "code/game.cpp" 2
+# 1 "code/game.h" 1
+       
+
+#define WORLD_UP V3(0, 0, 1)
+
+
+struct CollisionInfo
+{
+ v3 hit_p;
+ v3 hit_normal;
+ float t;
+};
+
+enum EntityType {
+    EntityType_Player,
+    EntityType_Enemy,
+    EntityType_Static,
+    EntityType_Projectile,
+ EntityType_PointLight,
+    EntityType_Count,
+};
+
+enum CollisionShapeType {
+    COLLISION_SHAPE_TRIANGLES,
+    COLLISION_SHAPE_ELLIPSOID,
+};
+
+struct CollisionTriangle {
+    meta(ui, serialize) v3 v0;
+ meta(ui, serialize) v3 v1;
+ meta(ui, serialize) v3 v2;
+};
+
+typedef usize entity_id;
+
+struct CollisionShape {
+    meta(ui: const, serialize) CollisionShapeType type;
+    meta(ui, serialize) Array<CollisionTriangle> triangles;
+    meta(ui, serialize) v3 ellipsoid_radius;
+
+ v3 box_radius;
+    mat4 transform;
+    v3 scale;
+    entity_id entity;
+};
+
+
+
+struct Entity {
+    meta(ui: const, serialize) entity_id id;
+
+ entity_id parent;
+
+    meta(ui, serialize) EntityType type;
+    meta(ui, serialize) v3 position;
+    meta(ui, serialize) v3 dp;
+
+    meta(ui, serialize) quat rotation;
+    meta(ui, serialize) v3 scale;
+
+    meta(ui: color, serialize) v3 color;
+
+    meta(ui, serialize) b32 moved;
+    meta(ui, serialize) b32 run;
+    meta(ui, serialize) b32 shooting;
+    meta(ui, serialize) b32 can_jump;
+    meta(ui, serialize) b32 on_ground;
+    meta(ui, serialize) b32 pressing_jump;
+    meta(ui, serialize) b32 aiming;
+
+    meta(ui, serialize) CollisionShape shape;
+
+    meta(ui, serialize) SceneID scene_id;
+    meta(ui, serialize) mat4 scene_transform;
+
+ meta(ui, serialize) bool disable_collision;
+
+
+
+    Animation *curr_anim;
+    Animation *next_anim;
+    float anim_time;
+    float blend_time;
+
+    Animation *animation;
+
+    float speed;
+
+    meta(ui: const, serialize) float height_above_ground;
+
+ meta(ui, serialize) float point_light_scale;
+
+    float z_rot;
+    int last_move;
+
+    float last_gun_time;
+};
+
+enum AnimationType {
+    ANIMATION_JUMP,
+    ANIMATION_SHOOT,
+    ANIMATION_RUN,
+    ANIMATION_FORWARD_GUN_WALK,
+    ANIMATION_BACKWARD_GUN_WALK,
+    ANIMATION_GUN_IDLE,
+    ANIMATION_COUNT
+};
+
+struct ShadowMap {
+    FrameBuffer framebuffer;
+    v3 light_dir;
+    v3 light_p;
+    mat4 view;
+    mat4 projection;
+    int tex_width, tex_height;
+
+    float znear, zfar;
+    float width, height;
+
+    Texture depth_texture;
+};
+
+enum CameraType {
+    CAMERA_TYPE_PERSPECTIVE,
+    CAMERA_TYPE_ORTHOGRAPHIC,
+};
+
+struct Camera {
+    CameraType type;
+
+    v3 position;
+    mat4 view;
+    mat4 projection;
+
+    float znear, zfar, width, height;
+    v3 forward, right, up;
+};
+
+enum GizmoMode { GIZMO_TRANSLATION, GIZMO_SCALE, GIZMO_ROTATION };
+
+enum EditorOpType {
+    EDITOR_OP_TRANSLATE_ENTITY,
+    EDITOR_OP_ROTATE_ENTITY,
+    EDITOR_OP_SCALE_ENTITY,
+    EDITOR_OP_PASTE_ENTITY,
+    EDITOR_OP_DELETE_ENTITY,
+    EDITOR_OP_SPAWN_ENTITY,
+};
+
+struct EditorOp {
+    int type;
+    entity_id entity;
+
+    union {
+        struct {
+            v3 prev_p;
+            v3 new_p;
+        } translate;
+        struct {
+            quat prev_rot;
+            quat new_rot;
+        } rotate;
+        struct {
+            v3 prev_scale;
+            v3 new_scale;
+        } scale;
+        struct {
+            entity_id copy_from;
+            entity_id id;
+   int mesh_index;
+            v3 p;
+        } paste;
+        struct {
+            Entity entity_data;
+        } del;
+    };
+};
+
+struct Editor {
+    Array<EditorOp> ops;
+    Array<EditorOp> undos;
+
+    Entity init_entity;
+
+ meta(ui) bool edit_scene;
+
+    meta(ui) bool in_gizmo;
+    meta(ui) entity_id selected_entity;
+ meta(ui) int selected_entity_mesh;
+
+    meta(ui) entity_id copied_entity;
+
+    meta(ui) GizmoMode gizmo_mode;
+
+    meta(ui) int dragging_axis;
+    meta(ui) bool did_drag;
+
+    meta(ui) v3 p_init_drag;
+
+    meta(ui) float s_init_scale;
+    meta(ui) float s_init_drag;
+
+    meta(ui) quat r_init_rot;
+    meta(ui) float r_init_drag;
+    meta(ui) v3 r_right_axis;
+    meta(ui) v3 r_up_axis;
+    meta(ui) v3 r_axis;
+
+    meta(ui) v3 last_camera_p;
+
+ meta(ui) bool copy_entity_mesh;
+};
+
+struct World {
+    Arena arena;
+
+    meta(ui) Editor editor;
+
+    meta(ui, serialize) Array<Entity> entities;
+
+    std::unordered_map<entity_id, usize> entities_id_map;
+
+    meta(serialize) entity_id next_entity_id;
+
+    meta(serialize) v3 player_camera_p;
+    meta(serialize) v3 player_camera_rotation;
+    meta(serialize) v3 player_camera_drotation;
+
+    meta(serialize) v3 editor_camera_p;
+    meta(serialize) v3 editor_camera_rotation;
+
+    meta(ui) entity_id editor_selected_entity;
+    meta(serialize) entity_id player_id;
+
+    entity_id moving_box;
+
+    Camera last_game_camera;
+
+    float aim_camera_transition_t;
+};
+
+struct LoadedSound
+{
+    int sample_count;
+    float *samples;
+};
+
+struct SoundPlaying
+{
+    entity_id entity;
+    int samples_played;
+    LoadedSound *sound;
+    SoundPlaying *next;
+    SoundPlaying *prev;
+};
+
+struct SoundState
+{
+ float *buffer;
+    int sample_count;
+
+ std::atomic_int32_t read_index;
+ std::atomic_int32_t write_index;
+};
+
+
+struct Game {
+
+    Arena *memory;
+
+
+    std::atomic_bool is_initialized;
+
+    World *world;
+
+    ShadowMap shadow_map;
+
+    RenderPass mesh_render_pass;
+    RenderPass shadow_map_render_pass;
+    RenderPass outline_render_pass;
+    ConstantBuffer constant_buffer;
+
+    RenderPass debug_lines_render_pass;
+    VertexBuffer debug_lines_vertex_buffer;
+    ConstantBuffer debug_lines_constant_buffer;
+
+    Arena asset_arena;
+
+ meta(ui) Array<Scene> scenes;
+ usize next_scene_id;
+
+    Animation animations[ANIMATION_COUNT];
+
+    b32 in_editor;
+    meta(ui) bool debug_collision;
+
+    meta(ui) int frame;
+    meta(ui) float time;
+
+    RasterizerState default_rasterizer_state, wireframe_rasterizer_state;
+    DepthStencilState default_depth_stencil_state;
+    DepthStencilState disable_depth_state;
+
+    FrameBuffer debug_asset_fb;
+    Texture debug_asset_tex;
+
+    SoundState sound_state;
+
+    SoundPlaying *first_playing_sound;
+    LoadedSound loaded_sounds[32];
+
+ Scene default_scene;
+
+    meta(ui) bool show_normals;
+    meta(ui) bool render_bones;
+    meta(ui) bool frustum_culling;
+    meta(ui) float master_volume;
+};
+
+struct Constants {
+    mat4 view;
+    mat4 projection;
+    mat4 model;
+    mat4 light_transform;
+    mat4 bones[96];
+
+ int point_light_count;
+ v4 point_light_color[8];
+ v4 point_light_position[8];
+
+    v3 camera_p;
+    v3 player_p;
+    v3 color;
+    float diffuse_factor;
+
+    float specular_factor;
+    float specular_exponent_factor;
+    int skinned;
+    int has_normal_map;
+    int show_normals;
+};
+# 33 "code/game.cpp" 2
 # 1 "code/scene.cpp" 1
 
 
@@ -5691,6 +6483,7 @@ void make_bones_transform_relative_to_parent(Array<Bone> bones, usize index, Arr
 Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 {
  ufbx_mesh *umesh = unode->mesh;
+
  Mesh mesh = {};
 
  mesh.name = make_string(arena, unode->name.length, unode->name.data);
@@ -5784,7 +6577,17 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 
  mesh.vertices_count = vertices.count;
  mesh.indices_count = indices.count;
-# 273 "code/scene.cpp"
+
+ mesh.vertices = make_array<v3>(arena, vertices.count);
+
+
+ for (usize i = 0; i < vertices.count; i++) {
+  mesh.vertices[i] = vertices[i].position;
+ }
+
+
+ mesh.indices = clone_array(arena, indices);
+# 285 "code/scene.cpp"
  end_temp_memory();
  return mesh;
 }
@@ -5793,7 +6596,7 @@ void *ufbx_arena_realloc(void *user, void *old_ptr, size_t old_size, size_t new_
 {
  Arena *arena = (Arena *)user;
 
- void *data = _arena_alloc("code/scene.cpp", __func__, 281, arena, new_size);
+ void *data = _arena_alloc("code/scene.cpp", __func__, 293, arena, new_size);
 
  if (old_size > new_size)
   old_size = new_size;
@@ -5934,20 +6737,42 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
  return anim;
 }
 
-void compute_meshes_transform(Scene &scene, SceneNode *node, mat4 transform)
+Animation load_animation(Arena *arena, Game &game, const char *filename)
 {
- transform = transform * node->local_transform;
- if (node->mesh)
-  node->mesh->transform = transform * node->geometry_transform;
- for (usize i = 0; i < node->childs.count; i++)
-  compute_meshes_transform(scene, node->childs[i], transform);
-}
-
-Scene load_scene(Arena *arena, const char *filename)
-{
- Arena *temp = begin_temp_memory();
  Scene scene = {};
 
+ Arena *temp = begin_temp_memory();
+
+ ufbx_load_opts opts = {};
+
+ opts.target_axes.right = UFBX_COORDINATE_AXIS_POSITIVE_X;
+ opts.target_axes.up = UFBX_COORDINATE_AXIS_POSITIVE_Z;
+ opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
+ opts.target_unit_meters = 1;
+ opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+ opts.temp_allocator.allocator.user = temp;
+ opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+ opts.result_allocator.allocator.user = temp;
+
+ ufbx_error error;
+ ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
+ if (!uscene) {
+  fprintf(
+# 454 "code/scene.cpp" 3 4
+         stderr
+# 454 "code/scene.cpp"
+               , "Failed to load animation %s: %s\n", filename, error.description.data);
+  exit(1);
+ }
+ assert(uscene->anim_stacks.count);
+ return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
+}
+
+Scene *load_scene(Arena *arena, Game &game, const char *filename)
+{
+ Scene scene = {};
+
+ Arena *temp = begin_temp_memory();
  {
   int slash = -1;
 
@@ -5955,7 +6780,10 @@ Scene load_scene(Arena *arena, const char *filename)
    if (filename[i] == '/' || filename[i] == '\\')
     slash = i;
   }
+
+  int len = strlen(filename);
   scene.path = make_string(arena, slash + 1, filename);
+  scene.name = make_string(arena, len - (slash + 1), filename + slash + 1);
  }
 
  ufbx_load_opts opts = {};
@@ -5979,9 +6807,9 @@ Scene load_scene(Arena *arena, const char *filename)
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
   fprintf(
-# 466 "code/scene.cpp" 3 4
+# 499 "code/scene.cpp" 3 4
          stderr
-# 466 "code/scene.cpp"
+# 499 "code/scene.cpp"
                , "Failed to load %s: %s\n", filename, error.description.data);
   exit(1);
  }
@@ -5994,408 +6822,53 @@ Scene load_scene(Arena *arena, const char *filename)
 
  printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
 
+ mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 
- scene.triangles = make_array_max<MeshTriangle>(arena, total_num_triangles);
- scene.nodes = make_array<SceneNode>(arena, uscene->nodes.count);
- scene.meshes = make_array<Mesh>(arena, uscene->meshes.count);
- scene.root = &scene.nodes[(int)uscene->root_node->typed_id];
+ scene.meshes = make_array_max<Mesh>(arena, uscene->meshes.count);
 
- for (size_t i = 0; i < uscene->nodes.count; i++) {
-  ufbx_node *unode = uscene->nodes.data[i];
-  assert(unode->typed_id == i);
+ for (usize i = 0; i < uscene->nodes.count; i++) {
+  if (uscene->nodes.data[i]->mesh) {
+   Mesh mesh = load_mesh(arena, scene, uscene->nodes.data[i]);
+   mesh.transform = ufbx_to_mat4(uscene->nodes.data[i]->geometry_to_world);
 
-  scene.nodes[i].id = (int)i;
-  scene.nodes[i].local_transform = ufbx_to_mat4(unode->node_to_parent);
-  scene.nodes[i].geometry_transform = ufbx_to_mat4(unode->geometry_to_node);
-  scene.nodes[i].name = make_string(arena, unode->name.length, unode->name.data);
+   double center[3] = {};
+   for (usize j = 0; j < mesh.vertices.count; j++)
+    for (int k = 0; k < 3; k++)
+     center[k] += mesh.vertices[j].e[k];
+   for (int k = 0; k < 3; k++)
+    center[k] /= mesh.vertices.count;
 
-  if (unode->parent)
-   scene.nodes[i].parent = &scene.nodes[(int)unode->parent->typed_id];
+   mesh.default_transform = root_transform * translate(-V3(center[0], center[1], center[2]));
 
-  if (unode->parent)
-   assert(unode->parent->typed_id < i);
-
-  if (scene.nodes[i].parent)
-   scene.nodes[i].skip_render |= scene.nodes[i].parent->skip_render;
-
-  if (unode->light || unode->bone || unode->camera)
-   scene.nodes[i].skip_render = true;
-
-  if (unode->mesh) {
-   scene.meshes[(int)unode->mesh->typed_id] = load_mesh(arena, scene, unode);
-   scene.nodes[i].mesh = &scene.meshes[(int)unode->mesh->typed_id];
-   assert(!scene.nodes[i].skip_render);
+   scene.meshes.push(mesh);
   }
-  scene.nodes[i].childs = make_array<SceneNode *>(arena, unode->children.count);
-
-  for (usize j = 0; j < unode->children.count; j++)
-   scene.nodes[i].childs[j] = &scene.nodes[(int)unode->children.data[j]->typed_id];
  }
-
- scene.animations = make_array_max<Animation>(arena, uscene->anim_stacks.count);
- for (usize i = 0; i < uscene->anim_stacks.count; i++) {
-  Animation anim = load_animation(arena, uscene, uscene->anim_stacks.data[i]);
-  bool const_anim = true;
-  for (usize j = 0; j < anim.nodes.count; j++)
-   if (anim.nodes[j].position.count ||
-     anim.nodes[j].rotation.count ||
-     anim.nodes[j].scale.count)
-    const_anim = false;
-  if (!const_anim)
-   scene.animations.push(anim);
- }
-
- compute_meshes_transform(scene, scene.root, identity());
 
  end_temp_memory();
- return scene;
+ scene.id = ++game.next_scene_id;
+ game.scenes.push(scene);
+ return &game.scenes[game.scenes.count - 1];
 }
-# 32 "code/game.cpp" 2
-# 1 "code/game.h" 1
-       
+# 34 "code/game.cpp" 2
 
-#define WORLD_UP V3(0, 0, 1)
-
-enum SceneType {
-    SCENE_PLAYER = 1,
-    SCENE_CUBE,
-    SCENE_SPHERE,
- SCENE_WOOD_CRATE,
- SCENE_FENCE_PACK,
- SCENE_SPONZA,
- SCENE_BISTRO,
-    SCENE_TEST,
-};
-
-struct CollisionInfo
+SceneID get_scene_id_by_name(Game &game, String name)
 {
- v3 hit_p;
- v3 hit_normal;
- float t;
-};
+ for (int i = 0; i < game.scenes.count; i++) {
+  if (strings_equal(game.scenes[i].name, name))
+   return game.scenes[i].id;
+ }
+ printf("WARN: couldn't find scene %.*s\n", (int)name.count, name.data);
+ return 0;
+}
 
-enum EntityType {
-    EntityType_Player,
-    EntityType_Enemy,
-    EntityType_Static,
-    EntityType_Projectile,
- EntityType_PointLight,
-    EntityType_Count,
-};
-
-enum CollisionShapeType {
-    COLLISION_SHAPE_TRIANGLES,
-    COLLISION_SHAPE_ELLIPSOID,
-};
-
-struct CollisionTriangle {
-    meta(ui, serialize) v3 v0;
- meta(ui, serialize) v3 v1;
- meta(ui, serialize) v3 v2;
-};
-
-typedef usize entity_id;
-
-struct CollisionShape {
-    meta(ui: const, serialize) CollisionShapeType type;
-    meta(ui, serialize) Array<CollisionTriangle> triangles;
-    meta(ui, serialize) v3 ellipsoid_radius;
-
- v3 box_radius;
-    mat4 transform;
-    v3 scale;
-    entity_id entity;
-};
-
-
-
-struct Entity {
-    meta(ui: const, serialize) entity_id id;
-
- entity_id parent;
-
-    meta(ui, serialize) EntityType type;
-    meta(ui, serialize) v3 position;
-    meta(ui, serialize) v3 dp;
-
-    meta(ui, serialize) quat rotation;
-    meta(ui, serialize) v3 scale;
-
-    meta(ui: color, serialize) v3 color;
-
-    meta(ui, serialize) b32 moved;
-    meta(ui, serialize) b32 run;
-    meta(ui, serialize) b32 shooting;
-    meta(ui, serialize) b32 can_jump;
-    meta(ui, serialize) b32 on_ground;
-    meta(ui, serialize) b32 pressing_jump;
-    meta(ui, serialize) b32 aiming;
-
-    meta(ui, serialize) CollisionShape shape;
-
-    meta(ui, serialize) SceneType scene_id;
-    meta(ui, serialize) mat4 scene_transform;
-
- meta(ui, serialize) bool disable_collision;
-
-
-
-    Animation *curr_anim;
-    Animation *next_anim;
-    float anim_time;
-    float blend_time;
-
-    Animation *animation;
-
-    float speed;
-
-    meta(ui: const, serialize) float height_above_ground;
-
- meta(ui, serialize) float point_light_scale;
-
-    float z_rot;
-    int last_move;
-
-
-    float last_gun_time;
-};
-
-enum AnimationType {
-    ANIMATION_JUMP,
-    ANIMATION_SHOOT,
-    ANIMATION_RUN,
-    ANIMATION_FORWARD_GUN_WALK,
-    ANIMATION_BACKWARD_GUN_WALK,
-    ANIMATION_GUN_IDLE,
-    ANIMATION_COUNT
-};
-
-struct ShadowMap {
-    FrameBuffer framebuffer;
-    v3 light_dir;
-    v3 light_p;
-    mat4 view;
-    mat4 projection;
-    int tex_width, tex_height;
-
-    float znear, zfar;
-    float width, height;
-
-    Texture depth_texture;
-};
-
-enum CameraType {
-    CAMERA_TYPE_PERSPECTIVE,
-    CAMERA_TYPE_ORTHOGRAPHIC,
-};
-
-struct Camera {
-    CameraType type;
-
-    v3 position;
-    mat4 view;
-    mat4 projection;
-
-    float znear, zfar, width, height;
-    v3 forward, right, up;
-};
-
-enum GizmoMode { GIZMO_TRANSLATION, GIZMO_SCALE, GIZMO_ROTATION };
-
-enum EditorOpType {
-    EDITOR_OP_TRANSLATE_ENTITY,
-    EDITOR_OP_ROTATE_ENTITY,
-    EDITOR_OP_SCALE_ENTITY,
-    EDITOR_OP_PASTE_ENTITY,
-    EDITOR_OP_DELETE_ENTITY,
-    EDITOR_OP_SPAWN_ENTITY,
-};
-
-struct EditorOp {
-    int type;
-    entity_id entity;
-
-    union {
-        struct {
-            v3 prev_p;
-            v3 new_p;
-        } translate;
-        struct {
-            quat prev_rot;
-            quat new_rot;
-        } rotate;
-        struct {
-            v3 prev_scale;
-            v3 new_scale;
-        } scale;
-        struct {
-            entity_id copy_from;
-            entity_id id;
-            v3 p;
-        } paste;
-        struct {
-            Entity entity_data;
-        } del;
-    };
-};
-
-struct Editor {
-    Array<EditorOp> ops;
-    Array<EditorOp> undos;
-
-    Entity init_entity;
-
- meta(ui) bool edit_scene;
-
-    meta(ui) bool in_gizmo;
-    meta(ui) entity_id selected_entity;
-    meta(ui) entity_id copied_entity;
-
-    meta(ui) GizmoMode gizmo_mode;
-
-    meta(ui) int dragging_axis;
-    meta(ui) bool did_drag;
-
-    meta(ui) v3 p_init_drag;
-
-    meta(ui) float s_init_scale;
-    meta(ui) float s_init_drag;
-
-    meta(ui) quat r_init_rot;
-    meta(ui) float r_init_drag;
-    meta(ui) v3 r_right_axis;
-    meta(ui) v3 r_up_axis;
-    meta(ui) v3 r_axis;
-
-    meta(ui) v3 last_camera_p;
-};
-
-struct World {
-    Arena arena;
-
-    meta(ui) Editor editor;
-
-    meta(ui, serialize) Array<Entity> entities;
-
-    std::unordered_map<entity_id, usize> entities_id_map;
-
-    meta(serialize) entity_id next_entity_id;
-
-    meta(serialize) v3 player_camera_p;
-    meta(serialize) v3 player_camera_rotation;
-    meta(serialize) v3 player_camera_drotation;
-
-    meta(serialize) v3 editor_camera_p;
-    meta(serialize) v3 editor_camera_rotation;
-
-    meta(ui) entity_id editor_selected_entity;
-    meta(serialize) entity_id player_id;
-
-    entity_id moving_box;
-
-    Camera last_game_camera;
-
-    float aim_camera_transition_t;
-};
-
-struct LoadedSound
+Scene &get_scene_by_id(Game &game, SceneID id)
 {
-    int sample_count;
-    float *samples;
-};
-
-struct SoundPlaying
-{
-    entity_id entity;
-    int samples_played;
-    LoadedSound *sound;
-    SoundPlaying *next;
-    SoundPlaying *prev;
-};
-
-struct SoundState
-{
- float *buffer;
-    int sample_count;
-
- std::atomic_int32_t read_index;
- std::atomic_int32_t write_index;
-};
-
-
-struct Game {
-
-    Arena *memory;
-
-
-    std::atomic_bool is_initialized;
-
-    World *world;
-
-    ShadowMap shadow_map;
-
-    RenderPass mesh_render_pass;
-    RenderPass shadow_map_render_pass;
-    RenderPass outline_render_pass;
-    ConstantBuffer constant_buffer;
-
-    RenderPass debug_lines_render_pass;
-    VertexBuffer debug_lines_vertex_buffer;
-    ConstantBuffer debug_lines_constant_buffer;
-
-    Arena asset_arena;
-
-    Scene scenes[16];
-
-    Animation animations[ANIMATION_COUNT];
-
-    b32 in_editor;
-    meta(ui) bool debug_collision;
-
-    meta(ui) int frame;
-    meta(ui) float time;
-
-    RasterizerState default_rasterizer_state, wireframe_rasterizer_state;
-    DepthStencilState default_depth_stencil_state;
-    DepthStencilState disable_depth_state;
-
-    FrameBuffer debug_asset_fb;
-    Texture debug_asset_tex;
-
-    SoundState sound_state;
-
-    SoundPlaying *first_playing_sound;
-    LoadedSound loaded_sounds[32];
-
-    meta(ui) bool show_normals;
-    meta(ui) bool render_bones;
-    meta(ui) bool frustum_culling;
-    meta(ui) float master_volume;
-};
-
-struct Constants {
-    mat4 view;
-    mat4 projection;
-    mat4 model;
-    mat4 light_transform;
-    mat4 bones[96];
-
- int point_light_count;
- v4 point_light_color[8];
- v4 point_light_position[8];
-
-    v3 camera_p;
-    v3 player_p;
-    v3 color;
-    float diffuse_factor;
-
-    float specular_factor;
-    float specular_exponent_factor;
-    int skinned;
-    int has_normal_map;
-    int show_normals;
-};
-# 33 "code/game.cpp" 2
+ for (int i = 0; i < game.scenes.count; i++) {
+  if (game.scenes[i].id == id)
+   return game.scenes[i];
+ }
+ return game.default_scene;
+}
 
 Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
@@ -6438,16 +6911,15 @@ Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width,
  return camera;
 }
 
-SceneType get_scene(Game &game, SceneType type)
-{
- assert(type > 0 && type < (sizeof(game.scenes) / sizeof(*game.scenes)));
- return type;
-}
-
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
 v3 get_world_p(World &world, entity_id id);
 
+
+
+
+
+# 1 "code/sound.cpp" 1
 #define SOUND_CHANNEL_COUNT 2
 #define SOUND_SAMPLE_RATE 48000
 
@@ -6462,7 +6934,7 @@ LoadedSound load_wav_file(Arena *arena, const char *filename)
     LoadedSound sound = {};
 
     ma_uint64 samplesToRead = 1024;
- sound.samples = (float *)_arena_alloc("code/game.cpp", __func__, 99, arena, samplesToRead * sizeof(float) * 2);
+ sound.samples = (float *)_arena_alloc("code/sound.cpp", __func__, 15, arena, samplesToRead * sizeof(float) * 2);
 
     while (1) {
         ma_uint64 samplesRead = 0;
@@ -6472,7 +6944,7 @@ LoadedSound load_wav_file(Arena *arena, const char *filename)
         if (samplesRead < samplesToRead)
             break ;
 
-  _arena_alloc("code/game.cpp", __func__, 109, arena, samplesToRead * sizeof(float) * 2);
+  _arena_alloc("code/sound.cpp", __func__, 25, arena, samplesToRead * sizeof(float) * 2);
     }
  printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
     return sound;
@@ -6508,7 +6980,7 @@ void audio_write_callback(ma_device* device, void* output, const void* input, ma
   game.sound_state.read_index = (read_index + samples_to_copy
    + min(write_index, (int)frame_count)) % game.sound_state.sample_count;
  }
-# 166 "code/game.cpp"
+# 82 "code/sound.cpp"
 }
 
 void play_sound(Game &game, LoadedSound &loaded_sound, entity_id entity = 0)
@@ -6529,6 +7001,8 @@ void update_sound(Game &game, World &world)
   return ;
 
  SoundState &state = game.sound_state;
+
+
 
  int frames_to_write = 1;
  int fps = 60;
@@ -6619,12 +7093,7 @@ void update_sound(Game &game, World &world)
  int new_write_index = (write_index + max_samples_to_write) % state.sample_count;
  state.write_index = new_write_index;
 }
-
-
-
-
-
-
+# 104 "code/game.cpp" 2
 # 1 "code/renderer.cpp" 1
 void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 {
@@ -6860,26 +7329,16 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
  return anim_bones;
 }
 
-
-void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNode *node, mat4 scene_transform, mat4 node_transform,
-  Animation *anim, float anim_time, v3 color)
+void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1))
 {
- if (node->skip_render)
+ if (!scene_id)
   return ;
+ if (anim)
+  anim_time = fmod(anim_time, anim->duration);
+ Scene &scene = get_scene_by_id(game, scene_id);
 
- mat4 local_transform = node->local_transform;
- if (anim) {
-  for (usize j = 0; j < anim->nodes.count; j++) {
-   if (strings_equal(anim->nodes[j].name, node->name)) {
-    local_transform = anim->nodes[j].transform;
-    break ;
-   }
-  }
- }
- node_transform = node_transform * local_transform;
-
- if (node->mesh) {
-  Mesh &mesh = *node->mesh;
+ for (usize mesh_idx = 0; mesh_idx < scene.meshes.count; mesh_idx++) {
+  Mesh &mesh = scene.meshes[mesh_idx];
 
   Constants constants = {};
   constants.view = camera.view;
@@ -6905,8 +7364,7 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
    }
   }
 
-  mat4 mesh_transform = scene_transform * node_transform * node->geometry_transform;
-
+  mat4 mesh_transform = transform * mesh.transform;
 
   constants.model = mesh_transform;
 
@@ -7007,24 +7465,9 @@ void render_scene(Game &game, World &world, Scene &scene, Camera camera, SceneNo
     draw_indexed((int)part.offset, (int)part.indices_count);
    }
   }
-# 401 "code/renderer.cpp"
  }
-
- for (usize i = 0; i < node->childs.count; i++)
-  render_scene(game, world, scene, camera, node->childs[i], scene_transform, node_transform, anim, anim_time, color);
 }
-
-void render_scene(Game &game, World &world, Scene &scene, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1),
-  bool outline = false)
-{
-# 418 "code/renderer.cpp"
- if (anim)
-  anim_time = fmod(anim_time, anim->duration);
-# 447 "code/renderer.cpp"
- render_scene(game, world, scene, camera, scene.root, transform, identity(), anim, anim_time, color);
-
-}
-# 283 "code/game.cpp" 2
+# 105 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
 #define SMALLEST_VELOCITY 0.01f
 #define SLIDE_ITERATION_COUNT 4
@@ -7382,7 +7825,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
  end_temp_memory();
 }
-# 284 "code/game.cpp" 2
+# 106 "code/game.cpp" 2
 # 1 "code/world.cpp" 1
 Entity *make_entity(World &world)
 {
@@ -7394,7 +7837,7 @@ Entity *make_entity(World &world)
  return &world.entities[world.entities.count - 1];
 }
 
-Entity *make_entity(World &world, EntityType type, SceneType scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
+Entity *make_entity(World &world, EntityType type, SceneID scene_id, v3 position, CollisionShape shape, mat4 scene_transform = identity())
 {
  Entity *e = make_entity(world);
 
@@ -7471,7 +7914,8 @@ void render_player(Game &game, World &world, Camera camera, Entity &e, bool shad
  Arena *temp = begin_temp_memory();
  Animation *final_anim = 0;
  Animation anim = {};
- if (e.id == world.player_id) {
+
+ if (e.id == world.player_id && e.curr_anim) {
   usize max_nodes_count = e.curr_anim->nodes.count;
   if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
    max_nodes_count = e.next_anim->nodes.count;
@@ -7521,15 +7965,8 @@ void render_player(Game &game, World &world, Camera camera, Entity &e, bool shad
  }
  else
   assert(!final_anim);
- bool outline = !shadow_map_pass
- && (e.id == world.editor_selected_entity);
 
-
- if (e.scene_id >= 1 && e.scene_id < (sizeof(game.scenes) / sizeof(*game.scenes))) {
-  render_scene(game, world,
-  game.scenes[e.scene_id], camera, scene_transform, final_anim, 0, e.color, outline);
- }
-
+ render_scene(game, world, e.scene_id, camera, scene_transform, final_anim, 0, e.color);
 
  end_temp_memory();
 }
@@ -7558,9 +7995,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 
   bool outline = !shadow_map_pass
    && (e.id == world.editor_selected_entity);
-  render_scene(game, world,
-   game.scenes[e.scene_id], camera, scene_transform, 0, 0, e.color, outline);
-
+  render_scene(game, world, e.scene_id, camera, scene_transform, 0, 0, e.color);
 
   if (game.debug_collision) {
 
@@ -7682,7 +8117,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
    player.dp += a * dt;
 
   }
-# 310 "code/world.cpp"
+# 302 "code/world.cpp"
   {
 
 
@@ -7737,16 +8172,13 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
     player.next_anim = 0;
     player.blend_time = 0;
    }
-# 372 "code/world.cpp"
-   int curr_anim_idx = -1;
-   int next_anim_idx = -1;
-   for (int i = 0; i < ANIMATION_COUNT; i++) {
-    if (player.curr_anim == &game.animations[i])
-     curr_anim_idx = i;
-    if (player.next_anim == &game.animations[i])
-     next_anim_idx = i;
-   }
-# 391 "code/world.cpp"
+
+
+
+
+
+
+
   }
  }
 }
@@ -7859,7 +8291,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     world.player_camera_p += (15 + 40) * dt * (target_camera_p - world.player_camera_p);
 
    world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
-# 516 "code/world.cpp"
+# 488 "code/world.cpp"
   }
  }
 
@@ -7910,15 +8342,19 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 
  camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
-# 581 "code/world.cpp"
+# 553 "code/world.cpp"
  return camera;
 }
-# 285 "code/game.cpp" 2
+# 107 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
 entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
-  float &hit_t)
+  float &hit_t, int &mesh_index)
 {
  entity_id hit_id = 0;
+
+ v3 hit_triangle[3];
+
+ mesh_index = -1;
  float min_t = FLT_MAX;
 
  for (usize i = 0; i < world.entities.count; i++) {
@@ -7926,41 +8362,70 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
   if (!e.scene_id)
    continue ;
 
-  Scene &scene = game.scenes[e.scene_id];
+  Scene &scene = get_scene_by_id(game, e.scene_id);
   mat4 transform = get_entity_transform(world, e) * e.scene_transform;
   for (usize j = 0; j < scene.meshes.count; j++) {
    Mesh &mesh = scene.meshes[j];
    mat4 mesh_transform = transform * mesh.transform;
 
-   v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
-   v3 y_axis = normalize((mesh_transform * V4(0, 1, 0, 0)).xyz);
-   v3 z_axis = normalize((mesh_transform * V4(0, 0, 1, 0)).xyz);
+   {
+    v3 x_axis = normalize((mesh_transform * V4(1, 0, 0, 0)).xyz);
+    v3 y_axis = normalize((mesh_transform * V4(0, 1, 0, 0)).xyz);
+    v3 z_axis = normalize((mesh_transform * V4(0, 0, 1, 0)).xyz);
 
-   v3 a = (mesh_transform * V4(mesh.box_min, 1)).xyz;
-   v3 b = (mesh_transform * V4(mesh.box_max, 1)).xyz;
+    v3 a = (mesh_transform * V4(mesh.box_min, 1)).xyz;
+    v3 b = (mesh_transform * V4(mesh.box_max, 1)).xyz;
 
-   v3 c = (a + b) * 0.5f;
+    v3 c = (a + b) * 0.5f;
 
-   x_axis *= fabsf(dot((b - a)*0.5f, x_axis));
-   y_axis *= fabsf(dot((b - a)*0.5f, y_axis));
-   z_axis *= fabsf(dot((b - a)*0.5f, z_axis));
+    x_axis *= fabsf(dot((b - a)*0.5f, x_axis));
+    y_axis *= fabsf(dot((b - a)*0.5f, y_axis));
+    z_axis *= fabsf(dot((b - a)*0.5f, z_axis));
 
 
 
-   float t = ray_hit_box(ray_origin, ray_dir, c, x_axis, y_axis, z_axis);
-   if (t >= 0 && t < min_t) {
-    hit_id = e.id;
-    min_t = t;
+    float t = ray_hit_box(ray_origin, ray_dir, c, x_axis, y_axis, z_axis);
+    if (t < 0)
+     continue ;
    }
 
 
+   for (usize t = 0; t < mesh.indices.count; t += 3) {
+    v3 v0 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+0]], 1)).xyz;
+    v3 v1 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+1]], 1)).xyz;
+    v3 v2 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+2]], 1)).xyz;
+
+    v3 u = v1 - v0;
+    v3 v = v2 - v0;
+    v3 normal = cross(u, v);
+
+    float hit_t;
+    if (ray_hit_plane(ray_origin, ray_dir, normal, v0, &hit_t)
+      && hit_t < min_t) {
+     float one_over_length_n_sq = 1.f/dot(normal, normal);
+     v3 p = ray_origin + hit_t * ray_dir;
+     float A = dot(cross(p - v0, v), normal) * one_over_length_n_sq;
+     float B = -dot(cross(p - v0, u), normal) * one_over_length_n_sq;
+     if (A >= 0 && B >= 0 && A + B <= 1) {
+      min_t = hit_t;
+      hit_id = e.id;
+      hit_triangle[0] = v0;
+      hit_triangle[1] = v1;
+      hit_triangle[2] = v2;
+      mesh_index = (int)j;
+     }
+    }
+   }
   }
  }
+
+ if (hit_id)
+  push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
  hit_t = min_t;
  return hit_id;
 }
 
-void do_editor_op(World &world, Editor &editor, EditorOp &op)
+void do_editor_op(Game &game, World &world, Editor &editor, EditorOp &op)
 {
  Entity *e = get_entity(world, op.entity);
  if (e) {
@@ -7977,11 +8442,13 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
 
 
 
+   Entity *copied;
+
    if (op.paste.id) {
     Entity p = *copy_from;
     p.id = op.paste.id;
-    p.position = op.paste.p;
     world.entities.push(p);
+    copied = &world.entities[world.entities.count - 1];
     world.entities_id_map[p.id] = world.entities.count - 1;
    }
    else {
@@ -7989,8 +8456,25 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
     entity_id id = p->id;
     *p = *copy_from;
     p->id = id;
-    p->position = op.paste.p;
     op.paste.id = p->id;
+    copied = p;
+   }
+   copied->position = op.paste.p;
+   if (op.paste.mesh_index >= 0) {
+    Scene scene = {};
+    scene.id = ++game.next_scene_id;
+    Scene &s = get_scene_by_id(game, copied->scene_id);
+    assert(op.paste.mesh_index < s.meshes.count);
+
+    scene.meshes = make_array<Mesh>(&world.arena, 1);
+    scene.meshes[0] = s.meshes[op.paste.mesh_index];
+
+    copied->scene_transform = identity();
+
+    scene.meshes[0].transform = scene.meshes[0].default_transform;
+
+    game.scenes.push(scene);
+    copied->scene_id = scene.id;
    }
   }
  }
@@ -8000,17 +8484,17 @@ void do_editor_op(World &world, Editor &editor, EditorOp &op)
  editor.ops.push(op);
 }
 
-void redo_editor_op(World &world, Editor &editor)
+void redo_editor_op(Game &game, World &world, Editor &editor)
 {
  if (!editor.undos.count)
   return ;
  EditorOp op = editor.undos[editor.undos.count - 1];
  editor.undos.count--;
 
- do_editor_op(world, editor, op);
+ do_editor_op(game, world, editor, op);
 }
 
-void undo_editor_op(World &world, Editor &editor)
+void undo_editor_op(Game &game, World &world, Editor &editor)
 {
  if (!editor.ops.count)
   return ;
@@ -8054,12 +8538,12 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     op.entity = e->id;
     op.type = EDITOR_OP_DELETE_ENTITY;
     op.del.entity_data = *e;
-    do_editor_op(world, editor, op);
+    do_editor_op(game, world, editor, op);
     e = 0;
    }
    if (e)
     imgui_edit_struct_Entity(*e, "selected entity", false);
-# 193 "code/editor.cpp"
+# 245 "code/editor.cpp"
    ImGui::End();
   }
  }
@@ -8103,7 +8587,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
  if ((input.buttons[BUTTON_MOUSE_RIGHT].is_down)) {
   float min_hit_t;
-  entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+  int hit_entity_mesh_index;
+  entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
 
   if (editor.selected_entity && !editor.in_gizmo) {
    Entity *e = get_entity(world, editor.selected_entity);
@@ -8258,6 +8743,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 
     editor.selected_entity = hit_entity;
+    editor.selected_entity_mesh = hit_entity_mesh_index;
     Entity *e = get_entity(world, hit_entity);
     if (e)
      editor.init_entity = *e;
@@ -8289,7 +8775,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
       push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
      }
      if (push)
-      do_editor_op(world, editor, op);
+      do_editor_op(game, world, editor, op);
     }
    }
    editor.in_gizmo = 0;
@@ -8346,6 +8832,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
   ((input.buttons[BUTTON_C].is_down) && !(input.buttons[BUTTON_C].was_down)) &&
   editor.selected_entity) {
   editor.copied_entity = editor.selected_entity;
+  editor.copy_entity_mesh = (input.buttons[BUTTON_LEFT_SHIFT].is_down);
  }
  if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
@@ -8354,9 +8841,14 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    EditorOp op = {};
    op.type = EDITOR_OP_PASTE_ENTITY;
    op.paste.copy_from = copy_from->id;
+   if (editor.copy_entity_mesh)
+    op.paste.mesh_index = editor.selected_entity_mesh;
+   else
+    op.paste.mesh_index = -1;
 
    float min_hit_t;
-   entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t);
+   int hit_mesh_index;
+   entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_mesh_index);
    if (hit_entity) {
     op.paste.p = ray_origin + min_hit_t * ray_dir
      + V3(0, 0, copy_from->scale.z);
@@ -8364,7 +8856,7 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
     op.paste.p = camera.position + camera.forward * 2
      * max(copy_from->scale.x, max(copy_from->scale.y, copy_from->scale.z));
 
-   do_editor_op(world, editor, op);
+   do_editor_op(game, world, editor, op);
   }
  }
 
@@ -8372,14 +8864,14 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
  if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down))) {
-  undo_editor_op(world, editor);
+  undo_editor_op(game, world, editor);
  }
  if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
   ((input.buttons[BUTTON_X].is_down) && !(input.buttons[BUTTON_X].was_down))) {
-  redo_editor_op(world, editor);
+  redo_editor_op(game, world, editor);
  }
 }
-# 286 "code/game.cpp" 2
+# 108 "code/game.cpp" 2
 
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
@@ -8424,8 +8916,10 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   init_render_context(memory, *g_rc, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 1024));
-  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 330, memory, temp_arena_size), temp_arena_size);
+  g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 152, memory, temp_arena_size), temp_arena_size);
 
+
+  game.scenes = make_array_max<Scene>(memory, 1024);
 
 
 
@@ -8434,11 +8928,11 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.world = new World();
   World &world = *game.world;
 
-  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 340, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
+  world.arena = make_arena(_arena_alloc("code/game.cpp", __func__, 164, memory, (1024ULL * (1024ULL * 64))), (1024ULL * (1024ULL * 64)));
   world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
   world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 344, memory, (1024ULL * (1024ULL * 2048))), (1024ULL * (1024ULL * 2048)));
+  game.asset_arena = make_arena(_arena_alloc("code/game.cpp", __func__, 168, memory, (1024ULL * (1024ULL * 2048))), (1024ULL * (1024ULL * 2048)));
 
   game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
   game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -8543,63 +9037,40 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    end_temp_memory();
   }
 
-
-  game.scenes[SCENE_TEST] = load_scene(&game.asset_arena, "data/parking/zma_carpark_b2.obj");
-
-
-  game.scenes[SCENE_SPONZA] = load_scene(&game.asset_arena, "data/Sponza/Sponza.fbx");
-  game.scenes[SCENE_CUBE] = load_scene(&game.asset_arena, "data/cube.fbx");
-  game.scenes[SCENE_SPHERE] = load_scene(&game.asset_arena, "data/sphere.fbx");
-  game.scenes[SCENE_WOOD_CRATE] = load_scene(&game.asset_arena, "data/wood-crates/source/BoxPack1.fbx");
-  game.scenes[SCENE_FENCE_PACK] = load_scene(&game.asset_arena, "data/PrivacyFencePack/PrivacyFencePack.fbx");
+  load_scene(&game.asset_arena, game, "data/parking/zma_carpark_b2.obj");
+  load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
+  load_scene(&game.asset_arena, game, "data/cube.fbx");
+  load_scene(&game.asset_arena, game, "data/sphere.fbx");
+  load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
+  load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
 
 
+  load_scene(&game.asset_arena, game, "data/Ybot.fbx");
 
-  game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Ybot.fbx");
-  game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/jump.fbx").animations[0];
-  game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/shoot.fbx").animations[0];
+
+  game.animations[ANIMATION_JUMP] = load_animation(&game.asset_arena, game, "data/jump.fbx");
+  game.animations[ANIMATION_SHOOT] = load_animation(&game.asset_arena, game, "data/shoot.fbx");
 
   game.animations[ANIMATION_SHOOT].duration *= 0.6;
-  game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/run.fbx").animations[0];
-  game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/forward_gun_walk.fbx").animations[0];
-  game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/backward_gun_walk.fbx").animations[0];
-  game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/gun_idle.fbx").animations[0];
-# 480 "code/game.cpp"
+  game.animations[ANIMATION_RUN] = load_animation(&game.asset_arena, game, "data/run.fbx");
+  game.animations[ANIMATION_FORWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
+  game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
+  game.animations[ANIMATION_GUN_IDLE] = load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
+# 302 "code/game.cpp"
   FILE *fd = fopen("world.bin", "rb");
   if (!fd) {
-
    world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-   Entity *boxes[] = {
-    make_entity(world, EntityType_Static, get_scene(game, SCENE_CUBE), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5))),
-# 500 "code/game.cpp"
-   };
-   world.moving_box = 7;
+   Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5), make_box_shape(memory, V3(100, 100, 0.5)));
+   ground->scale = ground->shape.box_radius;
+   ground->shape = make_box_shape(memory, V3(1));
+   ground->color = V3(0.3f);
 
-   for (int i = 0; i < (sizeof(boxes) / sizeof(*boxes)); i++) {
-
-    boxes[i]->scale = boxes[i]->shape.box_radius;
-    boxes[i]->shape = make_box_shape(memory, V3(1));
-
-    float r = (float)rand() / RAND_MAX;
-    float g = (float)rand() / RAND_MAX;
-    float b = (float)rand() / RAND_MAX;
-
-    boxes[i]->color = V3(r, g, b);
-
-   }
-   Entity *player = make_entity(world, EntityType_Player, get_scene(game, SCENE_PLAYER), V3(0, 0, 8), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
-   world.player_id = player->id;
-
-
-
-
+   Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, make_cstring("Ybot.fbx")),
+     V3(0, 0, 4), make_ellipsoid_shape(V3(0.55f, 0.55f, 0.95f)));
    player->scene_transform = translate(0, 0, -player->shape.ellipsoid_radius.z) * zrotation(3*3.14159265359f/2) * scale(V3(1.1));
    player->color = V3(0, 1, 1);
-
-   Entity *test = make_entity(world, EntityType_Static, get_scene(game, SCENE_TEST), V3(0, 0, 0.1f), make_box_shape(memory, V3(0)));
-   test->rotation = rotate_around_axis_quat(V3(1, 0, 0), 3.14159265359f/2);
-
+   world.player_id = player->id;
    world.editor_camera_p = V3(0, 0, 3);
   }
   else {
@@ -8608,7 +9079,6 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
     world.entities_id_map[world.entities[i].id] = i;
    fclose(fd);
   }
-
 
   {
    game.debug_asset_fb = create_frame_buffer(false, true);
@@ -8629,6 +9099,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.sound_state.sample_count = 48000*10;
   game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * 2 * sizeof(float));
 
+
   game.loaded_sounds[0] = load_wav_file(memory, "data/music.wav");
   game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
 
@@ -8640,14 +9111,19 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  game.memory = memory;
 
 
- if (game.frame == 0) {
+ if (game.frame == 0)
   play_sound(game, game.loaded_sounds[0], 0);
- }
 
  World &world = *game.world;
 
  if (((input.buttons[BUTTON_F1].is_down) && !(input.buttons[BUTTON_F1].was_down)))
   game.in_editor = !game.in_editor;
+
+ if (ImGui::GetIO().WantCaptureKeyboard) {
+  for (int i = 0; i < BUTTON_COUNT; i++)
+   if ((i != BUTTON_MOUSE_LEFT && i != BUTTON_MOUSE_RIGHT))
+    input.buttons[i].is_down = false;
+ }
 
  begin_render_frame();
 
@@ -8747,13 +9223,13 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   ImGui::Text("entity count: %ld", world.entities.count);
   if (ImGui::Button("new cube")) {
    Entity *entity = make_entity(world, EntityType_Static,
-     get_scene(game, SCENE_CUBE), game_camera.position
+     get_scene_id_by_name(game, make_cstring("cube.fbx")), game_camera.position
      + game_camera.forward * 4, make_box_shape(&world.arena, V3(1)));
    world.editor.selected_entity = entity->id;
   }
   if (ImGui::Button("new sphere")) {
    Entity *entity = make_entity(world, EntityType_Static,
-     get_scene(game, SCENE_SPHERE), game_camera.position
+     get_scene_id_by_name(game, make_cstring("sphere.fbx")), game_camera.position
      + game_camera.forward * 4, make_ellipsoid_shape(V3(1)));
    world.editor.selected_entity = entity->id;
   }
@@ -8781,11 +9257,10 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  game.time += dt;
 
- if (game.frame == 0 || !game.in_editor)
-  ImGui::SetWindowFocus(
-# 709 "code/game.cpp" 3 4
-                       __null
-# 709 "code/game.cpp"
-                           );
+ if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(
+# 502 "code/game.cpp" 3 4
+                                                              __null
+# 502 "code/game.cpp"
+                                                                  );
  game.frame++;
 }
