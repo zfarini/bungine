@@ -1,32 +1,47 @@
-** load a scene and be able to pick meshes and make them their own asset?
-** edit/create collision mesh somehow? and save it somewhere?
-** spatial partition
-** be able to edit entity asset + edit its transfor regardless of entity transform
-
-fix all keybindings to not be active if imgui is asking for input
+day 1:
+undo/redo for editing collision mesh
+improve collision mesh dist_to_snap calculation
 uniform scaling
+fix rotation when the plane of rotation is ..
 snap movement in editor (for all gizmo types)
 
-* async asset loading
+day 2:
+* finalize collision and try to make it robust
+* spatial partition
 
-more sound work? (possibly SIMD)
+day 3:
+* async asset loading (might consider not doing it)
 
-replace unoredred_map
+day 4:
+	more sound work, its kinda broken right now when increasing latency frame count (possibly SIMD)
+	dont send bone data for non skinned meshes
+	send bones as (translation scale and rotation)
+	"fix" jumping, animation
+	improve camera for up & down
+	logging
 
-"fix" jumping
-compute collision hit point for cylinder vs cylinder
-
-send bones as (translation scale and rotation)
-make the game runnable from anywhere? (as long as the data directory is in ..)
+day 5:
 cleanup strings
-add some default mesh for zero
-improve camera for up & down
-serialization version
-shadow map follow player?
-platform layer
 cleanup arenas
-logging
+platform layer
+make the game runnable from anywhere? (as long as the data directory is in ..)
+just cleanup remaning stuff
+
+day 6:
+more cleanup
 particles (instancing?)
+shadow map follow player
 transition between worlds?
-menu
-improve entity selection? (meshes that are too big?)
+
+day 7:
+menu (try to use imgui, if can't use stb to load font)
+find assets, maybe change player mesh
+maybe some kinda of enemy that can follow you
+cleanup
+
+day 8:
+	make levels to showcase
+
+other:
+serialization version
+replace unoredred_map

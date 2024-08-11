@@ -177,9 +177,24 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 
 	if (t0 >= 0) {
 		info.t = t0;
+		v3 e_p = (m * V4(ray_origin + info.t * ray_dir, 1)).xyz;
+
+		v3 hit_p = ep + info.t * (targetP - ep);
+
 		// too lazy to think about this
-		//info.hit_p = ;
 		info.hit_normal = (transpose(M) * V4(ray_origin + t0*ray_dir, 0)).xyz;
+
+		v3 N = info.hit_normal;
+		mat4 to_ep = scale(1 / tr) * translate(-tp);
+		mat4 from_ep = translate(tp) * scale(tr);
+
+		N = (transpose(from_ep) * V4(N, 0)).xyz;
+		N = normalize(N);
+		N = (transpose(to_ep) * V4(N, 0)).xyz;
+		info.hit_p = tp + N;
+
+		push_cube_outline(info.hit_p, V3(0.1f), V3(1));
+
 	}
 	return info;
 }

@@ -7182,9 +7182,24 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 
  if (t0 >= 0) {
   info.t = t0;
+  v3 e_p = (m * V4(ray_origin + info.t * ray_dir, 1)).xyz;
+
+  v3 hit_p = ep + info.t * (targetP - ep);
 
 
   info.hit_normal = (transpose(M) * V4(ray_origin + t0*ray_dir, 0)).xyz;
+
+  v3 N = info.hit_normal;
+  mat4 to_ep = scale(1 / tr) * translate(-tp);
+  mat4 from_ep = translate(tp) * scale(tr);
+
+  N = (transpose(from_ep) * V4(N, 0)).xyz;
+  N = normalize(N);
+  N = (transpose(to_ep) * V4(N, 0)).xyz;
+  info.hit_p = tp + N;
+
+  push_cube_outline(info.hit_p, V3(0.1f), V3(1));
+
  }
  return info;
 }
@@ -7283,11 +7298,11 @@ void move_entity(World &world, Entity &e, v3 delta_p)
   }
   shapes.push(shape);
  }
-# 289 "code/collision.cpp"
+# 304 "code/collision.cpp"
  v3 old_p = e.position;
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
- int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*3.5f));
+ int itr = 1 + roundf(fabsf(delta_p.z) / (0.01f*4.5f));
  for (int i = 0; i < itr; i++)
   move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
 
