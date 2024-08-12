@@ -610,7 +610,7 @@ StructMetaData get_struct_LoadedSound_info() {
 StructMetaData get_struct_Editor_info() {
     StructMetaData data = {};
     data.name = "Editor";
-    data.member_count = 21;
+    data.member_count = 23;
     data.members[0].name = "ops";
     data.members[0].type_name = "Array<EditorOp>";
     data.members[1].name = "undos";
@@ -636,23 +636,27 @@ StructMetaData get_struct_Editor_info() {
     data.members[11].name = "p_init_drag";
     data.members[11].type_name = "v3";
     data.members[12].name = "s_init_scale";
-    data.members[12].type_name = "float";
+    data.members[12].type_name = "v3";
     data.members[13].name = "s_init_drag";
     data.members[13].type_name = "float";
-    data.members[14].name = "r_init_rot";
-    data.members[14].type_name = "quat";
-    data.members[15].name = "r_init_drag";
-    data.members[15].type_name = "float";
-    data.members[16].name = "r_right_axis";
-    data.members[16].type_name = "v3";
-    data.members[17].name = "r_up_axis";
+    data.members[14].name = "s_init_drag_p";
+    data.members[14].type_name = "v3";
+    data.members[15].name = "r_init_rot";
+    data.members[15].type_name = "quat";
+    data.members[16].name = "r_init_drag";
+    data.members[16].type_name = "float";
+    data.members[17].name = "r_right_axis";
     data.members[17].type_name = "v3";
-    data.members[18].name = "r_axis";
+    data.members[18].name = "r_up_axis";
     data.members[18].type_name = "v3";
-    data.members[19].name = "last_camera_p";
+    data.members[19].name = "r_axis";
     data.members[19].type_name = "v3";
-    data.members[20].name = "copy_entity_mesh";
-    data.members[20].type_name = "bool";
+    data.members[20].name = "last_camera_p";
+    data.members[20].type_name = "v3";
+    data.members[21].name = "copy_entity_mesh";
+    data.members[21].type_name = "bool";
+    data.members[22].name = "uniform_scale";
+    data.members[22].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_Camera_info() {
@@ -1908,8 +1912,9 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
             x.did_drag = tmp;
         }
         ImGui::InputFloat3("p_init_drag", x.p_init_drag.e);
-        ImGui::InputFloat("s_init_scale", &x.s_init_scale);
+        ImGui::InputFloat3("s_init_scale", x.s_init_scale.e);
         ImGui::InputFloat("s_init_drag", &x.s_init_drag);
+        ImGui::InputFloat3("s_init_drag_p", x.s_init_drag_p.e);
         ImGui::InputFloat4("r_init_rot", x.r_init_rot.e);
         ImGui::InputFloat("r_init_drag", &x.r_init_drag);
         ImGui::InputFloat3("r_right_axis", x.r_right_axis.e);
@@ -1920,6 +1925,11 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
             bool tmp = x.copy_entity_mesh;
             ImGui::Checkbox("copy_entity_mesh", &tmp);
             x.copy_entity_mesh = tmp;
+        }
+        {
+            bool tmp = x.uniform_scale;
+            ImGui::Checkbox("uniform_scale", &tmp);
+            x.uniform_scale = tmp;
         }
     }
 }

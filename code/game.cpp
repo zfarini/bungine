@@ -511,6 +511,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	game.time += dt;
 	// @HACK
-	if (game.frame == 0 || !game.in_editor) ImGui::SetWindowFocus(NULL);
+	if (game.frame == 0 || !game.in_editor)
+		ImGui::SetWindowFocus(NULL);
 	game.frame++;
 }

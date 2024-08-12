@@ -65,7 +65,7 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
 	}
 
 	if (hit_id) {
-		push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
+	//	push_triangle_outline(hit_triangle[0], hit_triangle[1], hit_triangle[2], V3(0));
 	}
 	hit_t = min_t;
 	return hit_id;
@@ -320,7 +320,15 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 			Entity *e = get_entity(world, editor.selected_entity);
 			if (e) {
 				float min_axis_t = FLT_MAX;
+
 				int best_axis = -1;
+
+				float axis_dim = 0.07f;
+				float other_dim = axis_dim * 0.3f;
+
+				axis_dim *= length(e->position - camera.position);
+				other_dim *= length(e->position - camera.position);
+
 				for (int i = 0; i < 3; i++) {
 
 					float t = -1;
@@ -336,11 +344,18 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 								t = -1;
 						}
 					}
-					else {
-						t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis[i], 
-								axis[0] * (i == 0 ? 0.5f : 0.15f), 
-								axis[1] * (i == 1 ? 0.5f : 0.15f), 
-								axis[2] * (i == 2 ? 0.5f : 0.15f));
+					else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+						t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis_dim * axis[i], 
+								axis[0] * (i == 0 ? axis_dim : other_dim), 
+								axis[1] * (i == 1 ? axis_dim : other_dim), 
+								axis[2] * (i == 2 ? axis_dim : other_dim));
+					}
+					else if (editor.gizmo_mode == GIZMO_SCALE) {
+						float radius = 0.1 * axis_dim;
+						t = ray_hit_box(ray_origin, ray_dir, e->position + (axis_dim - 0.5f * radius) * axis[i], 
+								axis[0] * radius, 
+								axis[1] * radius, 
+								axis[2] * radius);
 					}
 
 					if (t >= 0 && t < min_axis_t) {
@@ -348,9 +363,17 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						best_axis = i;
 					}
 				}
+				editor.uniform_scale = false;
 				if (editor.gizmo_mode == GIZMO_SCALE) {
-					// TODO: scale uniformly
-
+					float radius = 0.1 * axis_dim;
+					float t = ray_hit_box(ray_origin, ray_dir, e->position,
+							axis[0] * radius, 
+							axis[1] * radius, 
+							axis[2] * radius);
+					if (t >= 0 && t < min_axis_t) {
+						min_axis_t = t;
+						editor.uniform_scale = true;
+					}
 				}
 				if (min_axis_t != FLT_MAX) {
 					//&& (hit_entity == editor.selected_entity
@@ -370,10 +393,16 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 						editor.did_drag = false;
 
 					// TODO: actually think about this (what if the axis and camera.forward are aligned?)
-					v3 plane_normal = cross(axis[editor.dragging_axis], cross(axis[editor.dragging_axis], camera.forward));
-					if (editor.gizmo_mode == GIZMO_ROTATION) {
-						//	plane_normal = cross(axis[editor.dragging_axis], camera.forward);
-						plane_normal = axis[editor.dragging_axis];
+				
+					v3 plane_normal;
+
+					if (editor.gizmo_mode == GIZMO_SCALE && editor.uniform_scale)
+						editor.dragging_axis = 2;
+
+					{
+						plane_normal = cross(axis[editor.dragging_axis], cross(axis[editor.dragging_axis], camera.forward));
+						if (editor.gizmo_mode == GIZMO_ROTATION)
+							plane_normal = axis[editor.dragging_axis];
 					}
 
 					push_line(e->position, e->position + normalize(plane_normal) * 2,
@@ -403,13 +432,30 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 							if (!editor.did_drag) {
 								editor.did_drag = true;
 								editor.s_init_drag = ds;
-								editor.s_init_scale = e->scale.e[editor.dragging_axis];
+								editor.s_init_drag_p = hit_p;
+								editor.s_init_scale = e->scale;//e->scale.e[editor.dragging_axis];
 							}
 							else {
 								v3 new_scale = e->scale;
-								new_scale.e[editor.dragging_axis] = editor.s_init_scale + ds - editor.s_init_drag;
-								if (new_scale.e[editor.dragging_axis] < 0.01f)
-									new_scale.e[editor.dragging_axis] = 0.01f;
+								if (editor.uniform_scale) {
+
+									v3 v = editor.s_init_drag_p - e->position;
+
+									float l = dot(hit_p - e->position, normalize(v));
+
+									float s;
+									if (l >= length(v))
+										s = 1 + (l - length(v));
+									else
+										s = 1 / (length(v) - l + 1);
+
+									new_scale = s * editor.s_init_scale;
+								}
+								else {
+									new_scale.e[editor.dragging_axis] = editor.s_init_scale.e[editor.dragging_axis] + ds - editor.s_init_drag;
+									if (new_scale.e[editor.dragging_axis] < 0.01f)
+										new_scale.e[editor.dragging_axis] = 0.01f;
+								}
 								e->scale = new_scale;
 							}
 						}
@@ -609,20 +655,26 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		Entity *e = get_entity(world, editor.selected_entity);
 		if (e) {
 
+			float axis_dim = 0.07f;
+			float other_dim = axis_dim * 0.3f;
+			axis_dim  *= length(e->position - camera.position);
+			other_dim *= length(e->position - camera.position);
+
 			for (int i = 0; i < 3; i++) {
 				v3 color = {};
 				color.e[i] = 1;
-				if (editor.in_gizmo && editor.dragging_axis == i)
+				if (editor.in_gizmo && 
+						(editor.dragging_axis == i && !editor.uniform_scale))
 					color = V3(1, 1, 0);
 
 				if (editor.gizmo_mode == GIZMO_SCALE) {
-					push_line(e->position, e->position + axis[i], color);
-					push_cube_outline(e->position + axis[i], V3(0.1f), color);
+					push_line(e->position, e->position + axis_dim * axis[i], color);
+					//push_cube_outline(e->position + axis_dim * axis[i], V3(axis_dim * 0.2f), color);
 
 				}
 				else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-					push_line(e->position, e->position + axis[i], color);
-					push_ellipsoid_outline(e->position + axis[i], V3(0.1f), color);
+					push_line(e->position, e->position + axis_dim * axis[i], color);
+					push_ellipsoid_outline(e->position + axis_dim * axis[i], V3(axis_dim * 0.2f), color);
 				}
 				else {
 	#if 0
@@ -637,14 +689,34 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	#endif
 
 				}
-				//push_box_outline(e->position + 0.5f * axis,
-				//		x_axis * (i == 0 ? 0.5f : 0.25f), 
-				//		y_axis * (i == 1 ? 0.5f : 0.25f), 
-				//		z_axis * (i == 2 ? 0.5f : 0.25f), color);
+				//push_box_outline(e->position + 0.5f * axis[i],
+				//		axis[0] * (i == 0 ? 0.5f : 0.25f), 
+				//		axis[1] * (i == 1 ? 0.5f : 0.25f), 
+				//		axis[2] * (i == 2 ? 0.5f : 0.25f), color);
+
+				if (editor.gizmo_mode == GIZMO_SCALE) {
+
+					//push_cube_outline(e->position + axis_dim * axis[i], V3(axis_dim * 0.2f), color);
+					float radius = 0.1 * axis_dim;
+					push_box_outline(e->position + (axis_dim - 0.5f * radius) * axis[i], 
+							axis[0] * radius, 
+							axis[1] * radius, 
+							axis[2] * radius, color);
+				}
+				else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
+					push_box_outline(e->position + 0.5f * axis_dim * axis[i], 
+							axis[0] * (i == 0 ? axis_dim : other_dim), 
+							axis[1] * (i == 1 ? axis_dim : other_dim), 
+							axis[2] * (i == 2 ? axis_dim : other_dim), color);
+				}
 			}
 			if (editor.gizmo_mode == GIZMO_SCALE) {
-				push_line(e->position, e->position
-						+ 2*normalize(axis[0] + axis[1] + axis[2]), V3(0, 1, 0));
+				float radius = 0.1 * axis_dim;
+				v3 color = editor.in_gizmo && editor.uniform_scale ? V3(1, 1, 0) : V3(1);
+				push_box_outline(e->position,
+							axis[0] * radius, 
+							axis[1] * radius, 
+							axis[2] * radius, color);
 			}
 		}
 	}

@@ -480,6 +480,8 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 		if (game.in_editor && !IsDown(input, BUTTON_LEFT_CONTROL)
 				&& !ImGui::GetIO().WantCaptureKeyboard)
 #endif
+		// TODO: cleanup
+		if (!IsDown(input, BUTTON_LEFT_CONTROL) && !WasDown(input, BUTTON_LEFT_CONTROL))
 		{
 			v3 camera_dp = {};
 			if (IsDown(input, BUTTON_CAMERA_FORWARD))

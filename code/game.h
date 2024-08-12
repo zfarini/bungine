@@ -197,8 +197,9 @@ struct Editor {
 
     meta(ui) v3 p_init_drag;
 
-    meta(ui) float s_init_scale;
+    meta(ui) v3 s_init_scale;
     meta(ui) float s_init_drag;
+	meta(ui) v3 s_init_drag_p;
 
     meta(ui) quat r_init_rot;
     meta(ui) float r_init_drag;
@@ -209,6 +210,8 @@ struct Editor {
     meta(ui) v3 last_camera_p;
 
 	meta(ui) bool copy_entity_mesh;
+
+	meta(ui) bool uniform_scale;
 };
 
 struct World {

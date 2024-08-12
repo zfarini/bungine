@@ -1,5 +1,5 @@
 day 1:
-uniform scaling
+improve picking plane
 fix rotation when the plane of rotation is ..
 snap movement in editor (for all gizmo types)
 
