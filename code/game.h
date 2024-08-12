@@ -126,7 +126,10 @@ struct Camera {
     v3 forward, right, up;
 };
 
-enum GizmoMode { GIZMO_TRANSLATION, GIZMO_SCALE, GIZMO_ROTATION };
+enum EditorMode {
+	EDITOR_MODE_GIZMO,
+	EDITOR_MODE_COLLISION_MESH,
+};
 
 enum EditorOpType {
     EDITOR_OP_TRANSLATE_ENTITY,
@@ -176,42 +179,55 @@ struct EditorOp {
     };
 };
 
+enum GizmoMode {
+	GIZMO_TRANSLATION,
+	GIZMO_ROTATION,
+	GIZMO_SCALE
+};
+
+struct Gizmo {
+	GizmoMode mode;
+	v3 init_position;
+	quat init_rotation;
+	v3 init_scale;
+
+	bool active;
+
+    int dragging_axis;
+	bool did_drag;
+	bool uniform_scale;
+
+	// data for the first frame we start dragging
+	v3 hit_p;
+
+	v3 delta_p;
+
+	v3 scale;
+	float delta_s;
+
+	float rotation_angle;
+	quat rotation;
+	v3 rotation_right_axis;
+	v3 rotation_up_axis;
+	v3 rotation_axis;
+};
+
 struct Editor {
+	meta(ui) EditorMode mode;
+
     Array<EditorOp> ops;
     Array<EditorOp> undos;
 
-    Entity init_entity;
+	Gizmo gizmo;
 
-	meta(ui) bool edit_collision_mesh;
+	meta(ui) bool copy_entity_mesh;
 
-    meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
 	meta(ui) int selected_entity_mesh;
 
     meta(ui) entity_id copied_entity;
 
-    meta(ui) GizmoMode gizmo_mode;
-
-    meta(ui) int dragging_axis;
-    meta(ui) bool did_drag;
-
-    meta(ui) v3 p_init_drag;
-
-    meta(ui) v3 s_init_scale;
-    meta(ui) float s_init_drag;
-	meta(ui) v3 s_init_drag_p;
-
-    meta(ui) quat r_init_rot;
-    meta(ui) float r_init_drag;
-    meta(ui) v3 r_right_axis;
-    meta(ui) v3 r_up_axis;
-    meta(ui) v3 r_axis;
-
     meta(ui) v3 last_camera_p;
-
-	meta(ui) bool copy_entity_mesh;
-
-	meta(ui) bool uniform_scale;
 };
 
 struct World {
@@ -233,7 +249,6 @@ struct World {
     meta(serialize) v3 editor_camera_p;
     meta(serialize) v3 editor_camera_rotation;
 
-    meta(ui) entity_id editor_selected_entity;
     meta(serialize) entity_id player_id;
 
     entity_id moving_box;

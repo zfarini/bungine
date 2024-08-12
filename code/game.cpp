@@ -370,9 +370,9 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.in_editor = !game.in_editor;
 
 	if (ImGui::GetIO().WantCaptureKeyboard) {
-		for (int i = 0; i < BUTTON_COUNT; i++)
-			if (IsKeyboardButton(i))
-				input.buttons[i].is_down = false;
+		//for (int i = 0; i < BUTTON_COUNT; i++)
+		//	if (IsKeyboardButton(i))
+		//		input.buttons[i].is_down = false;
 	}
 
 	begin_render_frame();

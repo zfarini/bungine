@@ -20,7 +20,6 @@
 #define __PIC__ 2
 #define __pie__ 2
 #define __PIE__ 2
-#define __SANITIZE_ADDRESS__ 1
 #define __FINITE_MATH_ONLY__ 0
 #define _LP64 1
 #define __LP64__ 1
@@ -2542,7 +2541,10 @@ struct Camera {
     v3 forward, right, up;
 };
 
-enum GizmoMode { GIZMO_TRANSLATION, GIZMO_SCALE, GIZMO_ROTATION };
+enum EditorMode {
+ EDITOR_MODE_GIZMO,
+ EDITOR_MODE_COLLISION_MESH,
+};
 
 enum EditorOpType {
     EDITOR_OP_TRANSLATE_ENTITY,
@@ -2592,42 +2594,60 @@ struct EditorOp {
     };
 };
 
+enum GizmoMode {
+ GIZMO_TRANSLATION,
+ GIZMO_ROTATION,
+ GIZMO_SCALE
+};
+
+struct Gizmo {
+ GizmoMode mode;
+ v3 init_position;
+ quat init_rotation;
+ v3 init_scale;
+
+ bool active;
+
+    int dragging_axis;
+ bool did_drag;
+ bool uniform_scale;
+
+
+ v3 hit_p;
+
+ v3 delta_p;
+
+ v3 scale;
+ float delta_s;
+
+ float rotation_angle;
+ quat rotation;
+ v3 rotation_right_axis;
+ v3 rotation_up_axis;
+ v3 rotation_axis;
+};
+
 struct Editor {
+ meta(ui) EditorMode mode;
+
     Array<EditorOp> ops;
     Array<EditorOp> undos;
 
-    Entity init_entity;
+ Gizmo gizmo;
+
+
+
 
  meta(ui) bool edit_collision_mesh;
 
-    meta(ui) bool in_gizmo;
     meta(ui) entity_id selected_entity;
  meta(ui) int selected_entity_mesh;
 
     meta(ui) entity_id copied_entity;
 
-    meta(ui) GizmoMode gizmo_mode;
-
-    meta(ui) int dragging_axis;
-    meta(ui) bool did_drag;
-
-    meta(ui) v3 p_init_drag;
-
-    meta(ui) v3 s_init_scale;
-    meta(ui) float s_init_drag;
- meta(ui) v3 s_init_drag_p;
-
-    meta(ui) quat r_init_rot;
-    meta(ui) float r_init_drag;
-    meta(ui) v3 r_right_axis;
-    meta(ui) v3 r_up_axis;
-    meta(ui) v3 r_axis;
-
     meta(ui) v3 last_camera_p;
 
  meta(ui) bool copy_entity_mesh;
-
- meta(ui) bool uniform_scale;
 };
 
 struct World {
@@ -2649,7 +2669,6 @@ struct World {
     meta(serialize) v3 editor_camera_p;
     meta(serialize) v3 editor_camera_rotation;
 
-    meta(ui) entity_id editor_selected_entity;
     meta(serialize) entity_id player_id;
 
     entity_id moving_box;
@@ -4711,7 +4730,22 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 }
 # 108 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
-entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_dir,
+#define GIZMO_ROTATION_INNER_RADIUS 1.5f
+#define GIZMO_ROTATION_OUTER_RADIUS 2
+#define GIZMO_ROTATION_RADIUS (0.5f*(GIZMO_ROTATION_INNER_RADIUS + GIZMO_ROTATION_OUTER_RADIUS))
+
+#define GIZMO_MAIN_AXIS_LENGTH (0.07f * 2)
+#define GIZMO_OTHER_AXIS_LENGTH (GIZMO_MAIN_AXIS_LENGTH * 0.3f)
+
+#define GIZMO_SCALE_BOX_RADIUS (GIZMO_MAIN_AXIS_LENGTH * 0.1f)
+
+#define GIZMO_MINIMUM_SCALE 0.01f
+
+#define COLLISION_MESH_SNAP_DIST 0.01f
+
+
+
+entity_id raycast_to_entities(Game &game, World &world, v3 camera_ray_origin, v3 camera_ray_dir,
   float &hit_t, int &mesh_index)
 {
  entity_id hit_id = 0;
@@ -4746,25 +4780,18 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
     y_axis *= fabsf(dot((b - a)*0.5f, y_axis));
     z_axis *= fabsf(dot((b - a)*0.5f, z_axis));
 
-
-
-    float t = ray_hit_box(ray_origin, ray_dir, c, x_axis, y_axis, z_axis);
+    float t = ray_hit_box(camera_ray_origin, camera_ray_dir, c, x_axis, y_axis, z_axis);
     if (t < 0)
      continue ;
    }
-
 
    for (usize t = 0; t < mesh.indices.count; t += 3) {
     v3 v0 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+0]], 1)).xyz;
     v3 v1 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+1]], 1)).xyz;
     v3 v2 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+2]], 1)).xyz;
 
-    v3 u = v1 - v0;
-    v3 v = v2 - v0;
-    v3 normal = cross(u, v);
-
     float hit_t;
-    if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t) &&
+    if (ray_hit_triangle(camera_ray_origin, camera_ray_dir, v0, v1, v2, &hit_t) &&
       hit_t < min_t) {
      min_t = hit_t;
      hit_id = e.id;
@@ -4780,6 +4807,7 @@ entity_id raycast_to_entities(Game &game, World &world, v3 ray_origin, v3 ray_di
  if (hit_id) {
 
  }
+
  hit_t = min_t;
  return hit_id;
 }
@@ -4904,14 +4932,364 @@ void undo_editor_op(Game &game, World &world, Editor &editor)
  }
 }
 
+void editor_render_gizmo(World &world, Editor &editor, Gizmo &gizmo, Camera &camera)
+{
+ Entity *e = get_entity(world, editor.selected_entity);
+ if (!e)
+  return ;
+
+ v3 axis[3] = {V3(1, 0, 0), V3(0, 1, 0), V3(0, 0, 1)};
+
+ if (gizmo.mode == GIZMO_SCALE || gizmo.mode == GIZMO_ROTATION) {
+  mat4 transform = get_entity_transform(world, *e);
+  for (int i = 0; i < 3; i++)
+   axis[i] = normalize(V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]));
+ }
+
+ float dist_to_camera = length(e->position - camera.position);
+ float axis_length = (0.07f * 2) * dist_to_camera;
+ float other_axis_length = ((0.07f * 2) * 0.3f) * dist_to_camera;
+ float scale_box_radius = ((0.07f * 2) * 0.1f) * dist_to_camera;
+
+ for (int i = 0; i < 3; i++) {
+  v3 color = {};
+  color.e[i] = 1;
+
+  if (gizmo.active && (gizmo.dragging_axis == i && !gizmo.uniform_scale))
+   color = V3(1, 1, 0);
+
+  if (gizmo.mode == GIZMO_SCALE) {
+   push_line(e->position, e->position + axis_length * axis[i], color);
+   push_box_outline(e->position + (axis_length - scale_box_radius) * axis[i],
+    axis[0] * scale_box_radius,
+    axis[1] * scale_box_radius,
+    axis[2] * scale_box_radius, color);
+  }
+  else if (gizmo.mode == GIZMO_TRANSLATION) {
+   push_line(e->position, e->position + axis_length * axis[i], color);
+   push_ellipsoid_outline(e->position + axis_length * axis[i], V3(axis_length * 0.2f), color);
+
+
+
+
+
+  }
+  else if (gizmo.mode == GIZMO_ROTATION) {
+     push_circle(e->position,
+       (0.5f*(1.5f + 2)),
+       axis[(i + 1) % 3], axis[(i + 2) % 3], color);
+  }
+ }
+ if (gizmo.mode == GIZMO_SCALE) {
+  v3 color = gizmo.active && gizmo.uniform_scale ? V3(1, 1, 0) : V3(1);
+  push_box_outline(e->position,
+     axis[0] * scale_box_radius,
+     axis[1] * scale_box_radius,
+     axis[2] * scale_box_radius, color);
+ }
+}
+
+void editor_update_gizmo(World &world, Editor &editor, Gizmo &gizmo, Camera &camera,
+  v3 camera_ray_origin, v3 camera_ray_dir)
+{
+ Entity *e = get_entity(world, editor.selected_entity);
+ if (!e) {
+  gizmo.active = false;
+  return ;
+ }
+ v3 axis[3] = {V3(1, 0, 0), V3(0, 1, 0), V3(0, 0, 1)};
+
+ if (gizmo.mode == GIZMO_SCALE || gizmo.mode == GIZMO_ROTATION) {
+  mat4 transform = get_entity_transform(world, *e);
+  for (int i = 0; i < 3; i++)
+   axis[i] = normalize(V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]));
+ }
+
+ float dist_to_camera = length(e->position - camera.position);
+ float axis_length = (0.07f * 2) * dist_to_camera;
+ float other_axis_length = ((0.07f * 2) * 0.3f) * dist_to_camera;
+ float scale_box_radius = ((0.07f * 2) * 0.1f) * dist_to_camera;
+
+ if (!gizmo.active) {
+  float min_axis_t = FLT_MAX;
+  int best_axis = -1;
+
+  for (int i = 0; i < 3; i++) {
+   float t = -1;
+   if (gizmo.mode == GIZMO_ROTATION) {
+    if (ray_hit_plane(camera_ray_origin, camera_ray_dir, axis[i], e->position, &t)) {
+     v3 p = camera_ray_origin + t * camera_ray_dir;
+     if (t < 0
+      || length(p - e->position) < 1.5f
+      || length(p - e->position) > 2)
+      continue ;
+    }
+   }
+   else if (gizmo.mode == GIZMO_TRANSLATION) {
+    t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position + axis_length * axis[i],
+      axis[0] * (i == 0 ? axis_length : other_axis_length),
+      axis[1] * (i == 1 ? axis_length : other_axis_length),
+      axis[2] * (i == 2 ? axis_length : other_axis_length));
+   }
+   else if (gizmo.mode == GIZMO_SCALE) {
+    t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position +
+      (axis_length - scale_box_radius)
+      * axis[i],
+      axis[0] * scale_box_radius,
+      axis[1] * scale_box_radius,
+      axis[2] * scale_box_radius);
+   }
+   if (t >= 0 && t < min_axis_t) {
+    min_axis_t = t;
+    best_axis = i;
+   }
+  }
+  gizmo.uniform_scale = false;
+  if (gizmo.mode == GIZMO_SCALE) {
+   float t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position,
+      axis[0] * scale_box_radius,
+      axis[1] * scale_box_radius,
+      axis[2] * scale_box_radius);
+   if (t >= 0 && t < min_axis_t) {
+    min_axis_t = t;
+    gizmo.uniform_scale = true;
+   }
+  }
+  if (min_axis_t != FLT_MAX) {
+   gizmo.init_position = e->position;
+   gizmo.init_rotation = e->rotation;
+   gizmo.init_scale = e->scale;
+   gizmo.active = true;
+   gizmo.did_drag = false;
+   gizmo.dragging_axis = best_axis;
+  }
+ }
+
+ if (gizmo.active) {
+  if (gizmo.did_drag && !v3_equal(camera.position, editor.last_camera_p))
+   gizmo.did_drag = false;
+
+  if (gizmo.mode == GIZMO_SCALE && gizmo.uniform_scale)
+   gizmo.dragging_axis = 2;
+
+  v3 plane_normal;
+
+  plane_normal = camera.forward;
+  if (gizmo.mode == GIZMO_ROTATION)
+   plane_normal = axis[gizmo.dragging_axis];
+
+
+
+  float hit_t;
+  if (ray_hit_plane(camera_ray_origin, camera_ray_dir, plane_normal, e->position, &hit_t)) {
+   v3 hit_p = camera_ray_origin + hit_t * camera_ray_dir;
+
+   if (!gizmo.did_drag)
+    gizmo.hit_p = hit_p;
+
+   if (gizmo.mode == GIZMO_TRANSLATION) {
+    v3 delta_p = axis[gizmo.dragging_axis] * dot(hit_p - e->position, axis[gizmo.dragging_axis]);
+
+    if (!gizmo.did_drag)
+     gizmo.delta_p = delta_p;
+    else
+     e->position += delta_p - gizmo.delta_p;
+   }
+   else if (gizmo.mode == GIZMO_SCALE) {
+    float delta_s = dot(hit_p - e->position, axis[gizmo.dragging_axis]);
+
+    if (!gizmo.did_drag) {
+     gizmo.scale = e->scale;
+     gizmo.delta_s = delta_s;
+    }
+    else {
+     v3 new_scale = e->scale;
+     if (gizmo.uniform_scale) {
+      v3 v = gizmo.hit_p - e->position;
+      float l = dot(hit_p - e->position, normalize(v));
+      float s = (l >= length(v) ? 1 + (l - length(v)) : 1 / (length(v) - l + 1));
+      new_scale = s * gizmo.scale;
+     }
+     else
+      new_scale.e[gizmo.dragging_axis] = gizmo.scale.e[gizmo.dragging_axis] + delta_s - gizmo.delta_s;
+     for (int i = 0; i < 3; i++)
+      if (new_scale.e[gizmo.dragging_axis] < 0.01f)
+       new_scale.e[gizmo.dragging_axis] = 0.01f;
+     e->scale = new_scale;
+    }
+   }
+   else if (gizmo.mode == GIZMO_ROTATION) {
+    v3 p = normalize(hit_p - e->position) * (0.5f*(1.5f + 2));
+
+    push_cube_outline(e->position + p, V3(0.1), V3(0));
+
+    v3 right_axis = axis[(gizmo.dragging_axis+1)%3];
+    v3 up_axis = axis[(gizmo.dragging_axis+2)%3];
+
+    if (gizmo.did_drag)
+     right_axis = gizmo.rotation_right_axis, up_axis = gizmo.rotation_up_axis;
+    else
+     gizmo.rotation_axis = axis[gizmo.dragging_axis];
+
+    p.xy = V2(dot(p, right_axis), dot(p, up_axis));
+
+    float a = atan2(p.y, p.x);
+
+    if (!gizmo.did_drag) {
+     gizmo.did_drag = true;
+     gizmo.rotation_angle = a;
+     gizmo.rotation = e->rotation;
+     gizmo.rotation_right_axis = right_axis;
+     gizmo.rotation_up_axis = up_axis;
+     gizmo.rotation_axis = axis[gizmo.dragging_axis];
+    }
+    else {
+     e->rotation = rotate_around_axis_quat(gizmo.rotation_axis, a - gizmo.rotation_angle)
+      * gizmo.rotation;
+    }
+   }
+
+   if (!gizmo.did_drag)
+    gizmo.did_drag = true;
+  }
+ }
+}
+
+void editor_push_entity_op(Game &game, World &world, Editor &editor)
+{
+ Entity *e = get_entity(world, editor.selected_entity);
+ if (!editor.gizmo.active || !e)
+  return ;
+
+ EditorOp op = {};
+ op.entity = editor.selected_entity;
+ bool push = true;
+ if (editor.gizmo.mode == GIZMO_TRANSLATION) {
+  op.type = EDITOR_OP_TRANSLATE_ENTITY;
+  op.translate.prev_p = editor.gizmo.init_position;
+  op.translate.new_p = e->position;
+  push &= (!v3_equal(op.translate.prev_p, op.translate.new_p));
+ }
+ else if (editor.gizmo.mode == GIZMO_SCALE) {
+  op.type = EDITOR_OP_SCALE_ENTITY;
+  op.scale.prev_scale = editor.gizmo.init_scale;
+  op.scale.new_scale = e->scale;
+  push &= (!v3_equal(op.scale.prev_scale, op.scale.new_scale));
+ }
+ else if (editor.gizmo.mode == GIZMO_ROTATION) {
+  op.type = EDITOR_OP_ROTATE_ENTITY;
+  op.rotate.prev_rot = editor.gizmo.init_rotation;
+  op.rotate.new_rot = e->rotation;
+  push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
+ }
+ if (push)
+  do_editor_op(game, world, editor, op);
+ editor.gizmo.active = false;
+}
+
+void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Editor &editor, Camera &camera, v3 camera_ray_origin,
+  v3 camera_ray_dir)
+{
+ float min_hit_t;
+ int hit_entity_mesh_index;
+ entity_id hit_entity = raycast_to_entities(game, world, camera_ray_origin, camera_ray_dir,
+   min_hit_t, hit_entity_mesh_index);
+
+ Entity *e = get_entity(world, hit_entity);
+
+ if (!e || !e->scene_id)
+  return ;
+
+ mat4 to_world = get_entity_transform(world, *e) * e->scene_transform;
+ mat4 to_object = inverse(to_world);
+
+ if (!world.scene_collision_mesh.count(e->scene_id)) {
+  CollisionMesh cmesh = {};
+
+  cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
+  cmesh.scene = e->scene_id;
+  world.collision_meshes.push(cmesh);
+  world.scene_collision_mesh[e->scene_id] = world.collision_meshes.count - 1;
+ }
+
+ CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+
+ v3 hit_p = camera_ray_origin + min_hit_t * camera_ray_dir;
+
+ float dist_to_snap = 0.01f * length(hit_p - camera.position);
+
+ if (((input.buttons[BUTTON_MOUSE_RIGHT].is_down) && !(input.buttons[BUTTON_MOUSE_RIGHT].was_down))) {
+  hit_p = (to_object * V4(hit_p, 1)).xyz;
+
+  float closest_dist = FLT_MAX;
+  int best_p = 0;
+  for (int i = 0; i < cmesh.vertices.count; i++) {
+   float dist = length_sq(cmesh.vertices[i] - hit_p);
+   if (dist < closest_dist) {
+    closest_dist = dist;
+    best_p = i;
+   }
+  }
+  if (closest_dist < dist_to_snap * dist_to_snap)
+   hit_p = cmesh.vertices[best_p];
+
+  EditorOp op = {};
+  op.type = EDITOR_OP_CREATE_MESH_COLLISION_VERTEX;
+  op.entity = hit_entity;
+  op.place_collision_vertex.pos = hit_p;
+
+  do_editor_op(game, world, editor, op);
+
+  hit_p = (to_world * V4(hit_p, 1)).xyz;
+ }
+ int hit_triangle = -1;
+ {
+  float min_t = FLT_MAX;
+  for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+   v3 v0 = (to_world * V4(cmesh.vertices[i + 0], 1)).xyz;
+   v3 v1 = (to_world * V4(cmesh.vertices[i + 1], 1)).xyz;
+   v3 v2 = (to_world * V4(cmesh.vertices[i + 2], 1)).xyz;
+
+   float hit_t;
+   if (ray_hit_triangle(camera_ray_origin, camera_ray_dir, v0, v1, v2, &hit_t)
+     && hit_t < min_t) {
+    min_t = hit_t;
+    hit_triangle = i;
+   }
+  }
+ }
+
+ if (((input.buttons[BUTTON_DELETE].is_down) && !(input.buttons[BUTTON_DELETE].was_down))) {
+  if (hit_triangle != -1) {
+   EditorOp op = {};
+   op.type = EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE;
+   op.entity = hit_entity;
+   op.delete_collision_triangle.index = hit_triangle;
+   op.delete_collision_triangle.v0 = cmesh.vertices[hit_triangle + 0];
+   op.delete_collision_triangle.v1 = cmesh.vertices[hit_triangle + 1];
+   op.delete_collision_triangle.v2 = cmesh.vertices[hit_triangle + 2];
+   do_editor_op(game, world, editor, op);
+  }
+ }
+
+ push_cube_outline(hit_p, V3(dist_to_snap), V3(1, 1, 0));
+ for (int i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
+  push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(dist_to_snap), V3(1, 0, 0));
+
+ for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+  v3 color = i == hit_triangle ? V3(1, 1, 0) : V3(1, 0, 0);
+  push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
+     (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
+     (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, color);
+ }
+}
+
 void update_editor(Game &game, World &world, Editor &editor, GameInput &input, Camera &camera)
 {
  {
-  Entity *e = get_entity(world, world.editor_selected_entity);
+  Entity *e = get_entity(world, editor.selected_entity);
 
   if (e) {
-   ImGuiIO &io = ImGui::GetIO();
-
    ImGui::Begin("Entity");
 
    if (ImGui::Button("Reset scale"))
@@ -4928,507 +5306,89 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
    }
    if (e)
     imgui_edit_struct_Entity(*e, "selected entity", false);
-# 266 "code/editor.cpp"
+
    ImGui::End();
   }
  }
+
  if (!game.in_editor)
   return ;
 
+ v3 camera_ray_origin, camera_ray_dir;
 
-
- v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
- mouse_p.y *= -1;
-
- v3 ray_origin = camera.position;
- v3 ray_dir = camera.forward * camera.znear
-  + mouse_p.x * camera.right * camera.width * 0.5f
-  + mouse_p.y * camera.up * camera.height * 0.5f;
- if ((input.buttons[BUTTON_LEFT_CONTROL].is_down)) {
-  if ((input.buttons[BUTTON_T].is_down)) editor.gizmo_mode = GIZMO_TRANSLATION;
-  else if ((input.buttons[BUTTON_R].is_down)) editor.gizmo_mode = GIZMO_ROTATION;
-  else if ((input.buttons[BUTTON_S].is_down)) editor.gizmo_mode = GIZMO_SCALE;
-
-  if (((input.buttons[BUTTON_Q].is_down) && !(input.buttons[BUTTON_Q].was_down))) {
-
-   editor.edit_collision_mesh = !editor.edit_collision_mesh;
-   if (editor.edit_collision_mesh)
-    editor.in_gizmo = 0;
-  }
- }
- float rotation_inner_radius = 1.5;
- float rotation_outer_radius = 2;
- float rotation_circle_radius = 0.5f * (rotation_inner_radius + rotation_outer_radius);
- v3 axis[3] = {
-  2*V3(1, 0, 0),
-  2*V3(0, 1, 0),
-  2*V3(0, 0, 1)
- };
-
- if (editor.gizmo_mode == GIZMO_SCALE || editor.gizmo_mode == GIZMO_ROTATION) {
-  Entity *e = get_entity(world, editor.selected_entity);
-  if (e) {
-   mat4 transform = get_entity_transform(world, *e);
-
-   for (int i = 0; i < 3; i++)
-    axis[i] = V3(transform.e[0][i], transform.e[1][i], transform.e[2][i]);
-   for (int i = 0; i < 3; i++)
-    axis[i] = 2 * normalize(axis[i]);
-  }
- }
-
- if (!editor.edit_collision_mesh && (input.buttons[BUTTON_MOUSE_RIGHT].is_down)) {
-  float min_hit_t;
-  int hit_entity_mesh_index;
-  entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
-
-  if (editor.selected_entity && !editor.in_gizmo && !editor.edit_collision_mesh) {
-   Entity *e = get_entity(world, editor.selected_entity);
-   if (e) {
-    float min_axis_t = FLT_MAX;
-
-    int best_axis = -1;
-
-    float axis_dim = 0.07f;
-    float other_dim = axis_dim * 0.3f;
-
-    axis_dim *= length(e->position - camera.position);
-    other_dim *= length(e->position - camera.position);
-
-    for (int i = 0; i < 3; i++) {
-
-     float t = -1;
-     if (editor.gizmo_mode == GIZMO_ROTATION) {
-      if (ray_hit_plane(ray_origin, ray_dir, axis[i], e->position, &t)) {
-       v3 p = ray_origin + t * ray_dir;
-
-       if (t >= 0 &&
-         length(p - e->position) > rotation_inner_radius
-         && length(p - e->position) < rotation_outer_radius) {
-       }
-       else
-        t = -1;
-      }
-     }
-     else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-      t = ray_hit_box(ray_origin, ray_dir, e->position + 0.5f * axis_dim * axis[i],
-        axis[0] * (i == 0 ? axis_dim : other_dim),
-        axis[1] * (i == 1 ? axis_dim : other_dim),
-        axis[2] * (i == 2 ? axis_dim : other_dim));
-     }
-     else if (editor.gizmo_mode == GIZMO_SCALE) {
-      float radius = 0.1 * axis_dim;
-      t = ray_hit_box(ray_origin, ray_dir, e->position + (axis_dim - 0.5f * radius) * axis[i],
-        axis[0] * radius,
-        axis[1] * radius,
-        axis[2] * radius);
-     }
-
-     if (t >= 0 && t < min_axis_t) {
-      min_axis_t = t;
-      best_axis = i;
-     }
-    }
-    editor.uniform_scale = false;
-    if (editor.gizmo_mode == GIZMO_SCALE) {
-     float radius = 0.1 * axis_dim;
-     float t = ray_hit_box(ray_origin, ray_dir, e->position,
-       axis[0] * radius,
-       axis[1] * radius,
-       axis[2] * radius);
-     if (t >= 0 && t < min_axis_t) {
-      min_axis_t = t;
-      editor.uniform_scale = true;
-     }
-    }
-    if (min_axis_t != FLT_MAX) {
-
-
-     editor.in_gizmo = true;
-     editor.did_drag = false;
-     editor.dragging_axis = best_axis;
-    }
-    }
-   }
-
-   if (editor.in_gizmo) {
-
-    Entity *e = get_entity(world, editor.selected_entity);
-    if (e) {
-     if (editor.did_drag && !v3_equal(camera.position, editor.last_camera_p))
-      editor.did_drag = false;
-
-
-
-     v3 plane_normal;
-
-     if (editor.gizmo_mode == GIZMO_SCALE && editor.uniform_scale)
-      editor.dragging_axis = 2;
-
-     {
-      plane_normal = cross(axis[editor.dragging_axis], cross(axis[editor.dragging_axis], camera.forward));
-      if (editor.gizmo_mode == GIZMO_ROTATION)
-       plane_normal = axis[editor.dragging_axis];
-     }
-
-     push_line(e->position, e->position + normalize(plane_normal) * 2,
-       V3(1, 0, 1));
-
-     float hit_t;
-     if (ray_hit_plane(ray_origin, ray_dir, plane_normal, e->position, &hit_t)) {
-      v3 hit_p = ray_origin + hit_t * ray_dir;
-
-      if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-
-
-       v3 dp = normalize(axis[editor.dragging_axis]) * dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
-
-       if (!editor.did_drag) {
-        editor.did_drag = true;
-        editor.p_init_drag = dp;
-       }
-       else
-        e->position += dp - editor.p_init_drag;
-      }
-      else if (editor.gizmo_mode == GIZMO_SCALE) {
-
-       float ds = dot(hit_p - e->position, normalize(axis[editor.dragging_axis]));
-
-
-       if (!editor.did_drag) {
-        editor.did_drag = true;
-        editor.s_init_drag = ds;
-        editor.s_init_drag_p = hit_p;
-        editor.s_init_scale = e->scale;
-       }
-       else {
-        v3 new_scale = e->scale;
-        if (editor.uniform_scale) {
-
-         v3 v = editor.s_init_drag_p - e->position;
-
-         float l = dot(hit_p - e->position, normalize(v));
-
-         float s;
-         if (l >= length(v))
-          s = 1 + (l - length(v));
-         else
-          s = 1 / (length(v) - l + 1);
-
-         new_scale = s * editor.s_init_scale;
-        }
-        else {
-         new_scale.e[editor.dragging_axis] = editor.s_init_scale.e[editor.dragging_axis] + ds - editor.s_init_drag;
-         if (new_scale.e[editor.dragging_axis] < 0.01f)
-          new_scale.e[editor.dragging_axis] = 0.01f;
-        }
-        e->scale = new_scale;
-       }
-      }
-      else if (editor.gizmo_mode == GIZMO_ROTATION) {
-
-       v3 p = normalize(hit_p - e->position) * rotation_circle_radius;
-
-
-       push_cube_outline(e->position + p, V3(0.1), V3(0));
-
-       v3 right_axis = axis[(editor.dragging_axis+1)%3];
-       v3 up_axis = axis[(editor.dragging_axis+2)%3];
-
-       if (editor.did_drag)
-        right_axis = editor.r_right_axis, up_axis = editor.r_up_axis;
-       else
-        editor.r_axis = axis[editor.dragging_axis];
-
-
-
-       mat4 m = inverse(
-         mat4_cols(V4(right_axis, 0),
-          V4(up_axis, 0), V4(editor.r_axis, 0),
-          V4(0, 0, 0, 1)));
-
-       p = (m * V4(p, 0)).xyz;
-
-
-
-
-
-
-       push_line(e->position, e->position + right_axis, V3(1));
-       push_line(e->position, e->position + up_axis, V3(0.2));
-       float a = atan2(p.y, p.x);
-
-       if (!editor.did_drag) {
-        editor.did_drag = true;
-        editor.r_init_drag = a;
-        editor.r_init_rot = e->rotation;
-        editor.r_right_axis = right_axis;
-        editor.r_up_axis = up_axis;
-        editor.r_axis = axis[editor.dragging_axis];
-       }
-       else {
-        e->rotation = rotate_around_axis_quat(editor.r_axis, a - editor.r_init_drag)
-         * editor.r_init_rot;
-       }
-      }
-      else
-       assert(0);
-     }
-    }
-   }
-   else {
-
-
-
-    editor.selected_entity = hit_entity;
-    editor.selected_entity_mesh = hit_entity_mesh_index;
-    Entity *e = get_entity(world, hit_entity);
-    if (e)
-     editor.init_entity = *e;
-   }
-
- }
- else {
-   if (editor.in_gizmo && editor.did_drag) {
-    EditorOp op = {};
-    Entity *e = get_entity(world, editor.selected_entity);
-    if (e) {
-     op.entity = editor.init_entity.id;
-     bool push = true;
-     if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-      op.type = EDITOR_OP_TRANSLATE_ENTITY;
-      op.translate.prev_p = editor.init_entity.position;
-      op.translate.new_p = e->position;
-      push &= (!v3_equal(op.translate.prev_p, op.translate.new_p));
-     }
-     else if (editor.gizmo_mode == GIZMO_SCALE) {
-      op.type = EDITOR_OP_SCALE_ENTITY;
-      op.scale.prev_scale = editor.init_entity.scale;
-      op.scale.new_scale = e->scale;
-      push &= (!v3_equal(op.scale.prev_scale, op.scale.new_scale));
-     }
-     else if (editor.gizmo_mode == GIZMO_ROTATION) {
-      op.type = EDITOR_OP_ROTATE_ENTITY;
-      op.rotate.prev_rot = editor.init_entity.rotation;
-      op.rotate.new_rot = e->rotation;
-      push &= (!quat_equal(op.rotate.prev_rot, op.rotate.new_rot));
-     }
-     if (push)
-      do_editor_op(game, world, editor, op);
-    }
-   }
-   editor.in_gizmo = 0;
-   if (get_entity(world, editor.selected_entity))
-    editor.init_entity = *get_entity(world, editor.selected_entity);
- }
- if (editor.edit_collision_mesh) {
-
-  float min_hit_t;
-  int hit_entity_mesh_index;
-  entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_entity_mesh_index);
-
-  Entity *e = get_entity(world, hit_entity);
-
-  if (e && e->scene_id) {
-
-   mat4 to_world = get_entity_transform(world, *e) * e->scene_transform;
-   mat4 to_object = inverse(to_world);
-
-   if (!world.scene_collision_mesh.count(e->scene_id)) {
-    CollisionMesh cmesh = {};
-
-    cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
-    cmesh.scene = e->scene_id;
-    world.collision_meshes.push(cmesh);
-    world.scene_collision_mesh[e->scene_id] = world.collision_meshes.count - 1;
-   }
-
-   CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
-
-   v3 hit_p = ray_origin + min_hit_t * ray_dir;
-
-   float dist_to_snap = 0.01f * length(hit_p - camera.position);
-   float size = dist_to_snap;
-
-   if (((input.buttons[BUTTON_MOUSE_RIGHT].is_down) && !(input.buttons[BUTTON_MOUSE_RIGHT].was_down))) {
-
-    hit_p = (to_object * V4(hit_p, 1)).xyz;
-
-    float closest_dist = FLT_MAX;
-    int best_p = 0;
-    for (int i = 0; i < cmesh.vertices.count; i++) {
-     float dist = length_sq(cmesh.vertices[i] - hit_p);
-     if (dist < closest_dist) {
-      closest_dist = dist;
-      best_p = i;
-     }
-    }
-    if (closest_dist < dist_to_snap * dist_to_snap)
-     hit_p = cmesh.vertices[best_p];
-
-    EditorOp op = {};
-    op.type = EDITOR_OP_CREATE_MESH_COLLISION_VERTEX;
-    op.entity = hit_entity;
-    op.place_collision_vertex.pos = hit_p;
-
-    do_editor_op(game, world, editor, op);
-
-    hit_p = (to_world * V4(hit_p, 1)).xyz;
-   }
-   int hit_triangle = -1;
-   {
-    float min_t = FLT_MAX;
-    for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
-     v3 v0 = (to_world * V4(cmesh.vertices[i + 0], 1)).xyz;
-     v3 v1 = (to_world * V4(cmesh.vertices[i + 1], 1)).xyz;
-     v3 v2 = (to_world * V4(cmesh.vertices[i + 2], 1)).xyz;
-
-     float hit_t;
-     if (ray_hit_triangle(ray_origin, ray_dir, v0, v1, v2, &hit_t)
-       && hit_t < min_t) {
-      min_t = hit_t;
-      hit_triangle = i;
-     }
-    }
-   }
-   if (((input.buttons[BUTTON_DELETE].is_down) && !(input.buttons[BUTTON_DELETE].was_down))) {
-    if (hit_triangle != -1) {
-     EditorOp op = {};
-     op.type = EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE;
-     op.entity = hit_entity;
-     op.delete_collision_triangle.index = hit_triangle;
-     op.delete_collision_triangle.v0 = cmesh.vertices[hit_triangle + 0];
-     op.delete_collision_triangle.v1 = cmesh.vertices[hit_triangle + 1];
-     op.delete_collision_triangle.v2 = cmesh.vertices[hit_triangle + 2];
-     do_editor_op(game, world, editor, op);
-    }
-   }
-
-   push_cube_outline(hit_p, V3(size), V3(1, 1, 0));
-   for (int i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
-    push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(size), V3(1, 0, 0));
-
-   for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
-    v3 color = i == hit_triangle ? V3(1, 1, 0) : V3(1, 0, 0);
-    push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
-       (to_world * V4(cmesh.vertices[i + 1], 1)).xyz,
-       (to_world * V4(cmesh.vertices[i + 2], 1)).xyz, color);
-   }
-  }
- }
- if (!editor.edit_collision_mesh)
  {
-  Entity *e = get_entity(world, editor.selected_entity);
-  if (e) {
+  v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
+  mouse_p.y *= -1;
+  camera_ray_origin = camera.position;
+  camera_ray_dir = camera.forward * camera.znear
+   + mouse_p.x * camera.right * camera.width * 0.5f
+   + mouse_p.y * camera.up * camera.height * 0.5f;
+ }
 
-   float axis_dim = 0.07f;
-   float other_dim = axis_dim * 0.3f;
-   axis_dim *= length(e->position - camera.position);
-   other_dim *= length(e->position - camera.position);
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) && ((input.buttons[BUTTON_Q].is_down) && !(input.buttons[BUTTON_Q].was_down)))
+  editor.mode = (editor.mode == EDITOR_MODE_COLLISION_MESH ? EDITOR_MODE_GIZMO : EDITOR_MODE_COLLISION_MESH);
 
-   for (int i = 0; i < 3; i++) {
-    v3 color = {};
-    color.e[i] = 1;
-    if (editor.in_gizmo &&
-      (editor.dragging_axis == i && !editor.uniform_scale))
-     color = V3(1, 1, 0);
+ switch (editor.mode) {
+  case EDITOR_MODE_GIZMO: {
+   if ((input.buttons[BUTTON_T].is_down)) editor.gizmo.mode = GIZMO_TRANSLATION;
+   else if ((input.buttons[BUTTON_R].is_down)) editor.gizmo.mode = GIZMO_ROTATION;
+   else if ((input.buttons[BUTTON_S].is_down)) editor.gizmo.mode = GIZMO_SCALE;
 
-    if (editor.gizmo_mode == GIZMO_SCALE) {
-     push_line(e->position, e->position + axis_dim * axis[i], color);
+   if ((input.buttons[BUTTON_MOUSE_RIGHT].is_down)) {
+    editor_update_gizmo(world, editor, editor.gizmo, camera, camera_ray_origin, camera_ray_dir);
 
+    if (!editor.gizmo.active) {
 
-    }
-    else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-     push_line(e->position, e->position + axis_dim * axis[i], color);
-     push_ellipsoid_outline(e->position + axis_dim * axis[i], V3(axis_dim * 0.2f), color);
-    }
-    else {
-
-
-
-
-
-
-     push_circle(e->position,
-       rotation_circle_radius
-       , axis[(i + 1) % 3], axis[(i + 2) % 3], color);
-
-
-    }
-
-
-
-
-
-    if (editor.gizmo_mode == GIZMO_SCALE) {
-
-
-     float radius = 0.1 * axis_dim;
-     push_box_outline(e->position + (axis_dim - 0.5f * radius) * axis[i],
-       axis[0] * radius,
-       axis[1] * radius,
-       axis[2] * radius, color);
-    }
-    else if (editor.gizmo_mode == GIZMO_TRANSLATION) {
-     push_box_outline(e->position + 0.5f * axis_dim * axis[i],
-       axis[0] * (i == 0 ? axis_dim : other_dim),
-       axis[1] * (i == 1 ? axis_dim : other_dim),
-       axis[2] * (i == 2 ? axis_dim : other_dim), color);
+     float min_hit_t;
+     int hit_entity_mesh_index;
+     entity_id hit_entity = raycast_to_entities(game, world, camera_ray_origin, camera_ray_dir, min_hit_t, hit_entity_mesh_index);
+     editor.selected_entity = hit_entity;
+     editor.selected_entity_mesh = hit_entity_mesh_index;
     }
    }
-   if (editor.gizmo_mode == GIZMO_SCALE) {
-    float radius = 0.1 * axis_dim;
-    v3 color = editor.in_gizmo && editor.uniform_scale ? V3(1, 1, 0) : V3(1);
-    push_box_outline(e->position,
-       axis[0] * radius,
-       axis[1] * radius,
-       axis[2] * radius, color);
-   }
+   else
+    editor_push_entity_op(game, world, editor);
+   editor_render_gizmo(world, editor, editor.gizmo, camera);
+   break ;
+  }
+  case EDITOR_MODE_COLLISION_MESH: {
+   editor_edit_collision_mesh(game, input, world, editor, camera, camera_ray_origin, camera_ray_dir);
+   break ;
   }
  }
 
- world.editor_selected_entity = editor.selected_entity;
- editor.last_camera_p = camera.position;
- if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
-  ((input.buttons[BUTTON_C].is_down) && !(input.buttons[BUTTON_C].was_down)) &&
-  editor.selected_entity) {
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) && ((input.buttons[BUTTON_C].is_down) && !(input.buttons[BUTTON_C].was_down)) && editor.selected_entity) {
   editor.copied_entity = editor.selected_entity;
   editor.copy_entity_mesh = (input.buttons[BUTTON_LEFT_SHIFT].is_down);
  }
- if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
-  ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
+
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) && ((input.buttons[BUTTON_V].is_down) && !(input.buttons[BUTTON_V].was_down))) {
   Entity *copy_from = get_entity(world, editor.copied_entity);
   if (copy_from) {
    EditorOp op = {};
    op.type = EDITOR_OP_PASTE_ENTITY;
    op.paste.copy_from = copy_from->id;
-   if (editor.copy_entity_mesh)
-    op.paste.mesh_index = editor.selected_entity_mesh;
-   else
-    op.paste.mesh_index = -1;
+   op.paste.mesh_index = (editor.copy_entity_mesh ? editor.selected_entity_mesh : -1);
 
    float min_hit_t;
    int hit_mesh_index;
-   entity_id hit_entity = raycast_to_entities(game, world, ray_origin, ray_dir, min_hit_t, hit_mesh_index);
-   if (hit_entity) {
-    op.paste.p = ray_origin + min_hit_t * ray_dir
-     + V3(0, 0, copy_from->scale.z);
-   }else
-    op.paste.p = camera.position + camera.forward * 2
-     * max(copy_from->scale.x, max(copy_from->scale.y, copy_from->scale.z));
+   entity_id hit_entity = raycast_to_entities(game, world, camera_ray_origin,
+     camera_ray_dir, min_hit_t, hit_mesh_index);
+   if (hit_entity)
+    op.paste.p = camera_ray_origin + min_hit_t * camera_ray_dir + V3(0, 0, copy_from->scale.z);
+   else
+    op.paste.p = camera.position + camera.forward * 2 * copy_from->scale;
 
    do_editor_op(game, world, editor, op);
   }
  }
 
- if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
-  ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down))) {
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) && ((input.buttons[BUTTON_Z].is_down) && !(input.buttons[BUTTON_Z].was_down)))
   undo_editor_op(game, world, editor);
- }
- if (!editor.in_gizmo && (input.buttons[BUTTON_LEFT_CONTROL].is_down) &&
-  ((input.buttons[BUTTON_X].is_down) && !(input.buttons[BUTTON_X].was_down))) {
+ if ((input.buttons[BUTTON_LEFT_CONTROL].is_down) && ((input.buttons[BUTTON_X].is_down) && !(input.buttons[BUTTON_X].was_down)))
   redo_editor_op(game, world, editor);
- }
+
+ editor.last_camera_p = camera.position;
 }
 # 109 "code/game.cpp" 2
 
@@ -5686,9 +5646,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   game.in_editor = !game.in_editor;
 
  if (ImGui::GetIO().WantCaptureKeyboard) {
-  for (int i = 0; i < BUTTON_COUNT; i++)
-   if ((i != BUTTON_MOUSE_LEFT && i != BUTTON_MOUSE_RIGHT))
-    input.buttons[i].is_down = false;
+
+
+
  }
 
  begin_render_frame();

@@ -1,7 +1,7 @@
 day 1:
-improve picking plane
+cleanup editor
+profiler
 fix rotation when the plane of rotation is ..
-snap movement in editor (for all gizmo types)
 
 day 2:
 * finalize collision and try to make it robust

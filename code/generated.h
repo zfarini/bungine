@@ -106,6 +106,9 @@ static StructMetaData get_struct_Editor_info();
 static void imgui_edit_struct_Editor(Editor &x, const char *name,
                                      bool collapsed);
 static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena);
+static StructMetaData get_struct_Gizmo_info();
+static void imgui_edit_struct_Gizmo(Gizmo &x, const char *name, bool collapsed);
+static void serialize_Gizmo(FILE *fd, bool w, Gizmo &x, Arena *arena);
 static StructMetaData get_struct_Camera_info();
 static void imgui_edit_struct_Camera(Camera &x, const char *name,
                                      bool collapsed);
@@ -277,6 +280,17 @@ static void serialize_Animation(FILE *fd, bool w, Animation &x, Arena *arena);
 static StructMetaData get_struct_Scene_info();
 static void imgui_edit_struct_Scene(Scene &x, const char *name, bool collapsed);
 static void serialize_Scene(FILE *fd, bool w, Scene &x, Arena *arena);
+static const char *get_enum_GizmoMode_str(int value) {
+    switch (value) {
+    case GIZMO_TRANSLATION:
+        return "GIZMO_TRANSLATION";
+    case GIZMO_ROTATION:
+        return "GIZMO_ROTATION";
+    case GIZMO_SCALE:
+        return "GIZMO_SCALE";
+    }
+    return "Enum_GizmoMode_Unknown";
+}
 static const char *get_enum_EditorOpType_str(int value) {
     switch (value) {
     case EDITOR_OP_TRANSLATE_ENTITY:
@@ -297,15 +311,6 @@ static const char *get_enum_EditorOpType_str(int value) {
         return "EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE";
     }
     return "Enum_EditorOpType_Unknown";
-}
-static const char *get_enum_PrimitiveType_str(int value) {
-    switch (value) {
-    case PRIMITIVE_TRIANGLES:
-        return "PRIMITIVE_TRIANGLES";
-    case PRIMITIVE_LINES:
-        return "PRIMITIVE_LINES";
-    }
-    return "Enum_PrimitiveType_Unknown";
 }
 static const char *get_enum_VertexBufferUsage_str(int value) {
     switch (value) {
@@ -468,6 +473,24 @@ static const char *get_enum_RasterizerFillMode_str(int value) {
     }
     return "Enum_RasterizerFillMode_Unknown";
 }
+static const char *get_enum_PrimitiveType_str(int value) {
+    switch (value) {
+    case PRIMITIVE_TRIANGLES:
+        return "PRIMITIVE_TRIANGLES";
+    case PRIMITIVE_LINES:
+        return "PRIMITIVE_LINES";
+    }
+    return "Enum_PrimitiveType_Unknown";
+}
+static const char *get_enum_EditorMode_str(int value) {
+    switch (value) {
+    case EDITOR_MODE_GIZMO:
+        return "EDITOR_MODE_GIZMO";
+    case EDITOR_MODE_COLLISION_MESH:
+        return "EDITOR_MODE_COLLISION_MESH";
+    }
+    return "Enum_EditorMode_Unknown";
+}
 static const char *get_enum_RasterizerCullMode_str(int value) {
     switch (value) {
     case RASTERIZER_CULL_NONE:
@@ -525,17 +548,6 @@ static const char *get_enum_CameraType_str(int value) {
         return "CAMERA_TYPE_ORTHOGRAPHIC";
     }
     return "Enum_CameraType_Unknown";
-}
-static const char *get_enum_GizmoMode_str(int value) {
-    switch (value) {
-    case GIZMO_TRANSLATION:
-        return "GIZMO_TRANSLATION";
-    case GIZMO_SCALE:
-        return "GIZMO_SCALE";
-    case GIZMO_ROTATION:
-        return "GIZMO_ROTATION";
-    }
-    return "Enum_GizmoMode_Unknown";
 }
 StructMetaData get_struct_Constants_info() {
     StructMetaData data = {};
@@ -610,16 +622,16 @@ StructMetaData get_struct_LoadedSound_info() {
 StructMetaData get_struct_Editor_info() {
     StructMetaData data = {};
     data.name = "Editor";
-    data.member_count = 23;
-    data.members[0].name = "ops";
-    data.members[0].type_name = "Array<EditorOp>";
-    data.members[1].name = "undos";
+    data.member_count = 10;
+    data.members[0].name = "mode";
+    data.members[0].type_name = "EditorMode";
+    data.members[1].name = "ops";
     data.members[1].type_name = "Array<EditorOp>";
-    data.members[2].name = "init_entity";
-    data.members[2].type_name = "Entity";
-    data.members[3].name = "edit_collision_mesh";
-    data.members[3].type_name = "bool";
-    data.members[4].name = "in_gizmo";
+    data.members[2].name = "undos";
+    data.members[2].type_name = "Array<EditorOp>";
+    data.members[3].name = "gizmo";
+    data.members[3].type_name = "Gizmo";
+    data.members[4].name = "edit_collision_mesh";
     data.members[4].type_name = "bool";
     data.members[5].name = "selected_entity";
     data.members[5].type_name = "entity_id";
@@ -627,36 +639,50 @@ StructMetaData get_struct_Editor_info() {
     data.members[6].type_name = "int";
     data.members[7].name = "copied_entity";
     data.members[7].type_name = "entity_id";
-    data.members[8].name = "gizmo_mode";
-    data.members[8].type_name = "GizmoMode";
-    data.members[9].name = "dragging_axis";
-    data.members[9].type_name = "int";
-    data.members[10].name = "did_drag";
-    data.members[10].type_name = "bool";
-    data.members[11].name = "p_init_drag";
-    data.members[11].type_name = "v3";
-    data.members[12].name = "s_init_scale";
-    data.members[12].type_name = "v3";
-    data.members[13].name = "s_init_drag";
-    data.members[13].type_name = "float";
-    data.members[14].name = "s_init_drag_p";
+    data.members[8].name = "last_camera_p";
+    data.members[8].type_name = "v3";
+    data.members[9].name = "copy_entity_mesh";
+    data.members[9].type_name = "bool";
+    return data;
+}
+StructMetaData get_struct_Gizmo_info() {
+    StructMetaData data = {};
+    data.name = "Gizmo";
+    data.member_count = 17;
+    data.members[0].name = "mode";
+    data.members[0].type_name = "GizmoMode";
+    data.members[1].name = "init_position";
+    data.members[1].type_name = "v3";
+    data.members[2].name = "init_rotation";
+    data.members[2].type_name = "quat";
+    data.members[3].name = "init_scale";
+    data.members[3].type_name = "v3";
+    data.members[4].name = "active";
+    data.members[4].type_name = "bool";
+    data.members[5].name = "dragging_axis";
+    data.members[5].type_name = "int";
+    data.members[6].name = "did_drag";
+    data.members[6].type_name = "bool";
+    data.members[7].name = "uniform_scale";
+    data.members[7].type_name = "bool";
+    data.members[8].name = "hit_p";
+    data.members[8].type_name = "v3";
+    data.members[9].name = "delta_p";
+    data.members[9].type_name = "v3";
+    data.members[10].name = "scale";
+    data.members[10].type_name = "v3";
+    data.members[11].name = "delta_s";
+    data.members[11].type_name = "float";
+    data.members[12].name = "rotation_angle";
+    data.members[12].type_name = "float";
+    data.members[13].name = "rotation";
+    data.members[13].type_name = "quat";
+    data.members[14].name = "rotation_right_axis";
     data.members[14].type_name = "v3";
-    data.members[15].name = "r_init_rot";
-    data.members[15].type_name = "quat";
-    data.members[16].name = "r_init_drag";
-    data.members[16].type_name = "float";
-    data.members[17].name = "r_right_axis";
-    data.members[17].type_name = "v3";
-    data.members[18].name = "r_up_axis";
-    data.members[18].type_name = "v3";
-    data.members[19].name = "r_axis";
-    data.members[19].type_name = "v3";
-    data.members[20].name = "last_camera_p";
-    data.members[20].type_name = "v3";
-    data.members[21].name = "copy_entity_mesh";
-    data.members[21].type_name = "bool";
-    data.members[22].name = "uniform_scale";
-    data.members[22].type_name = "bool";
+    data.members[15].name = "rotation_up_axis";
+    data.members[15].type_name = "v3";
+    data.members[16].name = "rotation_axis";
+    data.members[16].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_Camera_info() {
@@ -680,7 +706,7 @@ StructMetaData get_struct_Camera_info() {
 StructMetaData get_struct_World_info() {
     StructMetaData data = {};
     data.name = "World";
-    data.member_count = 17;
+    data.member_count = 16;
     data.members[0].name = "arena";
     data.members[0].type_name = "Arena";
     data.members[1].name = "editor";
@@ -703,18 +729,16 @@ StructMetaData get_struct_World_info() {
     data.members[9].type_name = "v3";
     data.members[10].name = "editor_camera_rotation";
     data.members[10].type_name = "v3";
-    data.members[11].name = "editor_selected_entity";
+    data.members[11].name = "player_id";
     data.members[11].type_name = "entity_id";
-    data.members[12].name = "player_id";
+    data.members[12].name = "moving_box";
     data.members[12].type_name = "entity_id";
-    data.members[13].name = "moving_box";
-    data.members[13].type_name = "entity_id";
-    data.members[14].name = "last_game_camera";
-    data.members[14].type_name = "Camera";
-    data.members[15].name = "aim_camera_transition_t";
-    data.members[15].type_name = "float";
-    data.members[16].name = "collision_meshes";
-    data.members[16].type_name = "Array<CollisionMesh>";
+    data.members[13].name = "last_game_camera";
+    data.members[13].type_name = "Camera";
+    data.members[14].name = "aim_camera_transition_t";
+    data.members[14].type_name = "float";
+    data.members[15].name = "collision_meshes";
+    data.members[15].type_name = "Array<CollisionMesh>";
     return data;
 }
 StructMetaData get_struct_Entity_info() {
@@ -1381,6 +1405,26 @@ StructMetaData get_struct_Scene_info() {
     data.members[3].type_name = "Array<Mesh>";
     return data;
 }
+static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
+    const char *items[3];
+    GizmoMode items_type[3];
+    int curr = 0;
+    items[0] = "GIZMO_TRANSLATION";
+    items_type[0] = GIZMO_TRANSLATION;
+    if (x == GIZMO_TRANSLATION)
+        curr = 0;
+    items[1] = "GIZMO_ROTATION";
+    items_type[1] = GIZMO_ROTATION;
+    if (x == GIZMO_ROTATION)
+        curr = 1;
+    items[2] = "GIZMO_SCALE";
+    items_type[2] = GIZMO_SCALE;
+    if (x == GIZMO_SCALE)
+        curr = 2;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
+}
 static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
     const char *items[8];
     EditorOpType items_type[8];
@@ -1419,22 +1463,6 @@ static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
         curr = 7;
     if (ImGui::CollapsingHeader(name))
         ImGui::ListBox(name, &curr, items, 8);
-    x = items_type[curr];
-}
-static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
-    const char *items[2];
-    PrimitiveType items_type[2];
-    int curr = 0;
-    items[0] = "PRIMITIVE_TRIANGLES";
-    items_type[0] = PRIMITIVE_TRIANGLES;
-    if (x == PRIMITIVE_TRIANGLES)
-        curr = 0;
-    items[1] = "PRIMITIVE_LINES";
-    items_type[1] = PRIMITIVE_LINES;
-    if (x == PRIMITIVE_LINES)
-        curr = 1;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
 static void imgui_edit_enum_VertexBufferUsage(VertexBufferUsage &x,
@@ -1749,6 +1777,38 @@ static void imgui_edit_enum_RasterizerFillMode(RasterizerFillMode &x,
         ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
+static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
+    const char *items[2];
+    PrimitiveType items_type[2];
+    int curr = 0;
+    items[0] = "PRIMITIVE_TRIANGLES";
+    items_type[0] = PRIMITIVE_TRIANGLES;
+    if (x == PRIMITIVE_TRIANGLES)
+        curr = 0;
+    items[1] = "PRIMITIVE_LINES";
+    items_type[1] = PRIMITIVE_LINES;
+    if (x == PRIMITIVE_LINES)
+        curr = 1;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_EditorMode(EditorMode &x, const char *name) {
+    const char *items[2];
+    EditorMode items_type[2];
+    int curr = 0;
+    items[0] = "EDITOR_MODE_GIZMO";
+    items_type[0] = EDITOR_MODE_GIZMO;
+    if (x == EDITOR_MODE_GIZMO)
+        curr = 0;
+    items[1] = "EDITOR_MODE_COLLISION_MESH";
+    items_type[1] = EDITOR_MODE_COLLISION_MESH;
+    if (x == EDITOR_MODE_COLLISION_MESH)
+        curr = 1;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
+}
 static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
                                                const char *name) {
     const char *items[3];
@@ -1860,26 +1920,6 @@ static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
-static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
-    const char *items[3];
-    GizmoMode items_type[3];
-    int curr = 0;
-    items[0] = "GIZMO_TRANSLATION";
-    items_type[0] = GIZMO_TRANSLATION;
-    if (x == GIZMO_TRANSLATION)
-        curr = 0;
-    items[1] = "GIZMO_SCALE";
-    items_type[1] = GIZMO_SCALE;
-    if (x == GIZMO_SCALE)
-        curr = 1;
-    items[2] = "GIZMO_ROTATION";
-    items_type[2] = GIZMO_ROTATION;
-    if (x == GIZMO_ROTATION)
-        curr = 2;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 3);
-    x = items_type[curr];
-}
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
                                 Arena *arena = 0) {}
 static void serialize_SoundState(FILE *fd, bool w, SoundState &x,
@@ -1889,51 +1929,27 @@ static void serialize_LoadedSound(FILE *fd, bool w, LoadedSound &x,
 static void imgui_edit_struct_Editor(Editor &x, const char *name,
                                      bool collapsed = true) {
     if (!collapsed || ImGui::CollapsingHeader(name)) {
+        imgui_edit_enum_EditorMode(x.mode, "mode");
         {
             bool tmp = x.edit_collision_mesh;
             ImGui::Checkbox("edit_collision_mesh", &tmp);
             x.edit_collision_mesh = tmp;
-        }
-        {
-            bool tmp = x.in_gizmo;
-            ImGui::Checkbox("in_gizmo", &tmp);
-            x.in_gizmo = tmp;
         }
         ImGui::InputScalar("selected_entity", ImGuiDataType_U64,
                            &x.selected_entity);
         ImGui::InputInt("selected_entity_mesh", &x.selected_entity_mesh);
         ImGui::InputScalar("copied_entity", ImGuiDataType_U64,
                            &x.copied_entity);
-        imgui_edit_enum_GizmoMode(x.gizmo_mode, "gizmo_mode");
-        ImGui::InputInt("dragging_axis", &x.dragging_axis);
-        {
-            bool tmp = x.did_drag;
-            ImGui::Checkbox("did_drag", &tmp);
-            x.did_drag = tmp;
-        }
-        ImGui::InputFloat3("p_init_drag", x.p_init_drag.e);
-        ImGui::InputFloat3("s_init_scale", x.s_init_scale.e);
-        ImGui::InputFloat("s_init_drag", &x.s_init_drag);
-        ImGui::InputFloat3("s_init_drag_p", x.s_init_drag_p.e);
-        ImGui::InputFloat4("r_init_rot", x.r_init_rot.e);
-        ImGui::InputFloat("r_init_drag", &x.r_init_drag);
-        ImGui::InputFloat3("r_right_axis", x.r_right_axis.e);
-        ImGui::InputFloat3("r_up_axis", x.r_up_axis.e);
-        ImGui::InputFloat3("r_axis", x.r_axis.e);
         ImGui::InputFloat3("last_camera_p", x.last_camera_p.e);
         {
             bool tmp = x.copy_entity_mesh;
             ImGui::Checkbox("copy_entity_mesh", &tmp);
             x.copy_entity_mesh = tmp;
         }
-        {
-            bool tmp = x.uniform_scale;
-            ImGui::Checkbox("uniform_scale", &tmp);
-            x.uniform_scale = tmp;
-        }
     }
 }
 static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena = 0) {}
+static void serialize_Gizmo(FILE *fd, bool w, Gizmo &x, Arena *arena = 0) {}
 static void serialize_Camera(FILE *fd, bool w, Camera &x, Arena *arena = 0) {}
 static void imgui_edit_struct_World(World &x, const char *name,
                                     bool collapsed = true) {
@@ -1946,8 +1962,6 @@ static void imgui_edit_struct_World(World &x, const char *name,
                 imgui_edit_struct_Entity(x.entities.data[i], elem_name, true);
             }
         }
-        ImGui::InputScalar("editor_selected_entity", ImGuiDataType_U64,
-                           &x.editor_selected_entity);
     }
 }
 static void serialize_World(FILE *fd, bool w, World &x, Arena *arena = 0) {
