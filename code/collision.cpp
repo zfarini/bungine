@@ -266,6 +266,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 void move_entity(World &world, Entity &e, v3 delta_p)
 {
+	PROFILE_FUNCTION();
 	assert(e.ellipsoid_collision_shape);
 
 	Arena *temp = begin_temp_memory();

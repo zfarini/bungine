@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
 #undef min
 #undef max
@@ -24,6 +25,17 @@
 #include "game.cpp"
 
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
+
+void fatal_error(const char* message)
+{
+	LOG_FATAL("%s", message);
+
+    char cmd[1024];
+    snprintf(cmd, sizeof(cmd), "zenity --error --no-wrap --text=\"%s\"", message);
+    system(cmd);
+
+    exit(1);
+}
 
 bool g_hide_mouse = true;
 
@@ -67,7 +79,6 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 
 GAME_UPDATE_AND_RENDER(game_update_and_render);
 
-#include <sys/mman.h>
 
 int main()
 {
@@ -80,6 +91,9 @@ int main()
 #else
 	memory_ptr = mmap(0, memory_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 #endif
+
+	if (!memory_ptr)
+		fatal_error("failed to allocate memory");
 
 	Arena memory = make_arena(memory_ptr, memory_size);
 
@@ -95,12 +109,12 @@ int main()
 		config.pUserData         = memory.data;
 
 		if (ma_device_init(NULL, &config, &sound_device) != MA_SUCCESS)
-			printf("ERROR: couldn't init sound device\n");
+			LOG_ERROR("failed to init sound device");
 		else
 			ma_device_start(&sound_device);
 	}
 	if (!glfwInit())
-		assert(0);
+		fatal_error("failed to init glfw");
 
 #ifdef RENDERER_DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
@@ -114,26 +128,26 @@ int main()
 	GLFWwindow *window = glfwCreateWindow(1600, 900, "game",  0, 0);
 //	glfwSetWindowSize(window, 1920, 1080);
 	if (!window)
-		assert(0);
+		fatal_error("failed to create window");
 
 	glfwMakeContextCurrent(window);
 	//glfwSwapInterval(0);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		assert(0);
+		fatal_error("failed to init OpenGL loader");
 
 	const GLubyte* vendor = glGetString(GL_VENDOR);
 	const GLubyte* renderer = glGetString(GL_RENDERER);
-	printf("OpenGL Renderer\nvendor: %s\nrenderer: %s\n", vendor, renderer);
+	LOG_INFO("OpenGL backend");
+	LOG_INFO("Vendor: %s", vendor);
+	LOG_INFO("Renderer: %s", renderer);
 
-	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	// Setup Platform/Renderer backends
-	ImGui_ImplGlfw_InitForOpenGL(window, true);// Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
 	RenderContext rc = {};

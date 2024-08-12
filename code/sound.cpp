@@ -24,7 +24,7 @@ LoadedSound load_wav_file(Arena *arena, const char *filename)
 		// @HACK: kinda, I'm just assuming stuff will be continuous with no random alignement jumps
 		arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
     }
-	printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
+	LOG_INFO("loaded sound %s, %d samples", filename, sound.sample_count);
     return sound;
 }
 
@@ -97,6 +97,7 @@ void update_sound(Game &game, World &world)
 {
 	if (!game.first_playing_sound)
 		return ;
+	PROFILE_FUNCTION();
 
 	SoundState &state = game.sound_state;
 

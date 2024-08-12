@@ -1,440 +1,19 @@
 # 1 "code/game.cpp"
-# 1 "/nfs/homes/zfarini/3dGame//"
-# 1 "<built-in>"
-#define __STDC__ 1
-#define __cplusplus 201703L
-#define __STDC_UTF_16__ 1
-#define __STDC_UTF_32__ 1
-#define __STDC_HOSTED__ 1
-#define __GNUC__ 10
-#define __GNUC_MINOR__ 5
-#define __GNUC_PATCHLEVEL__ 0
-#define __VERSION__ "10.5.0"
-#define __ATOMIC_RELAXED 0
-#define __ATOMIC_SEQ_CST 5
-#define __ATOMIC_ACQUIRE 2
-#define __ATOMIC_RELEASE 3
-#define __ATOMIC_ACQ_REL 4
-#define __ATOMIC_CONSUME 1
-#define __pic__ 2
-#define __PIC__ 2
-#define __pie__ 2
-#define __PIE__ 2
-#define __FINITE_MATH_ONLY__ 0
-#define _LP64 1
-#define __LP64__ 1
-#define __SIZEOF_INT__ 4
-#define __SIZEOF_LONG__ 8
-#define __SIZEOF_LONG_LONG__ 8
-#define __SIZEOF_SHORT__ 2
-#define __SIZEOF_FLOAT__ 4
-#define __SIZEOF_DOUBLE__ 8
-#define __SIZEOF_LONG_DOUBLE__ 16
-#define __SIZEOF_SIZE_T__ 8
-#define __CHAR_BIT__ 8
-#define __BIGGEST_ALIGNMENT__ 16
-#define __ORDER_LITTLE_ENDIAN__ 1234
-#define __ORDER_BIG_ENDIAN__ 4321
-#define __ORDER_PDP_ENDIAN__ 3412
-#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
-#define __FLOAT_WORD_ORDER__ __ORDER_LITTLE_ENDIAN__
-#define __SIZEOF_POINTER__ 8
-#define __GNUG__ 10
-#define __SIZE_TYPE__ long unsigned int
-#define __PTRDIFF_TYPE__ long int
-#define __WCHAR_TYPE__ int
-#define __WINT_TYPE__ unsigned int
-#define __INTMAX_TYPE__ long int
-#define __UINTMAX_TYPE__ long unsigned int
-#define __CHAR16_TYPE__ short unsigned int
-#define __CHAR32_TYPE__ unsigned int
-#define __SIG_ATOMIC_TYPE__ int
-#define __INT8_TYPE__ signed char
-#define __INT16_TYPE__ short int
-#define __INT32_TYPE__ int
-#define __INT64_TYPE__ long int
-#define __UINT8_TYPE__ unsigned char
-#define __UINT16_TYPE__ short unsigned int
-#define __UINT32_TYPE__ unsigned int
-#define __UINT64_TYPE__ long unsigned int
-#define __INT_LEAST8_TYPE__ signed char
-#define __INT_LEAST16_TYPE__ short int
-#define __INT_LEAST32_TYPE__ int
-#define __INT_LEAST64_TYPE__ long int
-#define __UINT_LEAST8_TYPE__ unsigned char
-#define __UINT_LEAST16_TYPE__ short unsigned int
-#define __UINT_LEAST32_TYPE__ unsigned int
-#define __UINT_LEAST64_TYPE__ long unsigned int
-#define __INT_FAST8_TYPE__ signed char
-#define __INT_FAST16_TYPE__ long int
-#define __INT_FAST32_TYPE__ long int
-#define __INT_FAST64_TYPE__ long int
-#define __UINT_FAST8_TYPE__ unsigned char
-#define __UINT_FAST16_TYPE__ long unsigned int
-#define __UINT_FAST32_TYPE__ long unsigned int
-#define __UINT_FAST64_TYPE__ long unsigned int
-#define __INTPTR_TYPE__ long int
-#define __UINTPTR_TYPE__ long unsigned int
-#define __GXX_WEAK__ 1
-#define __DEPRECATED 1
-#define __GXX_RTTI 1
-#define __cpp_rtti 199711L
-#define __GXX_EXPERIMENTAL_CXX0X__ 1
-#define __cpp_binary_literals 201304L
-#define __cpp_hex_float 201603L
-#define __cpp_runtime_arrays 198712L
-#define __cpp_raw_strings 200710L
-#define __cpp_unicode_literals 200710L
-#define __cpp_user_defined_literals 200809L
-#define __cpp_lambdas 200907L
-#define __cpp_decltype 200707L
-#define __cpp_attributes 200809L
-#define __cpp_rvalue_reference 200610L
-#define __cpp_rvalue_references 200610L
-#define __cpp_variadic_templates 200704L
-#define __cpp_initializer_lists 200806L
-#define __cpp_delegating_constructors 200604L
-#define __cpp_nsdmi 200809L
-#define __cpp_inheriting_constructors 201511L
-#define __cpp_ref_qualifiers 200710L
-#define __cpp_alias_templates 200704L
-#define __cpp_return_type_deduction 201304L
-#define __cpp_init_captures 201304L
-#define __cpp_generic_lambdas 201304L
-#define __cpp_decltype_auto 201304L
-#define __cpp_aggregate_nsdmi 201304L
-#define __cpp_variable_templates 201304L
-#define __cpp_digit_separators 201309L
-#define __cpp_unicode_characters 201411L
-#define __cpp_static_assert 201411L
-#define __cpp_namespace_attributes 201411L
-#define __cpp_enumerator_attributes 201411L
-#define __cpp_nested_namespace_definitions 201411L
-#define __cpp_fold_expressions 201603L
-#define __cpp_nontype_template_args 201411L
-#define __cpp_range_based_for 201603L
-#define __cpp_constexpr 201603L
-#define __cpp_if_constexpr 201606L
-#define __cpp_capture_star_this 201603L
-#define __cpp_inline_variables 201606L
-#define __cpp_aggregate_bases 201603L
-#define __cpp_deduction_guides 201703L
-#define __cpp_noexcept_function_type 201510L
-#define __cpp_template_auto 201606L
-#define __cpp_structured_bindings 201606L
-#define __cpp_variadic_using 201611L
-#define __cpp_guaranteed_copy_elision 201606L
-#define __cpp_nontype_template_parameter_auto 201606L
-#define __cpp_sized_deallocation 201309L
-#define __cpp_aligned_new 201606L
-#define __STDCPP_DEFAULT_NEW_ALIGNMENT__ 16
-#define __cpp_template_template_args 201611L
-#define __cpp_threadsafe_static_init 200806L
-#define __EXCEPTIONS 1
-#define __cpp_exceptions 199711L
-#define __GXX_ABI_VERSION 1014
-#define __SCHAR_MAX__ 0x7f
-#define __SHRT_MAX__ 0x7fff
-#define __INT_MAX__ 0x7fffffff
-#define __LONG_MAX__ 0x7fffffffffffffffL
-#define __LONG_LONG_MAX__ 0x7fffffffffffffffLL
-#define __WCHAR_MAX__ 0x7fffffff
-#define __WCHAR_MIN__ (-__WCHAR_MAX__ - 1)
-#define __WINT_MAX__ 0xffffffffU
-#define __WINT_MIN__ 0U
-#define __PTRDIFF_MAX__ 0x7fffffffffffffffL
-#define __SIZE_MAX__ 0xffffffffffffffffUL
-#define __SCHAR_WIDTH__ 8
-#define __SHRT_WIDTH__ 16
-#define __INT_WIDTH__ 32
-#define __LONG_WIDTH__ 64
-#define __LONG_LONG_WIDTH__ 64
-#define __WCHAR_WIDTH__ 32
-#define __WINT_WIDTH__ 32
-#define __PTRDIFF_WIDTH__ 64
-#define __SIZE_WIDTH__ 64
-#define __INTMAX_MAX__ 0x7fffffffffffffffL
-#define __INTMAX_C(c) c ## L
-#define __UINTMAX_MAX__ 0xffffffffffffffffUL
-#define __UINTMAX_C(c) c ## UL
-#define __INTMAX_WIDTH__ 64
-#define __SIG_ATOMIC_MAX__ 0x7fffffff
-#define __SIG_ATOMIC_MIN__ (-__SIG_ATOMIC_MAX__ - 1)
-#define __SIG_ATOMIC_WIDTH__ 32
-#define __INT8_MAX__ 0x7f
-#define __INT16_MAX__ 0x7fff
-#define __INT32_MAX__ 0x7fffffff
-#define __INT64_MAX__ 0x7fffffffffffffffL
-#define __UINT8_MAX__ 0xff
-#define __UINT16_MAX__ 0xffff
-#define __UINT32_MAX__ 0xffffffffU
-#define __UINT64_MAX__ 0xffffffffffffffffUL
-#define __INT_LEAST8_MAX__ 0x7f
-#define __INT8_C(c) c
-#define __INT_LEAST8_WIDTH__ 8
-#define __INT_LEAST16_MAX__ 0x7fff
-#define __INT16_C(c) c
-#define __INT_LEAST16_WIDTH__ 16
-#define __INT_LEAST32_MAX__ 0x7fffffff
-#define __INT32_C(c) c
-#define __INT_LEAST32_WIDTH__ 32
-#define __INT_LEAST64_MAX__ 0x7fffffffffffffffL
-#define __INT64_C(c) c ## L
-#define __INT_LEAST64_WIDTH__ 64
-#define __UINT_LEAST8_MAX__ 0xff
-#define __UINT8_C(c) c
-#define __UINT_LEAST16_MAX__ 0xffff
-#define __UINT16_C(c) c
-#define __UINT_LEAST32_MAX__ 0xffffffffU
-#define __UINT32_C(c) c ## U
-#define __UINT_LEAST64_MAX__ 0xffffffffffffffffUL
-#define __UINT64_C(c) c ## UL
-#define __INT_FAST8_MAX__ 0x7f
-#define __INT_FAST8_WIDTH__ 8
-#define __INT_FAST16_MAX__ 0x7fffffffffffffffL
-#define __INT_FAST16_WIDTH__ 64
-#define __INT_FAST32_MAX__ 0x7fffffffffffffffL
-#define __INT_FAST32_WIDTH__ 64
-#define __INT_FAST64_MAX__ 0x7fffffffffffffffL
-#define __INT_FAST64_WIDTH__ 64
-#define __UINT_FAST8_MAX__ 0xff
-#define __UINT_FAST16_MAX__ 0xffffffffffffffffUL
-#define __UINT_FAST32_MAX__ 0xffffffffffffffffUL
-#define __UINT_FAST64_MAX__ 0xffffffffffffffffUL
-#define __INTPTR_MAX__ 0x7fffffffffffffffL
-#define __INTPTR_WIDTH__ 64
-#define __UINTPTR_MAX__ 0xffffffffffffffffUL
-#define __GCC_IEC_559 2
-#define __GCC_IEC_559_COMPLEX 2
-#define __FLT_EVAL_METHOD__ 0
-#define __FLT_EVAL_METHOD_TS_18661_3__ 0
-#define __DEC_EVAL_METHOD__ 2
-#define __FLT_RADIX__ 2
-#define __FLT_MANT_DIG__ 24
-#define __FLT_DIG__ 6
-#define __FLT_MIN_EXP__ (-125)
-#define __FLT_MIN_10_EXP__ (-37)
-#define __FLT_MAX_EXP__ 128
-#define __FLT_MAX_10_EXP__ 38
-#define __FLT_DECIMAL_DIG__ 9
-#define __FLT_MAX__ 3.40282346638528859811704183484516925e+38F
-#define __FLT_NORM_MAX__ 3.40282346638528859811704183484516925e+38F
-#define __FLT_MIN__ 1.17549435082228750796873653722224568e-38F
-#define __FLT_EPSILON__ 1.19209289550781250000000000000000000e-7F
-#define __FLT_DENORM_MIN__ 1.40129846432481707092372958328991613e-45F
-#define __FLT_HAS_DENORM__ 1
-#define __FLT_HAS_INFINITY__ 1
-#define __FLT_HAS_QUIET_NAN__ 1
-#define __DBL_MANT_DIG__ 53
-#define __DBL_DIG__ 15
-#define __DBL_MIN_EXP__ (-1021)
-#define __DBL_MIN_10_EXP__ (-307)
-#define __DBL_MAX_EXP__ 1024
-#define __DBL_MAX_10_EXP__ 308
-#define __DBL_DECIMAL_DIG__ 17
-#define __DBL_MAX__ double(1.79769313486231570814527423731704357e+308L)
-#define __DBL_NORM_MAX__ double(1.79769313486231570814527423731704357e+308L)
-#define __DBL_MIN__ double(2.22507385850720138309023271733240406e-308L)
-#define __DBL_EPSILON__ double(2.22044604925031308084726333618164062e-16L)
-#define __DBL_DENORM_MIN__ double(4.94065645841246544176568792868221372e-324L)
-#define __DBL_HAS_DENORM__ 1
-#define __DBL_HAS_INFINITY__ 1
-#define __DBL_HAS_QUIET_NAN__ 1
-#define __LDBL_MANT_DIG__ 64
-#define __LDBL_DIG__ 18
-#define __LDBL_MIN_EXP__ (-16381)
-#define __LDBL_MIN_10_EXP__ (-4931)
-#define __LDBL_MAX_EXP__ 16384
-#define __LDBL_MAX_10_EXP__ 4932
-#define __DECIMAL_DIG__ 21
-#define __LDBL_DECIMAL_DIG__ 21
-#define __LDBL_MAX__ 1.18973149535723176502126385303097021e+4932L
-#define __LDBL_NORM_MAX__ 1.18973149535723176502126385303097021e+4932L
-#define __LDBL_MIN__ 3.36210314311209350626267781732175260e-4932L
-#define __LDBL_EPSILON__ 1.08420217248550443400745280086994171e-19L
-#define __LDBL_DENORM_MIN__ 3.64519953188247460252840593361941982e-4951L
-#define __LDBL_HAS_DENORM__ 1
-#define __LDBL_HAS_INFINITY__ 1
-#define __LDBL_HAS_QUIET_NAN__ 1
-#define __FLT32_MANT_DIG__ 24
-#define __FLT32_DIG__ 6
-#define __FLT32_MIN_EXP__ (-125)
-#define __FLT32_MIN_10_EXP__ (-37)
-#define __FLT32_MAX_EXP__ 128
-#define __FLT32_MAX_10_EXP__ 38
-#define __FLT32_DECIMAL_DIG__ 9
-#define __FLT32_MAX__ 3.40282346638528859811704183484516925e+38F32
-#define __FLT32_NORM_MAX__ 3.40282346638528859811704183484516925e+38F32
-#define __FLT32_MIN__ 1.17549435082228750796873653722224568e-38F32
-#define __FLT32_EPSILON__ 1.19209289550781250000000000000000000e-7F32
-#define __FLT32_DENORM_MIN__ 1.40129846432481707092372958328991613e-45F32
-#define __FLT32_HAS_DENORM__ 1
-#define __FLT32_HAS_INFINITY__ 1
-#define __FLT32_HAS_QUIET_NAN__ 1
-#define __FLT64_MANT_DIG__ 53
-#define __FLT64_DIG__ 15
-#define __FLT64_MIN_EXP__ (-1021)
-#define __FLT64_MIN_10_EXP__ (-307)
-#define __FLT64_MAX_EXP__ 1024
-#define __FLT64_MAX_10_EXP__ 308
-#define __FLT64_DECIMAL_DIG__ 17
-#define __FLT64_MAX__ 1.79769313486231570814527423731704357e+308F64
-#define __FLT64_NORM_MAX__ 1.79769313486231570814527423731704357e+308F64
-#define __FLT64_MIN__ 2.22507385850720138309023271733240406e-308F64
-#define __FLT64_EPSILON__ 2.22044604925031308084726333618164062e-16F64
-#define __FLT64_DENORM_MIN__ 4.94065645841246544176568792868221372e-324F64
-#define __FLT64_HAS_DENORM__ 1
-#define __FLT64_HAS_INFINITY__ 1
-#define __FLT64_HAS_QUIET_NAN__ 1
-#define __FLT128_MANT_DIG__ 113
-#define __FLT128_DIG__ 33
-#define __FLT128_MIN_EXP__ (-16381)
-#define __FLT128_MIN_10_EXP__ (-4931)
-#define __FLT128_MAX_EXP__ 16384
-#define __FLT128_MAX_10_EXP__ 4932
-#define __FLT128_DECIMAL_DIG__ 36
-#define __FLT128_MAX__ 1.18973149535723176508575932662800702e+4932F128
-#define __FLT128_NORM_MAX__ 1.18973149535723176508575932662800702e+4932F128
-#define __FLT128_MIN__ 3.36210314311209350626267781732175260e-4932F128
-#define __FLT128_EPSILON__ 1.92592994438723585305597794258492732e-34F128
-#define __FLT128_DENORM_MIN__ 6.47517511943802511092443895822764655e-4966F128
-#define __FLT128_HAS_DENORM__ 1
-#define __FLT128_HAS_INFINITY__ 1
-#define __FLT128_HAS_QUIET_NAN__ 1
-#define __FLT32X_MANT_DIG__ 53
-#define __FLT32X_DIG__ 15
-#define __FLT32X_MIN_EXP__ (-1021)
-#define __FLT32X_MIN_10_EXP__ (-307)
-#define __FLT32X_MAX_EXP__ 1024
-#define __FLT32X_MAX_10_EXP__ 308
-#define __FLT32X_DECIMAL_DIG__ 17
-#define __FLT32X_MAX__ 1.79769313486231570814527423731704357e+308F32x
-#define __FLT32X_NORM_MAX__ 1.79769313486231570814527423731704357e+308F32x
-#define __FLT32X_MIN__ 2.22507385850720138309023271733240406e-308F32x
-#define __FLT32X_EPSILON__ 2.22044604925031308084726333618164062e-16F32x
-#define __FLT32X_DENORM_MIN__ 4.94065645841246544176568792868221372e-324F32x
-#define __FLT32X_HAS_DENORM__ 1
-#define __FLT32X_HAS_INFINITY__ 1
-#define __FLT32X_HAS_QUIET_NAN__ 1
-#define __FLT64X_MANT_DIG__ 64
-#define __FLT64X_DIG__ 18
-#define __FLT64X_MIN_EXP__ (-16381)
-#define __FLT64X_MIN_10_EXP__ (-4931)
-#define __FLT64X_MAX_EXP__ 16384
-#define __FLT64X_MAX_10_EXP__ 4932
-#define __FLT64X_DECIMAL_DIG__ 21
-#define __FLT64X_MAX__ 1.18973149535723176502126385303097021e+4932F64x
-#define __FLT64X_NORM_MAX__ 1.18973149535723176502126385303097021e+4932F64x
-#define __FLT64X_MIN__ 3.36210314311209350626267781732175260e-4932F64x
-#define __FLT64X_EPSILON__ 1.08420217248550443400745280086994171e-19F64x
-#define __FLT64X_DENORM_MIN__ 3.64519953188247460252840593361941982e-4951F64x
-#define __FLT64X_HAS_DENORM__ 1
-#define __FLT64X_HAS_INFINITY__ 1
-#define __FLT64X_HAS_QUIET_NAN__ 1
-#define __DEC32_MANT_DIG__ 7
-#define __DEC32_MIN_EXP__ (-94)
-#define __DEC32_MAX_EXP__ 97
-#define __DEC32_MIN__ 1E-95DF
-#define __DEC32_MAX__ 9.999999E96DF
-#define __DEC32_EPSILON__ 1E-6DF
-#define __DEC32_SUBNORMAL_MIN__ 0.000001E-95DF
-#define __DEC64_MANT_DIG__ 16
-#define __DEC64_MIN_EXP__ (-382)
-#define __DEC64_MAX_EXP__ 385
-#define __DEC64_MIN__ 1E-383DD
-#define __DEC64_MAX__ 9.999999999999999E384DD
-#define __DEC64_EPSILON__ 1E-15DD
-#define __DEC64_SUBNORMAL_MIN__ 0.000000000000001E-383DD
-#define __DEC128_MANT_DIG__ 34
-#define __DEC128_MIN_EXP__ (-6142)
-#define __DEC128_MAX_EXP__ 6145
-#define __DEC128_MIN__ 1E-6143DL
-#define __DEC128_MAX__ 9.999999999999999999999999999999999E6144DL
-#define __DEC128_EPSILON__ 1E-33DL
-#define __DEC128_SUBNORMAL_MIN__ 0.000000000000000000000000000000001E-6143DL
-#define __REGISTER_PREFIX__ 
-#define __USER_LABEL_PREFIX__ 
-#define __GNUC_STDC_INLINE__ 1
-#define __NO_INLINE__ 1
-#define __STRICT_ANSI__ 1
-#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1 1
-#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2 1
-#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4 1
-#define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8 1
-#define __GCC_ATOMIC_BOOL_LOCK_FREE 2
-#define __GCC_ATOMIC_CHAR_LOCK_FREE 2
-#define __GCC_ATOMIC_CHAR16_T_LOCK_FREE 2
-#define __GCC_ATOMIC_CHAR32_T_LOCK_FREE 2
-#define __GCC_ATOMIC_WCHAR_T_LOCK_FREE 2
-#define __GCC_ATOMIC_SHORT_LOCK_FREE 2
-#define __GCC_ATOMIC_INT_LOCK_FREE 2
-#define __GCC_ATOMIC_LONG_LOCK_FREE 2
-#define __GCC_ATOMIC_LLONG_LOCK_FREE 2
-#define __GCC_ATOMIC_TEST_AND_SET_TRUEVAL 1
-#define __GCC_ATOMIC_POINTER_LOCK_FREE 2
-#define __HAVE_SPECULATION_SAFE_VALUE 1
-#define __GCC_HAVE_DWARF2_CFI_ASM 1
-#define __PRAGMA_REDEFINE_EXTNAME 1
-#define __SSP_STRONG__ 3
-#define __SIZEOF_INT128__ 16
-#define __SIZEOF_WCHAR_T__ 4
-#define __SIZEOF_WINT_T__ 4
-#define __SIZEOF_PTRDIFF_T__ 8
-#define __amd64 1
-#define __amd64__ 1
-#define __x86_64 1
-#define __x86_64__ 1
-#define __SIZEOF_FLOAT80__ 16
-#define __SIZEOF_FLOAT128__ 16
-#define __ATOMIC_HLE_ACQUIRE 65536
-#define __ATOMIC_HLE_RELEASE 131072
-#define __GCC_ASM_FLAG_OUTPUTS__ 1
-#define __k8 1
-#define __k8__ 1
-#define __code_model_small__ 1
-#define __MMX__ 1
-#define __SSE__ 1
-#define __SSE2__ 1
-#define __FXSR__ 1
-#define __SSE_MATH__ 1
-#define __SSE2_MATH__ 1
-#define __MMX_WITH_SSE__ 1
-#define __SEG_FS 1
-#define __SEG_GS 1
-#define __CET__ 3
-#define __gnu_linux__ 1
-#define __linux 1
-#define __linux__ 1
-#define __unix 1
-#define __unix__ 1
-#define __ELF__ 1
-#define __DECIMAL_BID_FORMAT__ 1
-# 1 "<command-line>"
-#define _GNU_SOURCE 1
-#define DISABLE_PREPROCESSOR 1
-#define RENDERER_OPENGL 1
-# 1 "/usr/include/stdc-predef.h" 1 3 4
-# 19 "/usr/include/stdc-predef.h" 3 4
-#define _STDC_PREDEF_H 1
-# 38 "/usr/include/stdc-predef.h" 3 4
-#define __STDC_IEC_559__ 1
-#define __STDC_IEC_60559_BFP__ 201404L
-# 48 "/usr/include/stdc-predef.h" 3 4
-#define __STDC_IEC_559_COMPLEX__ 1
-#define __STDC_IEC_60559_COMPLEX__ 201404L
-# 62 "/usr/include/stdc-predef.h" 3 4
-#define __STDC_ISO_10646__ 201706L
-# 1 "<command-line>" 2
-# 1 "code/game.cpp"
+# 1 "<built-in>" 1
+# 1 "<built-in>" 3
+# 450 "<built-in>" 3
+# 1 "<command line>" 1
+# 1 "<built-in>" 2
+# 1 "code/game.cpp" 2
 # 16 "code/game.cpp"
 # 1 "code/common.h" 1
-       
 
-#define function static
-#define global static
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 
-#define ENUM_STRING(type,value) get_enum_ ##type ##_str(value)
+
+
+
+
+
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -450,7 +29,7 @@ typedef i32 b32;
 typedef size_t usize;
 # 17 "code/game.cpp" 2
 # 1 "code/arena.h" 1
-       
+
 
 struct Arena
 {
@@ -468,7 +47,7 @@ static Arena make_arena(void *memory, usize size)
  return arena;
 }
 
-#define arena_alloc(arena,size) _arena_alloc(__FILE__, __func__, __LINE__, arena, size)
+
 
 static void *_arena_alloc(const char *filename, const char *func, int line, Arena *arena, usize size)
 {
@@ -521,9 +100,9 @@ static void end_temp_memory()
 }
 # 18 "code/game.cpp" 2
 # 1 "code/utils.h" 1
-#define Kilobyte(x) (1024ULL * x)
-#define Megabyte(x) (1024ULL * Kilobyte(x))
-#define GigaByte(x) (1024ULL * Megabyte(x))
+
+
+
 
 template <typename T> T min(T a, T b) { return (a < b ? a : b); }
 
@@ -645,7 +224,7 @@ String concact_string(Arena *arena, String a, String b) {
     memcpy(result.data + a.count, b.data, b.count);
     return result;
 }
-#define str_format(str) (int)str.count, str.data
+
 
 String load_entire_file(Arena *arena, String filename) {
     assert(filename.count < filename.capacity &&
@@ -677,13 +256,67 @@ String load_entire_file(Arena *arena, String filename) {
 int align_to(int x, int alignement) {
     return alignement * ((x + alignement - 1) / alignement);
 }
+
+enum LogType {
+ LOG_TYPE_DEBUG,
+ LOG_TYPE_INFO,
+ LOG_TYPE_WARN,
+ LOG_TYPE_ERROR,
+ LOG_TYPE_FATAL
+};
+
+
+
+void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
+{
+ static FILE *log_file = fopen("log.txt", "w");
+
+ const char *log_type_str[] = {
+  "debug",
+  "info",
+  "warn",
+  "error",
+  "fatal"
+ };
+ const char *log_type_color[] = {
+  "\033[032m",
+  "\033[035m",
+  "\033[033m",
+  "\033[031m",
+  "\033[031m",
+ };
+ printf("%s[%s]:\033[0m ", log_type_color[log_type], log_type_str[log_type]);
+ vprintf(fmt, args1);
+ printf("\n");
+
+ fprintf(log_file, "[%s]: ", log_type_str[log_type]);
+ vfprintf(log_file, fmt, args2);
+ fprintf(log_file, "\n");
+}
+# 204 "code/utils.h"
+void LOG_DEBUG(const char *fmt, ...) { va_list args1, args2; va_start(args1, fmt); va_start(args2, fmt); _log(LOG_TYPE_DEBUG, fmt, args1, args2); va_end(args1); va_end(args2); };
+void LOG_INFO(const char *fmt, ...) { va_list args1, args2; va_start(args1, fmt); va_start(args2, fmt); _log(LOG_TYPE_INFO, fmt, args1, args2); va_end(args1); va_end(args2); };
+void LOG_WARN(const char *fmt, ...) { va_list args1, args2; va_start(args1, fmt); va_start(args2, fmt); _log(LOG_TYPE_WARN, fmt, args1, args2); va_end(args1); va_end(args2); };
+void LOG_ERROR(const char *fmt, ...) { va_list args1, args2; va_start(args1, fmt); va_start(args2, fmt); _log(LOG_TYPE_ERROR, fmt, args1, args2); va_end(args1); va_end(args2); };
+void LOG_FATAL(const char *fmt, ...) { va_list args1, args2; va_start(args1, fmt); va_start(args2, fmt); _log(LOG_TYPE_FATAL, fmt, args1, args2); va_end(args1); va_end(args2); };
+
+
+uint64_t rdtsc() {
+ return __rdtsc();
+
+
+
+
+
+
+}
 # 19 "code/game.cpp" 2
 # 1 "code/math.h" 1
-       
 
-#define PI 3.14159265359f
-#define DEG2RAD (PI / 180.f)
-#define RAD2DEG (180.f / PI)
+
+
+
+
 
 int sign(float x) {
     if (x < 0)
@@ -1372,7 +1005,7 @@ quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
 quat identity_quat() { return Quat(0, 0, 0, 1); }
 # 20 "code/game.cpp" 2
 # 1 "code/platform.h" 1
-       
+
 
 enum GameButtonType {
     BUTTON_A,
@@ -1423,18 +1056,7 @@ enum GameButtonType {
     BUTTON_F12,
     BUTTON_COUNT
 };
-
-#define BUTTON_CAMERA_FORWARD BUTTON_W
-#define BUTTON_CAMERA_BACKWARD BUTTON_S
-#define BUTTON_CAMERA_LEFT BUTTON_A
-#define BUTTON_CAMERA_RIGHT BUTTON_D
-#define BUTTON_CAMERA_UP BUTTON_Q
-#define BUTTON_CAMERA_DOWN BUTTON_E
-#define BUTTON_PLAYER_FORWARD BUTTON_F
-#define BUTTON_PLAYER_BACKWARD BUTTON_G
-#define BUTTON_PLAYER_JUMP BUTTON_SPACE
-#define TOGGLE_EDITOR_BUTTON BUTTON_F1
-
+# 64 "code/platform.h"
 struct GameButton {
     b32 is_down;
     b32 was_down;
@@ -1446,18 +1068,7 @@ struct GameInput {
     v2 mouse_p;
     v2 last_mouse_p;
 };
-
-#define IsDown(input,button) (input.buttons[button].is_down)
-#define IsKeyboardButton(button) (button != BUTTON_MOUSE_LEFT && button != BUTTON_MOUSE_RIGHT)
-#define WasDown(input,button) (input.buttons[button].was_down)
-#define IsDownFirstTime(input,button) (IsDown(input, button) && !WasDown(input, button))
-
-
-
-#define GL_FUNCTIONS(X) X(PFNGLENABLEPROC, glEnable) X(PFNGLDISABLEPROC, glDisable) X(PFNGLBLENDFUNCPROC, glBlendFunc) X(PFNGLVIEWPORTPROC, glViewport) X(PFNGLCLEARCOLORPROC, glClearColor) X(PFNGLCLEARPROC, glClear) X(PFNGLDRAWARRAYSPROC, glDrawArrays) X(PFNGLCREATEBUFFERSPROC, glCreateBuffers) X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage) X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray) X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays) X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding) X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer) X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat) X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib) X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv) X(PFNGLGETPROGRAMIVPROC, glGetProgramiv) X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog) X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines) X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages) X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline) X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv) X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit) X(PFNGLCREATETEXTURESPROC, glCreateTextures) X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri) X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D) X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D) X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback) X(PFNGLGETINTEGERVPROC, glGetIntegerv) X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl) X(PFNGLCREATESHADERPROC, glCreateShader) X(PFNGLSHADERSOURCEPROC, glShaderSource) X(PFNGLCOMPILESHADERPROC, glCompileShader) X(PFNGLGETSHADERIVPROC, glGetShaderiv) X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog) X(PFNGLACTIVETEXTUREPROC, glActiveTexture) X(PFNGLBINDTEXTUREPROC, glBindTexture) X(PFNGLGENTEXTURESPROC, glGenTextures) X(PFNGLTEXIMAGE2DPROC, glTexImage2D) X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap) X(PFNGLTEXPARAMETERIPROC, glTexParameteri) X(PFNGLCLEARDEPTHPROC, glClearDepth) X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer) X(PFNGLCULLFACEPROC, glCullFace) X(PFNGLCREATEPROGRAMPROC, glCreateProgram) X(PFNGLATTACHSHADERPROC, glAttachShader) X(PFNGLLINKPROGRAMPROC, glLinkProgram) X(PFNGLUSEPROGRAMPROC, glUseProgram) X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays) X(PFNGLGENBUFFERSPROC, glGenBuffers) X(PFNGLBINDBUFFERPROC, glBindBuffer) X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase) X(PFNGLBUFFERDATAPROC, glBufferData) X(PFNGLBUFFERSUBDATAPROC, glBufferSubData) X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer) X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray) X(PFNGLPOLYGONMODEPROC, glPolygonMode)
-# 144 "code/platform.h"
-#define THREAD_WORK_FUNC(name) void name(void *data)
-
+# 146 "code/platform.h"
 typedef void ThreadWorkFn(void *data);
 
 struct ThreadWork {
@@ -1466,7 +1077,7 @@ struct ThreadWork {
 };
 
 static ThreadWork thread_work_queue[256];
-#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
+
 static volatile int thread_work_queue_read_index;
 static volatile int thread_work_queue_write_index;
 static volatile int thread_work_queue_occupied_index;
@@ -1482,12 +1093,12 @@ struct Platform {
     AddThreadWorkFn *add_thread_work;
 };
 
-#define GAME_UPDATE_AND_RENDER(name) void name(Platform &platform, Arena *memory, GameInput &input, float dt)
+
 
 typedef void game_update_and_render_fn(Platform &platform, Arena *memory, GameInput &input, float dt);
 # 21 "code/game.cpp" 2
 # 1 "code/renderer.h" 1
-       
+
 
 enum TextureState {
     TEXTURE_STATE_UNLOADED,
@@ -1716,7 +1327,7 @@ struct ConstantBuffer {
 
 
 static RenderContext *g_rc;
-#define RENDERER_DEBUG 
+
 
 
 
@@ -1798,11 +1409,9 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
  int success;
  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
  if (!success) {
-  printf("OPENGL: failed to compile shader \"%.*s\": ", (int)filename.count, filename.data);
-
   char info_log[2048];
   glGetShaderInfoLog(shader, sizeof(info_log), 0, info_log);
-  printf("%s\n", info_log);
+  LOG_ERROR("[opengl] failed to compile shader \"%.*s\": %s", (int)filename.count, filename.data, info_log);
   assert(0);
  }
 
@@ -1893,7 +1502,7 @@ RenderPass create_render_pass(Shader vs, Shader fs,
  if (!success) {
   char info_log[2048];
   glGetProgramInfoLog(rp.program, sizeof(info_log), 0, info_log);
-  printf("failed to link program: %s\n", info_log);
+  LOG_ERROR("[opengl] failed to link program: %s", info_log);
   assert(0);
  }
 
@@ -2091,7 +1700,6 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
   result.elements[i] = elements[i];
 
   offset = align_to(offset, get_type_alignement(elements[i]));
-  printf("%d %d\n", i, offset);
   if (elements[i].array_size) {
 
 
@@ -2169,42 +1777,41 @@ void end_render_frame()
 void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
   GLenum severity, GLsizei length,
   const char *message, const void *userParam) {
-
  if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
   return;
 
- printf("---------------\nOPENGL Debug: (%d): %s\n", id, message);
- printf("Sorce: ");
+ const char *s_source = "", *s_type = "", *s_severity = "";
+
  switch (source) {
-  case GL_DEBUG_SOURCE_API: printf("API"); break;
-  case GL_DEBUG_SOURCE_WINDOW_SYSTEM: printf("Window System"); break;
-  case GL_DEBUG_SOURCE_SHADER_COMPILER: printf("Shader Compiled"); break;
-  case GL_DEBUG_SOURCE_THIRD_PARTY: printf("Third Party"); break;
-  case GL_DEBUG_SOURCE_APPLICATION: printf("Application"); break;
-  case GL_DEBUG_SOURCE_OTHER: printf("Other"); break;
+  case GL_DEBUG_SOURCE_API: s_source = "API"; break;
+  case GL_DEBUG_SOURCE_WINDOW_SYSTEM: s_source = "Window System"; break;
+  case GL_DEBUG_SOURCE_SHADER_COMPILER: s_source = "Shader Compiled"; break;
+  case GL_DEBUG_SOURCE_THIRD_PARTY: s_source = "Third Party"; break;
+  case GL_DEBUG_SOURCE_APPLICATION: s_source = "Application"; break;
+  case GL_DEBUG_SOURCE_OTHER: s_source = "Other"; break;
  }
- printf("\nType: ");
 
  switch (type) {
-  case GL_DEBUG_TYPE_ERROR: printf("Error"); break;
-  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: printf("Deprecated Behaviour"); break ;
-  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: printf("Undefined Behaviour"); break;
-  case GL_DEBUG_TYPE_PORTABILITY: printf("Portability"); break;
-  case GL_DEBUG_TYPE_PERFORMANCE: printf("Performance"); break;
-  case GL_DEBUG_TYPE_MARKER: printf("Marker"); break;
-  case GL_DEBUG_TYPE_PUSH_GROUP: printf("Push Group"); break;
-  case GL_DEBUG_TYPE_POP_GROUP: printf("Pop Group"); break;
-  case GL_DEBUG_TYPE_OTHER: printf("Other"); break;
+  case GL_DEBUG_TYPE_ERROR: s_type = "Error"; break;
+  case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: s_type = "Deprecated Behaviour"; break ;
+  case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: s_type = "Undefined Behaviour"; break;
+  case GL_DEBUG_TYPE_PORTABILITY: s_type = "Portability"; break;
+  case GL_DEBUG_TYPE_PERFORMANCE: s_type = "Performance"; break;
+  case GL_DEBUG_TYPE_MARKER: s_type = "Marker"; break;
+  case GL_DEBUG_TYPE_PUSH_GROUP: s_type = "Push Group"; break;
+  case GL_DEBUG_TYPE_POP_GROUP: s_type = "Pop Group"; break;
+  case GL_DEBUG_TYPE_OTHER: s_type = "Other"; break;
  }
- printf("\nSeverity: ");
 
  switch (severity) {
-  case GL_DEBUG_SEVERITY_HIGH: printf("high"); break;
-  case GL_DEBUG_SEVERITY_MEDIUM: printf("meduim"); break;
-  case GL_DEBUG_SEVERITY_LOW: printf("low"); break;
-  case GL_DEBUG_SEVERITY_NOTIFICATION: printf("notification"); break;
+  case GL_DEBUG_SEVERITY_HIGH: s_severity = "high"; break;
+  case GL_DEBUG_SEVERITY_MEDIUM: s_severity = "meduim"; break;
+  case GL_DEBUG_SEVERITY_LOW: s_severity = "low"; break;
+  case GL_DEBUG_SEVERITY_NOTIFICATION: s_severity = "notification";break;
  }
- printf("\n\n");
+
+ LOG_WARN("[opengl debug layer (id: %d, source: %s, type: %s, severity: %s)]: %s",
+   id, s_source, s_type, s_severity, message);
 }
 
 void init_render_context_opengl(RenderContext &rc, Platform &platform)
@@ -2291,9 +1898,9 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
 
 
 # 1 "code/scene.h" 1
-       
 
-#define MAX_BONE_WEIGHTS 4
+
+
 
 typedef usize SceneID;
 
@@ -2413,9 +2020,9 @@ struct Scene {
 };
 # 33 "code/game.cpp" 2
 # 1 "code/game.h" 1
-       
 
-#define WORLD_UP V3(0, 0, 1)
+
+
 
 struct CollisionMesh {
  meta(serialize) Array<v3> vertices;
@@ -2635,10 +2242,7 @@ struct Editor {
 
  Gizmo gizmo;
 
-
-
-
- meta(ui) bool edit_collision_mesh;
+ meta(ui) bool copy_entity_mesh;
 
     meta(ui) entity_id selected_entity;
  meta(ui) int selected_entity_mesh;
@@ -2646,8 +2250,6 @@ struct Editor {
     meta(ui) entity_id copied_entity;
 
     meta(ui) v3 last_camera_p;
-
- meta(ui) bool copy_entity_mesh;
 };
 
 struct World {
@@ -2703,6 +2305,41 @@ struct SoundState
  std::atomic_int32_t read_index;
  std::atomic_int32_t write_index;
 };
+
+struct ProfilerBlockStat
+{
+ const char *name;
+ uint64_t cycle_count;
+ uint32_t call_count;
+};
+
+static ProfilerBlockStat profiler_block_stats[512];
+
+
+struct ProfilerBlock
+{
+ uint64_t start_cycle;
+ uint32_t id;
+ const char *name;
+
+ ProfilerBlock(const char *name, uint32_t id) : name(name), id(id)
+ {
+  profiler_block_stats[id].name = name;
+  start_cycle = rdtsc();
+ }
+
+ ~ProfilerBlock()
+ {
+  uint64_t cycle_count = rdtsc() - start_cycle;
+
+  assert(id < (sizeof(profiler_block_stats) / sizeof(*profiler_block_stats)));
+  profiler_block_stats[id].cycle_count += cycle_count;
+  profiler_block_stats[id].call_count++;
+ }
+};
+
+
+
 
 
 struct Game {
@@ -3210,8 +2847,8 @@ Animation load_animation(Arena *arena, Game &game, const char *filename)
  ufbx_error error;
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
-  fprintf(stderr, "Failed to load animation %s: %s\n", filename, error.description.data);
-  exit(1);
+  LOG_ERROR("failed to load animation %s: %s", filename, error.description.data);
+  assert(0);
  }
  assert(uscene->anim_stacks.count);
  return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
@@ -3255,8 +2892,8 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
  ufbx_error error;
  ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
  if (!uscene) {
-  fprintf(stderr, "Failed to load %s: %s\n", filename, error.description.data);
-  exit(1);
+  LOG_ERROR("failed to load %s: %s", filename, error.description.data);
+  assert(0);
  }
 
 
@@ -3265,7 +2902,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
   if (uscene->nodes.data[i]->mesh)
    total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
 
- printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
+ LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename, uscene->meshes.count, total_num_triangles);
 
  mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 
@@ -3302,7 +2939,7 @@ SceneID get_scene_id_by_name(Game &game, String name)
   if (strings_equal(game.scenes[i].name, name))
    return game.scenes[i].id;
  }
- printf("WARN: couldn't find scene %.*s\n", (int)name.count, name.data);
+ LOG_WARN("couldn't find scene %.*s", (int)name.count, name.data);
  return 0;
 }
 
@@ -3365,8 +3002,8 @@ v3 get_world_p(World &world, entity_id id);
 
 
 # 1 "code/sound.cpp" 1
-#define SOUND_CHANNEL_COUNT 2
-#define SOUND_SAMPLE_RATE 48000
+
+
 
 LoadedSound load_wav_file(Arena *arena, const char *filename)
 {
@@ -3391,7 +3028,7 @@ LoadedSound load_wav_file(Arena *arena, const char *filename)
 
   _arena_alloc("code/sound.cpp", __func__, 25, arena, samplesToRead * sizeof(float) * 2);
     }
- printf("loaded sound %s, %d samples\n", filename, sound.sample_count);
+ LOG_INFO("loaded sound %s, %d samples", filename, sound.sample_count);
     return sound;
 }
 
@@ -3444,6 +3081,7 @@ void update_sound(Game &game, World &world)
 {
  if (!game.first_playing_sound)
   return ;
+ ProfilerBlock _block___LINE__(__FUNCTION__, 0);;
 
  SoundState &state = game.sound_state;
 
@@ -3914,9 +3552,9 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 }
 # 106 "code/game.cpp" 2
 # 1 "code/collision.cpp" 1
-#define SMALLEST_VELOCITY 0.01f
-#define SLIDE_ITERATION_COUNT 4
-#define SLIDE_COEFF 1.2f
+
+
+
 
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {
@@ -4166,6 +3804,7 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 
 void move_entity(World &world, Entity &e, v3 delta_p)
 {
+ ProfilerBlock _block___LINE__(__FUNCTION__, 1);;
  assert(e.ellipsoid_collision_shape);
 
  Arena *temp = begin_temp_memory();
@@ -4193,7 +3832,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
   }
   shapes.push(shape);
  }
-# 304 "code/collision.cpp"
+# 305 "code/collision.cpp"
  v3 old_p = e.position;
  move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
 
@@ -4730,21 +4369,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 }
 # 108 "code/game.cpp" 2
 # 1 "code/editor.cpp" 1
-#define GIZMO_ROTATION_INNER_RADIUS 1.5f
-#define GIZMO_ROTATION_OUTER_RADIUS 2
-#define GIZMO_ROTATION_RADIUS (0.5f*(GIZMO_ROTATION_INNER_RADIUS + GIZMO_ROTATION_OUTER_RADIUS))
-
-#define GIZMO_MAIN_AXIS_LENGTH (0.07f * 2)
-#define GIZMO_OTHER_AXIS_LENGTH (GIZMO_MAIN_AXIS_LENGTH * 0.3f)
-
-#define GIZMO_SCALE_BOX_RADIUS (GIZMO_MAIN_AXIS_LENGTH * 0.1f)
-
-#define GIZMO_MINIMUM_SCALE 0.01f
-
-#define COLLISION_MESH_SNAP_DIST 0.01f
-
-
-
+# 16 "code/editor.cpp"
 entity_id raycast_to_entities(Game &game, World &world, v3 camera_ray_origin, v3 camera_ray_dir,
   float &hit_t, int &mesh_index)
 {
@@ -5242,6 +4867,7 @@ void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Edit
 
   hit_p = (to_world * V4(hit_p, 1)).xyz;
  }
+
  int hit_triangle = -1;
  {
   float min_t = FLT_MAX;
@@ -5545,7 +5171,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      }
     }
     if (!found) {
-     printf("ERROR: in constant buffer elements, couldn't find type for %s\n", constant_metadata.members[i].type_name);
+     LOG_ERROR("in constant buffer elements, couldn't find type for %s", constant_metadata.members[i].type_name);
      assert(0);
     }
     if (constant_metadata.members[i].is_array)
@@ -5653,17 +5279,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  begin_render_frame();
 
+ for (int i = 0; i < (sizeof(profiler_block_stats) / sizeof(*profiler_block_stats)); i++)
+  profiler_block_stats[i] = {};
+
 
 
  if (!game.in_editor) {
+  ProfilerBlock _block___LINE__("update game", 2);;
   update_player(game, world, input, dt);
   update_enemies(game, world, input, dt);
-
-
-
-
-
-
  }
  Camera game_camera = update_camera(game, world, input, dt);
 
@@ -5784,6 +5408,14 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  end_render_frame();
 
  update_sound(game, world);
+
+ for (int i = 0; i < (sizeof(profiler_block_stats) / sizeof(*profiler_block_stats)); i++)
+ {
+  ProfilerBlockStat &stat = profiler_block_stats[i];
+  if (!stat.name)
+   break ;
+  LOG_DEBUG("profiler block %s: (%zu cycles, %u calls)", stat.name, stat.cycle_count, stat.call_count);
+ }
 
  game.time += dt;
 

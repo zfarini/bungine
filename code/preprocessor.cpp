@@ -415,8 +415,6 @@ string generate()
 		result += s;
 	}
 
-#define T(c, ...) string('', c) + "\"" + #__VA_ARGS__ + "\""
-
 	auto gen_ui = [&](auto &&self, string struct_name, 
 			string name, 
 			bool is_child,

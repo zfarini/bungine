@@ -39,7 +39,7 @@ SceneID get_scene_id_by_name(Game &game, String name)
 		if (strings_equal(game.scenes[i].name, name))
 			return game.scenes[i].id;
 	}
-	printf("WARN: couldn't find scene %.*s\n", str_format(name));
+	LOG_WARN("couldn't find scene %.*s", str_format(name));
 	return 0;
 }
 
@@ -260,7 +260,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					}
 				}
 				if (!found) {
-					printf("ERROR: in constant buffer elements, couldn't find type for %s\n", constant_metadata.members[i].type_name);
+					LOG_ERROR("in constant buffer elements, couldn't find type for %s", constant_metadata.members[i].type_name);
 					assert(0);
 				}
 				if (constant_metadata.members[i].is_array)
@@ -377,17 +377,15 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	begin_render_frame();
 
+	for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
+		profiler_block_stats[i] = {};
+
 	// TODO: decide weither this should update before or after player
 
 	if (!game.in_editor) {
+		PROFILE_BLOCK("update game");
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
-
-
-
-		//Entity *e = get_entity(world, world.moving_box);
-		//if (e)
-		//	e->position.z = 20 + sinf(game.time) * 20;
 	}
 	Camera game_camera = update_camera(game, world, input, dt);
 
@@ -508,6 +506,14 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	end_render_frame();
 
 	update_sound(game, world);
+
+	for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
+	{
+		ProfilerBlockStat &stat = profiler_block_stats[i];
+		if (!stat.name)
+			break ;
+		LOG_DEBUG("profiler block %s: (%zu cycles, %u calls)", stat.name, stat.cycle_count, stat.call_count);
+	}
 
 	game.time += dt;
 	// @HACK

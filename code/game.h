@@ -284,6 +284,41 @@ struct SoundState
 	std::atomic_int32_t write_index;
 };
 
+struct ProfilerBlockStat
+{
+	const char *name;
+	uint64_t cycle_count;
+	uint32_t call_count;
+};
+
+global ProfilerBlockStat profiler_block_stats[512];
+
+#if 1
+struct ProfilerBlock
+{
+	uint64_t start_cycle;
+	uint32_t id;
+	const char *name;
+
+	ProfilerBlock(const char *name, uint32_t id) : name(name), id(id)
+	{
+		profiler_block_stats[id].name = name;
+		start_cycle = rdtsc();
+	}
+
+	~ProfilerBlock()
+	{
+		uint64_t cycle_count = rdtsc() - start_cycle;
+
+		assert(id < ARRAY_SIZE(profiler_block_stats));
+		profiler_block_stats[id].cycle_count += cycle_count;
+		profiler_block_stats[id].call_count++;
+	}
+};
+
+#define PROFILE_BLOCK(name) ProfilerBlock _block_##__LINE__(name, __COUNTER__);
+#define PROFILE_FUNCTION(name) ProfilerBlock _block_##__LINE__(__FUNCTION__, __COUNTER__);
+#endif
 
 struct Game {
 

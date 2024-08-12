@@ -154,3 +154,66 @@ String load_entire_file(Arena *arena, String filename) {
 int align_to(int x, int alignement) {
     return alignement * ((x + alignement - 1) / alignement);
 }
+
+enum LogType {
+	LOG_TYPE_DEBUG,
+	LOG_TYPE_INFO,
+	LOG_TYPE_WARN,
+	LOG_TYPE_ERROR,
+	LOG_TYPE_FATAL
+};
+
+#define LOG_FILENAME "log.txt"
+
+void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
+{
+	static FILE *log_file = fopen(LOG_FILENAME, "w");
+
+	const char *log_type_str[] = {
+		"debug",
+		"info",
+		"warn",
+		"error",
+		"fatal"
+	};
+	const char *log_type_color[] = {
+		"\033[032m",
+		"\033[035m",
+		"\033[033m",
+		"\033[031m",
+		"\033[031m",
+	};
+	printf("%s[%s]:\033[0m ", log_type_color[log_type], log_type_str[log_type]);
+	vprintf(fmt, args1);
+	printf("\n");
+
+	fprintf(log_file, "[%s]: ", log_type_str[log_type]);
+	vfprintf(log_file, fmt, args2);
+	fprintf(log_file, "\n");
+}
+
+#define DEFINE_LOG_TYPE(name) void LOG_##name(const char *fmt, ...) {\
+		va_list args1, args2; \
+		va_start(args1, fmt); \
+		va_start(args2, fmt); \
+		_log(LOG_TYPE_##name, fmt, args1, args2); \
+		va_end(args1); \
+		va_end(args2); \
+	}
+
+DEFINE_LOG_TYPE(DEBUG);
+DEFINE_LOG_TYPE(INFO);
+DEFINE_LOG_TYPE(WARN);
+DEFINE_LOG_TYPE(ERROR);
+DEFINE_LOG_TYPE(FATAL);
+
+
+uint64_t rdtsc() {
+	return __rdtsc();
+    //unsigned int lo, hi;
+    //__asm__ __volatile__ (
+    //    "rdtsc"
+    //    : "=a" (lo), "=d" (hi)
+    //);
+    //return ((unsigned long long)hi << 32) | lo;
+}

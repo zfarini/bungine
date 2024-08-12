@@ -75,11 +75,9 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 	int success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-		printf("OPENGL: failed to compile shader \"%.*s\": ", str_format(filename));
-
 		char info_log[2048];
 		glGetShaderInfoLog(shader, sizeof(info_log), 0, info_log);
-		printf("%s\n", info_log);
+		LOG_ERROR("[opengl] failed to compile shader \"%.*s\": %s", str_format(filename), info_log);
 		assert(0);
 	}
 
@@ -170,7 +168,7 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 	if (!success) {
 		char info_log[2048];
 		glGetProgramInfoLog(rp.program, sizeof(info_log), 0, info_log);
-		printf("failed to link program: %s\n", info_log);
+		LOG_ERROR("[opengl] failed to link program: %s", info_log);
 		assert(0);
 	}
 
@@ -368,7 +366,6 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 		result.elements[i] = elements[i];
 
 		offset = align_to(offset, get_type_alignement(elements[i]));
-		printf("%d %d\n", i, offset);
 		if (elements[i].array_size) {
 			// TODO: this is likely wrong, it doesn't work with v3 array but 
 			// the wiki says some implementation get it wrong
@@ -446,42 +443,41 @@ void end_render_frame()
 void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 		GLenum severity, GLsizei length,
 		const char *message, const void *userParam) {
-	// ignore non-significant error/warning codes
 	if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
 		return;
 
-	printf("---------------\nOPENGL Debug: (%d): %s\n", id, message);
-	printf("Sorce: ");
+	const char *s_source = "", *s_type = "", *s_severity = "";
+	
 	switch (source) {
-		case GL_DEBUG_SOURCE_API: printf("API"); break;
-		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: printf("Window System"); break;
-		case GL_DEBUG_SOURCE_SHADER_COMPILER: printf("Shader Compiled"); break;
-		case GL_DEBUG_SOURCE_THIRD_PARTY: printf("Third Party"); break;
-		case GL_DEBUG_SOURCE_APPLICATION: printf("Application"); break;
-		case GL_DEBUG_SOURCE_OTHER: printf("Other"); break;
+		case GL_DEBUG_SOURCE_API: s_source = "API"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: s_source = "Window System"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: s_source = "Shader Compiled"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY: s_source = "Third Party"; break;
+		case GL_DEBUG_SOURCE_APPLICATION: s_source = "Application"; break;
+		case GL_DEBUG_SOURCE_OTHER: s_source = "Other"; break;
 	}
-	printf("\nType: ");
 
 	switch (type) {
-		case GL_DEBUG_TYPE_ERROR: printf("Error"); break;
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: printf("Deprecated Behaviour"); break ;
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: printf("Undefined Behaviour"); break;
-		case GL_DEBUG_TYPE_PORTABILITY: printf("Portability"); break;
-		case GL_DEBUG_TYPE_PERFORMANCE: printf("Performance"); break;
-		case GL_DEBUG_TYPE_MARKER: printf("Marker"); break;
-		case GL_DEBUG_TYPE_PUSH_GROUP: printf("Push Group"); break;
-		case GL_DEBUG_TYPE_POP_GROUP: printf("Pop Group"); break;
-		case GL_DEBUG_TYPE_OTHER: printf("Other"); break;
+		case GL_DEBUG_TYPE_ERROR: s_type = "Error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: s_type = "Deprecated Behaviour"; break ;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: s_type = "Undefined Behaviour"; break;
+		case GL_DEBUG_TYPE_PORTABILITY: s_type = "Portability"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE: s_type = "Performance"; break;
+		case GL_DEBUG_TYPE_MARKER: s_type = "Marker"; break;
+		case GL_DEBUG_TYPE_PUSH_GROUP: s_type = "Push Group"; break;
+		case GL_DEBUG_TYPE_POP_GROUP: s_type = "Pop Group"; break;
+		case GL_DEBUG_TYPE_OTHER: s_type = "Other"; break;
 	}
-	printf("\nSeverity: ");
 
 	switch (severity) {
-		case GL_DEBUG_SEVERITY_HIGH: printf("high"); break;
-		case GL_DEBUG_SEVERITY_MEDIUM: printf("meduim"); break;
-		case GL_DEBUG_SEVERITY_LOW: printf("low"); break;
-		case GL_DEBUG_SEVERITY_NOTIFICATION: printf("notification"); break;
+		case GL_DEBUG_SEVERITY_HIGH: s_severity = "high"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM: s_severity = "meduim"; break;
+		case GL_DEBUG_SEVERITY_LOW: s_severity = "low"; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: s_severity = "notification";break;
 	}
-	printf("\n\n");
+
+	LOG_WARN("[opengl debug layer (id: %d, source: %s, type: %s, severity: %s)]: %s",
+			id, s_source, s_type, s_severity, message);
 }
 
 void init_render_context_opengl(RenderContext &rc, Platform &platform)

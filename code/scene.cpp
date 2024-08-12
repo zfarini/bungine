@@ -451,8 +451,8 @@ Animation load_animation(Arena *arena, Game &game, const char *filename)
 	ufbx_error error;
 	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
 	if (!uscene) {
-		fprintf(stderr, "Failed to load animation %s: %s\n", filename, error.description.data);
-		exit(1);
+		LOG_ERROR("failed to load animation %s: %s", filename, error.description.data);
+		assert(0);
 	}
 	assert(uscene->anim_stacks.count);
 	return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
@@ -496,8 +496,8 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 	ufbx_error error;
 	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
 	if (!uscene) {
-		fprintf(stderr, "Failed to load %s: %s\n", filename, error.description.data);
-		exit(1);
+		LOG_ERROR("failed to load %s: %s", filename, error.description.data);
+		assert(0);
 	}
 
 
@@ -506,7 +506,7 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 		if (uscene->nodes.data[i]->mesh)
 			total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
 	
-	printf("loading scene %s (%zd meshes, %zd triangles)\n", filename, uscene->meshes.count, total_num_triangles);
+	LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename, uscene->meshes.count, total_num_triangles);
 
 	mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 

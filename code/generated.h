@@ -10,20 +10,6 @@ struct StructMetaData {
     int member_count;
     StructMemberData members[64];
 };
-void serialize_float(FILE *fd, bool w, float &x, Arena *arena = 0) {
-    if (w)
-        fwrite(&x, sizeof(float), 1, fd);
-    else {
-        (void)fread(&x, sizeof(float), 1, fd);
-    }
-}
-void serialize_double(FILE *fd, bool w, double &x, Arena *arena = 0) {
-    if (w)
-        fwrite(&x, sizeof(double), 1, fd);
-    else {
-        (void)fread(&x, sizeof(double), 1, fd);
-    }
-}
 void serialize_mat4(FILE *fd, bool w, mat4 &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(mat4), 1, fd);
@@ -38,6 +24,13 @@ void serialize_quat(FILE *fd, bool w, quat &x, Arena *arena = 0) {
         (void)fread(&x, sizeof(quat), 1, fd);
     }
 }
+void serialize_v3(FILE *fd, bool w, v3 &x, Arena *arena = 0) {
+    if (w)
+        fwrite(&x, sizeof(v3), 1, fd);
+    else {
+        (void)fread(&x, sizeof(v3), 1, fd);
+    }
+}
 void serialize_char(FILE *fd, bool w, char &x, Arena *arena = 0) {
     if (w)
         fwrite(&x, sizeof(char), 1, fd);
@@ -45,11 +38,18 @@ void serialize_char(FILE *fd, bool w, char &x, Arena *arena = 0) {
         (void)fread(&x, sizeof(char), 1, fd);
     }
 }
-void serialize_v3(FILE *fd, bool w, v3 &x, Arena *arena = 0) {
+void serialize_float(FILE *fd, bool w, float &x, Arena *arena = 0) {
     if (w)
-        fwrite(&x, sizeof(v3), 1, fd);
+        fwrite(&x, sizeof(float), 1, fd);
     else {
-        (void)fread(&x, sizeof(v3), 1, fd);
+        (void)fread(&x, sizeof(float), 1, fd);
+    }
+}
+void serialize_v2(FILE *fd, bool w, v2 &x, Arena *arena = 0) {
+    if (w)
+        fwrite(&x, sizeof(v2), 1, fd);
+    else {
+        (void)fread(&x, sizeof(v2), 1, fd);
     }
 }
 void serialize_bool(FILE *fd, bool w, bool &x, Arena *arena = 0) {
@@ -61,11 +61,11 @@ void serialize_bool(FILE *fd, bool w, bool &x, Arena *arena = 0) {
         x = v;
     }
 }
-void serialize_v2(FILE *fd, bool w, v2 &x, Arena *arena = 0) {
+void serialize_double(FILE *fd, bool w, double &x, Arena *arena = 0) {
     if (w)
-        fwrite(&x, sizeof(v2), 1, fd);
+        fwrite(&x, sizeof(double), 1, fd);
     else {
-        (void)fread(&x, sizeof(v2), 1, fd);
+        (void)fread(&x, sizeof(double), 1, fd);
     }
 }
 void serialize_size_t(FILE *fd, bool w, size_t &x, Arena *arena = 0) {
@@ -93,6 +93,12 @@ static StructMetaData get_struct_Constants_info();
 static void imgui_edit_struct_Constants(Constants &x, const char *name,
                                         bool collapsed);
 static void serialize_Constants(FILE *fd, bool w, Constants &x, Arena *arena);
+static StructMetaData get_struct_ProfilerBlockStat_info();
+static void imgui_edit_struct_ProfilerBlockStat(ProfilerBlockStat &x,
+                                                const char *name,
+                                                bool collapsed);
+static void serialize_ProfilerBlockStat(FILE *fd, bool w, ProfilerBlockStat &x,
+                                        Arena *arena);
 static StructMetaData get_struct_SoundState_info();
 static void imgui_edit_struct_SoundState(SoundState &x, const char *name,
                                          bool collapsed);
@@ -188,6 +194,11 @@ static StructMetaData get_struct_GameInput_info();
 static void imgui_edit_struct_GameInput(GameInput &x, const char *name,
                                         bool collapsed);
 static void serialize_GameInput(FILE *fd, bool w, GameInput &x, Arena *arena);
+static StructMetaData get_struct_ProfilerBlock_info();
+static void imgui_edit_struct_ProfilerBlock(ProfilerBlock &x, const char *name,
+                                            bool collapsed);
+static void serialize_ProfilerBlock(FILE *fd, bool w, ProfilerBlock &x,
+                                    Arena *arena);
 static StructMetaData get_struct_ConstantBuffer_info();
 static void imgui_edit_struct_ConstantBuffer(ConstantBuffer &x,
                                              const char *name, bool collapsed);
@@ -311,6 +322,69 @@ static const char *get_enum_EditorOpType_str(int value) {
         return "EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE";
     }
     return "Enum_EditorOpType_Unknown";
+}
+static const char *get_enum_LogType_str(int value) {
+    switch (value) {
+    case LOG_TYPE_DEBUG:
+        return "LOG_TYPE_DEBUG";
+    case LOG_TYPE_INFO:
+        return "LOG_TYPE_INFO";
+    case LOG_TYPE_WARN:
+        return "LOG_TYPE_WARN";
+    case LOG_TYPE_ERROR:
+        return "LOG_TYPE_ERROR";
+    case LOG_TYPE_FATAL:
+        return "LOG_TYPE_FATAL";
+    }
+    return "Enum_LogType_Unknown";
+}
+static const char *get_enum_RasterizerCullMode_str(int value) {
+    switch (value) {
+    case RASTERIZER_CULL_NONE:
+        return "RASTERIZER_CULL_NONE";
+    case RASTERIZER_CULL_FRONT:
+        return "RASTERIZER_CULL_FRONT";
+    case RASTERIZER_CULL_BACK:
+        return "RASTERIZER_CULL_BACK";
+    }
+    return "Enum_RasterizerCullMode_Unknown";
+}
+static const char *get_enum_AnimationType_str(int value) {
+    switch (value) {
+    case ANIMATION_JUMP:
+        return "ANIMATION_JUMP";
+    case ANIMATION_SHOOT:
+        return "ANIMATION_SHOOT";
+    case ANIMATION_RUN:
+        return "ANIMATION_RUN";
+    case ANIMATION_FORWARD_GUN_WALK:
+        return "ANIMATION_FORWARD_GUN_WALK";
+    case ANIMATION_BACKWARD_GUN_WALK:
+        return "ANIMATION_BACKWARD_GUN_WALK";
+    case ANIMATION_GUN_IDLE:
+        return "ANIMATION_GUN_IDLE";
+    case ANIMATION_COUNT:
+        return "ANIMATION_COUNT";
+    }
+    return "Enum_AnimationType_Unknown";
+}
+static const char *get_enum_EditorMode_str(int value) {
+    switch (value) {
+    case EDITOR_MODE_GIZMO:
+        return "EDITOR_MODE_GIZMO";
+    case EDITOR_MODE_COLLISION_MESH:
+        return "EDITOR_MODE_COLLISION_MESH";
+    }
+    return "Enum_EditorMode_Unknown";
+}
+static const char *get_enum_PrimitiveType_str(int value) {
+    switch (value) {
+    case PRIMITIVE_TRIANGLES:
+        return "PRIMITIVE_TRIANGLES";
+    case PRIMITIVE_LINES:
+        return "PRIMITIVE_LINES";
+    }
+    return "Enum_PrimitiveType_Unknown";
 }
 static const char *get_enum_VertexBufferUsage_str(int value) {
     switch (value) {
@@ -473,54 +547,6 @@ static const char *get_enum_RasterizerFillMode_str(int value) {
     }
     return "Enum_RasterizerFillMode_Unknown";
 }
-static const char *get_enum_PrimitiveType_str(int value) {
-    switch (value) {
-    case PRIMITIVE_TRIANGLES:
-        return "PRIMITIVE_TRIANGLES";
-    case PRIMITIVE_LINES:
-        return "PRIMITIVE_LINES";
-    }
-    return "Enum_PrimitiveType_Unknown";
-}
-static const char *get_enum_EditorMode_str(int value) {
-    switch (value) {
-    case EDITOR_MODE_GIZMO:
-        return "EDITOR_MODE_GIZMO";
-    case EDITOR_MODE_COLLISION_MESH:
-        return "EDITOR_MODE_COLLISION_MESH";
-    }
-    return "Enum_EditorMode_Unknown";
-}
-static const char *get_enum_RasterizerCullMode_str(int value) {
-    switch (value) {
-    case RASTERIZER_CULL_NONE:
-        return "RASTERIZER_CULL_NONE";
-    case RASTERIZER_CULL_FRONT:
-        return "RASTERIZER_CULL_FRONT";
-    case RASTERIZER_CULL_BACK:
-        return "RASTERIZER_CULL_BACK";
-    }
-    return "Enum_RasterizerCullMode_Unknown";
-}
-static const char *get_enum_AnimationType_str(int value) {
-    switch (value) {
-    case ANIMATION_JUMP:
-        return "ANIMATION_JUMP";
-    case ANIMATION_SHOOT:
-        return "ANIMATION_SHOOT";
-    case ANIMATION_RUN:
-        return "ANIMATION_RUN";
-    case ANIMATION_FORWARD_GUN_WALK:
-        return "ANIMATION_FORWARD_GUN_WALK";
-    case ANIMATION_BACKWARD_GUN_WALK:
-        return "ANIMATION_BACKWARD_GUN_WALK";
-    case ANIMATION_GUN_IDLE:
-        return "ANIMATION_GUN_IDLE";
-    case ANIMATION_COUNT:
-        return "ANIMATION_COUNT";
-    }
-    return "Enum_AnimationType_Unknown";
-}
 static const char *get_enum_ConstantBufferElementType_str(int value) {
     switch (value) {
     case CONSTANT_BUFFER_ELEMENT_MAT4:
@@ -595,6 +621,18 @@ StructMetaData get_struct_Constants_info() {
     data.members[16].type_name = "int";
     return data;
 }
+StructMetaData get_struct_ProfilerBlockStat_info() {
+    StructMetaData data = {};
+    data.name = "ProfilerBlockStat";
+    data.member_count = 3;
+    data.members[0].name = "char";
+    data.members[0].type_name = "const";
+    data.members[1].name = "cycle_count";
+    data.members[1].type_name = "uint64_t";
+    data.members[2].name = "call_count";
+    data.members[2].type_name = "uint32_t";
+    return data;
+}
 StructMetaData get_struct_SoundState_info() {
     StructMetaData data = {};
     data.name = "SoundState";
@@ -622,7 +660,7 @@ StructMetaData get_struct_LoadedSound_info() {
 StructMetaData get_struct_Editor_info() {
     StructMetaData data = {};
     data.name = "Editor";
-    data.member_count = 10;
+    data.member_count = 9;
     data.members[0].name = "mode";
     data.members[0].type_name = "EditorMode";
     data.members[1].name = "ops";
@@ -631,7 +669,7 @@ StructMetaData get_struct_Editor_info() {
     data.members[2].type_name = "Array<EditorOp>";
     data.members[3].name = "gizmo";
     data.members[3].type_name = "Gizmo";
-    data.members[4].name = "edit_collision_mesh";
+    data.members[4].name = "copy_entity_mesh";
     data.members[4].type_name = "bool";
     data.members[5].name = "selected_entity";
     data.members[5].type_name = "entity_id";
@@ -641,8 +679,6 @@ StructMetaData get_struct_Editor_info() {
     data.members[7].type_name = "entity_id";
     data.members[8].name = "last_camera_p";
     data.members[8].type_name = "v3";
-    data.members[9].name = "copy_entity_mesh";
-    data.members[9].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_Gizmo_info() {
@@ -1071,6 +1107,18 @@ StructMetaData get_struct_GameInput_info() {
     data.members[3].type_name = "v2";
     return data;
 }
+StructMetaData get_struct_ProfilerBlock_info() {
+    StructMetaData data = {};
+    data.name = "ProfilerBlock";
+    data.member_count = 3;
+    data.members[0].name = "start_cycle";
+    data.members[0].type_name = "uint64_t";
+    data.members[1].name = "id";
+    data.members[1].type_name = "uint32_t";
+    data.members[2].name = "char";
+    data.members[2].type_name = "const";
+    return data;
+}
 StructMetaData get_struct_ConstantBuffer_info() {
     StructMetaData data = {};
     data.name = "ConstantBuffer";
@@ -1465,6 +1513,123 @@ static void imgui_edit_enum_EditorOpType(EditorOpType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 8);
     x = items_type[curr];
 }
+static void imgui_edit_enum_LogType(LogType &x, const char *name) {
+    const char *items[5];
+    LogType items_type[5];
+    int curr = 0;
+    items[0] = "LOG_TYPE_DEBUG";
+    items_type[0] = LOG_TYPE_DEBUG;
+    if (x == LOG_TYPE_DEBUG)
+        curr = 0;
+    items[1] = "LOG_TYPE_INFO";
+    items_type[1] = LOG_TYPE_INFO;
+    if (x == LOG_TYPE_INFO)
+        curr = 1;
+    items[2] = "LOG_TYPE_WARN";
+    items_type[2] = LOG_TYPE_WARN;
+    if (x == LOG_TYPE_WARN)
+        curr = 2;
+    items[3] = "LOG_TYPE_ERROR";
+    items_type[3] = LOG_TYPE_ERROR;
+    if (x == LOG_TYPE_ERROR)
+        curr = 3;
+    items[4] = "LOG_TYPE_FATAL";
+    items_type[4] = LOG_TYPE_FATAL;
+    if (x == LOG_TYPE_FATAL)
+        curr = 4;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 5);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
+                                               const char *name) {
+    const char *items[3];
+    RasterizerCullMode items_type[3];
+    int curr = 0;
+    items[0] = "RASTERIZER_CULL_NONE";
+    items_type[0] = RASTERIZER_CULL_NONE;
+    if (x == RASTERIZER_CULL_NONE)
+        curr = 0;
+    items[1] = "RASTERIZER_CULL_FRONT";
+    items_type[1] = RASTERIZER_CULL_FRONT;
+    if (x == RASTERIZER_CULL_FRONT)
+        curr = 1;
+    items[2] = "RASTERIZER_CULL_BACK";
+    items_type[2] = RASTERIZER_CULL_BACK;
+    if (x == RASTERIZER_CULL_BACK)
+        curr = 2;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_AnimationType(AnimationType &x, const char *name) {
+    const char *items[7];
+    AnimationType items_type[7];
+    int curr = 0;
+    items[0] = "ANIMATION_JUMP";
+    items_type[0] = ANIMATION_JUMP;
+    if (x == ANIMATION_JUMP)
+        curr = 0;
+    items[1] = "ANIMATION_SHOOT";
+    items_type[1] = ANIMATION_SHOOT;
+    if (x == ANIMATION_SHOOT)
+        curr = 1;
+    items[2] = "ANIMATION_RUN";
+    items_type[2] = ANIMATION_RUN;
+    if (x == ANIMATION_RUN)
+        curr = 2;
+    items[3] = "ANIMATION_FORWARD_GUN_WALK";
+    items_type[3] = ANIMATION_FORWARD_GUN_WALK;
+    if (x == ANIMATION_FORWARD_GUN_WALK)
+        curr = 3;
+    items[4] = "ANIMATION_BACKWARD_GUN_WALK";
+    items_type[4] = ANIMATION_BACKWARD_GUN_WALK;
+    if (x == ANIMATION_BACKWARD_GUN_WALK)
+        curr = 4;
+    items[5] = "ANIMATION_GUN_IDLE";
+    items_type[5] = ANIMATION_GUN_IDLE;
+    if (x == ANIMATION_GUN_IDLE)
+        curr = 5;
+    items[6] = "ANIMATION_COUNT";
+    items_type[6] = ANIMATION_COUNT;
+    if (x == ANIMATION_COUNT)
+        curr = 6;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 7);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_EditorMode(EditorMode &x, const char *name) {
+    const char *items[2];
+    EditorMode items_type[2];
+    int curr = 0;
+    items[0] = "EDITOR_MODE_GIZMO";
+    items_type[0] = EDITOR_MODE_GIZMO;
+    if (x == EDITOR_MODE_GIZMO)
+        curr = 0;
+    items[1] = "EDITOR_MODE_COLLISION_MESH";
+    items_type[1] = EDITOR_MODE_COLLISION_MESH;
+    if (x == EDITOR_MODE_COLLISION_MESH)
+        curr = 1;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
+    const char *items[2];
+    PrimitiveType items_type[2];
+    int curr = 0;
+    items[0] = "PRIMITIVE_TRIANGLES";
+    items_type[0] = PRIMITIVE_TRIANGLES;
+    if (x == PRIMITIVE_TRIANGLES)
+        curr = 0;
+    items[1] = "PRIMITIVE_LINES";
+    items_type[1] = PRIMITIVE_LINES;
+    if (x == PRIMITIVE_LINES)
+        curr = 1;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 2);
+    x = items_type[curr];
+}
 static void imgui_edit_enum_VertexBufferUsage(VertexBufferUsage &x,
                                               const char *name) {
     const char *items[2];
@@ -1777,95 +1942,6 @@ static void imgui_edit_enum_RasterizerFillMode(RasterizerFillMode &x,
         ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
-static void imgui_edit_enum_PrimitiveType(PrimitiveType &x, const char *name) {
-    const char *items[2];
-    PrimitiveType items_type[2];
-    int curr = 0;
-    items[0] = "PRIMITIVE_TRIANGLES";
-    items_type[0] = PRIMITIVE_TRIANGLES;
-    if (x == PRIMITIVE_TRIANGLES)
-        curr = 0;
-    items[1] = "PRIMITIVE_LINES";
-    items_type[1] = PRIMITIVE_LINES;
-    if (x == PRIMITIVE_LINES)
-        curr = 1;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 2);
-    x = items_type[curr];
-}
-static void imgui_edit_enum_EditorMode(EditorMode &x, const char *name) {
-    const char *items[2];
-    EditorMode items_type[2];
-    int curr = 0;
-    items[0] = "EDITOR_MODE_GIZMO";
-    items_type[0] = EDITOR_MODE_GIZMO;
-    if (x == EDITOR_MODE_GIZMO)
-        curr = 0;
-    items[1] = "EDITOR_MODE_COLLISION_MESH";
-    items_type[1] = EDITOR_MODE_COLLISION_MESH;
-    if (x == EDITOR_MODE_COLLISION_MESH)
-        curr = 1;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 2);
-    x = items_type[curr];
-}
-static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
-                                               const char *name) {
-    const char *items[3];
-    RasterizerCullMode items_type[3];
-    int curr = 0;
-    items[0] = "RASTERIZER_CULL_NONE";
-    items_type[0] = RASTERIZER_CULL_NONE;
-    if (x == RASTERIZER_CULL_NONE)
-        curr = 0;
-    items[1] = "RASTERIZER_CULL_FRONT";
-    items_type[1] = RASTERIZER_CULL_FRONT;
-    if (x == RASTERIZER_CULL_FRONT)
-        curr = 1;
-    items[2] = "RASTERIZER_CULL_BACK";
-    items_type[2] = RASTERIZER_CULL_BACK;
-    if (x == RASTERIZER_CULL_BACK)
-        curr = 2;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 3);
-    x = items_type[curr];
-}
-static void imgui_edit_enum_AnimationType(AnimationType &x, const char *name) {
-    const char *items[7];
-    AnimationType items_type[7];
-    int curr = 0;
-    items[0] = "ANIMATION_JUMP";
-    items_type[0] = ANIMATION_JUMP;
-    if (x == ANIMATION_JUMP)
-        curr = 0;
-    items[1] = "ANIMATION_SHOOT";
-    items_type[1] = ANIMATION_SHOOT;
-    if (x == ANIMATION_SHOOT)
-        curr = 1;
-    items[2] = "ANIMATION_RUN";
-    items_type[2] = ANIMATION_RUN;
-    if (x == ANIMATION_RUN)
-        curr = 2;
-    items[3] = "ANIMATION_FORWARD_GUN_WALK";
-    items_type[3] = ANIMATION_FORWARD_GUN_WALK;
-    if (x == ANIMATION_FORWARD_GUN_WALK)
-        curr = 3;
-    items[4] = "ANIMATION_BACKWARD_GUN_WALK";
-    items_type[4] = ANIMATION_BACKWARD_GUN_WALK;
-    if (x == ANIMATION_BACKWARD_GUN_WALK)
-        curr = 4;
-    items[5] = "ANIMATION_GUN_IDLE";
-    items_type[5] = ANIMATION_GUN_IDLE;
-    if (x == ANIMATION_GUN_IDLE)
-        curr = 5;
-    items[6] = "ANIMATION_COUNT";
-    items_type[6] = ANIMATION_COUNT;
-    if (x == ANIMATION_COUNT)
-        curr = 6;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 7);
-    x = items_type[curr];
-}
 static void
 imgui_edit_enum_ConstantBufferElementType(ConstantBufferElementType &x,
                                           const char *name) {
@@ -1922,6 +1998,8 @@ static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
 }
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
                                 Arena *arena = 0) {}
+static void serialize_ProfilerBlockStat(FILE *fd, bool w, ProfilerBlockStat &x,
+                                        Arena *arena = 0) {}
 static void serialize_SoundState(FILE *fd, bool w, SoundState &x,
                                  Arena *arena = 0) {}
 static void serialize_LoadedSound(FILE *fd, bool w, LoadedSound &x,
@@ -1931,9 +2009,9 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
     if (!collapsed || ImGui::CollapsingHeader(name)) {
         imgui_edit_enum_EditorMode(x.mode, "mode");
         {
-            bool tmp = x.edit_collision_mesh;
-            ImGui::Checkbox("edit_collision_mesh", &tmp);
-            x.edit_collision_mesh = tmp;
+            bool tmp = x.copy_entity_mesh;
+            ImGui::Checkbox("copy_entity_mesh", &tmp);
+            x.copy_entity_mesh = tmp;
         }
         ImGui::InputScalar("selected_entity", ImGuiDataType_U64,
                            &x.selected_entity);
@@ -1941,11 +2019,6 @@ static void imgui_edit_struct_Editor(Editor &x, const char *name,
         ImGui::InputScalar("copied_entity", ImGuiDataType_U64,
                            &x.copied_entity);
         ImGui::InputFloat3("last_camera_p", x.last_camera_p.e);
-        {
-            bool tmp = x.copy_entity_mesh;
-            ImGui::Checkbox("copy_entity_mesh", &tmp);
-            x.copy_entity_mesh = tmp;
-        }
     }
 }
 static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena = 0) {}
@@ -2176,6 +2249,8 @@ static void serialize_CollisionShape(FILE *fd, bool w, CollisionShape &x,
                                      Arena *arena = 0) {}
 static void serialize_GameInput(FILE *fd, bool w, GameInput &x,
                                 Arena *arena = 0) {}
+static void serialize_ProfilerBlock(FILE *fd, bool w, ProfilerBlock &x,
+                                    Arena *arena = 0) {}
 static void serialize_ConstantBuffer(FILE *fd, bool w, ConstantBuffer &x,
                                      Arena *arena = 0) {}
 static void serialize_Shader(FILE *fd, bool w, Shader &x, Arena *arena = 0) {}
