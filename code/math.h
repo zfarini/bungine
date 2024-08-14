@@ -130,7 +130,7 @@ float length(v3 a) { return sqrtf(dot(a, a)); }
 
 v3 normalize(v3 a) {
     float len = length_sq(a);
-    // TODO:
+    // TODO: cleanup
     if (len < 1e-9)
         return {};
     else

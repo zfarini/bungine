@@ -742,39 +742,41 @@ StructMetaData get_struct_Camera_info() {
 StructMetaData get_struct_World_info() {
     StructMetaData data = {};
     data.name = "World";
-    data.member_count = 16;
-    data.members[0].name = "arena";
-    data.members[0].type_name = "Arena";
-    data.members[1].name = "editor";
-    data.members[1].type_name = "Editor";
-    data.members[2].name = "entities";
-    data.members[2].type_name = "Array<Entity>";
-    data.members[3].name = "entities_id_map";
-    data.members[3].type_name = "std::unordered_map<entity_id,usize>";
-    data.members[4].name = "scene_collision_mesh";
-    data.members[4].type_name = "std::unordered_map<SceneID,int>";
-    data.members[5].name = "next_entity_id";
-    data.members[5].type_name = "entity_id";
-    data.members[6].name = "player_camera_p";
-    data.members[6].type_name = "v3";
-    data.members[7].name = "player_camera_rotation";
+    data.member_count = 17;
+    data.members[0].name = "occupied";
+    data.members[0].type_name = "std::unordered_map<uint64_t,bool>";
+    data.members[1].name = "arena";
+    data.members[1].type_name = "Arena";
+    data.members[2].name = "editor";
+    data.members[2].type_name = "Editor";
+    data.members[3].name = "entities";
+    data.members[3].type_name = "Array<Entity>";
+    data.members[4].name = "entities_id_map";
+    data.members[4].type_name = "std::unordered_map<entity_id,usize>";
+    data.members[5].name = "scene_collision_mesh";
+    data.members[5].type_name = "std::unordered_map<SceneID,int>";
+    data.members[6].name = "next_entity_id";
+    data.members[6].type_name = "entity_id";
+    data.members[7].name = "player_camera_p";
     data.members[7].type_name = "v3";
-    data.members[8].name = "player_camera_drotation";
+    data.members[8].name = "player_camera_rotation";
     data.members[8].type_name = "v3";
-    data.members[9].name = "editor_camera_p";
+    data.members[9].name = "player_camera_drotation";
     data.members[9].type_name = "v3";
-    data.members[10].name = "editor_camera_rotation";
+    data.members[10].name = "editor_camera_p";
     data.members[10].type_name = "v3";
-    data.members[11].name = "player_id";
-    data.members[11].type_name = "entity_id";
-    data.members[12].name = "moving_box";
+    data.members[11].name = "editor_camera_rotation";
+    data.members[11].type_name = "v3";
+    data.members[12].name = "player_id";
     data.members[12].type_name = "entity_id";
-    data.members[13].name = "last_game_camera";
-    data.members[13].type_name = "Camera";
-    data.members[14].name = "aim_camera_transition_t";
-    data.members[14].type_name = "float";
-    data.members[15].name = "collision_meshes";
-    data.members[15].type_name = "Array<CollisionMesh>";
+    data.members[13].name = "moving_box";
+    data.members[13].type_name = "entity_id";
+    data.members[14].name = "last_game_camera";
+    data.members[14].type_name = "Camera";
+    data.members[15].name = "aim_camera_transition_t";
+    data.members[15].type_name = "float";
+    data.members[16].name = "collision_meshes";
+    data.members[16].type_name = "Array<CollisionMesh>";
     return data;
 }
 StructMetaData get_struct_Entity_info() {
@@ -952,7 +954,7 @@ StructMetaData get_struct_VertexInputElement_info() {
 StructMetaData get_struct_Game_info() {
     StructMetaData data = {};
     data.name = "Game";
-    data.member_count = 32;
+    data.member_count = 33;
     data.members[0].name = "memory";
     data.members[0].type_name = "Arena*";
     data.members[1].name = "is_initialized";
@@ -1021,6 +1023,8 @@ StructMetaData get_struct_Game_info() {
     data.members[30].type_name = "bool";
     data.members[31].name = "master_volume";
     data.members[31].type_name = "float";
+    data.members[32].name = "play_in_editor";
+    data.members[32].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_DepthStencilState_info() {

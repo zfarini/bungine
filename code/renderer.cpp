@@ -6,7 +6,7 @@ void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 	init_render_context_dx11(rc, platform);
 #endif
 	rc.loaded_textures = make_array_max<Texture>(arena, 256);
-	rc.debug_lines = make_array_max<v3>(arena, 4 * 500000);
+	rc.debug_lines = make_array_max<v3>(arena, 4 * 5000000);
 
 	uint32_t white_color = 0xffffffff;
 	rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);

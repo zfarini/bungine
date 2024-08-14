@@ -231,6 +231,8 @@ struct Editor {
 };
 
 struct World {
+	std::unordered_map<uint64_t, bool> occupied;
+
     Arena arena;
 
     meta(ui) Editor editor;
@@ -371,6 +373,8 @@ struct Game {
     meta(ui) bool render_bones;
     meta(ui) bool frustum_culling;
     meta(ui) float master_volume;
+
+	bool play_in_editor;
 };
 
 struct Constants {

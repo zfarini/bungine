@@ -1,7 +1,22 @@
-#define SMALLEST_VELOCITY 0.01f
+#define MIN_COLLISION_DIST (2*0.0125f)
 #define SLIDE_ITERATION_COUNT 4
+//#define SLIDE_COEFF 1.2f
 #define SLIDE_COEFF 1.2f
 
+//bool solve_quadratic(float a, float b, float c, float min_t, float &t)
+//{
+//	float d = b * b - 4 * a * c;
+//
+//	if (d < 0)
+//		return false;
+//	d = sqrtf(d);
+//	float t1 = -b - d/(2*a);
+//	float t2 = -b + d/(2*a);
+//	//if (t2
+//	return true;
+//}
+
+// TODO: !! cleanup, check normalize it does stuff like give zero vector if length is small enough
 void intersect_line(v3 A, v3 B, v3 dir, CollisionInfo &info)
 {
 	v3 D = dir;
@@ -150,7 +165,7 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 	   now the problem is a ray against a ellipsoid
 	   bring the ray in the space where the ellipsoid is a sphere with radius 1 and origin at (0,0,0)
 	   then just solve the quadratic equation where length(ray_origin + t * ray_dir) = 1
-	   */
+	*/
 	v3 radius = er + tr;
 
 	mat4 m = translate(tp) * scale(radius);
@@ -201,16 +216,18 @@ CollisionInfo ellipsoid_intersect_ellipsoid(v3 targetP, v3 ep, v3 er, v3 tp, v3 
 
 CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionShape> shapes)
 {
+	//LOG_DEBUG("moving %f %f %f", delta_p.x, delta_p.y, delta_p.z);
 	CollisionInfo first_hit = {};
 
 	v3 e_radius = e.scale * e.ellipsoid_radius;
 
 	for (int itr = 0; itr < SLIDE_ITERATION_COUNT; itr++) {
-		if (length_sq(delta_p) < SMALLEST_VELOCITY*SMALLEST_VELOCITY)
-			break ;
-
 		CollisionInfo hit_info = {};
 		hit_info.t = FLT_MAX;
+		if (length(delta_p) < 1e-7) {
+		//	LOG_WARN("skipping delta_p with length %f", length(delta_p));
+			break ;
+		}
 
 		for (int i = 0; i < shapes.count; i++) {
 			CollisionInfo info;
@@ -220,6 +237,10 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 					v3 p0 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 0], 1)).xyz;
 					v3 p1 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 1], 1)).xyz;
 					v3 p2 = (shapes[i].transform * V4(shapes[i].collision_mesh.vertices[j + 2], 1)).xyz;
+					
+					v3 n = cross(p1 - p0, p2 - p0);
+					if (fabsf(dot(normalize(n), e.position - p0)) > 2 * max(e_radius.x, max(e_radius.y, e_radius.z)))
+						continue ;
 
 					info = ellipsoid_intersect_triangle(e.position + delta_p, e.position, e_radius,
 							p0, p1, p2);
@@ -242,23 +263,47 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 		if (!itr)
 			first_hit = hit_info;
 
-		// if we can move the full distance we have to check if we will be at least SMALLEST_VELOCITY away from the closest object
-		if (hit_info.t >= 1) {
-			if (hit_info.t != FLT_MAX && length_sq(delta_p * (hit_info.t - 1)) < SMALLEST_VELOCITY * SMALLEST_VELOCITY)
-				e.position += normalize(delta_p) * (length(delta_p) - (SMALLEST_VELOCITY - length(delta_p * (hit_info.t - 1))));
-			else
-				e.position += delta_p;
+		if (hit_info.t == FLT_MAX) {
+			e.position += delta_p;
 			break ;
 		}
 
-		if (length_sq(delta_p*hit_info.t) >= SMALLEST_VELOCITY*SMALLEST_VELOCITY)
-			e.position += normalize(delta_p) * (length(delta_p)*hit_info.t - SMALLEST_VELOCITY);
+		v3 far = e.position + delta_p * hit_info.t;
+		v3 fix = far - normalize(delta_p) * MIN_COLLISION_DIST;
 
+
+		float t = length(fix - e.position) / length(delta_p);
+
+		if (dot(fix - e.position, delta_p) < 0) {
+			//LOG_WARN("player too close %f %f", hit_info.t, dot(fix - e.position, delta_p));
+			//e.position = fix; // CHECK
+			t = 0;
+		}
+		
+	//	LOG_DEBUG("dist: %f\n", length(far - e.position + t *delta_p) - MIN_COLLISION_DIST);
+
+		if (t < 0)
+			t = 0;
+		if (t > 1)
+			t = 1;
+		if (t > hit_info.t)
+			t = hit_info.t;
+
+		if (t >= 1) {
+			e.position += delta_p * t;
+			break ;
+		}
+
+	//	if (length_sq(delta_p*hit_info.t) >= SMALLEST_VELOCITY*SMALLEST_VELOCITY)
+		//	e.position += normalize(delta_p) * (length(delta_p)*hit_info.t - SMALLEST_VELOCITY);
+
+		e.position += t * delta_p;
+
+		//break ;
 		v3 normal = normalize(hit_info.hit_normal);
 
-		v3 old_delta_p = delta_p;
-		delta_p *= (1 - hit_info.t);
-		delta_p = delta_p - normal*dot(normal, delta_p)*SLIDE_COEFF;
+		delta_p *= (1 - t);
+		delta_p = delta_p - normal*dot(normal, delta_p) * SLIDE_COEFF;
 	}
 
 	return first_hit;
@@ -303,29 +348,63 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 	// }
 
 	v3 old_p = e.position;
+
+#if 1
+	{
+		int itr = floorf(length(delta_p.xy) / (MIN_COLLISION_DIST));
+		v3 delta = normalize(V3(delta_p.x, delta_p.y, 0)) * MIN_COLLISION_DIST;
+		for (int i = 0; i < itr; i++) {
+			v3 p = e.position;
+			move_entity(world, e, delta, shapes);
+			if (length(e.position - p) < 1e-6)
+				break ;
+		}
+	}
+
+	//move_entity(world, e, V3(delta_p.x, delta_p.y, 0) * (length(delta_p.xy) - itr * MIN_COLLISION_DIST), shapes);
+
+#if 1
+	//LOG_DEBUG("%d %zu: %d (%f %f %f)\n", g_frame, e.id, itr + (int)floorf(fabsf(delta_p.z) / (MIN_COLLISION_DIST)), delta_p.x, delta_p.y, delta_p.z);
+
+	{
+		int itr = floorf(fabsf(delta_p.z) / (MIN_COLLISION_DIST));
+		v3 delta = normalize(V3(0, 0, delta_p.z)) * MIN_COLLISION_DIST;
+		for (int i = 0; i < itr; i++) {
+			v3 p = e.position;
+			move_entity(world, e, delta, shapes);
+			if (length(e.position - p) < 1e-6)
+				break ;
+		}
+	}
+	//move_entity(world, e, V3(0, 0, (delta_p.z < 0 ? -1 : 1) * (fabsf(delta_p.z) - itr * MIN_COLLISION_DIST)), shapes);
+#else
+	move_entity(world, e, V3(0, 0, delta_p.z), shapes);
+#endif
+
+#else
 	move_entity(world, e, V3(delta_p.x, delta_p.y, 0), shapes);
+	move_entity(world, e, V3(0, 0, delta_p.z), shapes);
 
-	int itr = 1 + roundf(fabsf(delta_p.z) / (SMALLEST_VELOCITY*3.5f));
-	for (int i = 0; i < itr; i++)
-		move_entity(world, e, V3(0, 0, delta_p.z / itr), shapes);
+#endif
 
-	if (fabsf(e.position.x - old_p.x) < 1e-7)
-		e.dp.x = 0;
-	if (fabsf(e.position.y - old_p.y) < 1e-7)
-		e.dp.y = 0;
-	if (fabsf(e.position.z - old_p.z) < 1e-7)
-		e.dp.z = 0;
+//	if (fabsf(e.position.x - old_p.x) < 1e-7)
+//		e.dp.x = 0;
+//	if (fabsf(e.position.y - old_p.y) < 1e-7)
+//		e.dp.y = 0;
+//	if (fabsf(e.position.z - old_p.z) < 1e-7)
+//		e.dp.z = 0;
 
 
 	v3 save_p = e.position;
 	// try to move down to find the ground of the entity
+	// TODO: this doesn't really work!
 	CollisionInfo collision = move_entity(world, e, V3(0, 0, -1), shapes);
 	e.position = save_p;
 
 	// TODO: this could be negative (imagine a sloped wall and I'm sliding its not necesarry that the bottom
 	//	of the ellipsoid will hit first)
 	float height_above_ground = e.position.z - collision.hit_p.z - e.scale.z*e.ellipsoid_radius.z
-		- SMALLEST_VELOCITY;
+		- MIN_COLLISION_DIST;
 	if (collision.t < 0 || collision.t == FLT_MAX)
 		height_above_ground = 10000;
 	if (height_above_ground < 0)

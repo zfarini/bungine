@@ -97,7 +97,6 @@ void update_sound(Game &game, World &world)
 {
 	if (!game.first_playing_sound)
 		return ;
-	PROFILE_FUNCTION();
 
 	SoundState &state = game.sound_state;
 

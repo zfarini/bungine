@@ -4,6 +4,7 @@
 
 #define GIZMO_MAIN_AXIS_LENGTH (0.07f * 2)
 #define GIZMO_OTHER_AXIS_LENGTH (GIZMO_MAIN_AXIS_LENGTH * 0.3f)
+#define GIZMO_TRANSLATION_SPHERE_RADIUS (0.2f)
 
 #define GIZMO_SCALE_BOX_RADIUS (GIZMO_MAIN_AXIS_LENGTH * 0.1f)
 
@@ -235,12 +236,12 @@ void editor_render_gizmo(World &world, Editor &editor, Gizmo &gizmo, Camera &cam
 		}
 		else if (gizmo.mode == GIZMO_TRANSLATION) {
 			push_line(e->position, e->position + axis_length * axis[i], color);
-			push_ellipsoid_outline(e->position + axis_length * axis[i], V3(axis_length * 0.2f), color);
+			push_ellipsoid_outline(e->position + axis_length * axis[i], V3(axis_length * GIZMO_TRANSLATION_SPHERE_RADIUS), color);
 
-			//push_box_outline(e->position + axis_length * axis[i], 
-			//		axis[0] * (i == 0 ? axis_length : other_axis_length), 
-			//		axis[1] * (i == 1 ? axis_length : other_axis_length), 
-			//		axis[2] * (i == 2 ? axis_length : other_axis_length), color);
+			//push_box_outline(e->position + 0.5f * axis_length * axis[i], 
+			//		axis[0] * 0.5f * (i == 0 ? axis_length*(1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length), 
+			//		axis[1] * 0.5f * (i == 1 ? axis_length*(1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length), 
+			//		axis[2] * 0.5f * (i == 2 ? axis_length*(1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length), color);
 		}
 		else if (gizmo.mode == GIZMO_ROTATION) {
 					push_circle(e->position, 
@@ -294,10 +295,10 @@ void editor_update_gizmo(World &world, Editor &editor, Gizmo &gizmo, Camera &cam
 				}
 			}
 			else if (gizmo.mode == GIZMO_TRANSLATION) {
-				t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position + axis_length * axis[i], 
-						axis[0] * (i == 0 ? axis_length : other_axis_length), 
-						axis[1] * (i == 1 ? axis_length : other_axis_length), 
-						axis[2] * (i == 2 ? axis_length : other_axis_length));
+				t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position + 0.5f * axis_length * axis[i], 
+						axis[0] * 0.5f * (i == 0 ? axis_length * (1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length), 
+						axis[1] * 0.5f * (i == 1 ? axis_length * (1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length), 
+						axis[2] * 0.5f * (i == 2 ? axis_length * (1+2*GIZMO_TRANSLATION_SPHERE_RADIUS) : other_axis_length));
 			}
 			else if (gizmo.mode == GIZMO_SCALE) {
 				t = ray_hit_box(camera_ray_origin, camera_ray_dir, e->position + 
@@ -342,7 +343,16 @@ void editor_update_gizmo(World &world, Editor &editor, Gizmo &gizmo, Camera &cam
 
 		v3 plane_normal;
 		//plane_normal = cross(axis[gizmo.dragging_axis], cross(axis[gizmo.dragging_axis], camera.forward));
-		plane_normal = camera.forward;
+		//plane_normal = camera.forward;
+		
+		{
+			// find the vector in the plane of camera forward and axis
+			// that try to face camera forward and be otrhogonal to the axis
+			// in other words it minimize: |dot(X, forward)| - |dot(X, axis)|
+			// the vector has to be in the plane since any vector that's not can be decomposed into 2 vectors
+			// one in the plane and the plane normal, and the plane normal will have dot product = 0 with both axis
+			plane_normal = normalize(camera.forward - dot(axis[gizmo.dragging_axis], camera.forward) * axis[gizmo.dragging_axis] );
+		}
 		if (gizmo.mode == GIZMO_ROTATION)
 			plane_normal = axis[gizmo.dragging_axis];
 
@@ -599,9 +609,11 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 	switch (editor.mode) {
 		case EDITOR_MODE_GIZMO: {
-			if (IsDown(input, BUTTON_T)) editor.gizmo.mode = GIZMO_TRANSLATION;
-			else if (IsDown(input, BUTTON_R)) editor.gizmo.mode = GIZMO_ROTATION;
-			else if (IsDown(input, BUTTON_S)) editor.gizmo.mode = GIZMO_SCALE;
+			if (IsDown(input, BUTTON_LEFT_CONTROL)) {
+				if (IsDown(input, BUTTON_T)) editor.gizmo.mode = GIZMO_TRANSLATION;
+				else if (IsDown(input, BUTTON_R)) editor.gizmo.mode = GIZMO_ROTATION;
+				else if (IsDown(input, BUTTON_S)) editor.gizmo.mode = GIZMO_SCALE;
+			}
 
 			if (IsDown(input, BUTTON_MOUSE_RIGHT)) {
 				editor_update_gizmo(world, editor, editor.gizmo, camera, camera_ray_origin, camera_ray_dir);

@@ -35,7 +35,7 @@ global RenderContext *g_rc;
 
 SceneID get_scene_id_by_name(Game &game, String name)
 {
-	for (int i = 0; i < game.scenes.count; i++) {
+for (int i = 0; i < game.scenes.count; i++) {
 		if (strings_equal(game.scenes[i].name, name))
 			return game.scenes[i].id;
 	}
@@ -379,11 +379,55 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
 		profiler_block_stats[i] = {};
+	std::unordered_map<uint64_t, bool> occupied;
 
-	// TODO: decide weither this should update before or after player
+	int itr_count = 0;
+	for (int i = 0; i < world.entities.count; i++) {
+		Entity &e = world.entities[i];
+		if (e.disable_collision || e.ellipsoid_collision_shape || !world.scene_collision_mesh.count(e.scene_id))
+			continue ;
+		
+		CollisionMesh cmesh = world.collision_meshes[world.scene_collision_mesh[e.scene_id]];
 
-	if (!game.in_editor) {
-		PROFILE_BLOCK("update game");
+		mat4 transform = get_entity_transform(world, e) * e.scene_transform;
+		for (int j = 0; j + 2 < cmesh.vertices.count; j += 3) {
+			v3 p0 = (transform * V4(cmesh.vertices[j + 0], 1)).xyz;
+			v3 p1 = (transform * V4(cmesh.vertices[j + 1], 1)).xyz;
+			v3 p2 = (transform * V4(cmesh.vertices[j + 2], 1)).xyz;
+
+			v3i c1 = get_cell(p0);
+			v3i c2 = get_cell(p1);
+			v3i c3 = get_cell(p2);
+
+			int d_u = roundf(length(p1 - p0) / ASTART_CELL_DIM);
+			int d_v = roundf(length(p2 - p0) / ASTART_CELL_DIM);
+
+			for (int u = 0; u <= d_u; u++) {
+				float U = (u * ASTART_CELL_DIM) / length(p1 - p0);
+				if (U > 1)
+					break ;
+				for (int v = 0; v <= d_v; v++) {
+						float V = (v * ASTART_CELL_DIM) / length(p2 - p0);
+						if (U + V > 1)
+							break ;
+						v3 p = p0 + (p1 - p0) * U + (p2 - p0) * V;
+						v3i cell = get_cell(p);
+
+						occupied[pack_cell(cell)] = true;
+						itr_count++;
+						//push_cube_outline(V3(get_cell(p)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
+				}
+			}
+		}
+	}
+	world.occupied = occupied;
+
+	LOG_DEBUG("occupied %zu (itr: %d)\n", occupied.size(), itr_count);
+	for (auto [x, y] : occupied) {
+		//push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.1f), V3(1, 1, 0));
+	}
+
+	if (!game.in_editor || game.play_in_editor) {
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
 	}
@@ -494,10 +538,13 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 			fclose(fd);
 		}
 
+		ImGui::Checkbox("play in editor", &game.play_in_editor);
+
 		if (get_entity(world, world.editor.copied_entity))
 			ImGui::Text("copying entity %ld", world.editor.copied_entity);
 		imgui_edit_struct_Game(game, "game");
 		imgui_edit_struct_World(world, "world");
+
 
 		ImGui::End();
 	}
@@ -507,13 +554,13 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	update_sound(game, world);
 
-	for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
-	{
-		ProfilerBlockStat &stat = profiler_block_stats[i];
-		if (!stat.name)
-			break ;
-		LOG_DEBUG("profiler block %s: (%zu cycles, %u calls)", stat.name, stat.cycle_count, stat.call_count);
-	}
+	////for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
+	//{
+	//	ProfilerBlockStat &stat = profiler_block_stats[i];
+	//	if (!stat.name)
+	//		break ;
+	//	LOG_DEBUG("profiler block %s: (%zu cycles, %u calls)", stat.name, stat.cycle_count, stat.call_count);
+	//}
 
 	game.time += dt;
 	// @HACK

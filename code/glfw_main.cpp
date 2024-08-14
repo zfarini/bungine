@@ -22,6 +22,9 @@
 #undef min
 #undef max
 
+// TODO: cleanup
+int g_frame = 0;
+
 #include "game.cpp"
 
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
@@ -179,6 +182,7 @@ int main()
 
 		glfwSwapBuffers(window);
 		frame++;
+		g_frame++;
 	}
 
 	ma_device_uninit(&sound_device);

@@ -77,74 +77,64 @@ mat4 get_entity_transform(World &world, Entity &e)
 #endif
 }
 
-void render_player(Game &game, World &world, Camera camera, Entity &e, bool shadow_map_pass)
+Animation *get_blended_animation(Arena *arena, Entity &e)
 {
-	mat4 entity_transform = get_entity_transform(world, e);
-	mat4 scene_transform = entity_transform * e.scene_transform;
-	Arena *temp = begin_temp_memory();
-	Animation *final_anim = 0;
-	Animation anim = {};	
-	// TODO: cleanup
-	if (e.id == world.player_id && e.curr_anim) {
-		usize max_nodes_count = e.curr_anim->nodes.count;
-		if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
-			max_nodes_count = e.next_anim->nodes.count;
+	if (!e.curr_anim)
+		return 0;
 
-		anim.nodes = make_array<NodeAnimation>(temp, max_nodes_count);
-		if (e.next_anim)
-			assert(e.curr_anim->nodes.count == e.next_anim->nodes.count);
+	Animation *anim = (Animation *)arena_alloc(arena, sizeof(Animation));
 
-		float blend_duration = e.next_anim ? e.next_anim->duration*0.2f : 0;
-		if (e.blend_time > blend_duration && e.next_anim) {
-			e.curr_anim = e.next_anim;
-			e.anim_time = e.blend_time;
-			e.next_anim = 0;
-		}
+	usize max_nodes_count = e.curr_anim->nodes.count;
+	if (e.next_anim && e.next_anim->nodes.count > max_nodes_count)
+		max_nodes_count = e.next_anim->nodes.count;
 
-		if (!e.next_anim) {
-			assert(e.curr_anim);
-			for (int j = 0; j < e.curr_anim->nodes.count; j++) {
-				anim.nodes[j].name = e.curr_anim->nodes[j].name;
-				anim.nodes[j].transform = get_animated_node_transform(*e.curr_anim, 
-						e.curr_anim->nodes[j], fmod(e.anim_time, e.curr_anim->duration));
-			}
-		} else {
-			float t1 = fmod(e.anim_time, e.curr_anim->duration);
-			float t2 = fmod(e.blend_time, e.next_anim->duration);
-			float t3 = (e.blend_time) / blend_duration;
+	anim->nodes = make_array<NodeAnimation>(arena, max_nodes_count);
+	if (e.next_anim)
+		assert(e.curr_anim->nodes.count == e.next_anim->nodes.count);
 
-			// t3 = powf(t3, 2);
-			for (int j = 0; j < e.curr_anim->nodes.count; j++) {
-				quat q1, q2;
-				v3 p1, s1, p2, s2;
-				assert(strings_equal(e.curr_anim->nodes[j].name, e.next_anim->nodes[j].name));
-				get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[j], t1, p1, s1, q1);
-				get_animated_node_transform(*e.next_anim, e.next_anim->nodes[j], t2, p2, s2, q2);
-
-				anim.nodes[j].name = e.curr_anim->nodes[j].name;
-				//t3 = 1;
-				v3 p = lerp(p1, p2, t3);
-				quat q = quat_lerp(q1, q2, t3);
-				v3 s = lerp(s1, s2, t3);
-
-				anim.nodes[j].transform = translate(p) * quat_to_mat(q) * scale(s);
-
-			}
-		}
-		final_anim = &anim;
+	float blend_duration = e.next_anim ? e.next_anim->duration*0.2f : 0;
+	if (e.blend_time > blend_duration && e.next_anim) {
+		e.curr_anim = e.next_anim;
+		e.anim_time = e.blend_time;
+		e.next_anim = 0;
 	}
-	else
-		assert(!final_anim);
 
-	render_scene(game, world, e.scene_id, camera, scene_transform, final_anim, 0, e.color);
+	if (!e.next_anim) {
+		assert(e.curr_anim);
+		for (int j = 0; j < e.curr_anim->nodes.count; j++) {
+			anim->nodes[j].name = e.curr_anim->nodes[j].name;
+			anim->nodes[j].transform = get_animated_node_transform(*e.curr_anim, 
+					e.curr_anim->nodes[j], fmod(e.anim_time, e.curr_anim->duration));
+		}
+	} else {
+		float t1 = fmod(e.anim_time, e.curr_anim->duration);
+		float t2 = fmod(e.blend_time, e.next_anim->duration);
+		float t3 = (e.blend_time) / blend_duration;
 
-	end_temp_memory();
+		// t3 = powf(t3, 2);
+		for (int j = 0; j < e.curr_anim->nodes.count; j++) {
+			quat q1, q2;
+			v3 p1, s1, p2, s2;
+			assert(strings_equal(e.curr_anim->nodes[j].name, e.next_anim->nodes[j].name));
+			get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[j], t1, p1, s1, q1);
+			get_animated_node_transform(*e.next_anim, e.next_anim->nodes[j], t2, p2, s2, q2);
+
+			anim->nodes[j].name = e.curr_anim->nodes[j].name;
+			//t3 = 1;
+			v3 p = lerp(p1, p2, t3);
+			quat q = quat_lerp(q1, q2, t3);
+			v3 s = lerp(s1, s2, t3);
+
+			anim->nodes[j].transform = translate(p) * quat_to_mat(q) * scale(s);
+
+		}
+	}
+	return anim;
 }
 
 void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pass = false)
 {
 	//TODO:
-
 	bind_constant_buffer(game.constant_buffer, 0);
 
 	for (usize i = 0; i < world.entities.count; i++) {
@@ -152,17 +142,16 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 		if (!e.scene_id)
 			continue ;
 
-		if (e.id == world.player_id) {
-			render_player(game, world, camera, e, shadow_map_pass);
-			continue ;
-		}
-
 		mat4 entity_transform = get_entity_transform(world, e);
 		mat4 scene_transform = entity_transform * e.scene_transform;
 
-		render_scene(game, world, e.scene_id, camera, scene_transform, 0, 0, e.color);
-	}
+		Arena *temp = begin_temp_memory();
 
+		Animation *anim = get_blended_animation(temp, e);
+		render_scene(game, world, e.scene_id, camera, scene_transform, anim, 0, e.color);
+
+		end_temp_memory();
+	}
 }
 
 void update_player(Game &game, World &world, GameInput &input, float dt)
@@ -338,8 +327,277 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	}
 }
 
+#define ASTART_CELL_DIM (0.4f)
+
+v3i get_cell(v3 p)
+{
+	v3i res;
+
+	res.x = roundf(p.x / (ASTART_CELL_DIM));
+	res.y = roundf(p.y / (ASTART_CELL_DIM));
+	res.z = roundf(p.z / (ASTART_CELL_DIM));
+	return res;
+}
+
+const int MAX_CELL_POW = 10;
+const int MAX_CELL = (1 << MAX_CELL_POW);
+
+uint64_t pack_cell(v3i c)
+{
+	assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
+	return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
+}
+v3i unpack_cell(uint64_t x)
+{
+	v3i res;
+
+	res.x = (x >> 0) & (MAX_CELL - 1);
+	res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
+	res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
+	return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
+};
+
+v3 get_closest_point_in_cell(v3i cell, v3 p)
+{
+	v3 box_min = V3(cell) * ASTART_CELL_DIM - 0.5f * V3(ASTART_CELL_DIM);
+	v3 box_max = V3(cell) * ASTART_CELL_DIM + 0.5f * V3(ASTART_CELL_DIM);
+
+	v3 result;
+	result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x : 
+			   (p.x <= box_min.x ? box_min.x : box_max.x));
+	result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y : 
+			   (p.y <= box_min.y ? box_min.y : box_max.y));
+	result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z : 
+			   (p.z <= box_min.z ? box_min.z : box_max.z));
+	return result;
+}
+
+void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
+{
+	push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
+}
+
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
+	Entity *player = get_entity(world, world.player_id);
+	if (!player)
+		return ;
+
+	for (int i = 0; i < world.entities.count; i++) {
+		Entity &e = world.entities[i];
+		if (e.type != EntityType_Enemy)
+			continue ;
+		assert(e.ellipsoid_collision_shape);
+
+		v3 targetP = player->position;
+		v3 dP = {};
+		v3 s = e.scale * e.ellipsoid_radius;
+
+		bool jump = false;
+		{
+			auto target_cell = get_cell(targetP);
+			auto start_cell = get_cell(e.position);
+
+			std::unordered_map<uint64_t, int> visited;
+
+			Arena *temp = begin_temp_memory();
+
+			Array<v3i> q = make_array<v3i>(temp, 500000);
+
+			int l = 0, r = 0;
+			q[r++] = start_cell;
+			visited[pack_cell(q[0])] = 1;
+			int itr = 0;
+
+			int best_cell = 0;
+			float best_length_sq = length_sq(e.position - targetP);
+
+			Array<int> parent = make_array<int>(temp, q.capacity);
+			parent[0] = -1;
+
+			bool found = false;
+			while (l < r && itr < 4096 && !found)
+			{
+				v3i cell = q[l++];
+
+				render_cell(cell, 0.5f);
+
+				for (int dx = -1; dx <= 1; dx++)
+				for (int dy = -1; dy <= 1; dy++)
+				for (int dz = -1; dz <= 1; dz++)
+				{
+					int z = cell.z + dz;
+
+					//if (abs(z - start_cell.z) > 2)
+					//	z = cell.z;
+					//if (abs(z - q[0].z) > 1)
+					//	z = 0;
+
+	//				z = cell.z;
+					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, z - 1))))
+						z = cell.z;
+
+					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, cell.z - 1))))
+						z = cell.z - 1;
+
+					v3i next = cell + V3i(dx, dy, 0);
+
+					next.z = z;
+
+					if (!visited[pack_cell(next)] &&
+							!world.occupied.count(pack_cell(next)))
+					//   || !world.occupied.count(pack_cell(next + V3i(0, 0, +1))))
+						//&& !world.occupied.count(pack_cell(next + V3i(0, 0, +1)))) 
+					{
+						v3 best = get_closest_point_in_cell(next, targetP);
+						if (next.x == target_cell.x && next.y == target_cell.y && next.z == target_cell.z) {
+							found = true;
+						}
+						if (length_sq(targetP - best) < best_length_sq) {
+							best_length_sq = length_sq(targetP - best);
+							best_cell = r;
+						}
+						assert(r < q.capacity);
+						parent[r] = l - 1;
+						visited[pack_cell(next)] = 1;
+						q[r++] = next;
+					}
+				}
+				itr++;
+			}
+			if (best_cell) {
+
+				Array<v3i> path = make_array_max<v3i>(temp, 128);
+
+				int curr = best_cell;
+				while (parent[parent[curr]] != -1) {
+					path.push(q[curr]);
+					curr = parent[curr];
+				}
+				path.push(q[curr]);
+				path.push(q[parent[curr]]);
+
+
+				for (int i = 0; i < path.count; i++) {
+					v3 color = V3(0, 1, 0);
+					if (world.occupied.count(pack_cell(path[i])))
+						color = V3(1, 0, 0);
+					render_cell(path[i], 0.9f, V3(0, 1, 0));
+				}
+
+				//render_cell(q[0], 0.9f, V3(0, 1, 0));
+				dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
+					;
+				if (path[path.count - 2].z > path[path.count - 1].z)
+					jump = true;
+				//dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
+
+			}
+			else {
+				dP = get_closest_point_in_cell(q[0], targetP) - e.position;
+				LOG_DEBUG("best cell is current!");
+			}
+			dP.z = 0;
+			end_temp_memory();
+		}
+		//v3 dP = (player->position - e.position);
+		//dP.z = 0;
+		dP = normalize(dP);
+
+		e.run = true;
+
+		v2 D = normalize(dP.xy);
+		quat target_rot = rotate_around_axis_quat(WORLD_UP, atan2(D.y, D.x));
+		e.rotation = quat_lerp(e.rotation, target_rot, dt * 10);
+
+		//if (length(dP) < 2) {
+		//	dP = {};
+		//	e.moved = false;
+		//	e.run = false;
+		//}
+		//else
+			e.moved = true;
+
+		v3 a = dP;
+
+		a += -40 * WORLD_UP;
+		a.xy = a.xy * 40;
+
+		bool jumped = false;
+		if (jump && e.can_jump)
+		{
+			a += 200 * WORLD_UP;
+			a.xy = {};
+			jumped = true;
+			LOG_DEBUG("JUMPED!!");
+		}
+		
+
+		a -= e.dp * 3;
+		{
+			v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
+			move_entity(world, e, delta_p);
+			e.dp += a * dt;
+		}
+		{
+			// TODO: !!! jump animation already has translation up?
+			// TODO: there is a problem if we hold space
+			Animation *next_anim = 0;
+			e.anim_time += dt;
+			e.blend_time += dt;
+
+			if (!e.curr_anim)
+				e.curr_anim = &game.animations[ANIMATION_GUN_IDLE];
+
+
+			if (!e.on_ground) {
+				if (e.curr_anim != &game.animations[ANIMATION_JUMP]
+						&& e.next_anim != &game.animations[ANIMATION_JUMP]
+						&& !jumped)
+					next_anim = e.next_anim;
+				else
+					next_anim = &game.animations[ANIMATION_JUMP];
+			}
+			else  if (e.shooting)
+				next_anim = &game.animations[ANIMATION_SHOOT];
+			else if (e.run)
+				next_anim = &game.animations[ANIMATION_RUN];
+			else if (e.moved)
+				next_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
+			else 
+				next_anim = &game.animations[ANIMATION_GUN_IDLE];
+#if 1
+			if (!e.curr_anim)
+				e.curr_anim = next_anim;
+			else if (!next_anim)
+				;
+			else if (!e.next_anim) {
+				if (e.curr_anim != next_anim) {
+					e.next_anim = next_anim;
+					e.blend_time = 0;
+				}
+			}
+			else if (next_anim == e.next_anim)
+				;
+			else if (next_anim != e.curr_anim) {
+				// e.curr_anim = e.next_anim;
+				// e.next_anim = next_anim;
+				// e.anim_time = e.blend_time;
+				// e.blend_time = 0;
+			}
+			else {
+				e.next_anim = 0;
+				e.blend_time = 0;
+			}
+#else
+
+			if (next_anim != player.curr_anim) {
+				player.anim_time = 0;
+				player.curr_anim = next_anim;
+			}
+#endif
+		}
+	}
 }	
 
 Camera update_camera(Game &game, World &world, GameInput &input, float dt)
