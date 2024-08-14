@@ -85,6 +85,7 @@ struct Entity {
 
     float last_gun_time;
 	float last_jump_z;
+	bool should_jump;
 };
 
 enum AnimationType {
@@ -400,7 +401,7 @@ struct Constants {
     int show_normals;
 };
 
-#define ASTART_CELL_DIM (0.5f)
+#define ASTART_CELL_DIM (0.8f)
 
 v3i get_cell(v3 p)
 {
@@ -412,7 +413,7 @@ v3i get_cell(v3 p)
 	return res;
 }
 
-const int MAX_CELL_POW = 10;
+const int MAX_CELL_POW = 15;
 const int MAX_CELL = (1 << MAX_CELL_POW);
 
 uint64_t pack_cell(v3i c)
@@ -456,6 +457,7 @@ struct State
 	// -1 => can't jump unless i'm on the ground
 	// 0 
 	int jump;
+	int fscore;
 	//bool operator<(State& rhs) const 
 	//{
 	//   return pack_cell(p) < pack_cell(rhs.p);
@@ -463,6 +465,12 @@ struct State
 	bool operator==(const State &rhs) const
 	{
 		return p.x == rhs.p.x && p.y == rhs.p.y && p.z == rhs.p.z && jump == rhs.jump;
+	}
+	bool operator<(const State &rhs) const
+	{
+		if (fscore == rhs.fscore)
+			return pack_cell(p) < pack_cell(rhs.p);
+		return fscore < rhs.fscore;
 	}
 };
 

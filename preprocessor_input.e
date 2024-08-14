@@ -2107,6 +2107,7 @@ struct Entity {
 
     float last_gun_time;
  float last_jump_z;
+ bool should_jump;
 };
 
 enum AnimationType {
@@ -2428,13 +2429,13 @@ v3i get_cell(v3 p)
 {
  v3i res;
 
- res.x = roundf(p.x / ((0.5f)));
- res.y = roundf(p.y / ((0.5f)));
- res.z = roundf(p.z / ((0.5f)));
+ res.x = roundf(p.x / ((0.8f)));
+ res.y = roundf(p.y / ((0.8f)));
+ res.z = roundf(p.z / ((0.8f)));
  return res;
 }
 
-const int MAX_CELL_POW = 10;
+const int MAX_CELL_POW = 15;
 const int MAX_CELL = (1 << MAX_CELL_POW);
 
 uint64_t pack_cell(v3i c)
@@ -2454,8 +2455,8 @@ v3i unpack_cell(uint64_t x)
 
 v3 get_closest_point_in_cell(v3i cell, v3 p)
 {
- v3 box_min = V3(cell) * (0.5f) - 0.5f * V3((0.5f));
- v3 box_max = V3(cell) * (0.5f) + 0.5f * V3((0.5f));
+ v3 box_min = V3(cell) * (0.8f) - 0.5f * V3((0.8f));
+ v3 box_max = V3(cell) * (0.8f) + 0.5f * V3((0.8f));
 
  v3 result;
  result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x :
@@ -2469,7 +2470,7 @@ v3 get_closest_point_in_cell(v3i cell, v3 p)
 
 void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
 {
- push_cube_outline(V3(x) * (0.5f), V3((0.5f)*0.5f * s), color);
+ push_cube_outline(V3(x) * (0.8f), V3((0.8f)*0.5f * s), color);
 }
 
 struct State
@@ -2478,6 +2479,7 @@ struct State
 
 
  int jump;
+ int fscore;
 
 
 
@@ -2485,6 +2487,12 @@ struct State
  bool operator==(const State &rhs) const
  {
   return p.x == rhs.p.x && p.y == rhs.p.y && p.z == rhs.p.z && jump == rhs.jump;
+ }
+ bool operator<(const State &rhs) const
+ {
+  if (fscore == rhs.fscore)
+   return pack_cell(p) < pack_cell(rhs.p);
+  return fscore < rhs.fscore;
  }
 };
 
@@ -4335,8 +4343,12 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
   {
    auto target_cell = get_cell(targetP);
    auto start_cell = get_cell(e.position);
-# 504 "code/world.cpp"
-   int MAX_JUMP_CELL_COUNT = 4;
+# 465 "code/world.cpp"
+   auto cell_dist = [&](v3i a, v3i b) -> int {
+    return roundf(10.f * sqrtf((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
+   };
+
+   int MAX_JUMP_CELL_COUNT = 5;
 
    State istate;
    istate.p = start_cell;
@@ -4346,15 +4358,16 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
     if (e.can_jump)
      istate.jump = 0;
     else {
-     istate.jump = roundf((e.position.z - e.last_jump_z) / (0.5f));
+     istate.jump = roundf((e.position.z - e.last_jump_z) / (0.8f));
     }
     if (istate.jump < 0)
      istate.jump = 0;
    }
    LOG_DEBUG("istate jump: %d", istate.jump);
 
-   auto get_state_childs = [&](State &state, State *childs, int &count)
+   auto get_state_childs = [&](State state, State *childs, int &count)
    {
+
     bool on_ground = world.occupied.count(pack_cell(state.p + V3i(0, 0, -1))) != 0;
 
     if (on_ground)
@@ -4365,6 +4378,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
      for (int dx = -1; dx <= 1; dx++)
      for (int dy = -1; dy <= 1; dy++) {
       State s = state;
+
       s.p = s.p + V3i(dx, dy, -1);
       childs[count++] = s;
      }
@@ -4372,14 +4386,15 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
     }
 
 
+
     if (!on_ground) {
-     for (int dx = -1; dx <= 1; dx++)
-     for (int dy = -1; dy <= 1; dy++) {
-      State s = state;
-      s.p = s.p + V3i(dx, dy, -1);
-      s.jump = -1;
-      childs[count++] = s;
-     }
+    for (int dx = -1; dx <= 1; dx++)
+    for (int dy = -1; dy <= 1; dy++) {
+     State s = state;
+     s.p = s.p + V3i(dx, dy, -1);
+     s.jump = -1;
+     childs[count++] = s;
+    }
     }
     if (state.jump < MAX_JUMP_CELL_COUNT) {
      for (int dx = -1; dx <= 1; dx++)
@@ -4400,34 +4415,49 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
       s.jump = 0;
      childs[count++] = s;
     }
+# 546 "code/world.cpp"
    };
 
    std::unordered_map<State, int, StateHasher> visited;
 
    Arena *temp = begin_temp_memory();
 
-   auto q = make_array<State>(temp, 500000);
-   auto parent = make_array<int>(temp, q.capacity);
-
 
    int itr = 0;
-   int best_cell = 0;
    float best_length_sq = length_sq(e.position - targetP);
 
-   int l = 0, r = 0;
 
-   q[r++] = istate;
-   visited[q[0]] = 1;
-   parent[0] = -1;
+   std::unordered_map<State, int, StateHasher> gScore, fScore;
 
-   while (l < r && itr < 8*8192)
+   std::unordered_map<State, State, StateHasher> parent;
+   State best_cell = istate;
+
+   gScore[istate] = 0;
+   fScore[istate] = cell_dist(istate.p, target_cell);
+   istate.fscore = fScore[istate];
+   best_length_sq = istate.fscore;
+
+   std::set<State> set;
+   set.insert(istate);
+   visited[istate] = true;
+
+
+   bool on_ground = world.occupied.count(pack_cell(istate.p + V3i(0, 0, -1))) != 0;
+   LOG_DEBUG("PLAYER %d %d %d", target_cell.x, target_cell.y, target_cell.z);
+
+   while (!set.empty() && itr < 2*8192)
    {
-    auto &state = q[l++];
+    auto state = *set.begin();
 
-    if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
-      state.p.z == target_cell.z)
-     break ;
+    set.erase(set.begin());
 
+
+
+
+
+
+
+    render_cell(state.p, 0.2);
 
 
     State childs[36];
@@ -4435,36 +4465,46 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
     get_state_childs(state, childs, child_count);
     for (int i = 0; i < child_count; i++) {
-     if (!visited[childs[i]] &&
-       !world.occupied.count(pack_cell(childs[i].p))) {
-      visited[childs[i]] = true;
-      parent[r] = l - 1;
-      q[r] = childs[i];
-      v3 p = get_closest_point_in_cell(childs[i].p, targetP);
-      if (length_sq(p - targetP) < best_length_sq) {
-       best_length_sq = length_sq(p - targetP);
-       best_cell = r;
+     if (!world.occupied.count(pack_cell(childs[i].p))) {
+      if (childs[i].p.x == target_cell.x && childs[i].p.y == target_cell.y
+        && childs[i].p.z == target_cell.z)
+       LOG_DEBUG("FOUND BEST 2 !!!");
+
+      int tentative_gScore = gScore[state] + cell_dist(childs[i].p, state.p);
+      if (!gScore.count(childs[i]) || tentative_gScore < gScore[childs[i]]) {
+       parent[childs[i]] = state;
+       gScore[childs[i]] = tentative_gScore;
+       childs[i].fscore = fScore[childs[i]];
+
+       fScore[childs[i]] = tentative_gScore + cell_dist(childs[i].p, target_cell);
+       childs[i].fscore = fScore[childs[i]];
+       if (!set.count(childs[i]))
+        set.insert(childs[i]);
+
       }
-      r++;
+      if (cell_dist(childs[i].p, target_cell) < best_length_sq) {
+       best_length_sq = cell_dist(childs[i].p, target_cell);
+       best_cell = childs[i];
+      }
      }
     }
 
     itr++;
    }
+   LOG_DEBUG("ITR = %d", itr);
 
-   if (best_cell) {
+   if (parent.count(best_cell)) {
 
-    Array<v3i> path = make_array_max<v3i>(temp, 128);
+    Array<v3i> path = make_array_max<v3i>(temp, 1024);
 
-    int curr = best_cell;
-    while (parent[parent[curr]] != -1) {
-     path.push(q[curr].p);
-     curr = parent[curr];
+    State s = best_cell;
+
+    while (1) {
+     path.push(s.p);
+     if (!parent.count(s))
+      break ;
+     s = parent[s];
     }
-    path.push(q[curr].p);
-    path.push(q[parent[curr]].p);
-
-
     for (int i = 0; i < path.count; i++) {
      v3 color = V3(0, 1, 0);
      if (world.occupied.count(pack_cell(path[i])))
@@ -4475,16 +4515,16 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 
 
+    LOG_DEBUG("PATH LENGTH: %zu", path.count);
     if (path[path.count - 2].z > start_cell.z)
      jump = true;
-    dP = V3(path[path.count - 2]) * (0.5f) - V3(path[path.count - 1]) * (0.5f);
-
+    dP = V3(path[path.count - 2]) * (0.8f) - V3(path[path.count - 1]) * (0.8f);
    }
    else {
-    dP = get_closest_point_in_cell(q[0].p, targetP) - e.position;
+    dP = get_closest_point_in_cell(start_cell, targetP) - e.position;
     LOG_DEBUG("best cell is current!");
    }
-# 681 "code/world.cpp"
+# 683 "code/world.cpp"
    end_temp_memory();
   }
 
@@ -4507,8 +4547,9 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
   v3 a = dP;
 
-  a += -40 * V3(0, 0, 1);
-  a.xy = a.xy * 40;
+  a += -(30) * V3(0, 0, 1);
+  a.xy = a.xy * 45;
+
 
   bool jumped = false;
   if (jump && e.can_jump)
@@ -4521,16 +4562,22 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
     e.last_jump_z = e.position.z;
 
    e.pressing_jump = true;
+   e.should_jump = false;
   }
   else
    e.pressing_jump = false;
 
 
+
   a -= e.dp * 3;
   {
    v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
+   v3 old_p = e.position;
    move_entity(world, e, delta_p);
+   if (length(e.position - old_p) < 0.1f * length(delta_p))
+    e.should_jump = true;
    e.dp += a * dt;
+
   }
   {
 
@@ -4697,7 +4744,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     world.player_camera_p += (15 + 40) * dt * (target_camera_p - world.player_camera_p);
 
    world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
-# 906 "code/world.cpp"
+# 915 "code/world.cpp"
   }
  }
 
@@ -4750,7 +4797,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 
  camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
-# 973 "code/world.cpp"
+# 982 "code/world.cpp"
  return camera;
 }
 # 108 "code/game.cpp" 2
@@ -5698,15 +5745,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    v3i c2 = get_cell(p1);
    v3i c3 = get_cell(p2);
 
-   int d_u = roundf(length(p1 - p0) / (0.5f));
-   int d_v = roundf(length(p2 - p0) / (0.5f));
+   int d_u = roundf(length(p1 - p0) / (0.8f));
+   int d_v = roundf(length(p2 - p0) / (0.8f));
 
    for (int u = 0; u <= d_u; u++) {
-    float U = (u * (0.5f)) / length(p1 - p0);
+    float U = (u * (0.8f)) / length(p1 - p0);
     if (U > 1)
      break ;
     for (int v = 0; v <= d_v; v++) {
-      float V = (v * (0.5f)) / length(p2 - p0);
+      float V = (v * (0.8f)) / length(p2 - p0);
       if (U + V > 1)
        break ;
       v3 p = p0 + (p1 - p0) * U + (p2 - p0) * V;
@@ -5795,7 +5842,7 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  begin_render_pass(game.debug_lines_render_pass);
  {
 
-  clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+
   update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
     g_rc->debug_lines.data);
   mat4 mvp = game_camera.projection * game_camera.view;

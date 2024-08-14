@@ -424,7 +424,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	LOG_DEBUG("occupied %zu (itr: %d)\n", occupied.size(), itr_count);
 	for (auto [x, y] : occupied) {
-		//push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.1f), V3(1, 1, 0));
+	//	push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.3f), V3(1, 1, 0));
 	}
 
 	if (!game.in_editor || game.play_in_editor) {
@@ -496,7 +496,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	begin_render_pass(game.debug_lines_render_pass);
 	{
 		// TODO:!!!
-		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		//clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 				g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;

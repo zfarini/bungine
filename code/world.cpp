@@ -441,44 +441,6 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				LOG_DEBUG("best cell is current!");
 			}
 #else
-			//function A_Star(start, goal, h)
-    			//// The set of discovered nodes that may need to be (re-)expanded.
-    			//// Initially, only the start node is known.
-    			//// This is usually implemented as a min-heap or priority queue rather than a hash-set.
-    			//openSet := {start}
-
-    			//// For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from the start
-    			//// to n currently known.
-    			//cameFrom := an empty map
-
-    			//// For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
-    			//gScore := map with default value of Infinity
-    			//gScore[start] := 0
-
-    			//// For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
-    			//// how cheap a path could be from start to finish if it goes through n.
-    			//fScore := map with default value of Infinity
-    			//fScore[start] := h(start)
-
-    			//while openSet is not empty
-    			//    // This operation can occur in O(Log(N)) time if openSet is a min-heap or a priority queue
-    			//    current := the node in openSet having the lowest fScore[] value
-    			//    if current = goal
-    			//        return reconstruct_path(cameFrom, current)
-
-    			//    openSet.Remove(current)
-    			//    for each neighbor of current
-    			//        // d(current,neighbor) is the weight of the edge from current to neighbor
-    			//        // tentative_gScore is the distance from start to the neighbor through current
-    			//        tentative_gScore := gScore[current] + d(current, neighbor)
-    			//        if tentative_gScore < gScore[neighbor]
-    			//            // This path to neighbor is better than any previous one. Record it!
-    			//            cameFrom[neighbor] := current
-    			//            gScore[neighbor] := tentative_gScore
-    			//            fScore[neighbor] := tentative_gScore + h(neighbor)
-    			//            if neighbor not in openSet
-    			//                openSet.add(neighbor)
-			
 			/*
 				MAX_JUMP_CELL_COUNT
 				START_JUMP_HEIGHT
@@ -493,7 +455,6 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 					if (state.jumps >= 0 && state.jump < )
 						childs.push(state.pos + v3(0, 0, 1))
 			*/
-			//auto cell_dist = [&](v3i a, v3i b) {return (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z) ;};
 
 			//int start_jump_height = roundf(e.height_above_ground / ASTART_CELL_DIM);
 			//LOG_DEBUG("START JUMP HEIGHT: %d", start_jump_height);
@@ -501,7 +462,11 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 #endif
 
-			int MAX_JUMP_CELL_COUNT = 4;
+			auto cell_dist = [&](v3i a, v3i b) -> int {
+				return roundf(10.f * sqrtf((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
+			};
+
+			int MAX_JUMP_CELL_COUNT = 5;
 
 			State istate;
 			istate.p = start_cell;
@@ -518,8 +483,9 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			}
 			LOG_DEBUG("istate jump: %d", istate.jump);
 
-			auto get_state_childs = [&](State &state, State *childs, int &count)
+			auto get_state_childs = [&](State state, State *childs, int &count)
 			{
+#if 1
 				bool on_ground = world.occupied.count(pack_cell(state.p + V3i(0, 0, -1))) != 0;
 
 				if (on_ground)
@@ -530,6 +496,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 					for (int dx = -1; dx <= 1; dx++)
 					for (int dy = -1; dy <= 1; dy++) {
 						State s = state;
+
 						s.p = s.p + V3i(dx, dy, -1);
 						childs[count++] = s;
 					}
@@ -537,14 +504,15 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				}
 
 				// TODO: maybe allow this even if we are on the ground?
+				
 				if (!on_ground) {
-					for (int dx = -1; dx <= 1; dx++)
-					for (int dy = -1; dy <= 1; dy++) {
-						State s = state;
-						s.p = s.p + V3i(dx, dy, -1);
-						s.jump = -1;
-						childs[count++] = s;
-					}
+				for (int dx = -1; dx <= 1; dx++)
+				for (int dy = -1; dy <= 1; dy++) {
+					State s = state;
+					s.p = s.p + V3i(dx, dy, -1);
+					s.jump = -1;
+					childs[count++] = s;
+				}
 				}
 				if (state.jump < MAX_JUMP_CELL_COUNT) {
 					for (int dx = -1; dx <= 1; dx++)
@@ -565,34 +533,58 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 						s.jump = 0;
 					childs[count++] = s;
 				}
+#endif
+				//count = 0;
+				//for (int dx = -1; dx <= 1; dx++)
+				//for (int dy = -1; dy <= 1; dy++) {
+				//	if (!dx && !dy)
+				//		continue ;
+				//	State s = state;
+				//	s.p = s.p + V3i(dx, dy, 0);
+				//	childs[count++] = s;
+				//}
 			};
 
 			std::unordered_map<State, int, StateHasher> visited;
 
 			Arena *temp = begin_temp_memory();
 
-			auto q = make_array<State>(temp, 500000);
-			auto parent = make_array<int>(temp, q.capacity);
-
 
 			int itr = 0;
-			int best_cell = 0;
 			float best_length_sq = length_sq(e.position - targetP);
 
-			int l = 0, r = 0;
 
-			q[r++] = istate;
-			visited[q[0]] = 1;
-			parent[0] = -1;
+			std::unordered_map<State, int, StateHasher> gScore, fScore;
 
-			while (l < r && itr < 8*8192)
+			std::unordered_map<State, State, StateHasher> parent;
+			State best_cell = istate;
+
+			gScore[istate] = 0;
+			fScore[istate] = cell_dist(istate.p, target_cell);
+			istate.fscore = fScore[istate];
+			best_length_sq = istate.fscore;
+
+			std::set<State> set;
+			set.insert(istate);
+			visited[istate] = true;
+
+
+			bool on_ground = world.occupied.count(pack_cell(istate.p + V3i(0, 0, -1))) != 0;
+			LOG_DEBUG("PLAYER %d %d %d", target_cell.x, target_cell.y, target_cell.z);
+
+			while (!set.empty() && itr < 2*8192)
 			{
-				auto &state = q[l++];
+				auto state = *set.begin();
 
-				if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
-						state.p.z == target_cell.z)
-					break ;
-				//render_cell(state.p, 0.2);
+				set.erase(set.begin());
+
+				//if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
+				//		state.p.z == target_cell.z) {
+				//	LOG_DEBUG("FOUND BEST!");
+				//	break ;
+				//}
+				//LOG_DEBUG("%d %d %d %d", state.p.x, state.p.y, state.p.z, state.fscore);
+				render_cell(state.p, 0.2);
 
 #if 1
 				State childs[36];
@@ -600,36 +592,46 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 				get_state_childs(state, childs, child_count);
 				for (int i = 0; i < child_count; i++) {
-					if (!visited[childs[i]] &&
-							!world.occupied.count(pack_cell(childs[i].p))) {
-						visited[childs[i]] = true;
-						parent[r] = l - 1;
-						q[r] = childs[i];
-						v3 p = get_closest_point_in_cell(childs[i].p, targetP);
-						if (length_sq(p - targetP) < best_length_sq) {
-							best_length_sq = length_sq(p - targetP);
-							best_cell = r;
+					if (!world.occupied.count(pack_cell(childs[i].p))) {
+						if (childs[i].p.x == target_cell.x && childs[i].p.y == target_cell.y
+								&& childs[i].p.z == target_cell.z)
+							LOG_DEBUG("FOUND BEST 2 !!!");
+	//					v3 p = get_closest_point_in_cell(childs[i].p, t
+						int tentative_gScore = gScore[state] + cell_dist(childs[i].p, state.p);//+1
+						if (!gScore.count(childs[i]) || tentative_gScore < gScore[childs[i]]) {
+							parent[childs[i]] = state;
+							gScore[childs[i]] = tentative_gScore;
+							childs[i].fscore = fScore[childs[i]];
+
+							fScore[childs[i]] = tentative_gScore + cell_dist(childs[i].p, target_cell);
+							childs[i].fscore = fScore[childs[i]];
+							if (!set.count(childs[i]))
+								set.insert(childs[i]);
+
 						}
-						r++;
+						if (cell_dist(childs[i].p, target_cell) < best_length_sq) {
+							best_length_sq = cell_dist(childs[i].p, target_cell);
+							best_cell = childs[i];
+						}
 					}
 				}
 #endif
 				itr++;
 			}
+			LOG_DEBUG("ITR = %d", itr);
 #if 1
-			if (best_cell) {
+			if (parent.count(best_cell)) {
 
-				Array<v3i> path = make_array_max<v3i>(temp, 128);
+				Array<v3i> path = make_array_max<v3i>(temp, 1024);
 
-				int curr = best_cell;
-				while (parent[parent[curr]] != -1) {
-					path.push(q[curr].p);
-					curr = parent[curr];
+				State s = best_cell;
+
+				while (1) {
+					path.push(s.p);
+					if (!parent.count(s))
+						break ;
+					s = parent[s];
 				}
-				path.push(q[curr].p);
-				path.push(q[parent[curr]].p);
-
-
 				for (int i = 0; i < path.count; i++) {
 					v3 color = V3(0, 1, 0);
 					if (world.occupied.count(pack_cell(path[i])))
@@ -640,13 +642,13 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				//render_cell(q[0], 0.9f, V3(0, 1, 0));
 				//dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
 				//	;
+				LOG_DEBUG("PATH LENGTH: %zu", path.count);
 				if (path[path.count - 2].z > start_cell.z)
 					jump = true;
 				dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
-
 			}
 			else {
-				dP = get_closest_point_in_cell(q[0].p, targetP) - e.position;
+				dP = get_closest_point_in_cell(start_cell, targetP) - e.position;
 				LOG_DEBUG("best cell is current!");
 			}
 #endif
@@ -700,8 +702,9 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 		v3 a = dP;
 
-		a += -40 * WORLD_UP;
-		a.xy = a.xy * 40;
+		a += -(30) * WORLD_UP;
+		a.xy = a.xy * 45;
+
 
 		bool jumped = false;
 		if (jump && e.can_jump)
@@ -714,16 +717,22 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				e.last_jump_z = e.position.z;
 
 			e.pressing_jump = true;
+			e.should_jump = false;
 		}
 		else
 			e.pressing_jump = false;
+
 		
 
 		a -= e.dp * 3;
 		{
 			v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
+			v3 old_p = e.position;
 			move_entity(world, e, delta_p);
+			if (length(e.position - old_p) < 0.1f * length(delta_p))
+				e.should_jump = true;
 			e.dp += a * dt;
+
 		}
 		{
 			// TODO: !!! jump animation already has translation up?

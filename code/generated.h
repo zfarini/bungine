@@ -594,13 +594,15 @@ StructMetaData get_struct_StateHasher_info() {
 StructMetaData get_struct_State_info() {
     StructMetaData data = {};
     data.name = "State";
-    data.member_count = 3;
+    data.member_count = 4;
     data.members[0].name = "p";
     data.members[0].type_name = "v3i";
     data.members[1].name = "jump";
     data.members[1].type_name = "int";
-    data.members[2].name = "operator";
-    data.members[2].type_name = "bool";
+    data.members[2].name = "fscore";
+    data.members[2].type_name = "int";
+    data.members[3].name = "operator";
+    data.members[3].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_Constants_info() {
@@ -810,7 +812,7 @@ StructMetaData get_struct_World_info() {
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 32;
+    data.member_count = 33;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -875,6 +877,8 @@ StructMetaData get_struct_Entity_info() {
     data.members[30].type_name = "float";
     data.members[31].name = "last_jump_z";
     data.members[31].type_name = "float";
+    data.members[32].name = "should_jump";
+    data.members[32].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_CollisionMesh_info() {
