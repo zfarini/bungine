@@ -2106,6 +2106,7 @@ struct Entity {
     int last_move;
 
     float last_gun_time;
+ float last_jump_z;
 };
 
 enum AnimationType {
@@ -2419,6 +2420,80 @@ struct Constants {
     int skinned;
     int has_normal_map;
     int show_normals;
+};
+
+
+
+v3i get_cell(v3 p)
+{
+ v3i res;
+
+ res.x = roundf(p.x / ((0.5f)));
+ res.y = roundf(p.y / ((0.5f)));
+ res.z = roundf(p.z / ((0.5f)));
+ return res;
+}
+
+const int MAX_CELL_POW = 10;
+const int MAX_CELL = (1 << MAX_CELL_POW);
+
+uint64_t pack_cell(v3i c)
+{
+ assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
+ return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
+}
+v3i unpack_cell(uint64_t x)
+{
+ v3i res;
+
+ res.x = (x >> 0) & (MAX_CELL - 1);
+ res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
+ res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
+ return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
+};
+
+v3 get_closest_point_in_cell(v3i cell, v3 p)
+{
+ v3 box_min = V3(cell) * (0.5f) - 0.5f * V3((0.5f));
+ v3 box_max = V3(cell) * (0.5f) + 0.5f * V3((0.5f));
+
+ v3 result;
+ result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x :
+      (p.x <= box_min.x ? box_min.x : box_max.x));
+ result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y :
+      (p.y <= box_min.y ? box_min.y : box_max.y));
+ result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z :
+      (p.z <= box_min.z ? box_min.z : box_max.z));
+ return result;
+}
+
+void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
+{
+ push_cube_outline(V3(x) * (0.5f), V3((0.5f)*0.5f * s), color);
+}
+
+struct State
+{
+ v3i p;
+
+
+ int jump;
+
+
+
+
+ bool operator==(const State &rhs) const
+ {
+  return p.x == rhs.p.x && p.y == rhs.p.y && p.z == rhs.p.z && jump == rhs.jump;
+ }
+};
+
+struct StateHasher
+{
+  std::size_t operator()(const State& k) const
+  {
+   return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
+  }
 };
 # 34 "code/game.cpp" 2
 # 1 "code/scene.cpp" 1
@@ -4240,54 +4315,6 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 
 
 
-v3i get_cell(v3 p)
-{
- v3i res;
-
- res.x = roundf(p.x / ((0.4f)));
- res.y = roundf(p.y / ((0.4f)));
- res.z = roundf(p.z / ((0.4f)));
- return res;
-}
-
-const int MAX_CELL_POW = 10;
-const int MAX_CELL = (1 << MAX_CELL_POW);
-
-uint64_t pack_cell(v3i c)
-{
- assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
- return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
-}
-v3i unpack_cell(uint64_t x)
-{
- v3i res;
-
- res.x = (x >> 0) & (MAX_CELL - 1);
- res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
- res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
- return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
-};
-
-v3 get_closest_point_in_cell(v3i cell, v3 p)
-{
- v3 box_min = V3(cell) * (0.4f) - 0.5f * V3((0.4f));
- v3 box_max = V3(cell) * (0.4f) + 0.5f * V3((0.4f));
-
- v3 result;
- result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x :
-      (p.x <= box_min.x ? box_min.x : box_max.x));
- result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y :
-      (p.y <= box_min.y ? box_min.y : box_max.y));
- result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z :
-      (p.z <= box_min.z ? box_min.z : box_max.z));
- return result;
-}
-
-void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
-{
- push_cube_outline(V3(x) * (0.4f), V3((0.4f)*0.5f * s), color);
-}
-
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
  Entity *player = get_entity(world, world.player_id);
@@ -4308,85 +4335,134 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
   {
    auto target_cell = get_cell(targetP);
    auto start_cell = get_cell(e.position);
+# 504 "code/world.cpp"
+   int MAX_JUMP_CELL_COUNT = 4;
 
-   std::unordered_map<uint64_t, int> visited;
+   State istate;
+   istate.p = start_cell;
+   if (!e.can_jump && e.dp.z < 0)
+    istate.jump = -1;
+   else {
+    if (e.can_jump)
+     istate.jump = 0;
+    else {
+     istate.jump = roundf((e.position.z - e.last_jump_z) / (0.5f));
+    }
+    if (istate.jump < 0)
+     istate.jump = 0;
+   }
+   LOG_DEBUG("istate jump: %d", istate.jump);
+
+   auto get_state_childs = [&](State &state, State *childs, int &count)
+   {
+    bool on_ground = world.occupied.count(pack_cell(state.p + V3i(0, 0, -1))) != 0;
+
+    if (on_ground)
+     state.jump = 0;
+    count = 0;
+
+    if (state.jump == -1) {
+     for (int dx = -1; dx <= 1; dx++)
+     for (int dy = -1; dy <= 1; dy++) {
+      State s = state;
+      s.p = s.p + V3i(dx, dy, -1);
+      childs[count++] = s;
+     }
+     return ;
+    }
+
+
+    if (!on_ground) {
+     for (int dx = -1; dx <= 1; dx++)
+     for (int dy = -1; dy <= 1; dy++) {
+      State s = state;
+      s.p = s.p + V3i(dx, dy, -1);
+      s.jump = -1;
+      childs[count++] = s;
+     }
+    }
+    if (state.jump < MAX_JUMP_CELL_COUNT) {
+     for (int dx = -1; dx <= 1; dx++)
+     for (int dy = -1; dy <= 1; dy++) {
+      State s = state;
+      s.p = s.p + V3i(dx, dy, +1);
+      s.jump++;
+      childs[count++] = s;
+     }
+    }
+    for (int dx = -1; dx <= 1; dx++)
+    for (int dy = -1; dy <= 1; dy++) {
+     State s = state;
+     s.p = s.p + V3i(dx, dy, 0);
+     if (!on_ground)
+      s.jump = -1;
+     else
+      s.jump = 0;
+     childs[count++] = s;
+    }
+   };
+
+   std::unordered_map<State, int, StateHasher> visited;
 
    Arena *temp = begin_temp_memory();
 
-   Array<v3i> q = make_array<v3i>(temp, 500000);
+   auto q = make_array<State>(temp, 500000);
+   auto parent = make_array<int>(temp, q.capacity);
 
-   int l = 0, r = 0;
-   q[r++] = start_cell;
-   visited[pack_cell(q[0])] = 1;
+
    int itr = 0;
-
    int best_cell = 0;
    float best_length_sq = length_sq(e.position - targetP);
 
-   Array<int> parent = make_array<int>(temp, q.capacity);
+   int l = 0, r = 0;
+
+   q[r++] = istate;
+   visited[q[0]] = 1;
    parent[0] = -1;
 
-   bool found = false;
-   while (l < r && itr < 4096 && !found)
+   while (l < r && itr < 8*8192)
    {
-    v3i cell = q[l++];
+    auto &state = q[l++];
 
-    render_cell(cell, 0.5f);
-
-    for (int dx = -1; dx <= 1; dx++)
-    for (int dy = -1; dy <= 1; dy++)
-    for (int dz = -1; dz <= 1; dz++)
-    {
-     int z = cell.z + dz;
+    if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
+      state.p.z == target_cell.z)
+     break ;
 
 
 
+    State childs[36];
+    int child_count;
 
-
-
-
-     if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, z - 1))))
-      z = cell.z;
-
-     if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, cell.z - 1))))
-      z = cell.z - 1;
-
-     v3i next = cell + V3i(dx, dy, 0);
-
-     next.z = z;
-
-     if (!visited[pack_cell(next)] &&
-       !world.occupied.count(pack_cell(next)))
-
-
-     {
-      v3 best = get_closest_point_in_cell(next, targetP);
-      if (next.x == target_cell.x && next.y == target_cell.y && next.z == target_cell.z) {
-       found = true;
-      }
-      if (length_sq(targetP - best) < best_length_sq) {
-       best_length_sq = length_sq(targetP - best);
+    get_state_childs(state, childs, child_count);
+    for (int i = 0; i < child_count; i++) {
+     if (!visited[childs[i]] &&
+       !world.occupied.count(pack_cell(childs[i].p))) {
+      visited[childs[i]] = true;
+      parent[r] = l - 1;
+      q[r] = childs[i];
+      v3 p = get_closest_point_in_cell(childs[i].p, targetP);
+      if (length_sq(p - targetP) < best_length_sq) {
+       best_length_sq = length_sq(p - targetP);
        best_cell = r;
       }
-      assert(r < q.capacity);
-      parent[r] = l - 1;
-      visited[pack_cell(next)] = 1;
-      q[r++] = next;
+      r++;
      }
     }
+
     itr++;
    }
+
    if (best_cell) {
 
     Array<v3i> path = make_array_max<v3i>(temp, 128);
 
     int curr = best_cell;
     while (parent[parent[curr]] != -1) {
-     path.push(q[curr]);
+     path.push(q[curr].p);
      curr = parent[curr];
     }
-    path.push(q[curr]);
-    path.push(q[parent[curr]]);
+    path.push(q[curr].p);
+    path.push(q[parent[curr]].p);
 
 
     for (int i = 0; i < path.count; i++) {
@@ -4397,18 +4473,18 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
     }
 
 
-    dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
-     ;
-    if (path[path.count - 2].z > path[path.count - 1].z)
-     jump = true;
 
+
+    if (path[path.count - 2].z > start_cell.z)
+     jump = true;
+    dP = V3(path[path.count - 2]) * (0.5f) - V3(path[path.count - 1]) * (0.5f);
 
    }
    else {
-    dP = get_closest_point_in_cell(q[0], targetP) - e.position;
+    dP = get_closest_point_in_cell(q[0].p, targetP) - e.position;
     LOG_DEBUG("best cell is current!");
    }
-   dP.z = 0;
+# 681 "code/world.cpp"
    end_temp_memory();
   }
 
@@ -4441,7 +4517,13 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
    a.xy = {};
    jumped = true;
    LOG_DEBUG("JUMPED!!");
+   if (!e.pressing_jump)
+    e.last_jump_z = e.position.z;
+
+   e.pressing_jump = true;
   }
+  else
+   e.pressing_jump = false;
 
 
   a -= e.dp * 3;
@@ -4615,7 +4697,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
     world.player_camera_p += (15 + 40) * dt * (target_camera_p - world.player_camera_p);
 
    world.aim_camera_transition_t = min(transition_time, dt + world.aim_camera_transition_t);
-# 720 "code/world.cpp"
+# 906 "code/world.cpp"
   }
  }
 
@@ -4668,7 +4750,7 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 
 
  camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
-# 787 "code/world.cpp"
+# 973 "code/world.cpp"
  return camera;
 }
 # 108 "code/game.cpp" 2
@@ -5616,15 +5698,15 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
    v3i c2 = get_cell(p1);
    v3i c3 = get_cell(p2);
 
-   int d_u = roundf(length(p1 - p0) / (0.4f));
-   int d_v = roundf(length(p2 - p0) / (0.4f));
+   int d_u = roundf(length(p1 - p0) / (0.5f));
+   int d_v = roundf(length(p2 - p0) / (0.5f));
 
    for (int u = 0; u <= d_u; u++) {
-    float U = (u * (0.4f)) / length(p1 - p0);
+    float U = (u * (0.5f)) / length(p1 - p0);
     if (U > 1)
      break ;
     for (int v = 0; v <= d_v; v++) {
-      float V = (v * (0.4f)) / length(p2 - p0);
+      float V = (v * (0.5f)) / length(p2 - p0);
       if (U + V > 1)
        break ;
       v3 p = p0 + (p1 - p0) * U + (p2 - p0) * V;

@@ -327,55 +327,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	}
 }
 
-#define ASTART_CELL_DIM (0.4f)
 
-v3i get_cell(v3 p)
-{
-	v3i res;
-
-	res.x = roundf(p.x / (ASTART_CELL_DIM));
-	res.y = roundf(p.y / (ASTART_CELL_DIM));
-	res.z = roundf(p.z / (ASTART_CELL_DIM));
-	return res;
-}
-
-const int MAX_CELL_POW = 10;
-const int MAX_CELL = (1 << MAX_CELL_POW);
-
-uint64_t pack_cell(v3i c)
-{
-	assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
-	return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
-}
-v3i unpack_cell(uint64_t x)
-{
-	v3i res;
-
-	res.x = (x >> 0) & (MAX_CELL - 1);
-	res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
-	res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
-	return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
-};
-
-v3 get_closest_point_in_cell(v3i cell, v3 p)
-{
-	v3 box_min = V3(cell) * ASTART_CELL_DIM - 0.5f * V3(ASTART_CELL_DIM);
-	v3 box_max = V3(cell) * ASTART_CELL_DIM + 0.5f * V3(ASTART_CELL_DIM);
-
-	v3 result;
-	result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x : 
-			   (p.x <= box_min.x ? box_min.x : box_max.x));
-	result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y : 
-			   (p.y <= box_min.y ? box_min.y : box_max.y));
-	result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z : 
-			   (p.z <= box_min.z ? box_min.z : box_max.z));
-	return result;
-}
-
-void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
-{
-	push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
-}
 
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
@@ -398,6 +350,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			auto target_cell = get_cell(targetP);
 			auto start_cell = get_cell(e.position);
 
+#if 0
 			std::unordered_map<uint64_t, int> visited;
 
 			Arena *temp = begin_temp_memory();
@@ -415,44 +368,22 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			Array<int> parent = make_array<int>(temp, q.capacity);
 			parent[0] = -1;
 
+
+
 			bool found = false;
 			while (l < r && itr < 4096 && !found)
 			{
 				v3i cell = q[l++];
 
-				render_cell(cell, 0.5f);
+			//	render_cell(cell, 0.2f);
 
-				for (int dx = -1; dx <= 1; dx++)
-				for (int dy = -1; dy <= 1; dy++)
-				for (int dz = -1; dz <= 1; dz++)
-				{
-					int z = cell.z + dz;
-
-					//if (abs(z - start_cell.z) > 2)
-					//	z = cell.z;
-					//if (abs(z - q[0].z) > 1)
-					//	z = 0;
-
-	//				z = cell.z;
-					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, z - 1))))
-						z = cell.z;
-
-					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, cell.z - 1))))
-						z = cell.z - 1;
-
-					v3i next = cell + V3i(dx, dy, 0);
-
-					next.z = z;
-
+				auto try_cell = [&](v3i next) {
 					if (!visited[pack_cell(next)] &&
 							!world.occupied.count(pack_cell(next)))
-					//   || !world.occupied.count(pack_cell(next + V3i(0, 0, +1))))
-						//&& !world.occupied.count(pack_cell(next + V3i(0, 0, +1)))) 
 					{
 						v3 best = get_closest_point_in_cell(next, targetP);
-						if (next.x == target_cell.x && next.y == target_cell.y && next.z == target_cell.z) {
+						if (next.x == target_cell.x && next.y == target_cell.y && next.z == target_cell.z)
 							found = true;
-						}
 						if (length_sq(targetP - best) < best_length_sq) {
 							best_length_sq = length_sq(targetP - best);
 							best_cell = r;
@@ -462,6 +393,18 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 						visited[pack_cell(next)] = 1;
 						q[r++] = next;
 					}
+				};
+
+				for (int dx = -1; dx <= 1; dx++)
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, cell.z - 1)))) {
+						try_cell(cell + V3i(dx, dy, -1));
+						continue ;
+					}
+
+					try_cell(cell + V3i(dx, dy, 0));
+					try_cell(cell + V3i(dx, dy, +1));
 				}
 				itr++;
 			}
@@ -488,7 +431,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				//render_cell(q[0], 0.9f, V3(0, 1, 0));
 				dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
 					;
-				if (path[path.count - 2].z > path[path.count - 1].z)
+				if (path[path.count - 2].z > start_cell.z)
 					jump = true;
 				//dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
 
@@ -497,7 +440,244 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				dP = get_closest_point_in_cell(q[0], targetP) - e.position;
 				LOG_DEBUG("best cell is current!");
 			}
+#else
+			//function A_Star(start, goal, h)
+    			//// The set of discovered nodes that may need to be (re-)expanded.
+    			//// Initially, only the start node is known.
+    			//// This is usually implemented as a min-heap or priority queue rather than a hash-set.
+    			//openSet := {start}
+
+    			//// For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from the start
+    			//// to n currently known.
+    			//cameFrom := an empty map
+
+    			//// For node n, gScore[n] is the cost of the cheapest path from start to n currently known.
+    			//gScore := map with default value of Infinity
+    			//gScore[start] := 0
+
+    			//// For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
+    			//// how cheap a path could be from start to finish if it goes through n.
+    			//fScore := map with default value of Infinity
+    			//fScore[start] := h(start)
+
+    			//while openSet is not empty
+    			//    // This operation can occur in O(Log(N)) time if openSet is a min-heap or a priority queue
+    			//    current := the node in openSet having the lowest fScore[] value
+    			//    if current = goal
+    			//        return reconstruct_path(cameFrom, current)
+
+    			//    openSet.Remove(current)
+    			//    for each neighbor of current
+    			//        // d(current,neighbor) is the weight of the edge from current to neighbor
+    			//        // tentative_gScore is the distance from start to the neighbor through current
+    			//        tentative_gScore := gScore[current] + d(current, neighbor)
+    			//        if tentative_gScore < gScore[neighbor]
+    			//            // This path to neighbor is better than any previous one. Record it!
+    			//            cameFrom[neighbor] := current
+    			//            gScore[neighbor] := tentative_gScore
+    			//            fScore[neighbor] := tentative_gScore + h(neighbor)
+    			//            if neighbor not in openSet
+    			//                openSet.add(neighbor)
+			
+			/*
+				MAX_JUMP_CELL_COUNT
+				START_JUMP_HEIGHT
+				START_JUMP_IS_GOING_UP
+
+				start_cell = {center_p, GOING_UP ? START_JUMP_HEIGHT : -1
+					or 0 if we are on the ground}
+			
+				get_children: (state):
+					if (state.jump == MAX_HEIGHT)
+						return anything with z - 1 then substract the jump counter
+					if (state.jumps >= 0 && state.jump < )
+						childs.push(state.pos + v3(0, 0, 1))
+			*/
+			//auto cell_dist = [&](v3i a, v3i b) {return (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z) ;};
+
+			//int start_jump_height = roundf(e.height_above_ground / ASTART_CELL_DIM);
+			//LOG_DEBUG("START JUMP HEIGHT: %d", start_jump_height);
+			//bool is_going_down = !e.can_jump && e.dp.z < 0;
+
+#endif
+
+			int MAX_JUMP_CELL_COUNT = 4;
+
+			State istate;
+			istate.p = start_cell;
+			if (!e.can_jump && e.dp.z < 0)
+				istate.jump = -1;
+			else {
+				if (e.can_jump)
+					istate.jump = 0;
+				else {
+					istate.jump = roundf((e.position.z - e.last_jump_z) / ASTART_CELL_DIM);
+				}
+				if (istate.jump < 0)
+					istate.jump = 0;
+			}
+			LOG_DEBUG("istate jump: %d", istate.jump);
+
+			auto get_state_childs = [&](State &state, State *childs, int &count)
+			{
+				bool on_ground = world.occupied.count(pack_cell(state.p + V3i(0, 0, -1))) != 0;
+
+				if (on_ground)
+					state.jump = 0;
+				count = 0;
+
+				if (state.jump == -1) {
+					for (int dx = -1; dx <= 1; dx++)
+					for (int dy = -1; dy <= 1; dy++) {
+						State s = state;
+						s.p = s.p + V3i(dx, dy, -1);
+						childs[count++] = s;
+					}
+					return ;
+				}
+
+				// TODO: maybe allow this even if we are on the ground?
+				if (!on_ground) {
+					for (int dx = -1; dx <= 1; dx++)
+					for (int dy = -1; dy <= 1; dy++) {
+						State s = state;
+						s.p = s.p + V3i(dx, dy, -1);
+						s.jump = -1;
+						childs[count++] = s;
+					}
+				}
+				if (state.jump < MAX_JUMP_CELL_COUNT) {
+					for (int dx = -1; dx <= 1; dx++)
+					for (int dy = -1; dy <= 1; dy++) {
+						State s = state;
+						s.p = s.p + V3i(dx, dy, +1);
+						s.jump++;
+						childs[count++] = s;
+					}
+				}
+				for (int dx = -1; dx <= 1; dx++)
+				for (int dy = -1; dy <= 1; dy++) {
+					State s = state;
+					s.p = s.p + V3i(dx, dy, 0);
+					if (!on_ground)
+						s.jump = -1;
+					else
+						s.jump = 0;
+					childs[count++] = s;
+				}
+			};
+
+			std::unordered_map<State, int, StateHasher> visited;
+
+			Arena *temp = begin_temp_memory();
+
+			auto q = make_array<State>(temp, 500000);
+			auto parent = make_array<int>(temp, q.capacity);
+
+
+			int itr = 0;
+			int best_cell = 0;
+			float best_length_sq = length_sq(e.position - targetP);
+
+			int l = 0, r = 0;
+
+			q[r++] = istate;
+			visited[q[0]] = 1;
+			parent[0] = -1;
+
+			while (l < r && itr < 8*8192)
+			{
+				auto &state = q[l++];
+
+				if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
+						state.p.z == target_cell.z)
+					break ;
+				//render_cell(state.p, 0.2);
+
+#if 1
+				State childs[36];
+				int child_count;
+
+				get_state_childs(state, childs, child_count);
+				for (int i = 0; i < child_count; i++) {
+					if (!visited[childs[i]] &&
+							!world.occupied.count(pack_cell(childs[i].p))) {
+						visited[childs[i]] = true;
+						parent[r] = l - 1;
+						q[r] = childs[i];
+						v3 p = get_closest_point_in_cell(childs[i].p, targetP);
+						if (length_sq(p - targetP) < best_length_sq) {
+							best_length_sq = length_sq(p - targetP);
+							best_cell = r;
+						}
+						r++;
+					}
+				}
+#endif
+				itr++;
+			}
+#if 1
+			if (best_cell) {
+
+				Array<v3i> path = make_array_max<v3i>(temp, 128);
+
+				int curr = best_cell;
+				while (parent[parent[curr]] != -1) {
+					path.push(q[curr].p);
+					curr = parent[curr];
+				}
+				path.push(q[curr].p);
+				path.push(q[parent[curr]].p);
+
+
+				for (int i = 0; i < path.count; i++) {
+					v3 color = V3(0, 1, 0);
+					if (world.occupied.count(pack_cell(path[i])))
+						color = V3(1, 0, 0);
+					render_cell(path[i], 0.9f, V3(0, 1, 0));
+				}
+
+				//render_cell(q[0], 0.9f, V3(0, 1, 0));
+				//dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
+				//	;
+				if (path[path.count - 2].z > start_cell.z)
+					jump = true;
+				dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
+
+			}
+			else {
+				dP = get_closest_point_in_cell(q[0].p, targetP) - e.position;
+				LOG_DEBUG("best cell is current!");
+			}
+#endif
+
+#if 0
+			std::set<std::pair<int, uint64_t>> set;
+			set.insert({cell_dist(start_cell, target_cell), pack_cell(start_cell)});
+
+			std::unordered_map<uint64_t, uint64_t> parent;
+
+			v3i best_cell = start_cell;
+
+			int itr = 0;
+			while (!set.empty() && itr < 1024) {
+				v3i curr = unpack_cell(set.begin()->second);
+				if (curr.x == target_cell.x && curr.y == target_cell.y && curr.z == target_cell.z)
+					break ;
+				set.erase(set.begin());
+
+
+				for (int dx = -1; dx <= 1; dx++)
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					v3i next = curr + V3i(dx, dy, 0);
+				}
+				itr++;
+			}
 			dP.z = 0;
+#else
+
+#endif
 			end_temp_memory();
 		}
 		//v3 dP = (player->position - e.position);
@@ -530,7 +710,13 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			a.xy = {};
 			jumped = true;
 			LOG_DEBUG("JUMPED!!");
+			if (!e.pressing_jump)
+				e.last_jump_z = e.position.z;
+
+			e.pressing_jump = true;
 		}
+		else
+			e.pressing_jump = false;
 		
 
 		a -= e.dp * 3;

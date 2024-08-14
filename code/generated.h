@@ -89,6 +89,14 @@ void serialize_int(FILE *fd, bool w, int &x, Arena *arena = 0) {
         (void)fread(&x, sizeof(int), 1, fd);
     }
 }
+static StructMetaData get_struct_StateHasher_info();
+static void imgui_edit_struct_StateHasher(StateHasher &x, const char *name,
+                                          bool collapsed);
+static void serialize_StateHasher(FILE *fd, bool w, StateHasher &x,
+                                  Arena *arena);
+static StructMetaData get_struct_State_info();
+static void imgui_edit_struct_State(State &x, const char *name, bool collapsed);
+static void serialize_State(FILE *fd, bool w, State &x, Arena *arena);
 static StructMetaData get_struct_Constants_info();
 static void imgui_edit_struct_Constants(Constants &x, const char *name,
                                         bool collapsed);
@@ -575,6 +583,26 @@ static const char *get_enum_CameraType_str(int value) {
     }
     return "Enum_CameraType_Unknown";
 }
+StructMetaData get_struct_StateHasher_info() {
+    StructMetaData data = {};
+    data.name = "StateHasher";
+    data.member_count = 1;
+    data.members[0].name = "operator";
+    data.members[0].type_name = "std::size_t";
+    return data;
+}
+StructMetaData get_struct_State_info() {
+    StructMetaData data = {};
+    data.name = "State";
+    data.member_count = 3;
+    data.members[0].name = "p";
+    data.members[0].type_name = "v3i";
+    data.members[1].name = "jump";
+    data.members[1].type_name = "int";
+    data.members[2].name = "operator";
+    data.members[2].type_name = "bool";
+    return data;
+}
 StructMetaData get_struct_Constants_info() {
     StructMetaData data = {};
     data.name = "Constants";
@@ -782,7 +810,7 @@ StructMetaData get_struct_World_info() {
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 31;
+    data.member_count = 32;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -845,6 +873,8 @@ StructMetaData get_struct_Entity_info() {
     data.members[29].type_name = "int";
     data.members[30].name = "last_gun_time";
     data.members[30].type_name = "float";
+    data.members[31].name = "last_jump_z";
+    data.members[31].type_name = "float";
     return data;
 }
 StructMetaData get_struct_CollisionMesh_info() {
@@ -2000,6 +2030,9 @@ static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 2);
     x = items_type[curr];
 }
+static void serialize_StateHasher(FILE *fd, bool w, StateHasher &x,
+                                  Arena *arena = 0) {}
+static void serialize_State(FILE *fd, bool w, State &x, Arena *arena = 0) {}
 static void serialize_Constants(FILE *fd, bool w, Constants &x,
                                 Arena *arena = 0) {}
 static void serialize_ProfilerBlockStat(FILE *fd, bool w, ProfilerBlockStat &x,

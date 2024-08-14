@@ -10,6 +10,8 @@
 #include <glad.c>
 // TODO: replace this
 #include <unordered_map>
+#include <unordered_set>
+#include <set>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>

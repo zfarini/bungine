@@ -84,6 +84,7 @@ struct Entity {
     int last_move;
 
     float last_gun_time;
+	float last_jump_z;
 };
 
 enum AnimationType {
@@ -398,3 +399,78 @@ struct Constants {
     int has_normal_map;
     int show_normals;
 };
+
+#define ASTART_CELL_DIM (0.5f)
+
+v3i get_cell(v3 p)
+{
+	v3i res;
+
+	res.x = roundf(p.x / (ASTART_CELL_DIM));
+	res.y = roundf(p.y / (ASTART_CELL_DIM));
+	res.z = roundf(p.z / (ASTART_CELL_DIM));
+	return res;
+}
+
+const int MAX_CELL_POW = 10;
+const int MAX_CELL = (1 << MAX_CELL_POW);
+
+uint64_t pack_cell(v3i c)
+{
+	assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
+	return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
+}
+v3i unpack_cell(uint64_t x)
+{
+	v3i res;
+
+	res.x = (x >> 0) & (MAX_CELL - 1);
+	res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
+	res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
+	return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
+};
+
+v3 get_closest_point_in_cell(v3i cell, v3 p)
+{
+	v3 box_min = V3(cell) * ASTART_CELL_DIM - 0.5f * V3(ASTART_CELL_DIM);
+	v3 box_max = V3(cell) * ASTART_CELL_DIM + 0.5f * V3(ASTART_CELL_DIM);
+
+	v3 result;
+	result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x : 
+			   (p.x <= box_min.x ? box_min.x : box_max.x));
+	result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y : 
+			   (p.y <= box_min.y ? box_min.y : box_max.y));
+	result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z : 
+			   (p.z <= box_min.z ? box_min.z : box_max.z));
+	return result;
+}
+
+void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
+{
+	push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
+}
+
+struct State
+{
+	v3i p;
+	// -1 => can't jump unless i'm on the ground
+	// 0 
+	int jump;
+	//bool operator<(State& rhs) const 
+	//{
+	//   return pack_cell(p) < pack_cell(rhs.p);
+	//}
+	bool operator==(const State &rhs) const
+	{
+		return p.x == rhs.p.x && p.y == rhs.p.y && p.z == rhs.p.z && jump == rhs.jump;
+	}
+};
+
+struct StateHasher
+{
+  std::size_t operator()(const State& k) const
+  {
+	  return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
+  }
+};
+
