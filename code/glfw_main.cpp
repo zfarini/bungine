@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
+#include <map>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
@@ -19,11 +20,17 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+#include <inttypes.h>
+#ifdef _WIN32
+#include <windows.h>
 
+#else
+#include <sys/mman.h>
+#endif
 #undef min
 #undef max
-
+#undef near
+#undef far
 // TODO: cleanup
 int g_frame = 0;
 

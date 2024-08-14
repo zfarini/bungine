@@ -54,15 +54,15 @@ entity_id raycast_to_entities(Game &game, World &world, v3 camera_ray_origin, v3
 					continue ;
 			}
 
-			for (usize t = 0; t < mesh.indices.count; t += 3) {
-				v3 v0 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+0]], 1)).xyz;
-				v3 v1 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+1]], 1)).xyz;
-				v3 v2 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[t+2]], 1)).xyz;
+			for (usize k = 0; k < mesh.indices.count; k += 3) {
+				v3 v0 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[k+0]], 1)).xyz;
+				v3 v1 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[k+1]], 1)).xyz;
+				v3 v2 = (mesh_transform * V4(mesh.vertices[(int)mesh.indices[k+2]], 1)).xyz;
 
-				float hit_t;
-				if (ray_hit_triangle(camera_ray_origin, camera_ray_dir, v0, v1, v2, &hit_t) &&
-						hit_t < min_t) {
-					min_t = hit_t;
+				float t;
+				if (ray_hit_triangle(camera_ray_origin, camera_ray_dir, v0, v1, v2, &t) &&
+						t < min_t) {
+					min_t = t;
 					hit_id = e.id;
 					hit_triangle[0] = v0;
 					hit_triangle[1] = v1;
@@ -185,7 +185,7 @@ void undo_editor_op(Game &game, World &world, Editor &editor)
 			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
 
 			cmesh.vertices.count += 3;
-			for (int i = cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
+			for (usize i = cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
 				cmesh.vertices[i] = cmesh.vertices[i - 3];
 
 			cmesh.vertices[op.delete_collision_triangle.index + 0] = op.delete_collision_triangle.v0;
@@ -487,7 +487,7 @@ void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Edit
 		cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
 		cmesh.scene = e->scene_id;
 		world.collision_meshes.push(cmesh);
-		world.scene_collision_mesh[e->scene_id] = world.collision_meshes.count - 1;
+		world.scene_collision_mesh[e->scene_id] = (int)(world.collision_meshes.count - 1);
 	}
 
 	CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
@@ -552,10 +552,10 @@ void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Edit
 	}
 
 	push_cube_outline(hit_p, V3(dist_to_snap), V3(1, 1, 0));
-	for (int i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
+	for (usize i = (cmesh.vertices.count/3)*3; i < cmesh.vertices.count; i++)
 		push_cube_outline((to_world * V4(cmesh.vertices[i], 1)).xyz, V3(dist_to_snap), V3(1, 0, 0));
 
-	for (int i = 0; i + 2 < cmesh.vertices.count; i += 3) {
+	for (usize i = 0; i + 2 < cmesh.vertices.count; i += 3) {
 		v3 color = i == hit_triangle ? V3(1, 1, 0) : V3(1, 0, 0);
 		push_triangle_outline((to_world * V4(cmesh.vertices[i + 0], 1)).xyz,
 					(to_world * V4(cmesh.vertices[i + 1], 1)).xyz,

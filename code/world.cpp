@@ -335,8 +335,8 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 	if (!player)
 		return ;
 
-	for (int i = 0; i < world.entities.count; i++) {
-		Entity &e = world.entities[i];
+	for (int entity_i = 0; entity_i < world.entities.count; entity_i++) {
+		Entity &e = world.entities[entity_i];
 		if (e.type != EntityType_Enemy)
 			continue ;
 		assert(e.ellipsoid_collision_shape);
@@ -349,118 +349,6 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 		{
 			auto target_cell = get_cell(targetP);
 			auto start_cell = get_cell(e.position);
-
-#if 0
-			std::unordered_map<uint64_t, int> visited;
-
-			Arena *temp = begin_temp_memory();
-
-			Array<v3i> q = make_array<v3i>(temp, 500000);
-
-			int l = 0, r = 0;
-			q[r++] = start_cell;
-			visited[pack_cell(q[0])] = 1;
-			int itr = 0;
-
-			int best_cell = 0;
-			float best_length_sq = length_sq(e.position - targetP);
-
-			Array<int> parent = make_array<int>(temp, q.capacity);
-			parent[0] = -1;
-
-
-
-			bool found = false;
-			while (l < r && itr < 4096 && !found)
-			{
-				v3i cell = q[l++];
-
-			//	render_cell(cell, 0.2f);
-
-				auto try_cell = [&](v3i next) {
-					if (!visited[pack_cell(next)] &&
-							!world.occupied.count(pack_cell(next)))
-					{
-						v3 best = get_closest_point_in_cell(next, targetP);
-						if (next.x == target_cell.x && next.y == target_cell.y && next.z == target_cell.z)
-							found = true;
-						if (length_sq(targetP - best) < best_length_sq) {
-							best_length_sq = length_sq(targetP - best);
-							best_cell = r;
-						}
-						assert(r < q.capacity);
-						parent[r] = l - 1;
-						visited[pack_cell(next)] = 1;
-						q[r++] = next;
-					}
-				};
-
-				for (int dx = -1; dx <= 1; dx++)
-				for (int dy = -1; dy <= 1; dy++)
-				{
-					if (!world.occupied.count(pack_cell(V3i(cell.x + dx, cell.y + dy, cell.z - 1)))) {
-						try_cell(cell + V3i(dx, dy, -1));
-						continue ;
-					}
-
-					try_cell(cell + V3i(dx, dy, 0));
-					try_cell(cell + V3i(dx, dy, +1));
-				}
-				itr++;
-			}
-			if (best_cell) {
-
-				Array<v3i> path = make_array_max<v3i>(temp, 128);
-
-				int curr = best_cell;
-				while (parent[parent[curr]] != -1) {
-					path.push(q[curr]);
-					curr = parent[curr];
-				}
-				path.push(q[curr]);
-				path.push(q[parent[curr]]);
-
-
-				for (int i = 0; i < path.count; i++) {
-					v3 color = V3(0, 1, 0);
-					if (world.occupied.count(pack_cell(path[i])))
-						color = V3(1, 0, 0);
-					render_cell(path[i], 0.9f, V3(0, 1, 0));
-				}
-
-				//render_cell(q[0], 0.9f, V3(0, 1, 0));
-				dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
-					;
-				if (path[path.count - 2].z > start_cell.z)
-					jump = true;
-				//dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
-
-			}
-			else {
-				dP = get_closest_point_in_cell(q[0], targetP) - e.position;
-				LOG_DEBUG("best cell is current!");
-			}
-#else
-			/*
-				MAX_JUMP_CELL_COUNT
-				START_JUMP_HEIGHT
-				START_JUMP_IS_GOING_UP
-
-				start_cell = {center_p, GOING_UP ? START_JUMP_HEIGHT : -1
-					or 0 if we are on the ground}
-			
-				get_children: (state):
-					if (state.jump == MAX_HEIGHT)
-						return anything with z - 1 then substract the jump counter
-					if (state.jumps >= 0 && state.jump < )
-						childs.push(state.pos + v3(0, 0, 1))
-			*/
-
-			//int start_jump_height = roundf(e.height_above_ground / ASTART_CELL_DIM);
-			//LOG_DEBUG("START JUMP HEIGHT: %d", start_jump_height);
-			//bool is_going_down = !e.can_jump && e.dp.z < 0;
-
-#endif
 
 			auto cell_dist = [&](v3i a, v3i b) -> int {
 				return roundf(10.f * sqrtf((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
@@ -503,7 +391,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 					return ;
 				}
 
-				// TODO: maybe allow this even if we are on the ground?
+				// // TODO: maybe allow this even if we are on the ground?
 				
 				if (!on_ground) {
 				for (int dx = -1; dx <= 1; dx++)
@@ -525,6 +413,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				}
 				for (int dx = -1; dx <= 1; dx++)
 				for (int dy = -1; dy <= 1; dy++) {
+					if (!dx && !dy) continue;
 					State s = state;
 					s.p = s.p + V3i(dx, dy, 0);
 					if (!on_ground)
@@ -572,17 +461,17 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			bool on_ground = world.occupied.count(pack_cell(istate.p + V3i(0, 0, -1))) != 0;
 			LOG_DEBUG("PLAYER %d %d %d", target_cell.x, target_cell.y, target_cell.z);
 
-			while (!set.empty() && itr < 2*8192)
+			while (!set.empty() && itr < 8192)
 			{
 				auto state = *set.begin();
 
 				set.erase(set.begin());
 
-				//if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
-				//		state.p.z == target_cell.z) {
-				//	LOG_DEBUG("FOUND BEST!");
-				//	break ;
-				//}
+				if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
+						state.p.z == target_cell.z) {
+					//LOG_DEBUG("FOUND BEST!");
+					//break ;
+				}
 				//LOG_DEBUG("%d %d %d %d", state.p.x, state.p.y, state.p.z, state.fscore);
 				render_cell(state.p, 0.2);
 
@@ -593,21 +482,21 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				get_state_childs(state, childs, child_count);
 				for (int i = 0; i < child_count; i++) {
 					if (!world.occupied.count(pack_cell(childs[i].p))) {
-						if (childs[i].p.x == target_cell.x && childs[i].p.y == target_cell.y
-								&& childs[i].p.z == target_cell.z)
-							LOG_DEBUG("FOUND BEST 2 !!!");
 	//					v3 p = get_closest_point_in_cell(childs[i].p, t
 						int tentative_gScore = gScore[state] + cell_dist(childs[i].p, state.p);//+1
 						if (!gScore.count(childs[i]) || tentative_gScore < gScore[childs[i]]) {
 							parent[childs[i]] = state;
 							gScore[childs[i]] = tentative_gScore;
-							childs[i].fscore = fScore[childs[i]];
 
-							fScore[childs[i]] = tentative_gScore + cell_dist(childs[i].p, target_cell);
-							childs[i].fscore = fScore[childs[i]];
-							if (!set.count(childs[i]))
-								set.insert(childs[i]);
+							//childs[i].fscore = fScore[childs[i]];
 
+							//if (set.count(childs[i]))
+							//	set.erase(childs[i]);
+
+							//fScore[childs[i]] = tentative_gScore + cell_dist(childs[i].p, target_cell);
+							childs[i].fscore = tentative_gScore + cell_dist(childs[i].p, target_cell);
+							//if (!set.count(childs[i]))
+							set.insert(childs[i]);
 						}
 						if (cell_dist(childs[i].p, target_cell) < best_length_sq) {
 							best_length_sq = cell_dist(childs[i].p, target_cell);
@@ -624,13 +513,13 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 				Array<v3i> path = make_array_max<v3i>(temp, 1024);
 
-				State s = best_cell;
+				State curr = best_cell;
 
 				while (1) {
-					path.push(s.p);
-					if (!parent.count(s))
+					path.push(curr.p);
+					if (!parent.count(curr))
 						break ;
-					s = parent[s];
+					curr = parent[curr];
 				}
 				for (int i = 0; i < path.count; i++) {
 					v3 color = V3(0, 1, 0);

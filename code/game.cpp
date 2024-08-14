@@ -361,8 +361,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	game.memory = memory;
 
 
-	if (game.frame == 0)
-		play_sound(game, game.loaded_sounds[0], 0);
+	//if (game.frame == 0)
+	//	play_sound(game, game.loaded_sounds[0], 0);
 
 	World &world = *game.world;
 
@@ -424,7 +424,8 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	LOG_DEBUG("occupied %zu (itr: %d)\n", occupied.size(), itr_count);
 	for (auto [x, y] : occupied) {
-	//	push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.3f), V3(1, 1, 0));
+		//auto p = unpack_cell(x);
+		//push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
 	}
 
 	if (!game.in_editor || game.play_in_editor) {

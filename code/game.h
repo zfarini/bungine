@@ -321,7 +321,7 @@ struct ProfilerBlock
 };
 
 #define PROFILE_BLOCK(name) ProfilerBlock _block_##__LINE__(name, __COUNTER__);
-#define PROFILE_FUNCTION(name) ProfilerBlock _block_##__LINE__(__FUNCTION__, __COUNTER__);
+#define PROFILE_FUNCTION() ProfilerBlock _block_##__LINE__(__FUNCTION__, __COUNTER__);
 #endif
 
 struct Game {
@@ -413,7 +413,7 @@ v3i get_cell(v3 p)
 	return res;
 }
 
-const int MAX_CELL_POW = 15;
+const int MAX_CELL_POW = 10;
 const int MAX_CELL = (1 << MAX_CELL_POW);
 
 uint64_t pack_cell(v3i c)
@@ -448,7 +448,7 @@ v3 get_closest_point_in_cell(v3i cell, v3 p)
 
 void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
 {
-	push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
+	//push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
 }
 
 struct State
@@ -468,8 +468,13 @@ struct State
 	}
 	bool operator<(const State &rhs) const
 	{
-		if (fscore == rhs.fscore)
-			return pack_cell(p) < pack_cell(rhs.p);
+		if (fscore == rhs.fscore) {
+            auto p1 = pack_cell(p);
+            auto p2 = pack_cell(rhs.p);
+            if (p1 == p2)
+                return jump < rhs.jump;
+            return p1 < p2;
+        }
 		return fscore < rhs.fscore;
 	}
 };
@@ -478,7 +483,15 @@ struct StateHasher
 {
   std::size_t operator()(const State& k) const
   {
-	  return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
+        std::size_t h1 = std::hash<int>{}(k.p.x);
+        std::size_t h2 = std::hash<int>{}(k.p.y);
+        std::size_t h3 = std::hash<int>{}(k.p.z);
+        std::size_t h4 = std::hash<int>{}(k.jump);
+        
+        // Combine the hash values
+        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
+
+	  //return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
   }
 };
 
