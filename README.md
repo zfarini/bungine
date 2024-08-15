@@ -14,6 +14,15 @@
 - Collision detection with smooth sliding
 - Sound
 ## Showcase:
-[showcase1](showcase1.mp4)
-[showcase2](showcase2.mp4)
-[showcase3](showcase3.mp4)
+
+
+https://github.com/user-attachments/assets/34a1eb56-265a-4595-afc6-05110046cfb0
+
+
+
+https://github.com/user-attachments/assets/a69e2c40-f5ff-4364-b407-6113184334b2
+
+
+
+https://github.com/user-attachments/assets/e65517b3-5571-4751-be16-2a0221e911ae
+
