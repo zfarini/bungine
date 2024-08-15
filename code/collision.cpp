@@ -413,7 +413,7 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 
 	if (e.height_above_ground > 0.6)
 		e.can_jump = false;
-	e.on_ground = e.height_above_ground < 0.01f;
+	e.on_ground = e.height_above_ground < 0.1f;
 	if (e.on_ground)
 		e.can_jump = true;
 

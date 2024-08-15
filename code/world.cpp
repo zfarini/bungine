@@ -141,7 +141,8 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 		Entity &e = world.entities[i];
 		if (!e.scene_id)
 			continue ;
-
+		//if (e.type == EntityType_PointLight)
+		//	continue;
 		mat4 entity_transform = get_entity_transform(world, e);
 		mat4 scene_transform = entity_transform * e.scene_transform;
 
@@ -229,8 +230,8 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 		bool jumped = false;
 		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
 		{
-			if (!player.pressing_jump)
-				play_sound(game, game.loaded_sounds[1]);
+			//if (!player.pressing_jump)
+			//	play_sound(game, game.loaded_sounds[1]);
 			// a = a * 2;
 			a += 200 * player_up;
 			a.xy = {};
@@ -354,7 +355,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				return roundf(10.f * sqrtf((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
 			};
 
-			int MAX_JUMP_CELL_COUNT = 5;
+			int MAX_JUMP_CELL_COUNT = 4;
 
 			State istate;
 			istate.p = start_cell;
@@ -394,13 +395,18 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				// // TODO: maybe allow this even if we are on the ground?
 				
 				if (!on_ground) {
-				for (int dx = -1; dx <= 1; dx++)
-				for (int dy = -1; dy <= 1; dy++) {
+					// for (int dx = -1; dx <= 1; dx++)
+					// for (int dy = -1; dy <= 1; dy++) {
+					// 	State s = state;
+					// 	s.p = s.p + V3i(0, 0, -1);
+					// 	s.jump = -1;
+					// 	childs[count++] = s;
+						
+					// }
 					State s = state;
-					s.p = s.p + V3i(dx, dy, -1);
+					s.p = s.p + V3i(0, 0, -1);
 					s.jump = -1;
 					childs[count++] = s;
-				}
 				}
 				if (state.jump < MAX_JUMP_CELL_COUNT) {
 					for (int dx = -1; dx <= 1; dx++)
@@ -443,14 +449,14 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			float best_length_sq = length_sq(e.position - targetP);
 
 
-			std::unordered_map<State, int, StateHasher> gScore, fScore;
+			std::unordered_map<State, int, StateHasher> gScore;
 
 			std::unordered_map<State, State, StateHasher> parent;
 			State best_cell = istate;
 
 			gScore[istate] = 0;
-			fScore[istate] = cell_dist(istate.p, target_cell);
-			istate.fscore = fScore[istate];
+			//fScore[istate] = ;
+			istate.fscore = cell_dist(istate.p, target_cell);
 			best_length_sq = istate.fscore;
 
 			std::set<State> set;
@@ -460,8 +466,8 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 			bool on_ground = world.occupied.count(pack_cell(istate.p + V3i(0, 0, -1))) != 0;
 			LOG_DEBUG("PLAYER %d %d %d", target_cell.x, target_cell.y, target_cell.z);
-
-			while (!set.empty() && itr < 8192)
+			const int max_itr = 4096;
+			while (!set.empty() && itr < max_itr)
 			{
 				auto state = *set.begin();
 
@@ -472,10 +478,11 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 					//LOG_DEBUG("FOUND BEST!");
 					//break ;
 				}
-				//LOG_DEBUG("%d %d %d %d", state.p.x, state.p.y, state.p.z, state.fscore);
-				render_cell(state.p, 0.2);
+				///LOG_DEBUG("%d %d %d %d", state.p.x, state.p.y, state.p.z, state.fscore);
+				//render_cell(state.p, 0.2);
 
 #if 1
+				int state_score = gScore[state];
 				State childs[36];
 				int child_count;
 
@@ -483,19 +490,11 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				for (int i = 0; i < child_count; i++) {
 					if (!world.occupied.count(pack_cell(childs[i].p))) {
 	//					v3 p = get_closest_point_in_cell(childs[i].p, t
-						int tentative_gScore = gScore[state] + cell_dist(childs[i].p, state.p);//+1
+						int tentative_gScore = state_score + cell_dist(childs[i].p, state.p);//+1
 						if (!gScore.count(childs[i]) || tentative_gScore < gScore[childs[i]]) {
 							parent[childs[i]] = state;
 							gScore[childs[i]] = tentative_gScore;
-
-							//childs[i].fscore = fScore[childs[i]];
-
-							//if (set.count(childs[i]))
-							//	set.erase(childs[i]);
-
-							//fScore[childs[i]] = tentative_gScore + cell_dist(childs[i].p, target_cell);
 							childs[i].fscore = tentative_gScore + cell_dist(childs[i].p, target_cell);
-							//if (!set.count(childs[i]))
 							set.insert(childs[i]);
 						}
 						if (cell_dist(childs[i].p, target_cell) < best_length_sq) {
@@ -535,6 +534,9 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 				if (path[path.count - 2].z > start_cell.z)
 					jump = true;
 				dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
+			//	if (path.count > 2)
+				//	dP += 0.5f * V3(path[path.count - 3]) * ASTART_CELL_DIM - V3(path[path.count - 2]) * ASTART_CELL_DIM;
+
 			}
 			else {
 				dP = get_closest_point_in_cell(start_cell, targetP) - e.position;
@@ -542,37 +544,11 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			}
 #endif
 
-#if 0
-			std::set<std::pair<int, uint64_t>> set;
-			set.insert({cell_dist(start_cell, target_cell), pack_cell(start_cell)});
 
-			std::unordered_map<uint64_t, uint64_t> parent;
-
-			v3i best_cell = start_cell;
-
-			int itr = 0;
-			while (!set.empty() && itr < 1024) {
-				v3i curr = unpack_cell(set.begin()->second);
-				if (curr.x == target_cell.x && curr.y == target_cell.y && curr.z == target_cell.z)
-					break ;
-				set.erase(set.begin());
-
-
-				for (int dx = -1; dx <= 1; dx++)
-				for (int dy = -1; dy <= 1; dy++)
-				{
-					v3i next = curr + V3i(dx, dy, 0);
-				}
-				itr++;
-			}
-			dP.z = 0;
-#else
-
-#endif
 			end_temp_memory();
 		}
 		//v3 dP = (player->position - e.position);
-		//dP.z = 0;
+		dP.z = 0;
 		dP = normalize(dP);
 
 		e.run = true;
@@ -591,15 +567,17 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 
 		v3 a = dP;
 
-		a += -(30) * WORLD_UP;
-		a.xy = a.xy * 45;
+		a += -(40) * WORLD_UP;
+		a.xy = a.xy * 50;
 
 
 		bool jumped = false;
+		if (e.should_jump)
+			jump = 1;
 		if (jump && e.can_jump)
 		{
 			a += 200 * WORLD_UP;
-			a.xy = {};
+			a.xy = {}; // TODO: !! check this
 			jumped = true;
 			LOG_DEBUG("JUMPED!!");
 			if (!e.pressing_jump)
@@ -610,8 +588,6 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 		}
 		else
 			e.pressing_jump = false;
-
-		
 
 		a -= e.dp * 3;
 		{

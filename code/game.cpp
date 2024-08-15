@@ -357,6 +357,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.frustum_culling = true;
 
 		game.is_initialized = 1;
+		game.background_color = V3(0.392f, 0.584f, 0.929f);
 	}
 	game.memory = memory;
 
@@ -476,7 +477,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		set_viewport(0, 0, g_rc->window_width, g_rc->window_height);
 
 		bind_framebuffer(g_rc->window_framebuffer);
-		clear_framebuffer_color(g_rc->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
+		clear_framebuffer_color(g_rc->window_framebuffer, V4(game.background_color, 1));
 		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 
 		bind_texture(4, game.shadow_map.depth_texture);
@@ -497,7 +498,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	begin_render_pass(game.debug_lines_render_pass);
 	{
 		// TODO:!!!
-		//clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
 				g_rc->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;

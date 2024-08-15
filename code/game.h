@@ -377,6 +377,8 @@ struct Game {
     meta(ui) float master_volume;
 
 	bool play_in_editor;
+    meta(ui: color) v3 background_color;
+
 };
 
 struct Constants {
@@ -399,9 +401,10 @@ struct Constants {
     int skinned;
     int has_normal_map;
     int show_normals;
+
 };
 
-#define ASTART_CELL_DIM (0.8f)
+#define ASTART_CELL_DIM (0.8)
 
 v3i get_cell(v3 p)
 {
@@ -413,8 +416,8 @@ v3i get_cell(v3 p)
 	return res;
 }
 
-const int MAX_CELL_POW = 10;
-const int MAX_CELL = (1 << MAX_CELL_POW);
+const u64 MAX_CELL_POW = 10;
+const u64 MAX_CELL = (1 << MAX_CELL_POW);
 
 uint64_t pack_cell(v3i c)
 {
