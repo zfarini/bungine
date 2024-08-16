@@ -19,7 +19,7 @@ if exist *.pdb (
 )
 
 if not exist precompiled.obj (
-     cl /c %RootDir%\code\precompiled.cpp -DPLATFORM_WIN32 -DRENDERER_OPENGL -O2 -nologo -I%RootDir%\include -MD
+    cl  -Od /c %RootDir%\code\precompiled.cpp -DPLATFORM_WIN32 -DRENDERER_OPENGL  -nologo -I%RootDir%\include -MD
 )
 
 @REM cl -O2 -LD %RootDir%\code\game.cpp precompiled.obj %MSVCFlags% %LinkerFlags% /EXPORT:game_update_and_render /PDB:game_%RANDOM%.pdb
@@ -29,6 +29,6 @@ cl /std:c++17 %RootDir%\code\preprocessor.cpp /EHsc -nologo
 cl  -DDISABLE_PREPROCESSOR %MSVCFlags%  %RootDir%\code\game.cpp /P /Fipreprocessor_input.e 
 preprocessor.exe preprocessor_input.e temp_generated.h
 clang-format temp_generated.h > %RootDir%\code\generated.h
-cl -O2 %RootDir%\code\glfw_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
+cl -Od %RootDir%\code\glfw_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
 
 popd

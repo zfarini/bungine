@@ -1,5 +1,11 @@
 #pragma once
 
+#undef min
+#undef max 
+#undef swap
+#undef near
+#undef far
+
 #define function static
 #define global static
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*arr))
@@ -32,3 +38,18 @@ template <typename T> void swap(T &a, T &b) {
     a = b;
     b = tmp;
 }
+
+// TODO: cleanup
+struct memory_block {
+	void *data;
+	usize used;
+	usize size;
+	memory_block *next;
+};
+
+struct Arena
+{
+	memory_block *block;
+	usize minimum_block_size;
+	b32 thread_safe;
+};

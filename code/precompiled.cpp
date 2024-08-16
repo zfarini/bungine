@@ -1,3 +1,4 @@
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
@@ -26,33 +27,44 @@
 #define UFBX_IMPLEMENTATION
 #include <ufbx.h>
 
+// TODO: cleanup do I really have to include these here?
+#include <math.h>
+#include <float.h>
+#include <assert.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "common.h"
+#include "math.h"
+#include "platform.h"
+extern Platform platform;
+extern thread_local TempMemory g_temp_memory;
+#include "arena.h"
+
+function void *stb_arena_realloc(void *ptr, usize prevsize, usize newsize)
+{
+	void *data = arena_alloc(&g_temp_memory.arena, newsize);
+    
+	if (prevsize > newsize)
+		prevsize = newsize;
+	if (ptr)
+		memcpy(data, ptr, prevsize);
+	return data;
+}
+
+#define STBI_MALLOC(size) arena_alloc(&g_temp_memory.arena, size)
+#define STBI_FREE(ptr) (void)ptr
+#define STBI_REALLOC_SIZED(ptr, prevsize, newsize) stb_arena_realloc(ptr, prevsize, newsize)
+
+// #define STBI_MALLOC(size) arena_alloc(&platform.temp_arena, size)
+// #define STBI_FREE(ptr) (void)ptr
+// #define STBI_REALLOC_SIZED(ptr, prevsize, newsize) realloc(ptr, newsize)
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+
 #define MA_NO_MP3
 #define MA_NO_FLAC
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
-
-// #include "common.h"
-// #include "arena.h"
-
-
-// extern Arena *g_stb_image_arena;
-
-// function void *stb_arena_realloc(void *ptr, usize prevsize, usize newsize)
-// {
-// 	void *data = arena_alloc(g_stb_image_arena, newsize);
-
-// 	if (prevsize > newsize)
-// 		prevsize = newsize;
-// 	if (ptr)
-// 		memcpy(data, ptr, prevsize);
-// 	return data;
-// }
-
-// #define STBI_MALLOC(size) arena_alloc(g_stb_image_arena, size)
-// #define STBI_FREE(ptr) (void)ptr
-// #define STBI_REALLOC_SIZED(ptr, prevsize, newsize) stb_arena_realloc(ptr, prevsize, newsize)
-
-
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>

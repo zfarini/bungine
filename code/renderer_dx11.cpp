@@ -402,8 +402,7 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	platform.render_context
-->device->CreateBuffer(&desc, 0, &result.buffer);
+	platform.render_context->device->CreateBuffer(&desc, 0, &result.buffer);
 
 	return result;
 }
@@ -412,8 +411,7 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 {
 	Arena *temp = begin_temp_memory();
 
-	void *cdata = arena_alloc(temp, buffer.size);
-	memset(cdata, 0, buffer.size);
+	void *cdata = arena_alloc_zero(temp, buffer.size);
 
 	int offset = 0;
 	int data_offset = 0;
@@ -445,11 +443,9 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 	}
 
 	D3D11_MAPPED_SUBRESOURCE buffer_mapped;
-	platform.render_context
-->context->Map(buffer.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
+	platform.render_context->context->Map(buffer.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
 	memcpy(buffer_mapped.pData, cdata, buffer.size);
-	platform.render_context
-->context->Unmap(buffer.buffer, 0);
+	platform.render_context->context->Unmap(buffer.buffer, 0);
 
 	end_temp_memory();
 }

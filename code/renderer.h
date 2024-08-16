@@ -1,5 +1,7 @@
 #pragma once
 
+typedef usize TextureID;
+ 
 enum TextureState {
     TEXTURE_STATE_UNLOADED,
     TEXTURE_STATE_LOADING,
@@ -10,15 +12,22 @@ struct Texture {
 #ifdef RENDERER_DX11
     ID3D11ShaderResourceView *srv;
 #else
-    uint32_t id;
+    uint32_t opengl_id;
 #endif
+    TextureID id;
     String name;
     int width;
     int height;
     b32 valid; // TODO: remove this
 
 
-    int state;
+    void *data;
+    b32 gen_mipmaps;
+    b32 srgb;
+
+    b32 in_gpu;
+
+    volatile int state;
 };
 
 enum ShaderType {
@@ -138,6 +147,8 @@ struct RenderPass {
 };
 
 struct RenderContext {
+    Arena arena;
+
     int window_width;
     int window_height;
 
@@ -158,7 +169,7 @@ struct RenderContext {
     Array<Texture> loaded_textures;
 
     RenderPass *render_pass;
-    Texture white_texture;
+    TextureID white_texture, purple_texture;
 
     Array<v3> debug_lines;
 

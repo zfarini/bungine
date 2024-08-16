@@ -14,25 +14,45 @@
 #endif
 
 #include "common.h"
-
-struct memory_block {
-	void *data;
-	usize used;
-	usize size;
-	memory_block *next;
-};
-
-struct Arena
-{
-	memory_block *block;
-	usize minimum_block_size;
-};
-
 #include "math.h"
 #include "platform.h"
+Platform platform;
+
 #include "arena.h"
 #include "utils.h"
 #include "renderer.h"
+
+thread_local TempMemory g_temp_memory;
+
+function Arena *begin_temp_memory()
+{
+	assert(g_temp_memory.last_used_count < ARRAY_SIZE(g_temp_memory.last_used));
+	g_temp_memory.last_used[g_temp_memory.last_used_count].block = g_temp_memory.arena.block;
+	if (g_temp_memory.arena.block)
+		g_temp_memory.last_used[g_temp_memory.last_used_count].used = g_temp_memory.arena.block->used;
+	else
+		g_temp_memory.last_used[g_temp_memory.last_used_count].used = 0;
+	g_temp_memory.last_used_count++;
+	return &g_temp_memory.arena;
+}
+
+function void end_temp_memory()
+{
+	assert(g_temp_memory.last_used_count > 0);
+
+	memory_block *block = g_temp_memory.arena.block;
+
+	while (block != g_temp_memory.last_used[g_temp_memory.last_used_count - 1].block) {
+		memory_block *next = block->next;
+		// TODO: cleanup DON'T free here instead just keep the blocks around??
+		platform.free_memory(block->data);
+		block = next;
+	}
+	g_temp_memory.arena.block = block;
+	if (block)
+		g_temp_memory.arena.block->used =  g_temp_memory.last_used[g_temp_memory.last_used_count - 1].used;
+	g_temp_memory.last_used_count--;
+}
 
 #define RENDERER_DEBUG
 #ifdef RENDERER_DX11
@@ -115,7 +135,7 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 	shadow_map.height = height;
 	shadow_map.projection = orthographic_projection(znear, zfar, width, height);
 
-	shadow_map.depth_texture = create_depth_texture(texture_width, texture_height);
+	shadow_map.depth_texture = get_texture(create_depth_texture(texture_width, texture_height));
 
 	shadow_map.framebuffer = create_frame_buffer(true);
 
@@ -133,29 +153,21 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 	//Game &game = *((Game *)memory->data);
 
 	if (!game.is_initialized) {
-		//assert(memory->used == 0);
-		//arena_alloc_zero(memory, sizeof(game));
+        stbi_set_flip_vertically_on_load(true);
 
-		init_render_context(&game.arena, *platform.render_context);
+        game.asset_arena.thread_safe = true;
 
-		//usize temp_arena_size = Megabyte(1024);
-		//g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
+		init_render_context(*platform.render_context);
 
 
 		game.scenes = make_array_max<Scene>(&game.arena, 1024);
 
-		//memory->used += sizeof(game);
-
-		//game.world = (World *)arena_alloc(memory, sizeof(World));
-		//memset(game.world, 0, sizeof(*game.world));
 		game.world = new World(); // TODO: cleanup using unordered_map for now
 		World &world = *game.world;
 
-		//world.arena = make_arena(arena_alloc(memory, Megabyte(64)), Megabyte(64));
 		world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
 		world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-		//game.asset_arena = make_arena(arena_alloc(memory, Megabyte(2048)), Megabyte(2048));
 
 		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -319,21 +331,21 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 			fclose(fd);
 		}
 		
-		{
-			game.debug_asset_fb = create_frame_buffer(false, true);
+		// {
+		// 	game.debug_asset_fb = create_frame_buffer(false, true);
 
-			Texture texture = create_texture(make_cstring("Debug Asset"), 0, 128, 128,
-					true, false);
-			Texture depth = create_depth_texture(texture.width, texture.height);
-			bind_framebuffer_color(game.debug_asset_fb, texture);
-			bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
+		// 	Texture texture = get_texture(create_texture(make_cstring("Debug Asset"), 0, 128, 128,
+		// 			true, false));
+		// 	Texture depth = get_texture(create_depth_texture(texture.width, texture.height));
+		// 	bind_framebuffer_color(game.debug_asset_fb, texture);
+		// 	bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
 
-			game.debug_asset_tex = create_texture(make_cstring("debug asset temp"),
-						0, texture.width, texture.height, 1, 0);
-			// TODO:
-			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
-					== GL_FRAMEBUFFER_COMPLETE);
-		}
+		// 	game.debug_asset_tex = create_texture(make_cstring("debug asset temp"),
+		// 				0, texture.width, texture.height, 1, 0);
+		// 	// TODO:
+		// 	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+		// 			== GL_FRAMEBUFFER_COMPLETE);
+		// }
 
 		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
 		game.sound_state.buffer = (float *)arena_alloc_zero(&game.arena, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
@@ -467,7 +479,7 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		clear_framebuffer_color(platform.render_context->window_framebuffer, V4(game.background_color, 1));
 		clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
 
-		bind_texture(4, game.shadow_map.depth_texture);
+		bind_texture(4, game.shadow_map.depth_texture.id);
 		render_entities(game, world, game_camera, false);
 
 	

@@ -81,6 +81,88 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	}
 }
 
+int get_thread_id()
+{
+	return (int)(GetCurrentThreadId());
+}
+
+void lock_mutex(Mutex &mutex)
+{
+	int id = get_thread_id();
+	if (mutex.value == id)
+		return ;
+	while (InterlockedCompareExchange((LONG *)&mutex.value, id, 0))
+		;
+}
+
+void unlock_mutex(Mutex &mutex)
+{
+	if (!mutex.value)
+		return ;
+	int id = get_thread_id();
+	assert(InterlockedCompareExchange((LONG *)&mutex.value, 0, id) == id);
+}
+
+#include <intrin.h>
+
+#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
+ThreadWork thread_work_queue[256];
+volatile int thread_work_queue_read_index;
+volatile int thread_work_queue_write_index;
+volatile int thread_work_queue_occupied_index;
+void *thread_work_semaphore;
+
+bool add_thread_work(ThreadWorkFn *callback, void *data)
+{
+	int index;
+	while (1) {
+		index = thread_work_queue_occupied_index;
+		if (THREAD_MASK(index + 1) == THREAD_MASK(thread_work_queue_read_index)) {
+			assert(0);
+			return false;
+		}
+		
+		if (InterlockedCompareExchange((LONG *)&thread_work_queue_occupied_index, 
+			index + 1, index) == index)
+			break ;
+	}
+
+	ThreadWork *work = &thread_work_queue[THREAD_MASK(index)];
+
+	work->callback = callback;
+	work->data = data;
+
+	while (InterlockedCompareExchange((LONG *)&thread_work_queue_write_index,
+			index + 1, index) != index)
+		;
+	ReleaseSemaphore(thread_work_semaphore, 1, 0);
+	return true;
+}
+
+DWORD thread_func(LPVOID param)
+{
+	int idx = *(DWORD *)param;
+
+	printf("lanched thread %d\n", idx);
+
+	while (1) {
+		int entry_idx = thread_work_queue_read_index;
+		_ReadWriteBarrier(); // propably not necessary
+		if (entry_idx != thread_work_queue_write_index) {
+			if (InterlockedCompareExchange((LONG *)&thread_work_queue_read_index, 
+				entry_idx + 1, entry_idx) == entry_idx) 
+			{
+				ThreadWork *work = &thread_work_queue[THREAD_MASK(entry_idx)];
+				work->callback(work->data);
+			}
+		}
+		else
+			WaitForSingleObject(thread_work_semaphore, INFINITE);
+	}
+	return 0;
+}
+
+
 int main()
 {
 	Game game = {};
@@ -155,6 +237,18 @@ int main()
 		platform.imgui_context = ImGui::GetCurrentContext();
 		platform.allocate_memory = (PlatformAllocateFn *)malloc;
 		platform.free_memory = (PlatformFreeFn *)free;
+		platform.lock_mutex = lock_mutex;
+		platform.unlock_mutex = unlock_mutex;
+		platform.add_thread_work = add_thread_work;
+
+	}
+	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
+
+#define THREAD_COUNT 3
+	DWORD thread_ids[THREAD_COUNT];
+
+	for (int i = 0; i < THREAD_COUNT; i++) {
+		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
 	}
 
 	int frame = 0;

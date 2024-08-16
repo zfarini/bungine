@@ -89,10 +89,9 @@ void serialize_double(FILE *fd, bool w, double &x, Arena *arena = 0) {
         (void)fread(&x, sizeof(double), 1, fd);
     }
 }
-static StructMetaData get_struct_Texture_info();
-static void imgui_edit_struct_Texture(Texture &x, const char *name,
-                                      bool collapsed);
-static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena);
+static StructMetaData get_struct_Mutex_info();
+static void imgui_edit_struct_Mutex(Mutex &x, const char *name, bool collapsed);
+static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena);
 static StructMetaData get_struct_ThreadWork_info();
 static void imgui_edit_struct_ThreadWork(ThreadWork &x, const char *name,
                                          bool collapsed);
@@ -105,18 +104,30 @@ static void imgui_edit_struct_memory_block(memory_block &x, const char *name,
                                            bool collapsed);
 static void serialize_memory_block(FILE *fd, bool w, memory_block &x,
                                    Arena *arena);
+static StructMetaData get_struct_Material_info();
+static void imgui_edit_struct_Material(Material &x, const char *name,
+                                       bool collapsed);
+static void serialize_Material(FILE *fd, bool w, Material &x, Arena *arena);
+static StructMetaData get_struct_RenderPass_info();
+static void imgui_edit_struct_RenderPass(RenderPass &x, const char *name,
+                                         bool collapsed);
+static void serialize_RenderPass(FILE *fd, bool w, RenderPass &x, Arena *arena);
+static StructMetaData get_struct_TempMemory_info();
+static void imgui_edit_struct_TempMemory(TempMemory &x, const char *name,
+                                         bool collapsed);
+static void serialize_TempMemory(FILE *fd, bool w, TempMemory &x, Arena *arena);
 static StructMetaData get_struct_MeshTriangle_info();
 static void imgui_edit_struct_MeshTriangle(MeshTriangle &x, const char *name,
                                            bool collapsed);
 static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
                                    Arena *arena);
-static StructMetaData get_struct_Arena_info();
-static void imgui_edit_struct_Arena(Arena &x, const char *name, bool collapsed);
-static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena);
 static StructMetaData get_struct_Shader_info();
 static void imgui_edit_struct_Shader(Shader &x, const char *name,
                                      bool collapsed);
 static void serialize_Shader(FILE *fd, bool w, Shader &x, Arena *arena);
+static StructMetaData get_struct_Arena_info();
+static void imgui_edit_struct_Arena(Arena &x, const char *name, bool collapsed);
+static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena);
 static StructMetaData get_struct_VertexInputElement_info();
 static void imgui_edit_struct_VertexInputElement(VertexInputElement &x,
                                                  const char *name,
@@ -140,6 +151,10 @@ static StructMetaData get_struct_Platform_info();
 static void imgui_edit_struct_Platform(Platform &x, const char *name,
                                        bool collapsed);
 static void serialize_Platform(FILE *fd, bool w, Platform &x, Arena *arena);
+static StructMetaData get_struct_Texture_info();
+static void imgui_edit_struct_Texture(Texture &x, const char *name,
+                                      bool collapsed);
+static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena);
 static StructMetaData get_struct_ShadowMap_info();
 static void imgui_edit_struct_ShadowMap(ShadowMap &x, const char *name,
                                         bool collapsed);
@@ -197,14 +212,6 @@ static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
                                                 bool collapsed);
 static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
                                         Arena *arena);
-static StructMetaData get_struct_Material_info();
-static void imgui_edit_struct_Material(Material &x, const char *name,
-                                       bool collapsed);
-static void serialize_Material(FILE *fd, bool w, Material &x, Arena *arena);
-static StructMetaData get_struct_RenderPass_info();
-static void imgui_edit_struct_RenderPass(RenderPass &x, const char *name,
-                                         bool collapsed);
-static void serialize_RenderPass(FILE *fd, bool w, RenderPass &x, Arena *arena);
 static StructMetaData get_struct_RenderContext_info();
 static void imgui_edit_struct_RenderContext(RenderContext &x, const char *name,
                                             bool collapsed);
@@ -584,22 +591,12 @@ static const char *get_enum_GizmoMode_str(int value) {
     }
     return "Enum_GizmoMode_Unknown";
 }
-StructMetaData get_struct_Texture_info() {
+StructMetaData get_struct_Mutex_info() {
     StructMetaData data = {};
-    data.name = "Texture";
-    data.member_count = 6;
-    data.members[0].name = "id";
-    data.members[0].type_name = "uint32_t";
-    data.members[1].name = "name";
-    data.members[1].type_name = "String";
-    data.members[2].name = "width";
-    data.members[2].type_name = "int";
-    data.members[3].name = "height";
-    data.members[3].type_name = "int";
-    data.members[4].name = "valid";
-    data.members[4].type_name = "b32";
-    data.members[5].name = "state";
-    data.members[5].type_name = "int";
+    data.name = "Mutex";
+    data.member_count = 1;
+    data.members[0].name = "int";
+    data.members[0].type_name = "volatile";
     return data;
 }
 StructMetaData get_struct_ThreadWork_info() {
@@ -658,22 +655,62 @@ StructMetaData get_struct_memory_block_info() {
     data.members[3].type_name = "memory_block*";
     return data;
 }
+StructMetaData get_struct_Material_info() {
+    StructMetaData data = {};
+    data.name = "Material";
+    data.member_count = 8;
+    data.members[0].name = "diffuse";
+    data.members[0].type_name = "TextureID";
+    data.members[1].name = "normal_map";
+    data.members[1].type_name = "TextureID";
+    data.members[2].name = "specular";
+    data.members[2].type_name = "TextureID";
+    data.members[3].name = "ambient";
+    data.members[3].type_name = "TextureID";
+    data.members[4].name = "specular_exponent";
+    data.members[4].type_name = "TextureID";
+    data.members[5].name = "diffuse_factor";
+    data.members[5].type_name = "float";
+    data.members[6].name = "specular_factor";
+    data.members[6].type_name = "float";
+    data.members[7].name = "specular_exponent_factor";
+    data.members[7].type_name = "float";
+    return data;
+}
+StructMetaData get_struct_RenderPass_info() {
+    StructMetaData data = {};
+    data.name = "RenderPass";
+    data.member_count = 7;
+    data.members[0].name = "primitive_type";
+    data.members[0].type_name = "PrimitiveType";
+    data.members[1].name = "vs";
+    data.members[1].type_name = "Shader";
+    data.members[2].name = "fs";
+    data.members[2].type_name = "Shader";
+    data.members[3].name = "depth_stencil_state";
+    data.members[3].type_name = "DepthStencilState";
+    data.members[4].name = "rasterizer_state";
+    data.members[4].type_name = "RasterizerState";
+    data.members[5].name = "input_layout";
+    data.members[5].type_name = "VertexInputLayout";
+    data.members[6].name = "program";
+    data.members[6].type_name = "uint32_t";
+    return data;
+}
+StructMetaData get_struct_TempMemory_info() {
+    StructMetaData data = {};
+    data.name = "TempMemory";
+    data.member_count = 1;
+    data.members[0].name = "arena";
+    data.members[0].type_name = "Arena";
+    return data;
+}
 StructMetaData get_struct_MeshTriangle_info() {
     StructMetaData data = {};
     data.name = "MeshTriangle";
     data.member_count = 1;
     data.members[0].name = "v0";
     data.members[0].type_name = "v3";
-    return data;
-}
-StructMetaData get_struct_Arena_info() {
-    StructMetaData data = {};
-    data.name = "Arena";
-    data.member_count = 2;
-    data.members[0].name = "block";
-    data.members[0].type_name = "memory_block*";
-    data.members[1].name = "minimum_block_size";
-    data.members[1].type_name = "usize";
     return data;
 }
 StructMetaData get_struct_Shader_info() {
@@ -684,6 +721,18 @@ StructMetaData get_struct_Shader_info() {
     data.members[0].type_name = "ShaderType";
     data.members[1].name = "id";
     data.members[1].type_name = "uint32_t";
+    return data;
+}
+StructMetaData get_struct_Arena_info() {
+    StructMetaData data = {};
+    data.name = "Arena";
+    data.member_count = 3;
+    data.members[0].name = "block";
+    data.members[0].type_name = "memory_block*";
+    data.members[1].name = "minimum_block_size";
+    data.members[1].type_name = "usize";
+    data.members[2].name = "thread_safe";
+    data.members[2].type_name = "b32";
     return data;
 }
 StructMetaData get_struct_VertexInputElement_info() {
@@ -745,7 +794,7 @@ StructMetaData get_struct_SoundPlaying_info() {
 StructMetaData get_struct_Platform_info() {
     StructMetaData data = {};
     data.name = "Platform";
-    data.member_count = 6;
+    data.member_count = 8;
     data.members[0].name = "render_context";
     data.members[0].type_name = "RenderContext*";
     data.members[1].name = "imgui_context";
@@ -756,8 +805,40 @@ StructMetaData get_struct_Platform_info() {
     data.members[3].type_name = "PlatformAllocateFn*";
     data.members[4].name = "free_memory";
     data.members[4].type_name = "PlatformFreeFn*";
-    data.members[5].name = "temp_arena";
-    data.members[5].type_name = "Arena";
+    data.members[5].name = "lock_mutex";
+    data.members[5].type_name = "LockMutexFn*";
+    data.members[6].name = "unlock_mutex";
+    data.members[6].type_name = "UnlockMutexFn*";
+    data.members[7].name = "memory_mutex";
+    data.members[7].type_name = "Mutex";
+    return data;
+}
+StructMetaData get_struct_Texture_info() {
+    StructMetaData data = {};
+    data.name = "Texture";
+    data.member_count = 11;
+    data.members[0].name = "opengl_id";
+    data.members[0].type_name = "uint32_t";
+    data.members[1].name = "id";
+    data.members[1].type_name = "TextureID";
+    data.members[2].name = "name";
+    data.members[2].type_name = "String";
+    data.members[3].name = "width";
+    data.members[3].type_name = "int";
+    data.members[4].name = "height";
+    data.members[4].type_name = "int";
+    data.members[5].name = "valid";
+    data.members[5].type_name = "b32";
+    data.members[6].name = "data";
+    data.members[6].type_name = "void*";
+    data.members[7].name = "gen_mipmaps";
+    data.members[7].type_name = "b32";
+    data.members[8].name = "srgb";
+    data.members[8].type_name = "b32";
+    data.members[9].name = "in_gpu";
+    data.members[9].type_name = "b32";
+    data.members[10].name = "int";
+    data.members[10].type_name = "volatile";
     return data;
 }
 StructMetaData get_struct_ShadowMap_info() {
@@ -904,68 +985,28 @@ StructMetaData get_struct_VertexInputLayout_info() {
     data.members[2].type_name = "int";
     return data;
 }
-StructMetaData get_struct_Material_info() {
-    StructMetaData data = {};
-    data.name = "Material";
-    data.member_count = 8;
-    data.members[0].name = "diffuse";
-    data.members[0].type_name = "Texture";
-    data.members[1].name = "normal_map";
-    data.members[1].type_name = "Texture";
-    data.members[2].name = "specular";
-    data.members[2].type_name = "Texture";
-    data.members[3].name = "ambient";
-    data.members[3].type_name = "Texture";
-    data.members[4].name = "specular_exponent";
-    data.members[4].type_name = "Texture";
-    data.members[5].name = "diffuse_factor";
-    data.members[5].type_name = "float";
-    data.members[6].name = "specular_factor";
-    data.members[6].type_name = "float";
-    data.members[7].name = "specular_exponent_factor";
-    data.members[7].type_name = "float";
-    return data;
-}
-StructMetaData get_struct_RenderPass_info() {
-    StructMetaData data = {};
-    data.name = "RenderPass";
-    data.member_count = 7;
-    data.members[0].name = "primitive_type";
-    data.members[0].type_name = "PrimitiveType";
-    data.members[1].name = "vs";
-    data.members[1].type_name = "Shader";
-    data.members[2].name = "fs";
-    data.members[2].type_name = "Shader";
-    data.members[3].name = "depth_stencil_state";
-    data.members[3].type_name = "DepthStencilState";
-    data.members[4].name = "rasterizer_state";
-    data.members[4].type_name = "RasterizerState";
-    data.members[5].name = "input_layout";
-    data.members[5].type_name = "VertexInputLayout";
-    data.members[6].name = "program";
-    data.members[6].type_name = "uint32_t";
-    return data;
-}
 StructMetaData get_struct_RenderContext_info() {
     StructMetaData data = {};
     data.name = "RenderContext";
-    data.member_count = 8;
-    data.members[0].name = "window_width";
-    data.members[0].type_name = "int";
-    data.members[1].name = "window_height";
+    data.member_count = 9;
+    data.members[0].name = "arena";
+    data.members[0].type_name = "Arena";
+    data.members[1].name = "window_width";
     data.members[1].type_name = "int";
-    data.members[2].name = "window_framebuffer";
-    data.members[2].type_name = "FrameBuffer";
-    data.members[3].name = "loaded_textures";
-    data.members[3].type_name = "Array<Texture>";
-    data.members[4].name = "render_pass";
-    data.members[4].type_name = "RenderPass*";
-    data.members[5].name = "white_texture";
-    data.members[5].type_name = "Texture";
-    data.members[6].name = "debug_lines";
-    data.members[6].type_name = "Array<v3>";
-    data.members[7].name = "active_framebuffer_id";
-    data.members[7].type_name = "uintptr_t";
+    data.members[2].name = "window_height";
+    data.members[2].type_name = "int";
+    data.members[3].name = "window_framebuffer";
+    data.members[3].type_name = "FrameBuffer";
+    data.members[4].name = "loaded_textures";
+    data.members[4].type_name = "Array<Texture>";
+    data.members[5].name = "render_pass";
+    data.members[5].type_name = "RenderPass*";
+    data.members[6].name = "white_texture";
+    data.members[6].type_name = "TextureID";
+    data.members[7].name = "debug_lines";
+    data.members[7].type_name = "Array<v3>";
+    data.members[8].name = "active_framebuffer_id";
+    data.members[8].type_name = "uintptr_t";
     return data;
 }
 StructMetaData get_struct_CollisionInfo_info() {
@@ -2047,16 +2088,22 @@ static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 3);
     x = items_type[curr];
 }
-static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena = 0) {}
+static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena = 0) {}
 static void serialize_ThreadWork(FILE *fd, bool w, ThreadWork &x,
                                  Arena *arena = 0) {}
 static void serialize_Mesh(FILE *fd, bool w, Mesh &x, Arena *arena = 0) {}
 static void serialize_memory_block(FILE *fd, bool w, memory_block &x,
                                    Arena *arena = 0) {}
+static void serialize_Material(FILE *fd, bool w, Material &x,
+                               Arena *arena = 0) {}
+static void serialize_RenderPass(FILE *fd, bool w, RenderPass &x,
+                                 Arena *arena = 0) {}
+static void serialize_TempMemory(FILE *fd, bool w, TempMemory &x,
+                                 Arena *arena = 0) {}
 static void serialize_MeshTriangle(FILE *fd, bool w, MeshTriangle &x,
                                    Arena *arena = 0) {}
-static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena = 0) {}
 static void serialize_Shader(FILE *fd, bool w, Shader &x, Arena *arena = 0) {}
+static void serialize_Arena(FILE *fd, bool w, Arena &x, Arena *arena = 0) {}
 static void serialize_VertexInputElement(FILE *fd, bool w,
                                          VertexInputElement &x,
                                          Arena *arena = 0) {}
@@ -2068,6 +2115,7 @@ static void serialize_SoundPlaying(FILE *fd, bool w, SoundPlaying &x,
                                    Arena *arena = 0) {}
 static void serialize_Platform(FILE *fd, bool w, Platform &x,
                                Arena *arena = 0) {}
+static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena = 0) {}
 static void serialize_ShadowMap(FILE *fd, bool w, ShadowMap &x,
                                 Arena *arena = 0) {}
 static void serialize_Animation(FILE *fd, bool w, Animation &x,
@@ -2091,10 +2139,6 @@ static void serialize_RasterizerState(FILE *fd, bool w, RasterizerState &x,
                                       Arena *arena = 0) {}
 static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
                                         Arena *arena = 0) {}
-static void serialize_Material(FILE *fd, bool w, Material &x,
-                               Arena *arena = 0) {}
-static void serialize_RenderPass(FILE *fd, bool w, RenderPass &x,
-                                 Arena *arena = 0) {}
 static void serialize_RenderContext(FILE *fd, bool w, RenderContext &x,
                                     Arena *arena = 0) {}
 static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,

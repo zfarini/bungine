@@ -8,4763 +8,4411 @@
 [info]: loading scene data/Ybot.fbx (2 meshes, 55320 triangles)
 [info]: loaded sound data/music.wav, 9216000 samples
 [info]: loaded sound data/jump.wav, 72000 samples
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: istate jump: -1
+[debug]: PLAYER -30 -17 20
+[debug]: ITR = 4096
+[debug]: best cell is current!
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 8055 (itr: 23773)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
+[debug]: occupied 5122 (itr: 17329)
+
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
+[debug]: occupied 5122 (itr: 17329)
+
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 2
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
 [debug]: occupied 5122 (itr: 17329)
 
-[debug]: istate jump: 0
-[debug]: PLAYER 1 -7 -1
-[debug]: ITR = 4096
-[debug]: PATH LENGTH: 3
-[debug]: JUMPED!!

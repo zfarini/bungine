@@ -149,7 +149,7 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 		Arena *temp = begin_temp_memory();
 
 		Animation *anim = get_blended_animation(temp, e);
-		render_scene(game, world, e.scene_id, camera, scene_transform, anim, 0, e.color);
+		render_scene(game, world, e.scene_id, camera, scene_transform, anim, 0, e.color, shadow_map_pass);
 
 		end_temp_memory();
 	}

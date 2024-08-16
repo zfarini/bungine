@@ -28,11 +28,11 @@ VertexInputElement g_vertex_input_elements[] = {
 };
 
 struct Material {
-    Texture diffuse;
-    Texture normal_map;
-    Texture specular;
-    Texture ambient;
-    Texture specular_exponent;
+    TextureID diffuse;
+    TextureID normal_map;
+    TextureID specular;
+    TextureID ambient;
+    TextureID specular_exponent;
 
     float diffuse_factor;
     float specular_factor;

@@ -3,6 +3,9 @@ cleanup strings and paths
 fix sound
 make collision mesh be saved as its own file for each asset and just load it at runtime
 
+bug: when the game is slow try look at sponza texture while going moving camera left to right
+	you will see some flashing 
+	
 make your own std::unordered_map and std::set
 improve pathfinding
 

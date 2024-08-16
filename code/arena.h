@@ -1,15 +1,21 @@
 #pragma once
 
-#define arena_alloc(arena, size) _arena_alloc(__FILE__, __func__, __LINE__, arena, size) 
+#define arena_alloc_aligned(arena, size, alignement, clear) _arena_alloc(__FILE__, __func__, __LINE__, arena, size, alignement, clear) 
+#define arena_alloc(arena, size) arena_alloc_aligned(arena, size, 16, false)
+#define arena_alloc_struct(arena, type) arena_alloc_aligned(arena, sizeof(type), alignof(type), true);
+#define arena_alloc_zero(arena, size) arena_alloc_aligned(arena, size, 16, true)
 
-function void *_arena_alloc(const char *filename, const char *func, int line, Arena *arena, usize size)
+#define CACHE_LINE_SIZE 64
+
+function void *_arena_alloc(const char *filename, const char *func, int line, Arena *arena, usize size, int alignement, bool clear)
 {
 	if (!size)
 		return 0;
-	// TODO: cleanup
-	// NOTE: should be a power of 2
-	int alignement = 16;
-
+	assert (alignement > 0 && (alignement & (alignement - 1)) == 0);
+	if (arena->thread_safe) {
+		platform.lock_mutex(platform.memory_mutex);
+		alignement = max(alignement, CACHE_LINE_SIZE);
+	}
 	int misalign = 0;
 
 	if (!arena->minimum_block_size)
@@ -44,42 +50,10 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 
 	void *ptr = (char *)arena->block->data + arena->block->used + misalign;
 	arena->block->used += size + misalign;
+	if (clear)
+		memset(ptr, 0, size);
+	if (arena->thread_safe)
+		platform.unlock_mutex(platform.memory_mutex);
 	return ptr;	
 }
 
-function void *arena_alloc_zero(Arena *arena, usize size)
-{
-	void *mem = arena_alloc(arena, size);
-	memset(mem, 0, size);
-	return mem;
-}
-
-function Arena *begin_temp_memory()
-{
-	assert(platform.temp_arena_last_used_count < ARRAY_SIZE(platform.temp_arena_last_used));
-	platform.temp_arena_last_used[platform.temp_arena_last_used_count].block = platform.temp_arena.block;
-	if (platform.temp_arena.block)
-		platform.temp_arena_last_used[platform.temp_arena_last_used_count].used = platform.temp_arena.block->used;
-	else
-		platform.temp_arena_last_used[platform.temp_arena_last_used_count].used = 0;
-	platform.temp_arena_last_used_count++;
-	return &platform.temp_arena;
-}
-
-function void end_temp_memory()
-{
-	assert(platform.temp_arena_last_used_count > 0);
-
-	memory_block *block = platform.temp_arena.block;
-
-	while (block != platform.temp_arena_last_used[platform.temp_arena_last_used_count - 1].block) {
-		memory_block *next = block->next;
-		// TODO: cleanup DON'T free here instead just keep the blocks around??
-		platform.free_memory(block->data);
-		block = next;
-	}
-	platform.temp_arena.block = block;
-	if (block)
-		platform.temp_arena.block->used =  platform.temp_arena_last_used[platform.temp_arena_last_used_count - 1].used;
-	platform.temp_arena_last_used_count--;
-}

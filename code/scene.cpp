@@ -31,46 +31,21 @@ mat4 ufbx_to_mat4(ufbx_matrix m)
 	return (result);
 }
 
-#if 0
-struct stb_load_texture_data
-{
-	char filename[256];
-	Texture *texture;
-};
-
-THREAD_WORK_FUNC(stb_load_texture_work)
-{
-	stb_load_texture_data *data = (stb_load_texture_data *)data;
-	void *data;
-	int width, height, n_channels;
-	data = stbi_load(path.data, &width, &height, &n_channels, 4);
-}
-#endif
-
-Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
+TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb = true)
 {
 	assert(utex->type == UFBX_TEXTURE_FILE);
-
 	
-	stbi_set_flip_vertically_on_load(true);
-
-	String name = make_string(arena, utex->filename.length, utex->filename.data);
-	assert(name.count);
-
-	if (name.count) {
-		for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
-			if (strings_equal(platform.render_context->loaded_textures[i].name, name))
-				return platform.render_context->loaded_textures[i];
-		}
-	}
-	void *data;
-	int width, height, n_channels;
+	String name = {};
+	// void *data;
+	// int width, height, n_channels;
 	Arena *temp = begin_temp_memory();
 	if (utex->content.size) {
-		data = stbi_load_from_memory((stbi_uc *)utex->content.data,
-				(int)utex->content.size, &width, &height,
-				&n_channels, 4);
+		assert(!"TODO: copy utex->content.data to arena then send it");
+		// data = stbi_load_from_memory((stbi_uc *)utex->content.data,
+		// 		(int)utex->content.size, &width, &height,
+		// 		&n_channels, 4);
 	} else {
+		// TODO: cleanup
 		int last_slash = (int)utex->filename.length - 1;
 
 		while (last_slash >= 0 && 
@@ -80,23 +55,45 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 		last_slash++;
 
 		String path = concact_string(temp, scene.path, make_string(temp, utex->filename.length - last_slash, utex->filename.data + last_slash));
-		path = concact_string(temp, path, make_string(temp, 1, ""));
+		name = concact_string(temp, path, make_string(temp, 1, ""));
+
 
 		//add_thread_work(stb_load_texture_work, );
-		data = stbi_load(path.data, &width, &height, &n_channels, 4);
-		if (!data)
-			printf("failed to load texture file: %s\n", path.data);
+		//data = stbi_load(path.data, &width, &height, &n_channels, 4);
+		//if (!data)
+		//	printf("failed to load texture file: %s\n", path.data);
 	}
+	//TODO: cleanup, if no name give it something like "unamed_1"
+	assert(name.count);
+
+	platform.lock_mutex(platform.memory_mutex);
+
+	for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
+		if (strings_equal(platform.render_context->loaded_textures[i].name, name)) {
+			end_temp_memory();
+			platform.unlock_mutex(platform.memory_mutex);
+			return platform.render_context->loaded_textures[i].id;
+		}
+	}
+
+	Texture texture = {};
+	texture.id = platform.render_context->loaded_textures.count + 1;
+	texture.name = clone_array(arena, name);
+
+	texture.state = TEXTURE_STATE_UNLOADED;
+	texture.valid = true;
+	texture.gen_mipmaps = true;
+	texture.srgb = srgb;
 	//assert(data);
+	//Texture texture = create_texture(name, 0, width, height, srgb);
+
+	//thread_safe_linked_list_push(platform.render_context->loaded_textures, texture);
+	platform.render_context->loaded_textures.push(texture);
+	platform.unlock_mutex(platform.memory_mutex);
+
 	end_temp_memory();
 
-	Texture texture = create_texture(name, data, width, height, srgb);
-	if (name.count)
-		platform.render_context->loaded_textures.push(texture);
-
-	stbi_image_free(data);
-
-	return texture;
+	return texture.id;
 }
 
 Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)

@@ -161,6 +161,13 @@ void update_game_input(HWND window, GameInput &input, int frame)
 
 #include <intrin.h>
 
+#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
+ThreadWork thread_work_queue[256];
+volatile int thread_work_queue_read_index;
+volatile int thread_work_queue_write_index;
+volatile int thread_work_queue_occupied_index;
+void *thread_work_semaphore;
+
 bool add_thread_work(ThreadWorkFn *callback, void *data)
 {
 	int index;

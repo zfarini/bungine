@@ -1,15 +1,18 @@
-void init_render_context(Arena *arena, RenderContext &rc)
+void init_render_context(RenderContext &rc)
 {
 #if RENDERER_OPENGL
 	init_render_context_opengl(rc);
 #else
 	init_render_context_dx11(rc);
 #endif
-	rc.loaded_textures = make_array_max<Texture>(arena, 256);
-	rc.debug_lines = make_array_max<v3>(arena, 4 * 5000000);
+	rc.arena.thread_safe = true;
+	rc.loaded_textures = make_array_max<Texture>(&rc.arena, 256);
+	rc.debug_lines = make_array_max<v3>(&rc.arena, 5000000);
 
 	uint32_t white_color = 0xffffffff;
 	rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);
+	uint32_t purple_color = 0xffff00ff;
+	rc.purple_texture = create_texture(make_cstring("__purple_texture"), &purple_color, 1, 1, true);
 }
 
 void push_line(v3 a, v3 b, v3 color = V3(1))
@@ -247,7 +250,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 	return anim_bones;
 }
 
-void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat4 transform, Animation *anim = 0, float anim_time = 0, v3 color = V3(1))
+void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat4 transform, Animation *anim, float anim_time, v3 color, bool depth_only)
 {
 	if (!scene_id)
 		return ;
@@ -366,18 +369,17 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 			for (usize j = 0; j < mesh.parts.count; j++) {
 				MeshPart &part = mesh.parts[j];
 
-				bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : platform.render_context
-->white_texture);
-				bind_texture(1, part.material.specular.valid ? part.material.specular : platform.render_context
-->white_texture);
-				bind_texture(2, part.material.normal_map);
-				bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : platform.render_context
-->white_texture);
+				if (!depth_only) {
+					bind_texture(0, part.material.diffuse ? part.material.diffuse : platform.render_context->white_texture);
+					bind_texture(1, part.material.specular ? part.material.specular : platform.render_context->white_texture);
+					bind_texture(2, part.material.normal_map);
+					bind_texture(3, part.material.specular_exponent ? part.material.specular_exponent : platform.render_context->white_texture);
+				}
 
 				constants.diffuse_factor = part.material.diffuse_factor;
 				constants.specular_factor = part.material.specular_factor;
 				constants.specular_exponent_factor = part.material.specular_exponent_factor;
-				constants.has_normal_map = part.material.normal_map.valid;
+				constants.has_normal_map = part.material.normal_map != 0;
 
 				update_constant_buffer(game.constant_buffer, &constants);
 				bind_vertex_buffer(mesh.vertex_buffer);

@@ -1,4 +1,4 @@
-Texture create_texture(String name, void *data, int width, int height, bool srgb = true,
+TextureID create_texture(String name, void *data, int width, int height, bool srgb = true,
 		bool mipmapping = true)
 {
 	Texture texture = {};
@@ -33,17 +33,102 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format,
 			GL_UNSIGNED_BYTE, data);
+
 	if (mipmapping)
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-	texture.id = tex;
-	return texture;
+	texture.opengl_id = tex;
+	texture.in_gpu = true;
+	texture.state = TEXTURE_STATE_LOADED;
+	platform.lock_mutex(platform.memory_mutex);
+	texture.id = platform.render_context->loaded_textures.count + 1;
+	platform.render_context->loaded_textures.push(texture);
+	platform.unlock_mutex(platform.memory_mutex);
+	return texture.id;
 }
 
-void bind_texture(int index, Texture &texture)
+/*
+	TODO: thread safe linked list for textures
+	make render context & asset arena thread safe
+
+*/
+
+THREAD_WORK_FUNC(load_texture_work)
 {
+	Texture *texture = (Texture *)data;
+	
+	int width, height, n_channels;
+	Arena *temp = begin_temp_memory();
+	void *image = stbi_load(texture->name.data, &width, &height,  &n_channels, 4);
+	assert(image);
+	usize size = width * height * sizeof(uint32_t);
+	void *copy = arena_alloc(&platform.render_context->arena, size);
+	memcpy(copy, image, size);
+
+	texture->width = width;
+	texture->height = height;
+	texture->data = copy;
+
+	end_temp_memory();
+	MEMORY_BARRIER();
+	texture->state = TEXTURE_STATE_LOADED;
+}
+
+Texture &get_texture(TextureID id)
+{
+	assert (id <= platform.render_context->loaded_textures.count);
+	if (!id)
+		return platform.render_context->loaded_textures[platform.render_context->purple_texture];
+	return  platform.render_context->loaded_textures[id - 1];
+}
+
+void bind_texture(int index, TextureID id)
+{
+	Texture &texture = get_texture(id);
+
+	if (texture.state == TEXTURE_STATE_LOADED) {
+		if (!texture.in_gpu) {
+			uint32_t internal_format, format;
+
+			if (texture.srgb)
+				internal_format = GL_SRGB_ALPHA;
+			else
+				internal_format = GL_RGBA;
+
+			format = GL_RGBA;
+
+			glGenTextures(1, &texture.opengl_id);
+
+			glBindTexture(GL_TEXTURE_2D, texture.opengl_id);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			if (texture.gen_mipmaps)
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+						GL_LINEAR_MIPMAP_LINEAR);
+			else
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+						GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture.width, texture.height, 0, format,
+					GL_UNSIGNED_BYTE, texture.data);
+
+			if (texture.gen_mipmaps)
+				glGenerateMipmap(GL_TEXTURE_2D);
+
+			texture.in_gpu = true;
+		}
+		glActiveTexture(GL_TEXTURE0 + index);
+		glBindTexture(GL_TEXTURE_2D, texture.opengl_id);
+		return ;
+	}
+	else if (texture.state == TEXTURE_STATE_UNLOADED) {
+		texture.state = TEXTURE_STATE_LOADING;
+		platform.add_thread_work(load_texture_work, &texture);
+		//load_texture_work(&texture);
+	}
 	glActiveTexture(GL_TEXTURE0 + index);
-	glBindTexture(GL_TEXTURE_2D, (uintptr_t)texture.id);
+	glBindTexture(GL_TEXTURE_2D, get_texture(platform.render_context->purple_texture).opengl_id);
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -500,7 +585,7 @@ void init_render_context_opengl(RenderContext &rc)
 }
 
 // TODO: merge this with create_texture
-Texture create_depth_texture(int width, int height)
+TextureID create_depth_texture(int width, int height)
 {
 	Texture result = {};
 
@@ -516,10 +601,18 @@ Texture create_depth_texture(int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	result.id = texture;
+	result.opengl_id = texture;
 	result.valid = true;
 	result.name = make_cstring("shadow map depth texture");
-	return result;
+	platform.lock_mutex(platform.memory_mutex);
+
+	result.id = platform.render_context->loaded_textures.count + 1;
+	result.state = TEXTURE_STATE_LOADED;
+	result.in_gpu = true;
+	platform.render_context->loaded_textures.push(result);
+	platform.unlock_mutex(platform.memory_mutex);
+
+	return result.id;
 }
 
 FrameBuffer create_frame_buffer(bool depth_only = false, bool read = false)
@@ -550,7 +643,7 @@ void bind_framebuffer_depthbuffer(FrameBuffer &framebuffer, Texture &texture)
 	framebuffer.depth_texture = texture;
 	bind_framebuffer(framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-			texture.id, 0);
+			texture.opengl_id, 0);
 }
 
 void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
@@ -558,5 +651,5 @@ void bind_framebuffer_color(FrameBuffer &framebuffer, Texture &texture)
 	framebuffer.color_texture = texture;
 	bind_framebuffer(framebuffer);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-			texture.id, 0);
+			texture.opengl_id, 0);
 }

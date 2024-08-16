@@ -3,8 +3,7 @@
 #define PI 3.14159265359f
 #define DEG2RAD (PI / 180.f)
 #define RAD2DEG (180.f / PI)
-
-int sign(float x) {
+function int sign(float x) {
     if (x < 0)
         return -1;
     else if (x > 0)
@@ -12,6 +11,7 @@ int sign(float x) {
     return 0;
 }
 
+// TODO: cleanup maybe just template for vectors
 // ~ V2
 union v2 {
     struct {
@@ -23,41 +23,41 @@ union v2 {
     float e[2];
 };
 
-v2 V2(float x) { return v2{x, x}; }
-v2 V2(float x, float y) { return v2{x, y}; }
+function v2 V2(float x) { return v2{x, x}; }
+function v2 V2(float x, float y) { return v2{x, y}; }
 
-v2 operator+(v2 a, v2 b) { return v2{a.x + b.x, a.y + b.y}; }
+function v2 operator+(v2 a, v2 b) { return v2{a.x + b.x, a.y + b.y}; }
 
-v2 operator-(v2 a, v2 b) { return v2{a.x - b.x, a.y - b.y}; }
+function v2 operator-(v2 a, v2 b) { return v2{a.x - b.x, a.y - b.y}; }
 
-v2 operator*(v2 a, float b) { return v2{a.x * b, a.y * b}; }
+function v2 operator*(v2 a, float b) { return v2{a.x * b, a.y * b}; }
 
-v2 operator*(float a, v2 b) { return v2{a * b.x, a * b.y}; }
+function v2 operator*(float a, v2 b) { return v2{a * b.x, a * b.y}; }
 
-v2 operator*(v2 a, v2 b) { return v2{a.x * b.x, a.y * b.y}; }
+function v2 operator*(v2 a, v2 b) { return v2{a.x * b.x, a.y * b.y}; }
 
-v2 operator/(v2 a, float b) {
+function v2 operator/(v2 a, float b) {
     float inv = 1.f / b;
     return v2{a.x * inv, a.y * inv};
 }
 
-v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
+function v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
 
-v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
+function v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
 
-v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
+function v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
 
-v2 &operator*=(v2 &a, float b) { return a = a * b; }
+function v2 &operator*=(v2 &a, float b) { return a = a * b; }
 
-v2 &operator/=(v2 &a, float b) { return a = a / b; }
+function v2 &operator/=(v2 &a, float b) { return a = a / b; }
 
-float dot(v2 a, v2 b) { return a.x * b.x + a.y * b.y; }
+function float dot(v2 a, v2 b) { return a.x * b.x + a.y * b.y; }
 
-float length_sq(v2 a) { return dot(a, a); }
+function float length_sq(v2 a) { return dot(a, a); }
 
-float length(v2 a) { return sqrtf(dot(a, a)); }
+function float length(v2 a) { return sqrtf(dot(a, a)); }
 
-v2 normalize(v2 a) {
+function v2 normalize(v2 a) {
     float len = length_sq(a);
 
     // TODO:
@@ -82,9 +82,9 @@ union v3 {
     float e[3];
 };
 
-v3 V3(float x) { return v3{x, x, x}; }
+function v3 V3(float x) { return v3{x, x, x}; }
 
-v3 V3(float x, float y, float z) {
+function v3 V3(float x, float y, float z) {
     v3 result;
 
     result.x = x;
@@ -93,42 +93,42 @@ v3 V3(float x, float y, float z) {
     return result;
 }
 
-v3 operator+(v3 a, v3 b) { return v3{a.x + b.x, a.y + b.y, a.z + b.z}; }
+function v3 operator+(v3 a, v3 b) { return v3{a.x + b.x, a.y + b.y, a.z + b.z}; }
 
-v3 operator-(v3 a, v3 b) { return v3{a.x - b.x, a.y - b.y, a.z - b.z}; }
+function v3 operator-(v3 a, v3 b) { return v3{a.x - b.x, a.y - b.y, a.z - b.z}; }
 
-v3 operator*(v3 a, float b) { return v3{a.x * b, a.y * b, a.z * b}; }
+function v3 operator*(v3 a, float b) { return v3{a.x * b, a.y * b, a.z * b}; }
 
-v3 operator*(float a, v3 b) { return v3{a * b.x, a * b.y, a * b.z}; }
+function v3 operator*(float a, v3 b) { return v3{a * b.x, a * b.y, a * b.z}; }
 
-v3 operator/(v3 a, float b) {
+function v3 operator/(v3 a, float b) {
     float inv = 1.f / b;
     return v3{a.x * inv, a.y * inv, a.z * inv};
 }
 
-v3 operator*(v3 a, v3 b) { return v3{a.x * b.x, a.y * b.y, a.z * b.z}; }
+function v3 operator*(v3 a, v3 b) { return v3{a.x * b.x, a.y * b.y, a.z * b.z}; }
 
-v3 operator-(v3 a) { return v3{-a.x, -a.y, -a.z}; }
+function v3 operator-(v3 a) { return v3{-a.x, -a.y, -a.z}; }
 
-v3 &operator+=(v3 &a, v3 b) { return a = a + b; }
+function v3 &operator+=(v3 &a, v3 b) { return a = a + b; }
 
-v3 &operator-=(v3 &a, v3 b) { return a = a - b; }
+function v3 &operator-=(v3 &a, v3 b) { return a = a - b; }
 
-v3 &operator*=(v3 &a, v3 b) { return a = a * b; }
+function v3 &operator*=(v3 &a, v3 b) { return a = a * b; }
 
-v3 &operator*=(v3 &a, float b) { return a = a * b; }
+function v3 &operator*=(v3 &a, float b) { return a = a * b; }
 
-v3 &operator/=(v3 &a, float b) { return a = a / b; }
+function v3 &operator/=(v3 &a, float b) { return a = a / b; }
 
-v3 operator/(float a, v3 b) { return v3{a / b.x, a / b.y, a / b.z}; }
+function v3 operator/(float a, v3 b) { return v3{a / b.x, a / b.y, a / b.z}; }
 
-float dot(v3 a, v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+function float dot(v3 a, v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 
-float length_sq(v3 a) { return dot(a, a); }
+function float length_sq(v3 a) { return dot(a, a); }
 
-float length(v3 a) { return sqrtf(dot(a, a)); }
+function float length(v3 a) { return sqrtf(dot(a, a)); }
 
-v3 normalize(v3 a) {
+function v3 normalize(v3 a) {
     float len = length_sq(a);
     // TODO: cleanup
     if (len < 1e-9)
@@ -137,16 +137,16 @@ v3 normalize(v3 a) {
         return a / sqrtf(len);
 }
 
-v3 cross(v3 a, v3 b) {
+function v3 cross(v3 a, v3 b) {
     return v3{a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
               a.x * b.y - a.y * b.x};
 }
 
-v3 min(v3 a, v3 b) { return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
+function v3 min(v3 a, v3 b) { return V3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 
-v3 max(v3 a, v3 b) { return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+function v3 max(v3 a, v3 b) { return V3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
 
-bool v3_equal(v3 a, v3 b, float eps = 1e-6) {
+function bool v3_equal(v3 a, v3 b, float eps = 1e-6) {
     return fabsf(a.x - b.x) < eps && fabsf(a.y - b.y) < eps &&
            fabsf(a.z - b.z) < eps;
 }
@@ -158,23 +158,23 @@ union v3i {
     int e[3];
 };
 
-v3i V3i(int x, int y, int z) { return v3i{x, y, z}; }
+function v3i V3i(int x, int y, int z) { return v3i{x, y, z}; }
 
-v3i V3i(int x) { return v3i{x, x, x}; }
+function v3i V3i(int x) { return v3i{x, x, x}; }
 
-v3 V3(v3i v) { return v3{(float)v.x, (float)v.y, (float)v.z}; }
+function v3 V3(v3i v) { return v3{(float)v.x, (float)v.y, (float)v.z}; }
 
-v3i operator+(v3i a, v3i b) { return v3i{a.x + b.x, a.y + b.y, a.z + b.z}; }
+function v3i operator+(v3i a, v3i b) { return v3i{a.x + b.x, a.y + b.y, a.z + b.z}; }
 
-v3i operator-(v3i a, v3i b) { return v3i{a.x - b.x, a.y - b.y, a.z - b.z}; }
+function v3i operator-(v3i a, v3i b) { return v3i{a.x - b.x, a.y - b.y, a.z - b.z}; }
 
-v3i operator-(v3i a) { return v3i{-a.x, -a.y, -a.z}; }
+function v3i operator-(v3i a) { return v3i{-a.x, -a.y, -a.z}; }
 
-v3i max(v3i a, v3i b) {
+function v3i max(v3i a, v3i b) {
     return V3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
 }
 
-v3i min(v3i a, v3i b) {
+function v3i min(v3i a, v3i b) {
     return V3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
 }
 
@@ -190,14 +190,14 @@ union v4 {
     float e[4];
 };
 
-v4 V4(float x, float y, float z, float w) {
+function v4 V4(float x, float y, float z, float w) {
     v4 v;
 
     v.x = x, v.y = y, v.z = z, v.w = w;
     return v;
 }
 
-v4 V4(v3 xyz, float w) {
+function v4 V4(v3 xyz, float w) {
     v4 v;
 
     v.xyz = xyz;
@@ -205,21 +205,21 @@ v4 V4(v3 xyz, float w) {
     return v;
 }
 
-v4 operator+(v4 a, v4 b) {
+function v4 operator+(v4 a, v4 b) {
     return v4{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 }
 
-v4 operator-(v4 a, v4 b) {
+function v4 operator-(v4 a, v4 b) {
     return v4{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
 }
 
-v4 operator*(v4 a, float b) { return v4{a.x * b, a.y * b, a.z * b, a.w * b}; }
+function v4 operator*(v4 a, float b) { return v4{a.x * b, a.y * b, a.z * b, a.w * b}; }
 
-float dot(v4 a, v4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+function float dot(v4 a, v4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
-v4 operator-(v4 a) { return v4{-a.x, -a.y, -a.z, -a.w}; }
+function v4 operator-(v4 a) { return v4{-a.x, -a.y, -a.z, -a.w}; }
 
-float length(v4 a) { return sqrtf(dot(a, a)); }
+function float length(v4 a) { return sqrtf(dot(a, a)); }
 
 // ~ mat4
 union mat4 {
@@ -227,7 +227,7 @@ union mat4 {
     float v[16];
 };
 
-mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3) {
+function mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3) {
     mat4 m;
 
     m.e[0][0] = r0.e[0], m.e[0][1] = r0.e[1], m.e[0][2] = r0.e[2],
@@ -241,7 +241,7 @@ mat4 mat4_rows(v4 r0, v4 r1, v4 r2, v4 r3) {
     return m;
 }
 
-mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3) {
+function mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3) {
     mat4 m;
 
     m.e[0][0] = c0.e[0], m.e[1][0] = c0.e[1], m.e[2][0] = c0.e[2],
@@ -255,7 +255,7 @@ mat4 mat4_cols(v4 c0, v4 c1, v4 c2, v4 c3) {
     return m;
 }
 
-mat4 transpose(mat4 a) {
+function mat4 transpose(mat4 a) {
     mat4 b;
 
     for (int i = 0; i < 4; i++)
@@ -264,7 +264,7 @@ mat4 transpose(mat4 a) {
     return b;
 }
 
-mat4 operator*(mat4 a, mat4 b) {
+function mat4 operator*(mat4 a, mat4 b) {
     mat4 c = {};
 
     for (int i = 0; i < 4; i++)
@@ -274,7 +274,7 @@ mat4 operator*(mat4 a, mat4 b) {
     return c;
 }
 
-v4 operator*(mat4 a, v4 b) {
+function v4 operator*(mat4 a, v4 b) {
     v4 c;
 
     c.e[0] = a.e[0][0] * b.e[0] + a.e[0][1] * b.e[1] + a.e[0][2] * b.e[2] +
@@ -289,7 +289,7 @@ v4 operator*(mat4 a, v4 b) {
     return c;
 }
 
-mat4 scale(float a) {
+function mat4 scale(float a) {
     mat4 S = {};
 
     S.e[0][0] = S.e[1][1] = S.e[2][2] = a;
@@ -297,7 +297,7 @@ mat4 scale(float a) {
     return S;
 }
 
-mat4 scale(float x, float y, float z) {
+function mat4 scale(float x, float y, float z) {
     mat4 S = {};
 
     S.e[0][0] = x;
@@ -307,11 +307,11 @@ mat4 scale(float x, float y, float z) {
     return S;
 }
 
-mat4 scale(v3 v) { return scale(v.x, v.y, v.z); }
+function mat4 scale(v3 v) { return scale(v.x, v.y, v.z); }
 
-mat4 identity() { return scale(1); }
+function mat4 identity() { return scale(1); }
 
-mat4 translate(float x, float y, float z) {
+function mat4 translate(float x, float y, float z) {
     mat4 T = identity();
 
     T.e[0][3] = x;
@@ -320,9 +320,9 @@ mat4 translate(float x, float y, float z) {
     return T;
 }
 
-mat4 translate(v3 t) { return translate(t.x, t.y, t.z); }
+function mat4 translate(v3 t) { return translate(t.x, t.y, t.z); }
 
-mat4 operator*(float a, mat4 b) {
+function mat4 operator*(float a, mat4 b) {
     mat4 c;
 
     for (int i = 0; i < 4; i++)
@@ -331,28 +331,28 @@ mat4 operator*(float a, mat4 b) {
     return c;
 }
 
-mat4 zrotation(float a) {
+function mat4 zrotation(float a) {
     float c = cosf(a);
     float s = sinf(a);
 
     return {c, -s, 0, 0, s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 }
 
-mat4 xrotation(float a) {
+function mat4 xrotation(float a) {
     float c = cosf(a);
     float s = sinf(a);
 
     return {1, 0, 0, 0, 0, c, -s, 0, 0, s, c, 0, 0, 0, 0, 1};
 }
 
-mat4 yrotation(float a) {
+function mat4 yrotation(float a) {
     float c = cosf(a);
     float s = sinf(a);
 
     return {c, 0, s, 0, 0, 1, 0, 0, -s, 0, c, 0, 0, 0, 0, 1};
 }
 
-mat4 rotate_around_axis(v3 u, float a) {
+function mat4 rotate_around_axis(v3 u, float a) {
     u = normalize(u);
     float c = cosf(a);
     float s = sinf(a);
@@ -375,7 +375,7 @@ mat4 rotate_around_axis(v3 u, float a) {
             1};
 }
 
-mat4 perspective_projection(float znear, float zfar, float width, float height) {
+function mat4 perspective_projection(float znear, float zfar, float width, float height) {
     return {znear * 2 / width,
             0,
             0,
@@ -401,7 +401,7 @@ mat4 perspective_projection(float znear, float zfar, float width, float height) 
             0};
 }
 
-mat4 orthographic_projection(float znear, float zfar, float width, float height) {
+function mat4 orthographic_projection(float znear, float zfar, float width, float height) {
     return {2.f / width,
             0,
             0,
@@ -427,7 +427,7 @@ mat4 orthographic_projection(float znear, float zfar, float width, float height)
             1};
 }
 
-mat4 lookat(v3 position, v3 dir, v3 up) {
+function mat4 lookat(v3 position, v3 dir, v3 up) {
     v3 z_axis = normalize(-dir);
     // if (fabsf(dot(normalize(dir), normalize(up))) > 0.95)
     //	assert(0);
@@ -443,9 +443,9 @@ mat4 lookat(v3 position, v3 dir, v3 up) {
 
 using quat = v4;
 
-quat Quat(float x, float y, float z, float w) { return {x, y, z, w}; }
+function quat Quat(float x, float y, float z, float w) { return {x, y, z, w}; }
 
-quat operator*(quat a, quat b) {
+function quat operator*(quat a, quat b) {
     return {
         a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y, // i
         a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x, // j
@@ -454,7 +454,7 @@ quat operator*(quat a, quat b) {
     };
 }
 
-mat4 quat_to_mat(quat a) {
+function mat4 quat_to_mat(quat a) {
     float x = a.x;
     float y = a.y;
     float z = a.z;
@@ -498,7 +498,7 @@ mat4 quat_to_mat(quat a) {
     return transpose(matrix);
 }
 
-quat quat_lerp(quat a, quat b, float t) {
+function quat quat_lerp(quat a, quat b, float t) {
     float l2 = dot(a, b);
     if (l2 < 0.0f)
         b = -b;
@@ -510,7 +510,7 @@ quat quat_lerp(quat a, quat b, float t) {
     return c * (1.f / length(c));
 }
 
-mat4 inverse(mat4 matrix) {
+function mat4 inverse(mat4 matrix) {
     const float *m = (float *)matrix.e;
 
     float t0 = m[10] * m[15];
@@ -588,7 +588,7 @@ template <typename T> T lerp(const T a, const T b, float t) {
     return (1 - t) * a + t * b;
 }
 
-bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
+function bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
                    float *hit_t) {
     float denom = dot(ray_dir, plane_normal);
     if (fabsf(denom) < 1e-5)
@@ -603,7 +603,7 @@ bool ray_hit_plane(v3 ray_origin, v3 ray_dir, v3 plane_normal, v3 plane_point,
     return false;
 }
 
-bool ray_hit_triangle(v3 ray_origin, v3 ray_dir, v3 v0, v3 v1, v3 v2, float *hit_t)
+function bool ray_hit_triangle(v3 ray_origin, v3 ray_dir, v3 v0, v3 v1, v3 v2, float *hit_t)
 {
 	v3 u = v1 - v0;
 	v3 v = v2 - v0;
@@ -626,9 +626,10 @@ bool ray_hit_triangle(v3 ray_origin, v3 ray_dir, v3 v0, v3 v1, v3 v2, float *hit
 	return false;
 }
 
-void push_cube_outline(v3 p, v3 r, v3 color);
+function void push_cube_outline(v3 p, v3 r, v3 color);
 
-float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
+// TODO: cleanup
+function float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
                   v3 box_yaxis, v3 box_zaxis) {
     struct {
         v3 normal;
@@ -679,22 +680,13 @@ float ray_hit_box(v3 ray_origin, v3 ray_dir, v3 box_center, v3 box_xaxis,
     return min_t;
 }
 
-quat rotate_around_axis_quat(v3 axis, float a) {
+function quat rotate_around_axis_quat(v3 axis, float a) {
     axis = normalize(axis);
     float s = sinf(a / 2);
     float c = cosf(a / 2);
     return V4(axis * s, c);
 }
 
-quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
+function quat zrotation_quat(float a) { return rotate_around_axis_quat(V3(0, 0, 1), a); }
 
-quat identity_quat() { return Quat(0, 0, 0, 1); }
-
-/*
-    (t * dir - p)^2 = 1
-
-    dot(t*dir - p, t*dir - p) = 1
-
-    t^2 * dot(dir, dir) -2 * 
-
-*/
+function quat identity_quat() { return Quat(0, 0, 0, 1); }

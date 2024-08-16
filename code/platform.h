@@ -90,13 +90,19 @@ struct ThreadWork {
 };
 
 
+struct Mutex {
+    volatile int value;
+};
 
-global ThreadWork thread_work_queue[256];
-#define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
-global volatile int thread_work_queue_read_index;
-global volatile int thread_work_queue_write_index;
-global volatile int thread_work_queue_occupied_index;
-global void *thread_work_semaphore;
+#ifdef PLATFORM_WIN32
+#define MEMORY_BARRIER() MemoryBarrier()
+#elif defined PLATFORM_LINUX
+
+#endif
+
+typedef void LockMutexFn(Mutex &mutex);
+typedef void UnlockMutexFn(Mutex &mutex);
+
 
 typedef bool AddThreadWorkFn(ThreadWorkFn *callback, void *data);
 
@@ -104,6 +110,16 @@ typedef void *PlatformAllocateFn(usize size);
 typedef void PlatformFreeFn(void *);
 
 struct RenderContext;
+
+struct TempMemory {
+    Arena arena;
+    struct {
+        memory_block *block;
+        usize used;
+    } last_used[16];
+    int last_used_count;
+};
+
 
 struct Platform {
     RenderContext *render_context;
@@ -113,14 +129,9 @@ struct Platform {
 
     PlatformAllocateFn *allocate_memory;
     PlatformFreeFn *free_memory;
+    LockMutexFn *lock_mutex;
+    UnlockMutexFn *unlock_mutex;
 
-    Arena temp_arena;
-    struct {
-        memory_block *block;
-		usize used;
-    } temp_arena_last_used[16];
-    int temp_arena_last_used_count;
+    Mutex memory_mutex;
 };
-
-global Platform platform;
 
