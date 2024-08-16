@@ -79,67 +79,6 @@ struct GameInput {
 #define IsDownFirstTime(input, button)                                         \
     (IsDown(input, button) && !WasDown(input, button))
 
-#ifdef RENDERER_OPENGL
-#define GL_FUNCTIONS(X)                                                        \
-    X(PFNGLENABLEPROC, glEnable)                                               \
-    X(PFNGLDISABLEPROC, glDisable)                                             \
-    X(PFNGLBLENDFUNCPROC, glBlendFunc)                                         \
-    X(PFNGLVIEWPORTPROC, glViewport)                                           \
-    X(PFNGLCLEARCOLORPROC, glClearColor)                                       \
-    X(PFNGLCLEARPROC, glClear)                                                 \
-    X(PFNGLDRAWARRAYSPROC, glDrawArrays)                                       \
-    X(PFNGLCREATEBUFFERSPROC, glCreateBuffers)                                 \
-    X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage)                       \
-    X(PFNGLBINDVERTEXARRAYPROC, glBindVertexArray)                             \
-    X(PFNGLCREATEVERTEXARRAYSPROC, glCreateVertexArrays)                       \
-    X(PFNGLVERTEXARRAYATTRIBBINDINGPROC, glVertexArrayAttribBinding)           \
-    X(PFNGLVERTEXARRAYVERTEXBUFFERPROC, glVertexArrayVertexBuffer)             \
-    X(PFNGLVERTEXARRAYATTRIBFORMATPROC, glVertexArrayAttribFormat)             \
-    X(PFNGLENABLEVERTEXARRAYATTRIBPROC, glEnableVertexArrayAttrib)             \
-    X(PFNGLCREATESHADERPROGRAMVPROC, glCreateShaderProgramv)                   \
-    X(PFNGLGETPROGRAMIVPROC, glGetProgramiv)                                   \
-    X(PFNGLGETPROGRAMINFOLOGPROC, glGetProgramInfoLog)                         \
-    X(PFNGLGENPROGRAMPIPELINESPROC, glGenProgramPipelines)                     \
-    X(PFNGLUSEPROGRAMSTAGESPROC, glUseProgramStages)                           \
-    X(PFNGLBINDPROGRAMPIPELINEPROC, glBindProgramPipeline)                     \
-    X(PFNGLPROGRAMUNIFORMMATRIX2FVPROC, glProgramUniformMatrix2fv)             \
-    X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit)                             \
-    X(PFNGLCREATETEXTURESPROC, glCreateTextures)                               \
-    X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri)                         \
-    X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D)                           \
-    X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D)                         \
-    X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)                   \
-    X(PFNGLGETINTEGERVPROC, glGetIntegerv)                                     \
-    X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl)                     \
-    X(PFNGLCREATESHADERPROC, glCreateShader)                                   \
-    X(PFNGLSHADERSOURCEPROC, glShaderSource)                                   \
-    X(PFNGLCOMPILESHADERPROC, glCompileShader)                                 \
-    X(PFNGLGETSHADERIVPROC, glGetShaderiv)                                     \
-    X(PFNGLGETSHADERINFOLOGPROC, glGetShaderInfoLog)                           \
-    X(PFNGLACTIVETEXTUREPROC, glActiveTexture)                                 \
-    X(PFNGLBINDTEXTUREPROC, glBindTexture)                                     \
-    X(PFNGLGENTEXTURESPROC, glGenTextures)                                     \
-    X(PFNGLTEXIMAGE2DPROC, glTexImage2D)                                       \
-    X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap)                               \
-    X(PFNGLTEXPARAMETERIPROC, glTexParameteri)                                 \
-    X(PFNGLCLEARDEPTHPROC, glClearDepth)                                       \
-    X(PFNGLBINDFRAMEBUFFERPROC, glBindFrameBuffer)                             \
-    X(PFNGLCULLFACEPROC, glCullFace)                                           \
-    X(PFNGLCREATEPROGRAMPROC, glCreateProgram)                                 \
-    X(PFNGLATTACHSHADERPROC, glAttachShader)                                   \
-    X(PFNGLLINKPROGRAMPROC, glLinkProgram)                                     \
-    X(PFNGLUSEPROGRAMPROC, glUseProgram)                                       \
-    X(PFNGLGENVERTEXARRAYSPROC, glGenVertexArrays)                             \
-    X(PFNGLGENBUFFERSPROC, glGenBuffers)                                       \
-    X(PFNGLBINDBUFFERPROC, glBindBuffer)                                       \
-    X(PFNGLBINDBUFFERBASEPROC, glBindBufferBase)                               \
-    X(PFNGLBUFFERDATAPROC, glBufferData)                                       \
-    X(PFNGLBUFFERSUBDATAPROC, glBufferSubData)                                 \
-    X(PFNGLVERTEXATTRIBPOINTERPROC, glVertexAttribPointer)                     \
-    X(PFNGLENABLEVERTEXATTRIBARRAYPROC, glEnableVertexAttribArray)             \
-    X(PFNGLPOLYGONMODEPROC, glPolygonMode)
-#endif
-
 
 #define THREAD_WORK_FUNC(name) void name(void *data)
 
@@ -150,6 +89,8 @@ struct ThreadWork {
 	void *data;
 };
 
+
+
 global ThreadWork thread_work_queue[256];
 #define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
 global volatile int thread_work_queue_read_index;
@@ -159,14 +100,27 @@ global void *thread_work_semaphore;
 
 typedef bool AddThreadWorkFn(ThreadWorkFn *callback, void *data);
 
+typedef void *PlatformAllocateFn(usize size);
+typedef void PlatformFreeFn(void *);
+
+struct RenderContext;
+
 struct Platform {
-    void *render_context;
+    RenderContext *render_context;
     void *imgui_context;
-    TempArena temp_arena;
 
     AddThreadWorkFn *add_thread_work;
+
+    PlatformAllocateFn *allocate_memory;
+    PlatformFreeFn *free_memory;
+
+    Arena temp_arena;
+    struct {
+        memory_block *block;
+		usize used;
+    } temp_arena_last_used[16];
+    int temp_arena_last_used_count;
 };
 
-#define GAME_UPDATE_AND_RENDER(name)                                           \
-    void name(Platform &platform, Arena *memory, GameInput &input, float dt)
-typedef GAME_UPDATE_AND_RENDER(game_update_and_render_fn);
+global Platform platform;
+

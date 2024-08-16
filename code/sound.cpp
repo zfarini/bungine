@@ -4,26 +4,44 @@
 LoadedSound load_wav_file(Arena *arena, const char *filename)
 {
     ma_decoder_config config = ma_decoder_config_init(ma_format_f32, SOUND_CHANNEL_COUNT, SOUND_SAMPLE_RATE);
+	config.encodingFormat = ma_encoding_format_wav;
 
     ma_decoder decoder;
     ma_result result = ma_decoder_init_file(filename, &config, &decoder);
     if (result != MA_SUCCESS)
         assert(0);
-    LoadedSound sound = {};
-    //sound.samples = (float *)calloc(1, 2 * sizeof(float) * 48000 * 60);
-    ma_uint64 samplesToRead = 1024;
-	sound.samples = (float *)arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
 
+	ma_uint64 samples_to_read = SOUND_SAMPLE_RATE;
+
+	// TOOD: find a better way to find the size
+	usize sample_count = 0;
+	{
+		Arena *temp_arena = begin_temp_memory();
+		float *samples = (float *)arena_alloc(temp_arena, samples_to_read * sizeof(float) * SOUND_CHANNEL_COUNT);
+		
+		 while (1) {
+			ma_uint64 samples_read = 0;
+			result = ma_decoder_read_pcm_frames(&decoder, samples, samples_to_read, &samples_read);
+			sample_count += samples_read;
+			if (samples_read < samples_to_read)
+				break ;
+    	}
+		end_temp_memory();
+	}
+	//ma_decoder_init_file(filename, &config, &decoder);
+
+	LoadedSound sound = {};
+	sound.samples = (float *)arena_alloc(arena, sample_count * sizeof(float) * SOUND_CHANNEL_COUNT);
+	assert(ma_decoder_seek_to_pcm_frame(&decoder, 0) == MA_SUCCESS);
     while (1) {
-        ma_uint64 samplesRead = 0;
+        ma_uint64 samples_read = 0;
         result = ma_decoder_read_pcm_frames(&decoder, sound.samples + sound.sample_count*SOUND_CHANNEL_COUNT, 
-			samplesToRead, &samplesRead);
-        sound.sample_count += samplesRead;
-        if (samplesRead < samplesToRead)
+			samples_to_read, &samples_read);
+        sound.sample_count += samples_read;
+        if (samples_read < samples_to_read)
             break ;
-		// @HACK: kinda, I'm just assuming stuff will be continuous with no random alignement jumps
-		arena_alloc(arena, samplesToRead * sizeof(float) * SOUND_CHANNEL_COUNT);
     }
+	ma_decoder_uninit(&decoder);
 	LOG_INFO("loaded sound %s, %d samples", filename, sound.sample_count);
     return sound;
 }
@@ -83,7 +101,7 @@ void audio_write_callback(ma_device* device, void* output, const void* input, ma
 
 void play_sound(Game &game, LoadedSound &loaded_sound, entity_id entity = 0)
 {
-	SoundPlaying *sound = (SoundPlaying *)arena_alloc_zero(game.memory, sizeof(SoundPlaying));
+	SoundPlaying *sound = (SoundPlaying *)arena_alloc_zero(&game.arena, sizeof(SoundPlaying));
 	sound->sound = &loaded_sound;
 	sound->entity = entity;
 

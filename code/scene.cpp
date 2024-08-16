@@ -58,9 +58,9 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 	assert(name.count);
 
 	if (name.count) {
-		for (int i = 0; i < g_rc->loaded_textures.count; i++) {
-			if (strings_equal(g_rc->loaded_textures[i].name, name))
-				return g_rc->loaded_textures[i];
+		for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
+			if (strings_equal(platform.render_context->loaded_textures[i].name, name))
+				return platform.render_context->loaded_textures[i];
 		}
 	}
 	void *data;
@@ -92,7 +92,9 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 
 	Texture texture = create_texture(name, data, width, height, srgb);
 	if (name.count)
-		g_rc->loaded_textures.push(texture);
+		platform.render_context->loaded_textures.push(texture);
+
+	stbi_image_free(data);
 
 	return texture;
 }
@@ -483,10 +485,10 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 	opts.target_axes.front = UFBX_COORDINATE_AXIS_POSITIVE_Y;
 	opts.target_unit_meters = 1;
 	//TODO: this needs to use thread local storage
-	//opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	//opts.temp_allocator.allocator.user = temp;
-	//opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
-	//opts.result_allocator.allocator.user = temp;
+	opts.temp_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.temp_allocator.allocator.user = temp;
+	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
+	opts.result_allocator.allocator.user = temp;
 	opts.generate_missing_normals = true;
 	opts.load_external_files = true;
 	//opts.obj_merge_objects = true;
@@ -499,7 +501,6 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 		LOG_ERROR("failed to load %s: %s", filename, error.description.data);
 		assert(0);
 	}
-
 
 	usize total_num_triangles = 0;
 	for (size_t i = 0; i < uscene->nodes.count; i++)
@@ -534,4 +535,23 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 	scene.id = ++game.next_scene_id;
 	game.scenes.push(scene);
 	return &game.scenes[game.scenes.count - 1];
+}
+
+SceneID get_scene_id_by_name(Game &game, String name)
+{
+    for (int i = 0; i < game.scenes.count; i++) {
+		if (strings_equal(game.scenes[i].name, name))
+			return game.scenes[i].id;
+	}
+	LOG_WARN("couldn't find scene %.*s", str_format(name));
+	return 0;
+}
+
+Scene &get_scene_by_id(Game &game, SceneID id)
+{
+	for (int i = 0; i < game.scenes.count; i++) {
+		if (game.scenes[i].id == id)
+			return game.scenes[i];
+	}
+	return game.default_scene;
 }

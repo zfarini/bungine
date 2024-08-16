@@ -1,50 +1,42 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <cassert>
-#include <cstdint>
-#include <cstdlib>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <glad.c>
-// TODO: replace this
+#include <math.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+// TODO: cleanup replace this
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
 #include <map>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
-#include <math.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#ifdef _WIN32
-#include <windows.h>
 
-#else
-#include <sys/mman.h>
-#endif
+#ifdef PLATFORM_WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #undef min
 #undef max
 #undef near
 #undef far
-// TODO: cleanup
-int g_frame = 0;
+#elif defined PLATFORM_LINUX
+#include <sys/mman.h>
+extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
+#endif
 
 #include "game.cpp"
-
-extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 
 void fatal_error(const char* message)
 {
 	LOG_FATAL("%s", message);
 
+#ifdef PLATFORM_WIN32
+	MessageBox(0, message, 0, MB_OK|MB_ICONERROR);
+#elif defined PLATFORM_LINUX
     char cmd[1024];
     snprintf(cmd, sizeof(cmd), "zenity --error --no-wrap --text=\"%s\"", message);
     system(cmd);
+#endif
 
     exit(1);
 }
@@ -89,25 +81,9 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	}
 }
 
-GAME_UPDATE_AND_RENDER(game_update_and_render);
-
-
 int main()
 {
-	// TODO: change to mmap
-	usize memory_size = GigaByte(4);
-	//memory_size = 4096;
-	void *memory_ptr;
-#ifdef _WIN32
-	memory_ptr = VirtualAlloc(0, memory_size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-#else
-	memory_ptr = mmap(0, memory_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-#endif
-
-	if (!memory_ptr)
-		fatal_error("failed to allocate memory");
-
-	Arena memory = make_arena(memory_ptr, memory_size);
+	Game game = {};
 
 	ma_device sound_device;
 	{
@@ -117,8 +93,7 @@ int main()
 		config.playback.channels = SOUND_CHANNEL_COUNT;
 		config.sampleRate        = SOUND_SAMPLE_RATE;
 		config.dataCallback      = audio_write_callback;
-		// @HACK: the game struct should always be allocated the first thing
-		config.pUserData         = memory.data;
+		config.pUserData         = &game;
 
 		if (ma_device_init(NULL, &config, &sound_device) != MA_SUCCESS)
 			LOG_ERROR("failed to init sound device");
@@ -162,7 +137,6 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	RenderContext rc = {};
 
 	GameInput game_input = {};
 	{
@@ -174,9 +148,14 @@ int main()
 	if (g_hide_mouse)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	Platform platform = {};
-	platform.render_context = &rc;
-	platform.imgui_context = ImGui::GetCurrentContext();
+
+	RenderContext render_context = {};
+	{
+		platform.render_context = &render_context;
+		platform.imgui_context = ImGui::GetCurrentContext();
+		platform.allocate_memory = (PlatformAllocateFn *)malloc;
+		platform.free_memory = (PlatformFreeFn *)free;
+	}
 
 	int frame = 0;
 
@@ -186,12 +165,13 @@ int main()
 		update_game_input(window, game_input, frame);
 		if (IsDown(game_input, BUTTON_ESCAPE))
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
-		glfwGetFramebufferSize(window, &rc.window_width, &rc.window_height);
-		game_update_and_render(platform, &memory, game_input, 1.f / 60);
+		glfwGetFramebufferSize(window, &render_context.window_width, &render_context.window_height);
+		// TODO: cleanup https://gafferongames.com/post/fix_your_timestep
+		float dt = 1.f / 60;
+		game_update_and_render(game, game_input, dt);
 
 		glfwSwapBuffers(window);
 		frame++;
-		g_frame++;
 	}
 
 	ma_device_uninit(&sound_device);

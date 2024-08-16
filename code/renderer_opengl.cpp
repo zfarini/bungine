@@ -177,7 +177,7 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 
 void begin_render_pass(RenderPass &rp)
 {
-	g_rc->render_pass = &rp;
+	platform.render_context->render_pass = &rp;
 	glUseProgram(rp.program);
 	bind_depth_stencil_state(rp.depth_stencil_state);
 	bind_rasterizer_state(rp.rasterizer_state);
@@ -185,7 +185,7 @@ void begin_render_pass(RenderPass &rp)
 
 void end_render_pass()
 {
-	g_rc->render_pass = 0;
+	platform.render_context->render_pass = 0;
 }
 
 void set_viewport(float top_left_x, float top_left_y, float width, float height)
@@ -253,7 +253,7 @@ void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 
 void bind_vertex_buffer(VertexBuffer &vb)
 {
-	auto &layout = g_rc->render_pass->input_layout;
+	auto &layout = platform.render_context->render_pass->input_layout;
 
 	glBindVertexArray(vb.vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
@@ -276,16 +276,16 @@ void bind_vertex_buffer(VertexBuffer &vb)
 // TODO: this assumes a vao was already bound
 void bind_index_buffer(IndexBuffer &ib)
 {
-	assert(g_rc->render_pass);
+	assert(platform.render_context->render_pass);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.ebo);
 }
 
 void draw(int offset, int vertices_count)
 {
 	int mode = 0;
-	if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+	if (platform.render_context->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
 		mode = GL_TRIANGLES;
-	else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+	else if (platform.render_context->render_pass->primitive_type == PRIMITIVE_LINES)
 		mode = GL_LINES;
 	else
 		assert(0);
@@ -295,9 +295,9 @@ void draw(int offset, int vertices_count)
 void draw_indexed(int offset, int indices_count)
 {
 	int mode = 0;
-	if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+	if (platform.render_context->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
 		mode = GL_TRIANGLES;
-	else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+	else if (platform.render_context->render_pass->primitive_type == PRIMITIVE_LINES)
 		mode = GL_LINES;
 	else
 		assert(0);
@@ -423,7 +423,7 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 
 void begin_render_frame()
 {
-	g_rc->debug_lines.count = 0;
+	platform.render_context->debug_lines.count = 0;
 	//#ifdef _WIN32
 	//ImGui_ImplWin32_NewFrame();
 	//#else
@@ -435,7 +435,7 @@ void begin_render_frame()
 
 void end_render_frame()
 {
-	bind_framebuffer(g_rc->window_framebuffer);
+	bind_framebuffer(platform.render_context->window_framebuffer);
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -480,7 +480,7 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 			id, s_source, s_type, s_severity, message);
 }
 
-void init_render_context_opengl(RenderContext &rc, Platform &platform)
+void init_render_context_opengl(RenderContext &rc)
 {
 #ifndef _WIN32
 	int flags;
@@ -539,7 +539,7 @@ FrameBuffer create_frame_buffer(bool depth_only = false, bool read = false)
 		glDrawBuffers(1, buffers);
 	}
 
-	//glBindFramebuffer(GL_FRAMEBUFFER, g_rc.active_framebuffer_id);
+	//glBindFramebuffer(GL_FRAMEBUFFER, platform.render_context.active_framebuffer_id);
 
 	result.id = fbo;
 	return result;

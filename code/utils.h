@@ -1,18 +1,3 @@
-#define Kilobyte(x) (1024ULL * x)
-#define Megabyte(x) (1024ULL * Kilobyte(x))
-#define GigaByte(x) (1024ULL * Megabyte(x))
-
-template <typename T> T min(T a, T b) { return (a < b ? a : b); }
-
-template <typename T> T max(T a, T b) { return (a > b ? a : b); }
-
-template <typename T> void swap(T &a, T &b) {
-    T tmp = a;
-
-    a = b;
-    b = tmp;
-}
-
 template <typename T> struct Array {
     T *data;
     usize count;

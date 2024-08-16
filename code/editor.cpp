@@ -596,7 +596,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 	v3 camera_ray_origin, camera_ray_dir;
 
 	{
-		v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
+		v2 mouse_p = (input.mouse_p * V2(1.f / platform.render_context
+->window_width, 1.f / platform.render_context
+->window_height)) * 2 - V2(1);
 		mouse_p.y *= -1;
 		camera_ray_origin = camera.position;
 		camera_ray_dir = camera.forward * camera.znear 

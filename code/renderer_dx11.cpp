@@ -44,8 +44,10 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 	ID3D11Texture2D* texture;
 
-	g_rc->device->CreateTexture2D(&desc, 0, &texture);
-	g_rc->context->UpdateSubresource(texture, 0, 0, s_data.pSysMem, s_data.SysMemPitch, 0);
+	platform.render_context
+->device->CreateTexture2D(&desc, 0, &texture);
+	platform.render_context
+->context->UpdateSubresource(texture, 0, 0, s_data.pSysMem, s_data.SysMemPitch, 0);
 
 	ID3D11ShaderResourceView *srv;
 
@@ -56,9 +58,11 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srv_desc.Texture2D.MipLevels = mipmapping ? (UINT)-1 : 1;
 
-	g_rc->device->CreateShaderResourceView(texture, &srv_desc, &srv);
+	platform.render_context
+->device->CreateShaderResourceView(texture, &srv_desc, &srv);
 	if (mipmapping)
-		g_rc->context->GenerateMips(srv);
+		platform.render_context
+->context->GenerateMips(srv);
 
 	texture->Release();
 
@@ -70,7 +74,8 @@ Texture create_texture(String name, void *data, int width, int height, bool srgb
 
 void bind_texture(int index, Texture &texture)
 {
-	g_rc->context->PSSetShaderResources(index, 1, &texture.srv);
+	platform.render_context
+->context->PSSetShaderResources(index, 1, &texture.srv);
 }
 
 Shader load_shader(String filename, ShaderType type, const char *main = "")
@@ -107,10 +112,12 @@ Shader load_shader(String filename, ShaderType type, const char *main = "")
 		assert(0);
 	}
 	if (type == SHADER_TYPE_VERTEX)
-		g_rc->device->CreateVertexShader(blob->GetBufferPointer(), 
+		platform.render_context
+->device->CreateVertexShader(blob->GetBufferPointer(), 
 				blob->GetBufferSize(), 0, &result.vs);
 	else if (type == SHADER_TYPE_FRAGMENT)
-		g_rc->device->CreatePixelShader(blob->GetBufferPointer(), 
+		platform.render_context
+->device->CreatePixelShader(blob->GetBufferPointer(), 
 				blob->GetBufferSize(), 0, &result.ps);
 	else
 		assert(0);
@@ -144,7 +151,8 @@ RasterizerState create_rasterizer_state(RasterizerFillMode fillmode, RasterizerC
 	desc.FrontCounterClockwise = TRUE;
 	// NOTE: this seems to be for enabling depth clipping for the range specified in viewport
 	desc.DepthClipEnable = TRUE;
-	g_rc->device->CreateRasterizerState(&desc, &result.state);
+	platform.render_context
+->device->CreateRasterizerState(&desc, &result.state);
 	return result;
 }
 
@@ -193,7 +201,8 @@ RenderPass create_render_pass(Shader vs, Shader fs, Array<VertexInputElement> in
 		input_layout_desc[i].InstanceDataStepRate = 0;
 	}
 
-	g_rc->device->CreateInputLayout(input_layout_desc, (UINT)input_elements.count,
+	platform.render_context
+->device->CreateInputLayout(input_layout_desc, (UINT)input_elements.count,
 			vs.blob->GetBufferPointer(), 
 			vs.blob->GetBufferSize(), &rp.input_layout);
 
@@ -210,31 +219,41 @@ DepthStencilState create_depth_stencil_state(bool enable_depth)
 	desc.DepthEnable    = enable_depth;
 	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	desc.DepthFunc      = D3D11_COMPARISON_LESS;
-	g_rc->device->CreateDepthStencilState(&desc, &result.state);
+	platform.render_context
+->device->CreateDepthStencilState(&desc, &result.state);
 	return result;
 }
 
 void begin_render_pass(RenderPass &rp)
 {
-	g_rc->render_pass = &rp;
+	platform.render_context
+->render_pass = &rp;
 
 	if (rp.primitive_type == PRIMITIVE_TRIANGLES)
-		g_rc->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		platform.render_context
+->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	else if (rp.primitive_type == PRIMITIVE_LINES)
-		g_rc->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		platform.render_context
+->context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	else
 		assert(0);
-	g_rc->context->IASetInputLayout(rp.input_layout);
-	g_rc->context->VSSetShader(rp.vs.vs, 0, 0);
-	g_rc->context->PSSetShader(rp.fs.ps, 0, 0);
+	platform.render_context
+->context->IASetInputLayout(rp.input_layout);
+	platform.render_context
+->context->VSSetShader(rp.vs.vs, 0, 0);
+	platform.render_context
+->context->PSSetShader(rp.fs.ps, 0, 0);
 
-	g_rc->context->OMSetDepthStencilState(rp.depth_stencil_state.state, 0);
-	g_rc->context->RSSetState(rp.rasterizer_state.state);
+	platform.render_context
+->context->OMSetDepthStencilState(rp.depth_stencil_state.state, 0);
+	platform.render_context
+->context->RSSetState(rp.rasterizer_state.state);
 }
 
 void end_render_pass()
 {
-	g_rc->render_pass = 0;
+	platform.render_context
+->render_pass = 0;
 }
 
 void set_viewport(float top_left_x, float top_left_y, float width, float height)
@@ -247,22 +266,26 @@ void set_viewport(float top_left_x, float top_left_y, float width, float height)
 	viewport.TopLeftX = top_left_x;
 	viewport.TopLeftY = top_left_y;
 
-	g_rc->context->RSSetViewports(1, &viewport);
+	platform.render_context
+->context->RSSetViewports(1, &viewport);
 }
 
 void bind_framebuffer(FrameBuffer &framebuffer)
 {
-	g_rc->context->OMSetRenderTargets(1, &framebuffer.rtv, framebuffer.dsv);
+	platform.render_context
+->context->OMSetRenderTargets(1, &framebuffer.rtv, framebuffer.dsv);
 }
 
 void clear_framebuffer_color(FrameBuffer &framebuffer, v4 color)
 {
-	g_rc->context->ClearRenderTargetView(framebuffer.rtv, (FLOAT *)color.e);
+	platform.render_context
+->context->ClearRenderTargetView(framebuffer.rtv, (FLOAT *)color.e);
 }
 
 void clear_framebuffer_depth(FrameBuffer &framebuffer, float depth)
 {
-	g_rc->context->ClearDepthStencilView(framebuffer.dsv, D3D11_CLEAR_DEPTH, depth, 0);
+	platform.render_context
+->context->ClearDepthStencilView(framebuffer.dsv, D3D11_CLEAR_DEPTH, depth, 0);
 }
 
 VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize vertex_size, usize size, void *data = 0)
@@ -286,12 +309,14 @@ VertexBuffer create_vertex_buffer(VertexBufferUsage usage, usize vertex_size, us
 
 	if (!data) {
 		assert(usage == VERTEX_BUFFER_DYNAMIC);
-		g_rc->device->CreateBuffer(&desc, 0, &result.buffer);
+		platform.render_context
+->device->CreateBuffer(&desc, 0, &result.buffer);
 	}
 	else {
 		D3D11_SUBRESOURCE_DATA init_data = {};
 		init_data.pSysMem = data;
-		g_rc->device->CreateBuffer(&desc, &init_data, &result.buffer);
+		platform.render_context
+->device->CreateBuffer(&desc, &init_data, &result.buffer);
 	}
 	return result;
 }
@@ -301,21 +326,25 @@ void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 	assert(vb.usage == VERTEX_BUFFER_DYNAMIC);
 
 	D3D11_MAPPED_SUBRESOURCE buffer_mapped;
-	g_rc->context->Map(vb.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
+	platform.render_context
+->context->Map(vb.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
 	memcpy(buffer_mapped.pData, data, size);
-	g_rc->context->Unmap(vb.buffer, 0);
+	platform.render_context
+->context->Unmap(vb.buffer, 0);
 }
 
 void bind_vertex_buffer(VertexBuffer &vb)
 {
 	UINT stride = (UINT)vb.vertex_size;
 	UINT offset = 0;
-	g_rc->context->IASetVertexBuffers(0, 1, &vb.buffer, &stride, &offset);
+	platform.render_context
+->context->IASetVertexBuffers(0, 1, &vb.buffer, &stride, &offset);
 }
 
 void draw(int offset, int vertices_count)
 {
-	g_rc->context->Draw((UINT)vertices_count, (UINT)offset);
+	platform.render_context
+->context->Draw((UINT)vertices_count, (UINT)offset);
 }
 
 
@@ -373,7 +402,8 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	g_rc->device->CreateBuffer(&desc, 0, &result.buffer);
+	platform.render_context
+->device->CreateBuffer(&desc, 0, &result.buffer);
 
 	return result;
 }
@@ -415,49 +445,67 @@ void update_constant_buffer(ConstantBuffer &buffer, void *data)
 	}
 
 	D3D11_MAPPED_SUBRESOURCE buffer_mapped;
-	g_rc->context->Map(buffer.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
+	platform.render_context
+->context->Map(buffer.buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &buffer_mapped);
 	memcpy(buffer_mapped.pData, cdata, buffer.size);
-	g_rc->context->Unmap(buffer.buffer, 0);
+	platform.render_context
+->context->Unmap(buffer.buffer, 0);
 
 	end_temp_memory();
 }
 
 void bind_constant_buffer(ConstantBuffer &cbuffer)
 {
-	g_rc->context->VSSetConstantBuffers(0, 1, &cbuffer.buffer);
-	g_rc->context->PSSetConstantBuffers(0, 1, &cbuffer.buffer);
+	platform.render_context
+->context->VSSetConstantBuffers(0, 1, &cbuffer.buffer);
+	platform.render_context
+->context->PSSetConstantBuffers(0, 1, &cbuffer.buffer);
 }
 
 void begin_render_frame()
 {
 	RECT rect;
-	GetClientRect(g_rc->window, &rect);
+	GetClientRect(platform.render_context
+->window, &rect);
 	int width = rect.right - rect.left;
 	int height = rect.bottom - rect.top;
 
-	if (width != g_rc->window_width || height != g_rc->window_height) {
-		g_rc->window_width = width;
-		g_rc->window_height = height;
+	if (width != platform.render_context
+->window_width || height != platform.render_context
+->window_height) {
+		platform.render_context
+->window_width = width;
+		platform.render_context
+->window_height = height;
 
-		g_rc->context->ClearState();
-		g_rc->window_framebuffer.rtv->Release();
-		g_rc->window_framebuffer.dsv->Release();
+		platform.render_context
+->context->ClearState();
+		platform.render_context
+->window_framebuffer.rtv->Release();
+		platform.render_context
+->window_framebuffer.dsv->Release();
 
-		g_rc->window_framebuffer.rtv = 0;
-		g_rc->window_framebuffer.dsv = 0;
+		platform.render_context
+->window_framebuffer.rtv = 0;
+		platform.render_context
+->window_framebuffer.dsv = 0;
 
 		if (width != 0 && height != 0) {
-			if (FAILED(g_rc->swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0)))
+			if (FAILED(platform.render_context
+->swap_chain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0)))
 				assert(0);
 
 
 			// create RenderTarget view for new backbuffer texture
 			ID3D11Texture2D* backbuffer;
-			g_rc->swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
+			platform.render_context
+->swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer);
 			D3D11_RENDER_TARGET_VIEW_DESC backbuffer_desc = {};
 			backbuffer_desc.Format        = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 			backbuffer_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-			g_rc->device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &g_rc->window_framebuffer.rtv);
+			platform.render_context
+->device->CreateRenderTargetView((ID3D11Resource*)backbuffer, &backbuffer_desc, &platform.render_context
+->window_framebuffer.rtv);
 			backbuffer->Release();
 
 			D3D11_TEXTURE2D_DESC depth_buffer_desc;
@@ -467,23 +515,30 @@ void begin_render_frame()
 
 			// create new depth stencil texture & DepthStencil view
 			ID3D11Texture2D* depth_buffer;
-			g_rc->device->CreateTexture2D(&depth_buffer_desc, NULL, &depth_buffer);
-			g_rc->device->CreateDepthStencilView((ID3D11Resource*)depth_buffer, NULL, &g_rc->window_framebuffer.dsv);
+			platform.render_context
+->device->CreateTexture2D(&depth_buffer_desc, NULL, &depth_buffer);
+			platform.render_context
+->device->CreateDepthStencilView((ID3D11Resource*)depth_buffer, NULL, &platform.render_context
+->window_framebuffer.dsv);
 			depth_buffer->Release();
 		}
 	}
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	g_rc->debug_lines.count = 0;
+	platform.render_context
+->debug_lines.count = 0;
 }
 
 void end_render_frame()
 {
 	ImGui::Render();
-	g_rc->context->OMSetRenderTargets(1, &g_rc->window_framebuffer.rtv, 0);
+	platform.render_context
+->context->OMSetRenderTargets(1, &platform.render_context
+->window_framebuffer.rtv, 0);
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-	g_rc->swap_chain->Present(1, 0);
+	platform.render_context
+->swap_chain->Present(1, 0);
 }
 
 void init_render_context_dx11(RenderContext &rc, HWND window)

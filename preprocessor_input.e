@@ -1326,7 +1326,8 @@ struct ConstantBuffer {
 # 22 "code/game.cpp" 2
 
 
-static RenderContext *g_rc;
+static RenderContext *platform.render_context
+;
 
 
 
@@ -1511,7 +1512,8 @@ RenderPass create_render_pass(Shader vs, Shader fs,
 
 void begin_render_pass(RenderPass &rp)
 {
- g_rc->render_pass = &rp;
+ platform.render_context
+->render_pass = &rp;
  glUseProgram(rp.program);
  bind_depth_stencil_state(rp.depth_stencil_state);
  bind_rasterizer_state(rp.rasterizer_state);
@@ -1519,7 +1521,8 @@ void begin_render_pass(RenderPass &rp)
 
 void end_render_pass()
 {
- g_rc->render_pass = 0;
+ platform.render_context
+->render_pass = 0;
 }
 
 void set_viewport(float top_left_x, float top_left_y, float width, float height)
@@ -1587,7 +1590,8 @@ void update_vertex_buffer(VertexBuffer &vb, int size, void *data)
 
 void bind_vertex_buffer(VertexBuffer &vb)
 {
- auto &layout = g_rc->render_pass->input_layout;
+ auto &layout = platform.render_context
+->render_pass->input_layout;
 
  glBindVertexArray(vb.vao);
  glBindBuffer(GL_ARRAY_BUFFER, vb.vbo);
@@ -1610,16 +1614,19 @@ void bind_vertex_buffer(VertexBuffer &vb)
 
 void bind_index_buffer(IndexBuffer &ib)
 {
- assert(g_rc->render_pass);
+ assert(platform.render_context
+->render_pass);
  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib.ebo);
 }
 
 void draw(int offset, int vertices_count)
 {
  int mode = 0;
- if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+ if (platform.render_context
+->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
   mode = GL_TRIANGLES;
- else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+ else if (platform.render_context
+->render_pass->primitive_type == PRIMITIVE_LINES)
   mode = GL_LINES;
  else
   assert(0);
@@ -1629,9 +1636,11 @@ void draw(int offset, int vertices_count)
 void draw_indexed(int offset, int indices_count)
 {
  int mode = 0;
- if (g_rc->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
+ if (platform.render_context
+->render_pass->primitive_type == PRIMITIVE_TRIANGLES)
   mode = GL_TRIANGLES;
- else if (g_rc->render_pass->primitive_type == PRIMITIVE_LINES)
+ else if (platform.render_context
+->render_pass->primitive_type == PRIMITIVE_LINES)
   mode = GL_LINES;
  else
   assert(0);
@@ -1757,7 +1766,8 @@ void bind_constant_buffer(ConstantBuffer &cbuffer, int index)
 
 void begin_render_frame()
 {
- g_rc->debug_lines.count = 0;
+ platform.render_context
+->debug_lines.count = 0;
 
 
 
@@ -1769,7 +1779,8 @@ void begin_render_frame()
 
 void end_render_frame()
 {
- bind_framebuffer(g_rc->window_framebuffer);
+ bind_framebuffer(platform.render_context
+->window_framebuffer);
  ImGui::Render();
  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -2549,9 +2560,12 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
  assert(name.count);
 
  if (name.count) {
-  for (int i = 0; i < g_rc->loaded_textures.count; i++) {
-   if (strings_equal(g_rc->loaded_textures[i].name, name))
-    return g_rc->loaded_textures[i];
+  for (int i = 0; i < platform.render_context
+->loaded_textures.count; i++) {
+   if (strings_equal(platform.render_context
+->loaded_textures[i].name, name))
+    return platform.render_context
+->loaded_textures[i];
   }
  }
  void *data;
@@ -2583,7 +2597,8 @@ Texture load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb =
 
  Texture texture = create_texture(name, data, width, height, srgb);
  if (name.count)
-  g_rc->loaded_textures.push(texture);
+  platform.render_context
+->loaded_textures.push(texture);
 
  return texture;
 }
@@ -3280,10 +3295,14 @@ void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 
 void push_line(v3 a, v3 b, v3 color = V3(1))
 {
- g_rc->debug_lines.push(a);
- g_rc->debug_lines.push(color);
- g_rc->debug_lines.push(b);
- g_rc->debug_lines.push(color);
+ platform.render_context
+->debug_lines.push(a);
+ platform.render_context
+->debug_lines.push(color);
+ platform.render_context
+->debug_lines.push(b);
+ platform.render_context
+->debug_lines.push(color);
 }
 
 void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
@@ -3617,10 +3636,13 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
    for (usize j = 0; j < mesh.parts.count; j++) {
     MeshPart &part = mesh.parts[j];
 
-    bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
-    bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
+    bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : platform.render_context
+->white_texture);
+    bind_texture(1, part.material.specular.valid ? part.material.specular : platform.render_context
+->white_texture);
     bind_texture(2, part.material.normal_map);
-    bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
+    bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : platform.render_context
+->white_texture);
 
     constants.diffuse_factor = part.material.diffuse_factor;
     constants.specular_factor = part.material.specular_factor;
@@ -4796,7 +4818,9 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
  mat4 view = rotation * translate(-p);
 
 
- camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
+ camera = make_perspective_camera(view, 0.1f, 100, 100, (float)platform.render_context
+->window_height / platform.render_context
+->window_width);
 # 982 "code/world.cpp"
  return camera;
 }
@@ -5385,7 +5409,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
  v3 camera_ray_origin, camera_ray_dir;
 
  {
-  v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
+  v2 mouse_p = (input.mouse_p * V2(1.f / platform.render_context
+->window_width, 1.f / platform.render_context
+->window_height)) * 2 - V2(1);
   mouse_p.y *= -1;
   camera_ray_origin = camera.position;
   camera_ray_dir = camera.forward * camera.znear
@@ -5493,7 +5519,8 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 
 extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameInput &input, float dt)
 {
- g_rc = (RenderContext *)platform.render_context;
+ platform.render_context
+ = (RenderContext *)platform.render_context;
  g_temp_arena = &platform.temp_arena;
  ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
 
@@ -5502,7 +5529,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   assert(memory->used == 0);
   arena_alloc_zero(memory, sizeof(game));
 
-  init_render_context(memory, *g_rc, platform);
+  init_render_context(memory, *platform.render_context
+, platform);
 
   usize temp_arena_size = (1024ULL * (1024ULL * 1024));
   g_temp_arena->arena = make_arena(_arena_alloc("code/game.cpp", __func__, 153, memory, temp_arena_size), temp_arena_size);
@@ -5580,7 +5608,8 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
      line_input_layout);
 
    game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
-     g_rc->debug_lines.capacity * sizeof(v3));
+     platform.render_context
+->debug_lines.capacity * sizeof(v3));
 
    ConstantBufferElement elems[] = {
     {CONSTANT_BUFFER_ELEMENT_MAT4},
@@ -5818,11 +5847,16 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
 
  begin_render_pass(game.mesh_render_pass);
  {
-  set_viewport(0, 0, g_rc->window_width, g_rc->window_height);
+  set_viewport(0, 0, platform.render_context
+->window_width, platform.render_context
+->window_height);
 
-  bind_framebuffer(g_rc->window_framebuffer);
-  clear_framebuffer_color(g_rc->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
-  clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+  bind_framebuffer(platform.render_context
+->window_framebuffer);
+  clear_framebuffer_color(platform.render_context
+->window_framebuffer, V4(0.392f, 0.584f, 0.929f, 1.f));
+  clear_framebuffer_depth(platform.render_context
+->window_framebuffer, 1);
 
   bind_texture(4, game.shadow_map.depth_texture);
   render_entities(game, world, game_camera, false);
@@ -5843,13 +5877,16 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
  {
 
 
-  update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
-    g_rc->debug_lines.data);
+  update_vertex_buffer(game.debug_lines_vertex_buffer, (int)platform.render_context
+->debug_lines.count * sizeof(v3),
+    platform.render_context
+->debug_lines.data);
   mat4 mvp = game_camera.projection * game_camera.view;
   bind_constant_buffer(game.debug_lines_constant_buffer, 1);
   update_constant_buffer(game.debug_lines_constant_buffer, &mvp);
   bind_vertex_buffer(game.debug_lines_vertex_buffer);
-  draw(0, (int)(g_rc->debug_lines.count / 2));
+  draw(0, (int)(platform.render_context
+->debug_lines.count / 2));
  }
  end_render_pass();
 
@@ -5858,7 +5895,9 @@ extern "C" void game_update_and_render(Platform &platform, Arena *memory, GameIn
   ImGuiIO &io = ImGui::GetIO();
   ImGui::Begin("debug");
   ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-  ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
+  ImGui::Text("resolution: %dx%d", platform.render_context
+->window_width, platform.render_context
+->window_height);
 
   ImGui::Text("entity count: %ld", world.entities.count);
   if (ImGui::Button("new cube")) {

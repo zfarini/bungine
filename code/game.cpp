@@ -14,14 +14,26 @@
 #endif
 
 #include "common.h"
-#include "arena.h"
-#include "utils.h"
+
+struct memory_block {
+	void *data;
+	usize used;
+	usize size;
+	memory_block *next;
+};
+
+struct Arena
+{
+	memory_block *block;
+	usize minimum_block_size;
+};
+
 #include "math.h"
 #include "platform.h"
+#include "arena.h"
+#include "utils.h"
 #include "renderer.h"
 
-// TODO: cleanup
-global RenderContext *g_rc;
 #define RENDERER_DEBUG
 #ifdef RENDERER_DX11
 #include "renderer_dx11.cpp"
@@ -32,25 +44,6 @@ global RenderContext *g_rc;
 #include "scene.h"
 #include "game.h"
 #include "scene.cpp"
-
-SceneID get_scene_id_by_name(Game &game, String name)
-{
-for (int i = 0; i < game.scenes.count; i++) {
-		if (strings_equal(game.scenes[i].name, name))
-			return game.scenes[i].id;
-	}
-	LOG_WARN("couldn't find scene %.*s", str_format(name));
-	return 0;
-}
-
-Scene &get_scene_by_id(Game &game, SceneID id)
-{
-	for (int i = 0; i < game.scenes.count; i++) {
-		if (game.scenes[i].id == id)
-			return game.scenes[i];
-	}
-	return game.default_scene;
-}
 
 Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
@@ -93,9 +86,6 @@ Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width,
 	return camera;
 }
 
-Entity *get_entity(World &world, entity_id id);
-mat4 get_entity_transform(World &world, Entity &e);
-v3 get_world_p(World &world, entity_id id);
 
 #ifndef DISABLE_PREPROCESSOR
 #include "generated.h"
@@ -104,9 +94,9 @@ v3 get_world_p(World &world, entity_id id);
 #include "sound.cpp"
 #include "renderer.cpp"
 #include "collision.cpp"
+#include "pathfinding.cpp"
 #include "world.cpp"
 #include "editor.cpp"
-
 
 ShadowMap create_shadow_map(int texture_width, int texture_height,
 		v3 light_p, v3 light_dir, float znear, float zfar, float width, float height, v3 up = WORLD_UP)
@@ -136,37 +126,36 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 	return shadow_map;
 }
 
-extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
+void game_update_and_render(Game &game, GameInput &input, float dt)
 {
-	g_rc = (RenderContext *)platform.render_context;
-	g_temp_arena = &platform.temp_arena;
-	ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
+	//ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
 
-	Game &game = *((Game *)memory->data);
+	//Game &game = *((Game *)memory->data);
+
 	if (!game.is_initialized) {
-		assert(memory->used == 0);
-		arena_alloc_zero(memory, sizeof(game));
+		//assert(memory->used == 0);
+		//arena_alloc_zero(memory, sizeof(game));
 
-		init_render_context(memory, *g_rc, platform);
+		init_render_context(&game.arena, *platform.render_context);
 
-		usize temp_arena_size = Megabyte(1024);
-		g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
+		//usize temp_arena_size = Megabyte(1024);
+		//g_temp_arena->arena = make_arena(arena_alloc(memory, temp_arena_size), temp_arena_size);
 
 
-		game.scenes = make_array_max<Scene>(memory, 1024);
+		game.scenes = make_array_max<Scene>(&game.arena, 1024);
 
 		//memory->used += sizeof(game);
 
 		//game.world = (World *)arena_alloc(memory, sizeof(World));
 		//memset(game.world, 0, sizeof(*game.world));
-		game.world = new World(); // TODO: using unordered_map for now
+		game.world = new World(); // TODO: cleanup using unordered_map for now
 		World &world = *game.world;
 
-		world.arena = make_arena(arena_alloc(memory, Megabyte(64)), Megabyte(64));
+		//world.arena = make_arena(arena_alloc(memory, Megabyte(64)), Megabyte(64));
 		world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
 		world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
 
-		game.asset_arena = make_arena(arena_alloc(memory, Megabyte(2048)), Megabyte(2048));
+		//game.asset_arena = make_arena(arena_alloc(memory, Megabyte(2048)), Megabyte(2048));
 
 		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
@@ -225,7 +214,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 					line_input_layout);
 
 			game.debug_lines_vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_DYNAMIC,
-					g_rc->debug_lines.capacity * sizeof(v3));
+					platform.render_context->debug_lines.capacity * sizeof(v3));
 
 			ConstantBufferElement elems[] = {
 				{CONSTANT_BUFFER_ELEMENT_MAT4},
@@ -347,11 +336,11 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		}
 
 		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
-		game.sound_state.buffer = (float *)arena_alloc_zero(memory, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
+		game.sound_state.buffer = (float *)arena_alloc_zero(&game.arena, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
 
 		// TODO: cleanup
-		game.loaded_sounds[0] = load_wav_file(memory, "data/music.wav");
-		game.loaded_sounds[1] = load_wav_file(memory, "data/jump.wav");
+		game.loaded_sounds[0] = load_wav_file(&game.arena, "data/music.wav");
+		game.loaded_sounds[1] = load_wav_file(&game.arena, "data/jump.wav");
 
 		game.master_volume = 1;
 		game.frustum_culling = true;
@@ -359,8 +348,6 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		game.is_initialized = 1;
 		game.background_color = V3(0.392f, 0.584f, 0.929f);
 	}
-	game.memory = memory;
-
 
 	//if (game.frame == 0)
 	//	play_sound(game, game.loaded_sounds[0], 0);
@@ -474,18 +461,18 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 
 	begin_render_pass(game.mesh_render_pass);
 	{
-		set_viewport(0, 0, g_rc->window_width, g_rc->window_height);
+		set_viewport(0, 0, platform.render_context->window_width, platform.render_context->window_height);
 
-		bind_framebuffer(g_rc->window_framebuffer);
-		clear_framebuffer_color(g_rc->window_framebuffer, V4(game.background_color, 1));
-		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		bind_framebuffer(platform.render_context->window_framebuffer);
+		clear_framebuffer_color(platform.render_context->window_framebuffer, V4(game.background_color, 1));
+		clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
 
 		bind_texture(4, game.shadow_map.depth_texture);
 		render_entities(game, world, game_camera, false);
 
 	
 
-		// clear_framebuffer_depth(g_rc->window_framebuffer, 1);
+		// clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
 		// bind_rasterizer_state(game.wireframe_rasterizer_state);
 		// render_entities(game, world, game_camera, false);
 	}
@@ -498,14 +485,14 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 	begin_render_pass(game.debug_lines_render_pass);
 	{
 		// TODO:!!!
-		clear_framebuffer_depth(g_rc->window_framebuffer, 1);
-		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)g_rc->debug_lines.count * sizeof(v3),
-				g_rc->debug_lines.data);
+		clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
+		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)platform.render_context->debug_lines.count * sizeof(v3),
+				platform.render_context->debug_lines.data);
 		mat4 mvp = game_camera.projection * game_camera.view;
 		bind_constant_buffer(game.debug_lines_constant_buffer, 1);
 		update_constant_buffer(game.debug_lines_constant_buffer, &mvp);
 		bind_vertex_buffer(game.debug_lines_vertex_buffer);
-		draw(0, (int)(g_rc->debug_lines.count / 2));
+		draw(0, (int)(platform.render_context->debug_lines.count / 2));
 	}
 	end_render_pass();
 
@@ -514,7 +501,7 @@ extern "C" GAME_UPDATE_AND_RENDER(game_update_and_render)
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
 		ImGui::Text("average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-		ImGui::Text("resolution: %dx%d", g_rc->window_width, g_rc->window_height);
+		ImGui::Text("resolution: %dx%d", platform.render_context->window_width, platform.render_context->window_height);
 
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {

@@ -156,7 +156,8 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 				clear_framebuffer_color(fb, V4(0.3f, 0.3f, 0.3f, 1.f));
 				clear_framebuffer_depth(fb, 1);
 
-				bind_texture(4, g_rc->white_texture);
+				bind_texture(4, platform.render_context
+->white_texture);
 				Camera camera = {};
 				camera.view = lookat(V3(0, -2, 0), V3(0, 1, 0), V3(0, 0, 1));
 				camera.projection = game_camera.projection;
@@ -189,7 +190,9 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 	
 
-	v2 mouse_p = (input.mouse_p * V2(1.f / g_rc->window_width, 1.f / g_rc->window_height)) * 2 - V2(1);
+	v2 mouse_p = (input.mouse_p * V2(1.f / platform.render_context
+->window_width, 1.f / platform.render_context
+->window_height)) * 2 - V2(1);
 	mouse_p.y *= -1;
 
 	v3 ray_origin = camera.position;

@@ -1,47 +1,31 @@
-day 1:
-cleanup editor
-profiler
+arenas
+cleanup strings and paths
+fix sound
+make collision mesh be saved as its own file for each asset and just load it at runtime
+
+make your own std::unordered_map and std::set
+improve pathfinding
+
+cleanup animation
+
+async asset loading
 fix rotation when the plane of rotation is ..
+improve collision
+spatial partition
+dont send bone data for non skinned meshes
+send bones as (translation scale and rotation)
+"fix" jump animation
+improve camera for up & down
 
-day 2:
-* finalize collision and try to make it robust
-* spatial partition
-
-day 3:
-* async asset loading (might consider not doing it)
-
-day 4:
-	more sound work, its kinda broken right now when increasing latency frame count (possibly SIMD)
-	dont send bone data for non skinned meshes
-	send bones as (translation scale and rotation)
-	"fix" jumping, animation
-	improve camera for up & down
-	logging
-
-day 5:
-cleanup strings
-cleanup arenas
-platform layer
-make the game runnable from anywhere? (as long as the data directory is in ..)
-just cleanup remaning stuff
-
-day 6:
-more cleanup
-particles (instancing?)
-shadow map follow player
-transition between worlds?
-
-day 7:
-menu (try to use imgui, if can't use stb to load font)
-find assets, maybe change player mesh
-maybe some kinda of enemy that can follow you
-cleanup
-
-day 8:
-	make levels to showcase
+fix sponza on windows
+d3d11
+serialization version
+make levels to showcase
 
 other:
-* investigate why sponza show differently in windows vs linux
-serialization version
-replace unoredred_map
-
+	profiler in imgui
+	shadow map follow player
+	particles (instancing?)
+	transition between worlds
+	menu (try to use imgui, if can't use stb to load font)
+	find assets, maybe change player mesh

@@ -1,9 +1,9 @@
-void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
+void init_render_context(Arena *arena, RenderContext &rc)
 {
 #if RENDERER_OPENGL
-	init_render_context_opengl(rc, platform);
+	init_render_context_opengl(rc);
 #else
-	init_render_context_dx11(rc, platform);
+	init_render_context_dx11(rc);
 #endif
 	rc.loaded_textures = make_array_max<Texture>(arena, 256);
 	rc.debug_lines = make_array_max<v3>(arena, 4 * 5000000);
@@ -14,10 +14,14 @@ void init_render_context(Arena *arena, RenderContext &rc, Platform &platform)
 
 void push_line(v3 a, v3 b, v3 color = V3(1))
 {
-	g_rc->debug_lines.push(a);
-	g_rc->debug_lines.push(color);
-	g_rc->debug_lines.push(b);
-	g_rc->debug_lines.push(color);
+	platform.render_context
+->debug_lines.push(a);
+	platform.render_context
+->debug_lines.push(color);
+	platform.render_context
+->debug_lines.push(b);
+	platform.render_context
+->debug_lines.push(color);
 }
 
 void push_cube_outline(v3 center, v3 radius, v3 color = V3(1))
@@ -362,10 +366,13 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 			for (usize j = 0; j < mesh.parts.count; j++) {
 				MeshPart &part = mesh.parts[j];
 
-				bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : g_rc->white_texture);
-				bind_texture(1, part.material.specular.valid ? part.material.specular : g_rc->white_texture);
+				bind_texture(0, part.material.diffuse.valid ? part.material.diffuse : platform.render_context
+->white_texture);
+				bind_texture(1, part.material.specular.valid ? part.material.specular : platform.render_context
+->white_texture);
 				bind_texture(2, part.material.normal_map);
-				bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : g_rc->white_texture);
+				bind_texture(3, part.material.specular_exponent.valid ? part.material.specular_exponent : platform.render_context
+->white_texture);
 
 				constants.diffuse_factor = part.material.diffuse_factor;
 				constants.specular_factor = part.material.specular_factor;

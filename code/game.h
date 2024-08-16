@@ -325,8 +325,7 @@ struct ProfilerBlock
 #endif
 
 struct Game {
-
-    Arena *memory;
+    Arena arena;
 
 	// TODO: this get used in sound right now remove atomic later
     std::atomic_bool is_initialized;
@@ -381,6 +380,7 @@ struct Game {
 
 };
 
+// TODO: cleanup
 struct Constants {
     mat4 view;
     mat4 projection;
@@ -403,6 +403,12 @@ struct Constants {
     int show_normals;
 
 };
+
+Entity *get_entity(World &world, entity_id id);
+mat4 get_entity_transform(World &world, Entity &e);
+v3 get_world_p(World &world, entity_id id);
+
+
 
 #define ASTART_CELL_DIM (0.8)
 
@@ -482,6 +488,7 @@ struct State
 	}
 };
 
+
 struct StateHasher
 {
   std::size_t operator()(const State& k) const
@@ -497,4 +504,3 @@ struct StateHasher
 	  //return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
   }
 };
-

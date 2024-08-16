@@ -18,3 +18,17 @@ typedef float f32;
 typedef double f64;
 typedef i32 b32;
 typedef size_t usize;
+
+#define Kilobyte(x) (1024ULL * x)
+#define Megabyte(x) (1024ULL * Kilobyte(x))
+#define GigaByte(x) (1024ULL * Megabyte(x))
+
+template <typename T> T min(T a, T b) { return (a < b ? a : b); }
+template <typename T> T max(T a, T b) { return (a > b ? a : b); }
+
+template <typename T> void swap(T &a, T &b) {
+    T tmp = a;
+
+    a = b;
+    b = tmp;
+}

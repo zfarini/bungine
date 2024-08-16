@@ -828,18 +828,18 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	mat4 view = rotation * translate(-p);
 
 
-	camera = make_perspective_camera(view, 0.1f, 100, 100, (float)g_rc->window_height / g_rc->window_width);
+	camera = make_perspective_camera(view, 0.1f, 100, 100, (float)platform.render_context->window_height / platform.render_context->window_width);
 
 	// float fov = 100;
 	// camera.znear = 0.1f;
 	// camera.zfar = 100;
 	// camera.width = 2 * camera.znear * tanf(DEG2RAD * (fov / 2));
-	// camera.height = camera.width *  (float)g_rc->window_height / g_rc->window_width;
+	// camera.height = camera.width *  (float)platform.render_context->window_height / platform.render_context->window_width;
 	// camera.forward = -camera_z;
 	// camera.right = camera_x;
 	// camera.up = camera_y;
 
-	// mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)g_rc->window_height / g_rc->window_width);
+	// mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)platform.render_context->window_height / platform.render_context->window_width);
 
 	// camera.position = p;
 	// camera.view = view;
