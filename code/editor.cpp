@@ -30,6 +30,9 @@ entity_id raycast_to_entities(Game &game, World &world, v3 camera_ray_origin, v3
 			continue ;
 
 		Scene &scene = get_scene_by_id(game, e.scene_id);
+		if (scene.state != SCENE_LOADED)
+			continue ;
+		
 		mat4 transform = get_entity_transform(world, e) * e.scene_transform;
 		for (usize j = 0; j < scene.meshes.count; j++) {
 			Mesh &mesh = scene.meshes[j];

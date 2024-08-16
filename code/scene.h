@@ -71,6 +71,8 @@ struct Mesh {
 	// used in hit testing for now
     Array<v3> vertices;
 	Array<u32> indices;
+
+    Array<Vertex> full_vertices;
 };
 
 struct NodeAnimation {
@@ -112,9 +114,20 @@ struct MeshTriangle {
     v3 v0, v1, v2;
 };
 
+enum SceneState {
+    SCENE_UNLOADED,
+    SCENE_LOADING,
+    SCENE_LOADED
+};
+
 struct Scene {
 	meta(ui: const) SceneID id;
     meta(ui) String path;
 	meta(ui) String name;
 	Array<Mesh> meshes;
+
+
+    int state;
+    b32 in_gpu;
+    const char *filename;
 };

@@ -526,6 +526,17 @@ static const char *get_enum_RasterizerCullMode_str(int value) {
     }
     return "Enum_RasterizerCullMode_Unknown";
 }
+static const char *get_enum_SceneState_str(int value) {
+    switch (value) {
+    case SCENE_UNLOADED:
+        return "SCENE_UNLOADED";
+    case SCENE_LOADING:
+        return "SCENE_LOADING";
+    case SCENE_LOADED:
+        return "SCENE_LOADED";
+    }
+    return "Enum_SceneState_Unknown";
+}
 static const char *get_enum_EntityType_str(int value) {
     switch (value) {
     case EntityType_Player:
@@ -612,7 +623,7 @@ StructMetaData get_struct_ThreadWork_info() {
 StructMetaData get_struct_Mesh_info() {
     StructMetaData data = {};
     data.name = "Mesh";
-    data.member_count = 13;
+    data.member_count = 14;
     data.members[0].name = "name";
     data.members[0].type_name = "String";
     data.members[1].name = "parts";
@@ -639,6 +650,8 @@ StructMetaData get_struct_Mesh_info() {
     data.members[11].type_name = "Array<v3>";
     data.members[12].name = "indices";
     data.members[12].type_name = "Array<u32>";
+    data.members[13].name = "full_vertices";
+    data.members[13].type_name = "Array<Vertex>";
     return data;
 }
 StructMetaData get_struct_memory_block_info() {
@@ -1248,7 +1261,7 @@ StructMetaData get_struct_World_info() {
 StructMetaData get_struct_Scene_info() {
     StructMetaData data = {};
     data.name = "Scene";
-    data.member_count = 4;
+    data.member_count = 7;
     data.members[0].name = "id";
     data.members[0].type_name = "SceneID";
     data.members[1].name = "path";
@@ -1257,6 +1270,12 @@ StructMetaData get_struct_Scene_info() {
     data.members[2].type_name = "String";
     data.members[3].name = "meshes";
     data.members[3].type_name = "Array<Mesh>";
+    data.members[4].name = "state";
+    data.members[4].type_name = "int";
+    data.members[5].name = "in_gpu";
+    data.members[5].type_name = "b32";
+    data.members[6].name = "char";
+    data.members[6].type_name = "const";
     return data;
 }
 StructMetaData get_struct_Constants_info() {
@@ -1963,6 +1982,26 @@ static void imgui_edit_enum_RasterizerCullMode(RasterizerCullMode &x,
     items[2] = "RASTERIZER_CULL_BACK";
     items_type[2] = RASTERIZER_CULL_BACK;
     if (x == RASTERIZER_CULL_BACK)
+        curr = 2;
+    if (ImGui::CollapsingHeader(name))
+        ImGui::ListBox(name, &curr, items, 3);
+    x = items_type[curr];
+}
+static void imgui_edit_enum_SceneState(SceneState &x, const char *name) {
+    const char *items[3];
+    SceneState items_type[3];
+    int curr = 0;
+    items[0] = "SCENE_UNLOADED";
+    items_type[0] = SCENE_UNLOADED;
+    if (x == SCENE_UNLOADED)
+        curr = 0;
+    items[1] = "SCENE_LOADING";
+    items_type[1] = SCENE_LOADING;
+    if (x == SCENE_LOADING)
+        curr = 1;
+    items[2] = "SCENE_LOADED";
+    items_type[2] = SCENE_LOADED;
+    if (x == SCENE_LOADED)
         curr = 2;
     if (ImGui::CollapsingHeader(name))
         ImGui::ListBox(name, &curr, items, 3);

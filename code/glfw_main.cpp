@@ -244,7 +244,7 @@ int main()
 	}
 	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
 
-#define THREAD_COUNT 3
+#define THREAD_COUNT 1
 	DWORD thread_ids[THREAD_COUNT];
 
 	for (int i = 0; i < THREAD_COUNT; i++) {

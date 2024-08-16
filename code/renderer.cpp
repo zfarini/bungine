@@ -254,9 +254,29 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 {
 	if (!scene_id)
 		return ;
+	Scene &scene = get_scene_by_id(game, scene_id);
+	if (scene.state == SCENE_UNLOADED) {
+		scene.state = SCENE_LOADING;
+		platform.add_thread_work(load_scene_work, &scene);
+		//load_scene_work(&scene);
+		return ;
+	}
+	else if (scene.state == SCENE_LOADED) {
+		if (!scene.in_gpu) {
+			for (int i = 0; i < scene.meshes.count; i++) {
+				Mesh &mesh = scene.meshes[i];
+				mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
+				mesh.full_vertices.count * sizeof(Vertex), mesh.full_vertices.data);
+				mesh.index_buffer = create_index_buffer(mesh.indices.count, mesh.indices.data);
+			}
+			scene.in_gpu = true;
+		}
+	}
+	else
+		return ;
+
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
-	Scene &scene = get_scene_by_id(game, scene_id);
 
 	for (usize mesh_idx = 0; mesh_idx < scene.meshes.count; mesh_idx++) {
 		Mesh &mesh = scene.meshes[mesh_idx];

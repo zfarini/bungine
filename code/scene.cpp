@@ -178,7 +178,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 
 	Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
 
-	Array<Vertex> vertices = make_array_max<Vertex>(tmp_arena, umesh->num_triangles * 3);
+	Array<Vertex> vertices = make_array_max<Vertex>(arena, umesh->num_triangles * 3);
 	Array<uint32_t> indices = make_array_max<uint32_t>(tmp_arena, umesh->num_triangles * 3);
 
 	ufbx_skin_deformer *skin = 0;
@@ -248,9 +248,7 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	for (uint32_t index = 0; index < max_used_index + 1; index++)
 		vertices.push(get_ufbx_vertex(umesh, skin, index));
 
-	mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
-			vertices.count * sizeof(Vertex), vertices.data);
-	mesh.index_buffer = create_index_buffer(indices.count, indices.data);
+	mesh.full_vertices = vertices;
 
 
 	mesh.box_min = V3(1e18);
@@ -457,11 +455,14 @@ Animation load_animation(Arena *arena, Game &game, const char *filename)
 	return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
 }
 
-Scene *load_scene(Arena *arena, Game &game, const char *filename)
+
+THREAD_WORK_FUNC(load_scene_work)
 {
-	Scene scene = {};
+	Scene &scene = *((Scene *)data);
 
 	Arena *temp = begin_temp_memory();
+	Arena *arena = &platform.render_context->arena;
+	const char *filename = scene.filename;
 	{
 		int slash = -1;
 
@@ -529,9 +530,18 @@ Scene *load_scene(Arena *arena, Game &game, const char *filename)
 	}
 
 	end_temp_memory();
+	MEMORY_BARRIER();
+	scene.state = SCENE_LOADED;
+}
+
+SceneID load_scene(Arena *arena, Game &game, const char *filename)
+{
+	Scene scene = {};
+
 	scene.id = ++game.next_scene_id;
+	scene.filename = filename;
 	game.scenes.push(scene);
-	return &game.scenes[game.scenes.count - 1];
+	return scene.id;
 }
 
 SceneID get_scene_id_by_name(Game &game, String name)
