@@ -1,11 +1,9 @@
-# 3D Game Engine
+# 3D Game/Engine
 
 ## Features:
 - 3D renderer supporting OpenGL and DirectX11 (wip)
-- Editor with gizmos for translation, rotation, and scale
-  - Undo & redo functionality
-  - Modify collision meshes
 - Skeletal animation
+- Editor with gizmos for translation, rotation, and scale
 - Collision detection with smooth sliding
 - Metaprogramming for parsing structs/enums and generating serialization & UI data
 - A* 3D pathfinding
