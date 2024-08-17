@@ -23,16 +23,6 @@ template <typename T> struct Array {
         return data[count - 1];
     }
 
-    bool operator==(const Array<T> &other) const
-    {
-        if (count != other.count)
-            return false;
-        for (int i = 0; i < count; i++) {
-            if (data[i] != other.data[i])
-                return false;
-        }
-        return true;
-    }
 };
 
 template <typename T> Array<T> make_array_max(Arena *arena, usize capacity) {
@@ -86,46 +76,117 @@ template <typename T> Array<T> clone_array(Arena *arena, Array<T> &array) {
 // 	return true;
 // }
 
-typedef Array<char> String;
+struct String {
+    char *data;
+    usize count;
+    String() {
+        data = 0;
+        count = 0;
+    }
+    String(const char *cstr) {
+        data = (char *)cstr;
+        count = 0;
+        while (cstr[count])
+            count++;
+    }
 
-String make_string(Arena *arena, usize count, const char *data = 0) {
-    return make_array<char>(arena, count, data);
-}
-b32 strings_equal(const String &a, const String &b) {
-    if (a.count != b.count)
-        return false;
-    for (usize i = 0; i < a.count; i++)
-        if (a.data[i] != b.data[i])
+    char &operator[](int index) {
+        assert(index >= 0 && index < count);
+        return data[index];
+    }
+
+    bool operator==(const String &other) const {
+        if (count != other.count)
             return false;
-    return true;
-}
+        for (int i = 0; i < count; i++)
+            if (data[i] != other.data[i])
+                return false;
+        return true;
+    }
+};
 
-String make_cstring(const char *cstr) {
-    usize len = 0;
-    while (cstr[len])
-        len++;
-    String s;
-    s.data = (char *)cstr;
-    s.capacity = len + 1;
-    s.count = len;
+String make_string(Arena *arena, usize count, const char *data = 0)
+{
+    String s = {};
+
+    s.data = (char *)arena_alloc(arena, count * sizeof(char));
+    s.count = count;
+    if (data)
+        memcpy(s.data, data, count * sizeof(char));
+
     return s;
 }
 
-String concact_string(Arena *arena, String a, String b) {
+String duplicate_string(Arena *arena, String s)
+{
+    return make_string(arena, s.count, s.data);
+}
+
+String concact_string(Arena *arena, String a, String b)
+{
     String result = make_string(arena, a.count + b.count);
 
     memcpy(result.data, a.data, a.count);
     memcpy(result.data + a.count, b.data, b.count);
     return result;
 }
+
+String make_zero_string(Arena *arena, String s)
+{
+    bool add = !s.count || s.data[s.count - 1];
+    String result = make_string(arena, s.count + add);
+
+    memcpy(result.data, s.data, s.count);
+    if (add)
+        result.data[result.count - 1] = 0;
+    return result;
+}
+
+int find_last_occurence(String s, char c)
+{
+    for (int i = (int)s.count - 1; i >= 0; i--) {
+        if (s[i] == c)
+            return i;
+    }
+    return -1;
+}
+
+String substring(String s, int start, int length = -1)
+{
+    assert(start >= 0 && start <= s.count);
+    String result;
+
+    result.data = s.data + start;
+    result.count = length == -1 ? s.count - start : length;
+
+    return result;
+}
+
+struct StringHasher {
+    std::size_t operator()(const String& s) const
+    {
+        // TODO: pushcleanup
+        std::size_t hash = 5381;
+        for (int i = 0; i < s.count; ++i) {
+            hash = ((hash << 5) + hash) + s.data[i];
+        }
+        return hash;
+    }
+};
+
 #define str_format(str) (int)str.count, str.data
 
 String load_entire_file(Arena *arena, String filename) {
-    assert(filename.count < filename.capacity &&
-           filename.data[filename.count] == 0);
+    Arena *temp = begin_temp_memory();
+
     String result = {};
 
-    FILE *file = fopen(filename.data, "rb");
+    String filename_zero = make_zero_string(temp, filename);
+
+    FILE *file = fopen(filename_zero.data, "rb");
+
+    end_temp_memory();
+
     if (!file) {
         printf("failed to open file %.*s\n", str_format(filename));
         assert(0);
@@ -203,25 +264,6 @@ DEFINE_LOG_TYPE(WARN);
 DEFINE_LOG_TYPE(ERROR);
 DEFINE_LOG_TYPE(FATAL);
 
-
 uint64_t rdtsc() {
 	return __rdtsc();
-    //unsigned int lo, hi;
-    //__asm__ __volatile__ (
-    //    "rdtsc"
-    //    : "=a" (lo), "=d" (hi)
-    //);
-    //return ((unsigned long long)hi << 32) | lo;
 }
-
-struct StringHasher {
-    std::size_t operator()(const String& s) const
-    {
-        // TODO: pushcleanup
-        std::size_t hash = 5381;
-        for (int i = 0; i < s.count; ++i) {
-            hash = ((hash << 5) + hash) + s.data[i];
-        }
-        return hash;
-    }
-};

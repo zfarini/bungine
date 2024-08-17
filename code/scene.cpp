@@ -45,16 +45,9 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 		// 		&n_channels, 4);
 	} else {
 		// TODO: cleanup
-		int last_slash = (int)utex->filename.length - 1;
-
-		while (last_slash >= 0 && 
-				(utex->filename.data[last_slash] != '/' &&
-				 utex->filename.data[last_slash] != '\\'))
-			last_slash--;
-		last_slash++;
-
-		String path = concact_string(temp, scene.path, make_string(temp, utex->filename.length - last_slash, utex->filename.data + last_slash));
-		name = concact_string(temp, path, make_string(temp, 1, ""));
+		String filename = make_string(temp, utex->filename.length,  utex->filename.data);
+		int slash = max(find_last_occurence(filename, '/'), find_last_occurence(filename, '\\'));
+		name = concact_string(temp, scene.path, substring(filename,  slash + 1));
 	}
 	//TODO: cleanup, if no name give it something like "unamed_1"
 	assert(name.count);
@@ -64,7 +57,7 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 	Texture texture = {};
 
 	for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
-		if (strings_equal(platform.render_context->loaded_textures[i].name, name)) {
+		if (platform.render_context->loaded_textures[i].name == name) {
 			texture = platform.render_context->loaded_textures[i];
 			break ;
 		}
@@ -72,7 +65,7 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 
 	if (!texture.id) {
 		texture.id = platform.render_context->loaded_textures.count + 1;
-		texture.name = clone_array(arena, name);
+		texture.name = duplicate_string(arena, name);
 
 		texture.state = TEXTURE_STATE_UNLOADED;
 		texture.valid = true;
@@ -421,7 +414,7 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 	return anim;
 }
 
-Animation *load_animation(Arena *arena, Game &game, const char *filename)
+Animation *load_animation(Arena *arena, Game &game, String filename)
 {
 	Scene scene = {};
 
@@ -438,37 +431,29 @@ Animation *load_animation(Arena *arena, Game &game, const char *filename)
 	opts.result_allocator.allocator.realloc_fn = ufbx_arena_realloc;
 	opts.result_allocator.allocator.user = temp;
 
-	ufbx_error error;
-	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
+	String zero_name = make_zero_string(temp, filename);
+	ufbx_error error;	
+	ufbx_scene *uscene = ufbx_load_file(zero_name.data, &opts, &error);
 	if (!uscene) {
-		LOG_ERROR("failed to load animation %s: %s", filename, error.description.data);
+		LOG_ERROR("failed to load animation %.*s: %s", str_format(filename), error.description.data);
 		assert(0);
 	}
 	assert(uscene->anim_stacks.count);
 
 	Animation anim = load_animation(arena, uscene, uscene->anim_stacks.data[0]);
 	// TODO: pushcleanup
-	anim.name = make_cstring(filename);
-	anim.name = clone_array(arena, anim.name);
+	{
+		int dot = find_last_occurence(filename, '.');
+		int slash = find_last_occurence(filename, '/');
+		assert(slash < dot);
 
-	int i = (int)anim.name.count - 1;
-
-	while (i >= 0 && anim.name[i] != '.')
-		i--;
-
-	if (i >= 0) {
-		anim.name.count = i;
-		i--;
-	}
-	while (i >= 0 && anim.name[i] != '/')
-		i--;
-	if (i >= 0) {
-		anim.name.count = anim.name.count - (i + 1);
-		anim.name.data += i + 1;
+		anim.name = duplicate_string(arena, substring(filename, slash + 1, dot - slash - 1));
 	}
 
 	game.loaded_animations.push(anim);
 	game.animations[anim.name] = (int)game.loaded_animations.count - 1;
+	
+	end_temp_memory();
 
 	return &game.loaded_animations[game.loaded_animations.count - 1];
 }
@@ -479,18 +464,12 @@ THREAD_WORK_FUNC(load_scene_work)
 
 	Arena *temp = begin_temp_memory();
 	Arena *arena = &platform.render_context->arena;
-	const char *filename = scene.filename;
-	{
-		int slash = -1;
 
-		for (int i = 0; filename[i]; i++) {
-			if (filename[i] == '/' || filename[i] == '\\')
-				slash = i;
-		}
-		// TODO: cleanup
-		int len = (int)strlen(filename);
-		scene.path = make_string(arena, slash + 1, filename);
-		scene.name = make_string(arena, len - (slash + 1), filename + slash + 1);
+	String filename = make_zero_string(arena, scene.filename);
+	{
+		int slash = find_last_occurence(filename, '/');
+		scene.path = substring(filename, 0, slash + 1);
+		scene.name = substring(filename, slash + 1);
 	}
 
 	ufbx_load_opts opts = {};
@@ -511,9 +490,9 @@ THREAD_WORK_FUNC(load_scene_work)
 	//opts.obj_merge_groups = true;
 
 	ufbx_error error;
-	ufbx_scene *uscene = ufbx_load_file(filename, &opts, &error);
+	ufbx_scene *uscene = ufbx_load_file(filename.data, &opts, &error);
 	if (!uscene) {
-		LOG_ERROR("failed to load %s: %s", filename, error.description.data);
+		LOG_ERROR("failed to load %s: %s", filename.data, error.description.data);
 		assert(0);
 	}
 
@@ -522,7 +501,7 @@ THREAD_WORK_FUNC(load_scene_work)
 		if (uscene->nodes.data[i]->mesh)
 			total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
 	
-	LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename, uscene->meshes.count, total_num_triangles);
+	LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename.data, uscene->meshes.count, total_num_triangles);
 
 	mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 
@@ -551,7 +530,7 @@ THREAD_WORK_FUNC(load_scene_work)
 	scene.state = SCENE_LOADED;
 }
 
-SceneID load_scene(Arena *arena, Game &game, const char *filename)
+SceneID load_scene(Arena *arena, Game &game, String filename)
 {
 	Scene scene = {};
 
@@ -564,7 +543,7 @@ SceneID load_scene(Arena *arena, Game &game, const char *filename)
 SceneID get_scene_id_by_name(Game &game, String name)
 {
     for (int i = 0; i < game.scenes.count; i++) {
-		if (strings_equal(game.scenes[i].name, name))
+		if (game.scenes[i].name == name)
 			return game.scenes[i].id;
 	}
 	LOG_WARN("couldn't find scene %.*s", str_format(name));

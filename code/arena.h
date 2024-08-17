@@ -16,19 +16,13 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 		platform.lock_mutex(arena->mutex);
 		alignement = max(alignement, CACHE_LINE_SIZE);
 	}
-	int misalign = 0;
 
 	if (!arena->minimum_block_size)
 		arena->minimum_block_size = 1024;
 
-	if (arena->block) {
-		misalign = ((uintptr_t)((char *)arena->block->data + arena->block->used)) & (alignement - 1);
-		misalign = misalign ? alignement - misalign : 0;
-	}
+	if (!arena->block || arena->block->used + size + alignement > arena->block->size) {
 
-	if (!arena->block || arena->block->used + size + misalign > arena->block->size) {
-
-		usize block_size = max(size + misalign, arena->minimum_block_size);
+		usize block_size = max(size + alignement, arena->minimum_block_size);
 
 		int block_align = 0;
 		
@@ -36,6 +30,10 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 			block_align = alignof(memory_block) - (block_size & (alignof(memory_block)-1));
 		
 		void *data = platform.allocate_memory(block_size + block_align + sizeof(memory_block));
+		if (!data) {
+			assert(0);
+			return 0;
+		}
 		memory_block *new_block = (memory_block *)((char *)data + block_size + block_align);
 
 		new_block->data = data;
@@ -45,9 +43,10 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 
 		arena->block = new_block;
 	}
+	int misalign = ((uintptr_t)((char *)arena->block->data + arena->block->used)) & (alignement - 1);
+	misalign = misalign ? alignement - misalign : 0;
 	assert(arena->block->used + size + misalign <= arena->block->size);
 	//printf("%s:%s:%d: allocated %zd bytes\n", filename, func, line, size);
-
 	void *ptr = (char *)arena->block->data + arena->block->used + misalign;
 	arena->block->used += size + misalign;
 	if (clear)

@@ -18,10 +18,6 @@
 #include "platform.h"
 Platform platform;
 
-#include "arena.h"
-#include "utils.h"
-#include "renderer.h"
-
 thread_local TempMemory g_temp_memory;
 
 function Arena *begin_temp_memory()
@@ -53,6 +49,12 @@ function void end_temp_memory()
 		g_temp_memory.arena.block->used =  g_temp_memory.last_used[g_temp_memory.last_used_count - 1].used;
 	g_temp_memory.last_used_count--;
 }
+
+#include "arena.h"
+#include "utils.h"
+#include "renderer.h"
+
+
 
 #define RENDERER_DEBUG
 #ifdef RENDERER_DX11
@@ -182,24 +184,24 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 		game.mesh_render_pass = create_render_pass(
 #ifdef RENDERER_DX11
-				load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
-				load_shader(make_cstring("code\\shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
+				load_shader("code\\shader.hlsl", SHADER_TYPE_VERTEX, "vs_main"),
+				load_shader("code\\shader.hlsl", SHADER_TYPE_FRAGMENT, "ps_main"),
 #else
-				load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("shaders/fragment.glsl"), SHADER_TYPE_FRAGMENT),
+				load_shader("shaders/vertex.glsl", SHADER_TYPE_VERTEX),
+				load_shader("shaders/fragment.glsl", SHADER_TYPE_FRAGMENT),
 #endif
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
 		game.outline_render_pass = create_render_pass(
-				load_shader(make_cstring("shaders/outline_vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("shaders/outline_fragment.glsl"), SHADER_TYPE_FRAGMENT),
+				load_shader("shaders/outline_vertex.glsl", SHADER_TYPE_VERTEX),
+				load_shader("shaders/outline_fragment.glsl", SHADER_TYPE_FRAGMENT),
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
 		game.shadow_map_render_pass = create_render_pass(
-				load_shader(make_cstring("shaders/vertex.glsl"), SHADER_TYPE_VERTEX),
-				load_shader(make_cstring("shaders/shadow_map_fs.glsl"), SHADER_TYPE_FRAGMENT),
+				load_shader("shaders/vertex.glsl", SHADER_TYPE_VERTEX),
+				load_shader("shaders/shadow_map_fs.glsl", SHADER_TYPE_FRAGMENT),
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
@@ -216,11 +218,11 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 			game.debug_lines_render_pass = create_render_pass(
 #ifdef RENDERER_DX11
-					load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_VERTEX, "vs_main"),
-					load_shader(make_cstring("code/debug_line_shader.hlsl"), SHADER_TYPE_FRAGMENT, "ps_main"),
+					load_shader("code/debug_line_shader.hlsl", SHADER_TYPE_VERTEX, "vs_main"),
+					load_shader("code/debug_line_shader.hlsl", SHADER_TYPE_FRAGMENT, "ps_main"),
 #else
-					load_shader(make_cstring("shaders/debug_lines_vs.glsl"), SHADER_TYPE_VERTEX),
-					load_shader(make_cstring("shaders/debug_lines_fs.glsl"), SHADER_TYPE_FRAGMENT),
+					load_shader("shaders/debug_lines_vs.glsl", SHADER_TYPE_VERTEX),
+					load_shader("shaders/debug_lines_fs.glsl", SHADER_TYPE_FRAGMENT),
 #endif
 					PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
 					line_input_layout);
@@ -294,11 +296,11 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		if (!fd) {
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, make_cstring("cube.fbx")), V3(0, 0, -0.5));
+			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, "cube.fbx"), V3(0, 0, -0.5));
 			ground->scale = V3(100, 100, 0.5);
 			ground->color = V3(0.3f);
 
-			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, make_cstring("Ybot.fbx")),
+			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, "Ybot.fbx"),
 					V3(0, 0, 4));
 			player->ellipsoid_radius = V3(0.55f, 0.55f, 0.95f);
 			player->ellipsoid_collision_shape = true;
@@ -411,7 +413,6 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 	}
 	world.occupied = occupied;
 
-	LOG_DEBUG("occupied %zu (itr: %d)\n", occupied.size(), itr_count);
 	for (auto [x, y] : occupied) {
 		//auto p = unpack_cell(x);
 		//push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
@@ -507,13 +508,13 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene_id_by_name(game, make_cstring("cube.fbx")), game_camera.position
+					get_scene_id_by_name(game, "cube.fbx"), game_camera.position
 					+ game_camera.forward * 4);
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene_id_by_name(game, make_cstring("sphere.fbx")), game_camera.position
+					get_scene_id_by_name(game, "sphere.fbx"), game_camera.position
 					+ game_camera.forward * 4);
 			entity->ellipsoid_radius = V3(1);
 			entity->ellipsoid_collision_shape = true;

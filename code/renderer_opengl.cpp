@@ -60,7 +60,7 @@ THREAD_WORK_FUNC(load_texture_work)
 	
 	int width, height, n_channels;
 	Arena *temp = begin_temp_memory();
-	void *image = stbi_load(texture->name.data, &width, &height,  &n_channels, 4);
+	void *image = stbi_load(make_zero_string(temp, texture->name).data, &width, &height,  &n_channels, 4);
 	assert(image);
 	usize size = width * height * sizeof(uint32_t);
 	void *copy = arena_alloc(&platform.render_context->arena, size);
@@ -604,7 +604,7 @@ TextureID create_depth_texture(int width, int height)
 
 	result.opengl_id = texture;
 	result.valid = true;
-	result.name = make_cstring("shadow map depth texture");
+	result.name = "shadow map depth texture";
 	
 	platform.lock_mutex(platform.render_context->texture_mutex);
 

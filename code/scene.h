@@ -90,7 +90,7 @@ struct NodeAnimation {
 
 struct Animation {
     String name;
-    
+
     float timebegin;
     float duration;
 
@@ -128,8 +128,8 @@ struct Scene {
 	meta(ui) String name;
 	Array<Mesh> meshes;
 
+    String filename;
 
     int state;
     b32 in_gpu;
-    const char *filename;
 };

@@ -115,7 +115,7 @@ Animation *get_blended_animation(Arena *arena, Entity &e)
 		for (int j = 0; j < e.curr_anim->nodes.count; j++) {
 			quat q1, q2;
 			v3 p1, s1, p2, s2;
-			assert(strings_equal(e.curr_anim->nodes[j].name, e.next_anim->nodes[j].name));
+			assert(e.curr_anim->nodes[j].name == e.next_anim->nodes[j].name);
 			get_animated_node_transform(*e.curr_anim, e.curr_anim->nodes[j], t1, p1, s1, q1);
 			get_animated_node_transform(*e.next_anim, e.next_anim->nodes[j], t2, p2, s2, q2);
 
@@ -155,9 +155,9 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 	}
 }
 
-Animation *get_animation(Game &game, const char *name)
+Animation *get_animation(Game &game, String name)
 {
-	auto it = game.animations.find(make_cstring(name));
+	auto it = game.animations.find(name);
 	if (it == game.animations.end())
 		return 0;
 	return &game.loaded_animations[it->second];

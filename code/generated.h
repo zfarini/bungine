@@ -151,6 +151,14 @@ static StructMetaData get_struct_Platform_info();
 static void imgui_edit_struct_Platform(Platform &x, const char *name,
                                        bool collapsed);
 static void serialize_Platform(FILE *fd, bool w, Platform &x, Arena *arena);
+static StructMetaData get_struct_Editor_info();
+static void imgui_edit_struct_Editor(Editor &x, const char *name,
+                                     bool collapsed);
+static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena);
+static StructMetaData get_struct_String_info();
+static void imgui_edit_struct_String(String &x, const char *name,
+                                     bool collapsed);
+static void serialize_String(FILE *fd, bool w, String &x, Arena *arena);
 static StructMetaData get_struct_VertexInputLayout_info();
 static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
                                                 const char *name,
@@ -296,10 +304,6 @@ static void serialize_EditorOp(FILE *fd, bool w, EditorOp &x, Arena *arena);
 static StructMetaData get_struct_Gizmo_info();
 static void imgui_edit_struct_Gizmo(Gizmo &x, const char *name, bool collapsed);
 static void serialize_Gizmo(FILE *fd, bool w, Gizmo &x, Arena *arena);
-static StructMetaData get_struct_Editor_info();
-static void imgui_edit_struct_Editor(Editor &x, const char *name,
-                                     bool collapsed);
-static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena);
 static StructMetaData get_struct_LoadedSound_info();
 static void imgui_edit_struct_LoadedSound(LoadedSound &x, const char *name,
                                           bool collapsed);
@@ -812,6 +816,40 @@ StructMetaData get_struct_Platform_info() {
     data.members[6].type_name = "UnlockMutexFn*";
     return data;
 }
+StructMetaData get_struct_Editor_info() {
+    StructMetaData data = {};
+    data.name = "Editor";
+    data.member_count = 9;
+    data.members[0].name = "mode";
+    data.members[0].type_name = "EditorMode";
+    data.members[1].name = "ops";
+    data.members[1].type_name = "Array<EditorOp>";
+    data.members[2].name = "undos";
+    data.members[2].type_name = "Array<EditorOp>";
+    data.members[3].name = "gizmo";
+    data.members[3].type_name = "Gizmo";
+    data.members[4].name = "copy_entity_mesh";
+    data.members[4].type_name = "bool";
+    data.members[5].name = "selected_entity";
+    data.members[5].type_name = "entity_id";
+    data.members[6].name = "selected_entity_mesh";
+    data.members[6].type_name = "int";
+    data.members[7].name = "copied_entity";
+    data.members[7].type_name = "entity_id";
+    data.members[8].name = "last_camera_p";
+    data.members[8].type_name = "v3";
+    return data;
+}
+StructMetaData get_struct_String_info() {
+    StructMetaData data = {};
+    data.name = "String";
+    data.member_count = 2;
+    data.members[0].name = "data";
+    data.members[0].type_name = "char*";
+    data.members[1].name = "count";
+    data.members[1].type_name = "usize";
+    return data;
+}
 StructMetaData get_struct_VertexInputLayout_info() {
     StructMetaData data = {};
     data.name = "VertexInputLayout";
@@ -1260,12 +1298,12 @@ StructMetaData get_struct_Scene_info() {
     data.members[2].type_name = "String";
     data.members[3].name = "meshes";
     data.members[3].type_name = "Array<Mesh>";
-    data.members[4].name = "state";
-    data.members[4].type_name = "int";
-    data.members[5].name = "in_gpu";
-    data.members[5].type_name = "b32";
-    data.members[6].name = "char";
-    data.members[6].type_name = "const";
+    data.members[4].name = "filename";
+    data.members[4].type_name = "String";
+    data.members[5].name = "state";
+    data.members[5].type_name = "int";
+    data.members[6].name = "in_gpu";
+    data.members[6].type_name = "b32";
     return data;
 }
 StructMetaData get_struct_Constants_info() {
@@ -1494,30 +1532,6 @@ StructMetaData get_struct_Gizmo_info() {
     data.members[15].type_name = "v3";
     data.members[16].name = "rotation_axis";
     data.members[16].type_name = "v3";
-    return data;
-}
-StructMetaData get_struct_Editor_info() {
-    StructMetaData data = {};
-    data.name = "Editor";
-    data.member_count = 9;
-    data.members[0].name = "mode";
-    data.members[0].type_name = "EditorMode";
-    data.members[1].name = "ops";
-    data.members[1].type_name = "Array<EditorOp>";
-    data.members[2].name = "undos";
-    data.members[2].type_name = "Array<EditorOp>";
-    data.members[3].name = "gizmo";
-    data.members[3].type_name = "Gizmo";
-    data.members[4].name = "copy_entity_mesh";
-    data.members[4].type_name = "bool";
-    data.members[5].name = "selected_entity";
-    data.members[5].type_name = "entity_id";
-    data.members[6].name = "selected_entity_mesh";
-    data.members[6].type_name = "int";
-    data.members[7].name = "copied_entity";
-    data.members[7].type_name = "entity_id";
-    data.members[8].name = "last_camera_p";
-    data.members[8].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_LoadedSound_info() {
@@ -2114,6 +2128,25 @@ static void serialize_SoundPlaying(FILE *fd, bool w, SoundPlaying &x,
                                    Arena *arena = 0) {}
 static void serialize_Platform(FILE *fd, bool w, Platform &x,
                                Arena *arena = 0) {}
+static void imgui_edit_struct_Editor(Editor &x, const char *name,
+                                     bool collapsed = true) {
+    if (!collapsed || ImGui::CollapsingHeader(name)) {
+        imgui_edit_enum_EditorMode(x.mode, "mode");
+        {
+            bool tmp = x.copy_entity_mesh;
+            ImGui::Checkbox("copy_entity_mesh", &tmp);
+            x.copy_entity_mesh = tmp;
+        }
+        ImGui::InputScalar("selected_entity", ImGuiDataType_U64,
+                           &x.selected_entity);
+        ImGui::InputInt("selected_entity_mesh", &x.selected_entity_mesh);
+        ImGui::InputScalar("copied_entity", ImGuiDataType_U64,
+                           &x.copied_entity);
+        ImGui::InputFloat3("last_camera_p", x.last_camera_p.e);
+    }
+}
+static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena = 0) {}
+static void serialize_String(FILE *fd, bool w, String &x, Arena *arena = 0) {}
 static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
                                         Arena *arena = 0) {}
 static void serialize_StringHasher(FILE *fd, bool w, StringHasher &x,
@@ -2386,24 +2419,6 @@ static void serialize_ProfilerBlockStat(FILE *fd, bool w, ProfilerBlockStat &x,
 static void serialize_EditorOp(FILE *fd, bool w, EditorOp &x,
                                Arena *arena = 0) {}
 static void serialize_Gizmo(FILE *fd, bool w, Gizmo &x, Arena *arena = 0) {}
-static void imgui_edit_struct_Editor(Editor &x, const char *name,
-                                     bool collapsed = true) {
-    if (!collapsed || ImGui::CollapsingHeader(name)) {
-        imgui_edit_enum_EditorMode(x.mode, "mode");
-        {
-            bool tmp = x.copy_entity_mesh;
-            ImGui::Checkbox("copy_entity_mesh", &tmp);
-            x.copy_entity_mesh = tmp;
-        }
-        ImGui::InputScalar("selected_entity", ImGuiDataType_U64,
-                           &x.selected_entity);
-        ImGui::InputInt("selected_entity_mesh", &x.selected_entity_mesh);
-        ImGui::InputScalar("copied_entity", ImGuiDataType_U64,
-                           &x.copied_entity);
-        ImGui::InputFloat3("last_camera_p", x.last_camera_p.e);
-    }
-}
-static void serialize_Editor(FILE *fd, bool w, Editor &x, Arena *arena = 0) {}
 static void serialize_LoadedSound(FILE *fd, bool w, LoadedSound &x,
                                   Arena *arena = 0) {}
 static void serialize_SoundState(FILE *fd, bool w, SoundState &x,

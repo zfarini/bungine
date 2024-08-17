@@ -10,9 +10,9 @@ void init_render_context(RenderContext &rc)
 	rc.debug_lines = make_array_max<v3>(&rc.arena, 5000000);
 
 	uint32_t white_color = 0xffffffff;
-	rc.white_texture = create_texture(make_cstring("__white_texture"), &white_color, 1, 1, true);
+	rc.white_texture = create_texture("__white_texture", &white_color, 1, 1, true);
 	uint32_t purple_color = 0xffff00ff;
-	rc.purple_texture = create_texture(make_cstring("__purple_texture"), &purple_color, 1, 1, true);
+	rc.purple_texture = create_texture("__purple_texture", &purple_color, 1, 1, true);
 }
 
 void push_line(v3 a, v3 b, v3 color = V3(1))
@@ -194,7 +194,7 @@ void render_bones(Array<Bone> bones, mat4 transform, Animation *anim, float anim
 		for (usize i = 0; i < bones.count; i++) {
 			int index = -1;
 			for (usize j = 0; j < anim->nodes.count; j++) {
-				if (strings_equal(anim->nodes[j].name, anim_bones[i].name)) {
+				if (anim->nodes[j].name == anim_bones[i].name) {
 					index = (int)j;
 					break ;
 				}
@@ -231,7 +231,7 @@ Array<Bone> get_animated_bones(Arena *arena, Array<Bone> bones, mat4 transform, 
 	for (usize i = 0; i < bones.count; i++) {
 		int index = -1;
 		for (usize j = 0; j < anim->nodes.count; j++) {
-			if (strings_equal(anim->nodes[j].name, anim_bones[i].name)) {
+			if (anim->nodes[j].name == anim_bones[i].name) {
 				index = (int)j;
 				break ;
 			}
