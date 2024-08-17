@@ -155,180 +155,145 @@ void render_entities(Game &game, World &world, Camera camera, bool shadow_map_pa
 	}
 }
 
+Animation *get_animation(Game &game, const char *name)
+{
+	auto it = game.animations.find(make_cstring(name));
+	if (it == game.animations.end())
+		return 0;
+	return &game.loaded_animations[it->second];
+}
+
+void update_player_animation(Game &game, World &world, Entity &e, float dt)
+{
+	Animation *next_anim = 0;
+	e.anim_time += dt;
+	e.blend_time += dt;
+
+	Animation *jump_animation = get_animation(game, "jump");
+
+	if (!e.curr_anim)
+		e.curr_anim = get_animation(game, "gun_idle");
+
+	if (!e.on_ground) {
+		if (e.curr_anim != jump_animation
+				&& e.next_anim != jump_animation
+				&& !e.jumped)
+			next_anim = e.next_anim;
+		else
+			next_anim = jump_animation;
+	}
+	else  if (e.shooting)
+		next_anim =	get_animation(game, "shoot");
+	else if (e.run)
+		next_anim = get_animation(game, "run");
+	else if (e.walk_backward)
+		next_anim = get_animation(game, "backward_gun_walk");
+	else if (e.moved)
+		next_anim = get_animation(game, "forward_gun_walk");
+	else 
+		next_anim = get_animation(game, "gun_idle");
+	if (!e.curr_anim)
+		e.curr_anim = next_anim;
+	else if (!next_anim)
+		;
+	else if (!e.next_anim) {
+		if (e.curr_anim != next_anim) {
+			e.next_anim = next_anim;
+			e.blend_time = 0;
+		}
+	}
+	else if (next_anim == e.next_anim) {
+
+	}
+	else if (next_anim != e.curr_anim) {
+	}
+	else {
+		e.next_anim = 0;
+		e.blend_time = 0;
+	}
+}
+
 void update_player(Game &game, World &world, GameInput &input, float dt)
 {
-	// update player
 	Entity *_player = get_entity(world, world.player_id);
 	if (!_player)
 		return ;
 	Entity &player = *_player;
 
-	b32 camera_shoot_mode = false;
-	b32 walk_backward = false;
+	v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
+	v3 player_up = WORLD_UP;
+	v3 player_right = normalize(cross(player_forward, player_up));
+	v3 a = {};
+
+	bool forward = false;
+
+	player.walk_backward = false;
+	if (IsDown(input, BUTTON_PLAYER_FORWARD))
 	{
-		v3 player_forward = normalize(V3(cosf(world.player_camera_rotation.z), sinf(world.player_camera_rotation.z), 0));
-		v3 player_up = WORLD_UP;
-		v3 player_right = normalize(cross(player_forward, player_up));
-		v3 a = {};
-
-		bool forward = false;
-
-		if (IsDown(input, BUTTON_PLAYER_FORWARD))
-		{
-			a += player_forward;
-			forward = true;
-		}
-		if (IsDown(input, BUTTON_PLAYER_BACKWARD))
-		{
-			a -= player_forward;
-			walk_backward = true;
-		}
-		a = normalize(a);
-
-		player.moved = forward;
-		player.run = input.buttons[BUTTON_LEFT_SHIFT].is_down && forward;
-		if (!IsDown(input, BUTTON_MOUSE_LEFT) || player.moved)
-			player.shooting = false;
-		else
-		{
-			player.shooting = true;
-			player.run = false;
-			player.moved = false;
-			a = {};
-		}
-
-		if (!IsDown(input, BUTTON_MOUSE_RIGHT) || player.moved) {
-			if (player.aiming)
-				world.aim_camera_transition_t = 0;
-			player.aiming = 0;
-		} else {
-			if (!player.aiming)
-				world.aim_camera_transition_t = 0;
-			player.aiming = 1;
-		}
-
-		if (player.shooting) {
-			// TODO: maybe shoot only if the animation put out the gun?
-			if (game.time - player.last_gun_time > 0.3) {
-				
-			
-				v3 dir = normalize(world.player_camera_p + 4 * player_forward
-					- player.position);
-				push_line(player.position, player.position + dir * 5, V3(0));
-				// v3 pos = ;
-				// mat4 scene_transform = identity();
-				// Entity *bullet = make_entity(world, EntityType_Projectile, get_scene(game, SCENE_SPHERE), 
-				// 	make_ellipsoid_shape(V3(0.1f)), scene_transform);
-				// bullet->scale = V3(0.1f);
-			}
-		}
-
-
-		//if (!player.on_ground)
-		a += -40 * player_up;
-		a.xy = a.xy * (player.run ? 50 : 30);
-		bool jumped = false;
-		if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
-		{
-			//if (!player.pressing_jump)
-			//	play_sound(game, game.loaded_sounds[1]);
-			// a = a * 2;
-			a += 200 * player_up;
-			a.xy = {};
-			jumped = true;
-			player.pressing_jump = true;
-		}
-		else
-			player.pressing_jump = false;
-		//if (!player.on_ground)
-		//	a.xy *= 0.7f;
-
-		a -= player.dp * 3;
-
-		{
-			v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
-
-			move_entity(world, player, delta_p);
-			player.dp += a * dt;
-
-		}
-
-
-		//if (!game.camera_free_mode)
-		// {
-		//     v3 camera_target_p = player.position - player_forward * 2 + player_up * 0.9 + player_right * 0.5;
-
-		// 	camera_target_p = player.position - player_forward * 2 + player_up;
-		// 	world.camera_p = camera_target_p;
-
-		//  //   game.camera_p += 15 * dt * (camera_target_p - game.camera_p);
-		// }
-		{
-			// TODO: !!! jump animation already has translation up?
-			// TODO: there is a problem if we hold space
-			Animation *next_anim = 0;
-			player.anim_time += dt;
-			player.blend_time += dt;
-
-			if (!player.curr_anim)
-				player.curr_anim = &game.animations[ANIMATION_GUN_IDLE];
-
-
-			if (!player.on_ground) {
-				if (player.curr_anim != &game.animations[ANIMATION_JUMP]
-						&& player.next_anim != &game.animations[ANIMATION_JUMP]
-						&& !jumped)
-					next_anim = player.next_anim;
-				else
-					next_anim = &game.animations[ANIMATION_JUMP];
-			}
-			else  if (player.shooting)
-				next_anim = &game.animations[ANIMATION_SHOOT];
-			else if (player.run)
-				next_anim = &game.animations[ANIMATION_RUN];
-			else if (walk_backward)
-				next_anim = &game.animations[ANIMATION_BACKWARD_GUN_WALK];
-			else if (player.moved)
-				next_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
-			else 
-				next_anim = &game.animations[ANIMATION_GUN_IDLE];
-#if 1
-			if (!player.curr_anim)
-				player.curr_anim = next_anim;
-			else if (!next_anim)
-				;
-			else if (!player.next_anim) {
-				if (player.curr_anim != next_anim) {
-					player.next_anim = next_anim;
-					player.blend_time = 0;
-				}
-			}
-			else if (next_anim == player.next_anim)
-				;
-			else if (next_anim != player.curr_anim) {
-
-
-				// player.curr_anim = player.next_anim;
-				// player.next_anim = next_anim;
-				// player.anim_time = player.blend_time;
-				// player.blend_time = 0;
-			}
-			else {
-				player.next_anim = 0;
-				player.blend_time = 0;
-			}
-#else
-
-			if (next_anim != player.curr_anim) {
-				player.anim_time = 0;
-				player.curr_anim = next_anim;
-			}
-#endif
-		}
+		a += player_forward;
+		forward = true;
 	}
+	if (IsDown(input, BUTTON_PLAYER_BACKWARD))
+	{
+		a -= player_forward;
+		player.walk_backward = true;
+	}
+	a = normalize(a);
+
+	player.moved = forward;
+	player.run = input.buttons[BUTTON_LEFT_SHIFT].is_down && forward;
+	if (!IsDown(input, BUTTON_MOUSE_LEFT) || player.moved)
+		player.shooting = false;
+	else
+	{
+		player.shooting = true;
+		player.run = false;
+		player.moved = false;
+		a = {};
+	}
+
+	if (!IsDown(input, BUTTON_MOUSE_RIGHT) || player.moved) {
+		if (player.aiming)
+			world.aim_camera_transition_t = 0;
+		player.aiming = 0;
+	} else {
+		if (!player.aiming)
+			world.aim_camera_transition_t = 0;
+		player.aiming = 1;
+	}
+
+	if (player.shooting) {
+		
+	}
+
+	//if (!player.on_ground)
+	a += -40 * player_up;
+	a.xy = a.xy * (player.run ? 50 : 30);
+	player.jumped = false;
+	if (IsDown(input, BUTTON_PLAYER_JUMP) && player.can_jump)
+	{
+		if (!player.pressing_jump)
+			play_sound(game, game.loaded_sounds[1]);
+		// a = a * 2;
+		a += 200 * player_up;
+		a.xy = {};
+		player.jumped = true;
+		player.pressing_jump = true;
+	}
+	else
+		player.pressing_jump = false;
+
+	a -= player.dp * 3;
+	{
+		v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
+
+		move_entity(world, player, delta_p);
+		player.dp += a * dt;
+	}
+
+	update_player_animation(game, world, player, dt);
+	
 }
-
-
 
 void update_enemies(Game &game, World &world, GameInput &input, float dt)
 {
@@ -342,249 +307,44 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			continue ;
 		assert(e.ellipsoid_collision_shape);
 
-		v3 targetP = player->position;
-		v3 dP = {};
 		v3 s = e.scale * e.ellipsoid_radius;
 
 		bool jump = false;
-		{
-			auto target_cell = get_cell(targetP);
-			auto start_cell = get_cell(e.position);
 
-			auto cell_dist = [&](v3i a, v3i b) -> int {
-				return roundf(10.f * sqrtf((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
-			};
-
-			int MAX_JUMP_CELL_COUNT = 4;
-
-			State istate;
-			istate.p = start_cell;
-			if (!e.can_jump && e.dp.z < 0)
-				istate.jump = -1;
-			else {
-				if (e.can_jump)
-					istate.jump = 0;
-				else {
-					istate.jump = roundf((e.position.z - e.last_jump_z) / ASTART_CELL_DIM);
-				}
-				if (istate.jump < 0)
-					istate.jump = 0;
-			}
-			LOG_DEBUG("istate jump: %d", istate.jump);
-
-			auto get_state_childs = [&](State state, State *childs, int &count)
-			{
-#if 1
-				bool on_ground = world.occupied.count(pack_cell(state.p + V3i(0, 0, -1))) != 0;
-
-				if (on_ground)
-					state.jump = 0;
-				count = 0;
-
-				if (state.jump == -1) {
-					for (int dx = -1; dx <= 1; dx++)
-					for (int dy = -1; dy <= 1; dy++) {
-						State s = state;
-
-						s.p = s.p + V3i(dx, dy, -1);
-						childs[count++] = s;
-					}
-					return ;
-				}
-
-				// // TODO: maybe allow this even if we are on the ground?
-				
-				if (!on_ground) {
-					// for (int dx = -1; dx <= 1; dx++)
-					// for (int dy = -1; dy <= 1; dy++) {
-					// 	State s = state;
-					// 	s.p = s.p + V3i(0, 0, -1);
-					// 	s.jump = -1;
-					// 	childs[count++] = s;
-						
-					// }
-					State s = state;
-					s.p = s.p + V3i(0, 0, -1);
-					s.jump = -1;
-					childs[count++] = s;
-				}
-				if (state.jump < MAX_JUMP_CELL_COUNT) {
-					for (int dx = -1; dx <= 1; dx++)
-					for (int dy = -1; dy <= 1; dy++) {
-						State s = state;
-						s.p = s.p + V3i(dx, dy, +1);
-						s.jump++;
-						childs[count++] = s;
-					}
-				}
-				for (int dx = -1; dx <= 1; dx++)
-				for (int dy = -1; dy <= 1; dy++) {
-					if (!dx && !dy) continue;
-					State s = state;
-					s.p = s.p + V3i(dx, dy, 0);
-					if (!on_ground)
-						s.jump = -1;
-					else
-						s.jump = 0;
-					childs[count++] = s;
-				}
-#endif
-				//count = 0;
-				//for (int dx = -1; dx <= 1; dx++)
-				//for (int dy = -1; dy <= 1; dy++) {
-				//	if (!dx && !dy)
-				//		continue ;
-				//	State s = state;
-				//	s.p = s.p + V3i(dx, dy, 0);
-				//	childs[count++] = s;
-				//}
-			};
-
-			std::unordered_map<State, int, StateHasher> visited;
-
-			Arena *temp = begin_temp_memory();
-
-
-			int itr = 0;
-			float best_length_sq = length_sq(e.position - targetP);
-
-
-			std::unordered_map<State, int, StateHasher> gScore;
-
-			std::unordered_map<State, State, StateHasher> parent;
-			State best_cell = istate;
-
-			gScore[istate] = 0;
-			//fScore[istate] = ;
-			istate.fscore = cell_dist(istate.p, target_cell);
-			best_length_sq = istate.fscore;
-
-			std::set<State> set;
-			set.insert(istate);
-			visited[istate] = true;
-
-
-			bool on_ground = world.occupied.count(pack_cell(istate.p + V3i(0, 0, -1))) != 0;
-			LOG_DEBUG("PLAYER %d %d %d", target_cell.x, target_cell.y, target_cell.z);
-			const int max_itr = 4096;
-			while (!set.empty() && itr < max_itr)
-			{
-				auto state = *set.begin();
-
-				set.erase(set.begin());
-
-				if (state.p.x == target_cell.x && state.p.y == target_cell.y &&
-						state.p.z == target_cell.z) {
-					//LOG_DEBUG("FOUND BEST!");
-					//break ;
-				}
-				///LOG_DEBUG("%d %d %d %d", state.p.x, state.p.y, state.p.z, state.fscore);
-				//render_cell(state.p, 0.2);
-
-#if 1
-				int state_score = gScore[state];
-				State childs[36];
-				int child_count;
-
-				get_state_childs(state, childs, child_count);
-				for (int i = 0; i < child_count; i++) {
-					if (!world.occupied.count(pack_cell(childs[i].p))) {
-	//					v3 p = get_closest_point_in_cell(childs[i].p, t
-						int tentative_gScore = state_score + cell_dist(childs[i].p, state.p);//+1
-						if (!gScore.count(childs[i]) || tentative_gScore < gScore[childs[i]]) {
-							parent[childs[i]] = state;
-							gScore[childs[i]] = tentative_gScore;
-							childs[i].fscore = tentative_gScore + cell_dist(childs[i].p, target_cell);
-							set.insert(childs[i]);
-						}
-						if (cell_dist(childs[i].p, target_cell) < best_length_sq) {
-							best_length_sq = cell_dist(childs[i].p, target_cell);
-							best_cell = childs[i];
-						}
-					}
-				}
-#endif
-				itr++;
-			}
-			LOG_DEBUG("ITR = %d", itr);
-#if 1
-			if (parent.count(best_cell)) {
-
-				Array<v3i> path = make_array_max<v3i>(temp, 1024);
-
-				State curr = best_cell;
-
-				while (1) {
-					path.push(curr.p);
-					if (!parent.count(curr))
-						break ;
-					curr = parent[curr];
-				}
-				for (int i = 0; i < path.count; i++) {
-					v3 color = V3(0, 1, 0);
-					if (world.occupied.count(pack_cell(path[i])))
-						color = V3(1, 0, 0);
-					render_cell(path[i], 0.9f, V3(0, 1, 0));
-				}
-
-				//render_cell(q[0], 0.9f, V3(0, 1, 0));
-				//dP = get_closest_point_in_cell(path[path.count - 2], targetP) - e.position
-				//	;
-				LOG_DEBUG("PATH LENGTH: %zu", path.count);
-				if (path[path.count - 2].z > start_cell.z)
-					jump = true;
-				dP = V3(path[path.count - 2]) * ASTART_CELL_DIM - V3(path[path.count - 1]) * ASTART_CELL_DIM;
-			//	if (path.count > 2)
-				//	dP += 0.5f * V3(path[path.count - 3]) * ASTART_CELL_DIM - V3(path[path.count - 2]) * ASTART_CELL_DIM;
-
-			}
-			else {
-				dP = get_closest_point_in_cell(start_cell, targetP) - e.position;
-				LOG_DEBUG("best cell is current!");
-			}
-#endif
-
-
-			end_temp_memory();
+		v3 dP = find_path_astar(world, e, player->position);
+		if (dP.z) {
+			jump = true;
+			dP.z = 0;
 		}
-		//v3 dP = (player->position - e.position);
-		dP.z = 0;
+
 		dP = normalize(dP);
 
 		e.run = true;
+		e.moved = true;
 
 		v2 D = normalize(dP.xy);
 		quat target_rot = rotate_around_axis_quat(WORLD_UP, atan2(D.y, D.x));
 		e.rotation = quat_lerp(e.rotation, target_rot, dt * 10);
 
-		//if (length(dP) < 2) {
-		//	dP = {};
-		//	e.moved = false;
-		//	e.run = false;
-		//}
-		//else
-			e.moved = true;
 
 		v3 a = dP;
 
 		a += -(40) * WORLD_UP;
 		a.xy = a.xy * 50;
 
-
-		bool jumped = false;
+		e.jumped = false;
 		if (e.should_jump)
 			jump = 1;
 		if (jump && e.can_jump)
 		{
 			a += 200 * WORLD_UP;
 			a.xy = {}; // TODO: !! check this
-			jumped = true;
-			LOG_DEBUG("JUMPED!!");
 			if (!e.pressing_jump)
 				e.last_jump_z = e.position.z;
 
 			e.pressing_jump = true;
 			e.should_jump = false;
+			e.jumped = true;
 		}
 		else
 			e.pressing_jump = false;
@@ -599,64 +359,8 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 			e.dp += a * dt;
 
 		}
-		{
-			// TODO: !!! jump animation already has translation up?
-			// TODO: there is a problem if we hold space
-			Animation *next_anim = 0;
-			e.anim_time += dt;
-			e.blend_time += dt;
-
-			if (!e.curr_anim)
-				e.curr_anim = &game.animations[ANIMATION_GUN_IDLE];
-
-
-			if (!e.on_ground) {
-				if (e.curr_anim != &game.animations[ANIMATION_JUMP]
-						&& e.next_anim != &game.animations[ANIMATION_JUMP]
-						&& !jumped)
-					next_anim = e.next_anim;
-				else
-					next_anim = &game.animations[ANIMATION_JUMP];
-			}
-			else  if (e.shooting)
-				next_anim = &game.animations[ANIMATION_SHOOT];
-			else if (e.run)
-				next_anim = &game.animations[ANIMATION_RUN];
-			else if (e.moved)
-				next_anim = &game.animations[ANIMATION_FORWARD_GUN_WALK];
-			else 
-				next_anim = &game.animations[ANIMATION_GUN_IDLE];
-#if 1
-			if (!e.curr_anim)
-				e.curr_anim = next_anim;
-			else if (!next_anim)
-				;
-			else if (!e.next_anim) {
-				if (e.curr_anim != next_anim) {
-					e.next_anim = next_anim;
-					e.blend_time = 0;
-				}
-			}
-			else if (next_anim == e.next_anim)
-				;
-			else if (next_anim != e.curr_anim) {
-				// e.curr_anim = e.next_anim;
-				// e.next_anim = next_anim;
-				// e.anim_time = e.blend_time;
-				// e.blend_time = 0;
-			}
-			else {
-				e.next_anim = 0;
-				e.blend_time = 0;
-			}
-#else
-
-			if (next_anim != player.curr_anim) {
-				player.anim_time = 0;
-				player.curr_anim = next_anim;
-			}
-#endif
-		}
+		update_player_animation(game, world, e, dt);
+		
 	}
 }	
 

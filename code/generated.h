@@ -89,9 +89,6 @@ void serialize_double(FILE *fd, bool w, double &x, Arena *arena = 0) {
         (void)fread(&x, sizeof(double), 1, fd);
     }
 }
-static StructMetaData get_struct_Mutex_info();
-static void imgui_edit_struct_Mutex(Mutex &x, const char *name, bool collapsed);
-static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena);
 static StructMetaData get_struct_ThreadWork_info();
 static void imgui_edit_struct_ThreadWork(ThreadWork &x, const char *name,
                                          bool collapsed);
@@ -104,6 +101,9 @@ static void imgui_edit_struct_memory_block(memory_block &x, const char *name,
                                            bool collapsed);
 static void serialize_memory_block(FILE *fd, bool w, memory_block &x,
                                    Arena *arena);
+static StructMetaData get_struct_Mutex_info();
+static void imgui_edit_struct_Mutex(Mutex &x, const char *name, bool collapsed);
+static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena);
 static StructMetaData get_struct_Material_info();
 static void imgui_edit_struct_Material(Material &x, const char *name,
                                        bool collapsed);
@@ -151,6 +151,17 @@ static StructMetaData get_struct_Platform_info();
 static void imgui_edit_struct_Platform(Platform &x, const char *name,
                                        bool collapsed);
 static void serialize_Platform(FILE *fd, bool w, Platform &x, Arena *arena);
+static StructMetaData get_struct_VertexInputLayout_info();
+static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
+                                                const char *name,
+                                                bool collapsed);
+static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+                                        Arena *arena);
+static StructMetaData get_struct_StringHasher_info();
+static void imgui_edit_struct_StringHasher(StringHasher &x, const char *name,
+                                           bool collapsed);
+static void serialize_StringHasher(FILE *fd, bool w, StringHasher &x,
+                                   Arena *arena);
 static StructMetaData get_struct_Texture_info();
 static void imgui_edit_struct_Texture(Texture &x, const char *name,
                                       bool collapsed);
@@ -206,12 +217,6 @@ static void imgui_edit_struct_RasterizerState(RasterizerState &x,
                                               const char *name, bool collapsed);
 static void serialize_RasterizerState(FILE *fd, bool w, RasterizerState &x,
                                       Arena *arena);
-static StructMetaData get_struct_VertexInputLayout_info();
-static void imgui_edit_struct_VertexInputLayout(VertexInputLayout &x,
-                                                const char *name,
-                                                bool collapsed);
-static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
-                                        Arena *arena);
 static StructMetaData get_struct_RenderContext_info();
 static void imgui_edit_struct_RenderContext(RenderContext &x, const char *name,
                                             bool collapsed);
@@ -554,25 +559,6 @@ static const char *get_enum_EntityType_str(int value) {
     }
     return "Enum_EntityType_Unknown";
 }
-static const char *get_enum_AnimationType_str(int value) {
-    switch (value) {
-    case ANIMATION_JUMP:
-        return "ANIMATION_JUMP";
-    case ANIMATION_SHOOT:
-        return "ANIMATION_SHOOT";
-    case ANIMATION_RUN:
-        return "ANIMATION_RUN";
-    case ANIMATION_FORWARD_GUN_WALK:
-        return "ANIMATION_FORWARD_GUN_WALK";
-    case ANIMATION_BACKWARD_GUN_WALK:
-        return "ANIMATION_BACKWARD_GUN_WALK";
-    case ANIMATION_GUN_IDLE:
-        return "ANIMATION_GUN_IDLE";
-    case ANIMATION_COUNT:
-        return "ANIMATION_COUNT";
-    }
-    return "Enum_AnimationType_Unknown";
-}
 static const char *get_enum_CameraType_str(int value) {
     switch (value) {
     case CAMERA_TYPE_PERSPECTIVE:
@@ -601,14 +587,6 @@ static const char *get_enum_GizmoMode_str(int value) {
         return "GIZMO_SCALE";
     }
     return "Enum_GizmoMode_Unknown";
-}
-StructMetaData get_struct_Mutex_info() {
-    StructMetaData data = {};
-    data.name = "Mutex";
-    data.member_count = 1;
-    data.members[0].name = "int";
-    data.members[0].type_name = "volatile";
-    return data;
 }
 StructMetaData get_struct_ThreadWork_info() {
     StructMetaData data = {};
@@ -666,6 +644,14 @@ StructMetaData get_struct_memory_block_info() {
     data.members[2].type_name = "usize";
     data.members[3].name = "next";
     data.members[3].type_name = "memory_block*";
+    return data;
+}
+StructMetaData get_struct_Mutex_info() {
+    StructMetaData data = {};
+    data.name = "Mutex";
+    data.member_count = 1;
+    data.members[0].name = "int";
+    data.members[0].type_name = "volatile";
     return data;
 }
 StructMetaData get_struct_Material_info() {
@@ -739,13 +725,15 @@ StructMetaData get_struct_Shader_info() {
 StructMetaData get_struct_Arena_info() {
     StructMetaData data = {};
     data.name = "Arena";
-    data.member_count = 3;
+    data.member_count = 4;
     data.members[0].name = "block";
     data.members[0].type_name = "memory_block*";
     data.members[1].name = "minimum_block_size";
     data.members[1].type_name = "usize";
     data.members[2].name = "thread_safe";
     data.members[2].type_name = "b32";
+    data.members[3].name = "mutex";
+    data.members[3].type_name = "Mutex";
     return data;
 }
 StructMetaData get_struct_VertexInputElement_info() {
@@ -807,7 +795,7 @@ StructMetaData get_struct_SoundPlaying_info() {
 StructMetaData get_struct_Platform_info() {
     StructMetaData data = {};
     data.name = "Platform";
-    data.member_count = 8;
+    data.member_count = 7;
     data.members[0].name = "render_context";
     data.members[0].type_name = "RenderContext*";
     data.members[1].name = "imgui_context";
@@ -822,8 +810,28 @@ StructMetaData get_struct_Platform_info() {
     data.members[5].type_name = "LockMutexFn*";
     data.members[6].name = "unlock_mutex";
     data.members[6].type_name = "UnlockMutexFn*";
-    data.members[7].name = "memory_mutex";
-    data.members[7].type_name = "Mutex";
+    return data;
+}
+StructMetaData get_struct_VertexInputLayout_info() {
+    StructMetaData data = {};
+    data.name = "VertexInputLayout";
+    data.member_count = 3;
+    data.members[0].name = "elements";
+    data.members[0].type_name = "VertexInputElement";
+    data.members[0].is_array = 1;
+    data.members[0].array_size = 64;
+    data.members[1].name = "element_count";
+    data.members[1].type_name = "int";
+    data.members[2].name = "vertex_size";
+    data.members[2].type_name = "int";
+    return data;
+}
+StructMetaData get_struct_StringHasher_info() {
+    StructMetaData data = {};
+    data.name = "StringHasher";
+    data.member_count = 1;
+    data.members[0].name = "operator";
+    data.members[0].type_name = "std::size_t";
     return data;
 }
 StructMetaData get_struct_Texture_info() {
@@ -881,17 +889,19 @@ StructMetaData get_struct_ShadowMap_info() {
 StructMetaData get_struct_Animation_info() {
     StructMetaData data = {};
     data.name = "Animation";
-    data.member_count = 5;
-    data.members[0].name = "timebegin";
-    data.members[0].type_name = "float";
-    data.members[1].name = "duration";
+    data.member_count = 6;
+    data.members[0].name = "name";
+    data.members[0].type_name = "String";
+    data.members[1].name = "timebegin";
     data.members[1].type_name = "float";
-    data.members[2].name = "frametime";
+    data.members[2].name = "duration";
     data.members[2].type_name = "float";
-    data.members[3].name = "frame_count";
-    data.members[3].type_name = "int";
-    data.members[4].name = "nodes";
-    data.members[4].type_name = "Array<NodeAnimation>";
+    data.members[3].name = "frametime";
+    data.members[3].type_name = "float";
+    data.members[4].name = "frame_count";
+    data.members[4].type_name = "int";
+    data.members[5].name = "nodes";
+    data.members[5].type_name = "Array<NodeAnimation>";
     return data;
 }
 StructMetaData get_struct_VertexBuffer_info() {
@@ -939,17 +949,9 @@ StructMetaData get_struct_DepthStencilState_info() {
 StructMetaData get_struct_StateHasher_info() {
     StructMetaData data = {};
     data.name = "StateHasher";
-    data.member_count = 5;
+    data.member_count = 1;
     data.members[0].name = "operator";
     data.members[0].type_name = "std::size_t";
-    data.members[1].name = "h2";
-    data.members[1].type_name = "std::size_t";
-    data.members[2].name = "h3";
-    data.members[2].type_name = "std::size_t";
-    data.members[3].name = "h4";
-    data.members[3].type_name = "std::size_t";
-    data.members[4].name = "h1";
-    data.members[4].type_name = "return";
     return data;
 }
 StructMetaData get_struct_ProfilerBlock_info() {
@@ -984,24 +986,10 @@ StructMetaData get_struct_RasterizerState_info() {
     data.members[1].type_name = "RasterizerCullMode";
     return data;
 }
-StructMetaData get_struct_VertexInputLayout_info() {
-    StructMetaData data = {};
-    data.name = "VertexInputLayout";
-    data.member_count = 3;
-    data.members[0].name = "elements";
-    data.members[0].type_name = "VertexInputElement";
-    data.members[0].is_array = 1;
-    data.members[0].array_size = 64;
-    data.members[1].name = "element_count";
-    data.members[1].type_name = "int";
-    data.members[2].name = "vertex_size";
-    data.members[2].type_name = "int";
-    return data;
-}
 StructMetaData get_struct_RenderContext_info() {
     StructMetaData data = {};
     data.name = "RenderContext";
-    data.member_count = 9;
+    data.member_count = 10;
     data.members[0].name = "arena";
     data.members[0].type_name = "Arena";
     data.members[1].name = "window_width";
@@ -1020,6 +1008,8 @@ StructMetaData get_struct_RenderContext_info() {
     data.members[7].type_name = "Array<v3>";
     data.members[8].name = "active_framebuffer_id";
     data.members[8].type_name = "uintptr_t";
+    data.members[9].name = "texture_mutex";
+    data.members[9].type_name = "Mutex";
     return data;
 }
 StructMetaData get_struct_CollisionInfo_info() {
@@ -1053,7 +1043,7 @@ StructMetaData get_struct_ConstantBuffer_info() {
 StructMetaData get_struct_Game_info() {
     StructMetaData data = {};
     data.name = "Game";
-    data.member_count = 34;
+    data.member_count = 35;
     data.members[0].name = "arena";
     data.members[0].type_name = "Arena";
     data.members[1].name = "is_initialized";
@@ -1082,50 +1072,50 @@ StructMetaData get_struct_Game_info() {
     data.members[12].type_name = "Array<Scene>";
     data.members[13].name = "next_scene_id";
     data.members[13].type_name = "usize";
-    data.members[14].name = "animations";
-    data.members[14].type_name = "Animation";
-    data.members[14].is_array = 1;
-    data.members[14].array_size = ANIMATION_COUNT;
-    data.members[15].name = "in_editor";
-    data.members[15].type_name = "b32";
-    data.members[16].name = "debug_collision";
-    data.members[16].type_name = "bool";
-    data.members[17].name = "frame";
-    data.members[17].type_name = "int";
-    data.members[18].name = "time";
-    data.members[18].type_name = "float";
-    data.members[19].name = "default_rasterizer_state";
-    data.members[19].type_name = "RasterizerState";
-    data.members[20].name = "default_depth_stencil_state";
+    data.members[14].name = "in_editor";
+    data.members[14].type_name = "b32";
+    data.members[15].name = "debug_collision";
+    data.members[15].type_name = "bool";
+    data.members[16].name = "frame";
+    data.members[16].type_name = "int";
+    data.members[17].name = "time";
+    data.members[17].type_name = "float";
+    data.members[18].name = "default_rasterizer_state";
+    data.members[18].type_name = "RasterizerState";
+    data.members[19].name = "default_depth_stencil_state";
+    data.members[19].type_name = "DepthStencilState";
+    data.members[20].name = "disable_depth_state";
     data.members[20].type_name = "DepthStencilState";
-    data.members[21].name = "disable_depth_state";
-    data.members[21].type_name = "DepthStencilState";
-    data.members[22].name = "debug_asset_fb";
-    data.members[22].type_name = "FrameBuffer";
-    data.members[23].name = "debug_asset_tex";
-    data.members[23].type_name = "Texture";
-    data.members[24].name = "sound_state";
-    data.members[24].type_name = "SoundState";
-    data.members[25].name = "first_playing_sound";
-    data.members[25].type_name = "SoundPlaying*";
-    data.members[26].name = "loaded_sounds";
-    data.members[26].type_name = "LoadedSound";
-    data.members[26].is_array = 1;
-    data.members[26].array_size = 32;
-    data.members[27].name = "default_scene";
-    data.members[27].type_name = "Scene";
-    data.members[28].name = "show_normals";
-    data.members[28].type_name = "bool";
-    data.members[29].name = "render_bones";
+    data.members[21].name = "debug_asset_fb";
+    data.members[21].type_name = "FrameBuffer";
+    data.members[22].name = "debug_asset_tex";
+    data.members[22].type_name = "Texture";
+    data.members[23].name = "sound_state";
+    data.members[23].type_name = "SoundState";
+    data.members[24].name = "first_playing_sound";
+    data.members[24].type_name = "SoundPlaying*";
+    data.members[25].name = "loaded_sounds";
+    data.members[25].type_name = "LoadedSound";
+    data.members[25].is_array = 1;
+    data.members[25].array_size = 32;
+    data.members[26].name = "animations";
+    data.members[26].type_name = "std::unordered_map<String,int,StringHasher>";
+    data.members[27].name = "loaded_animations";
+    data.members[27].type_name = "Array<Animation>";
+    data.members[28].name = "default_scene";
+    data.members[28].type_name = "Scene";
+    data.members[29].name = "show_normals";
     data.members[29].type_name = "bool";
-    data.members[30].name = "frustum_culling";
+    data.members[30].name = "render_bones";
     data.members[30].type_name = "bool";
-    data.members[31].name = "master_volume";
-    data.members[31].type_name = "float";
-    data.members[32].name = "play_in_editor";
-    data.members[32].type_name = "bool";
-    data.members[33].name = "background_color";
-    data.members[33].type_name = "v3";
+    data.members[31].name = "frustum_culling";
+    data.members[31].type_name = "bool";
+    data.members[32].name = "master_volume";
+    data.members[32].type_name = "float";
+    data.members[33].name = "play_in_editor";
+    data.members[33].type_name = "bool";
+    data.members[34].name = "background_color";
+    data.members[34].type_name = "v3";
     return data;
 }
 StructMetaData get_struct_Vertex_info() {
@@ -1353,7 +1343,7 @@ StructMetaData get_struct_CollisionShape_info() {
 StructMetaData get_struct_Entity_info() {
     StructMetaData data = {};
     data.name = "Entity";
-    data.member_count = 33;
+    data.member_count = 35;
     data.members[0].name = "id";
     data.members[0].type_name = "entity_id";
     data.members[1].name = "parent";
@@ -1394,32 +1384,36 @@ StructMetaData get_struct_Entity_info() {
     data.members[18].type_name = "mat4";
     data.members[19].name = "disable_collision";
     data.members[19].type_name = "bool";
-    data.members[20].name = "curr_anim";
-    data.members[20].type_name = "Animation*";
-    data.members[21].name = "next_anim";
-    data.members[21].type_name = "Animation*";
-    data.members[22].name = "anim_time";
-    data.members[22].type_name = "float";
-    data.members[23].name = "blend_time";
-    data.members[23].type_name = "float";
-    data.members[24].name = "animation";
-    data.members[24].type_name = "Animation*";
-    data.members[25].name = "speed";
+    data.members[20].name = "walk_backward";
+    data.members[20].type_name = "bool";
+    data.members[21].name = "jumped";
+    data.members[21].type_name = "bool";
+    data.members[22].name = "curr_anim";
+    data.members[22].type_name = "Animation*";
+    data.members[23].name = "next_anim";
+    data.members[23].type_name = "Animation*";
+    data.members[24].name = "anim_time";
+    data.members[24].type_name = "float";
+    data.members[25].name = "blend_time";
     data.members[25].type_name = "float";
-    data.members[26].name = "height_above_ground";
-    data.members[26].type_name = "float";
-    data.members[27].name = "point_light_scale";
+    data.members[26].name = "animation";
+    data.members[26].type_name = "Animation*";
+    data.members[27].name = "speed";
     data.members[27].type_name = "float";
-    data.members[28].name = "z_rot";
+    data.members[28].name = "height_above_ground";
     data.members[28].type_name = "float";
-    data.members[29].name = "last_move";
-    data.members[29].type_name = "int";
-    data.members[30].name = "last_gun_time";
+    data.members[29].name = "point_light_scale";
+    data.members[29].type_name = "float";
+    data.members[30].name = "z_rot";
     data.members[30].type_name = "float";
-    data.members[31].name = "last_jump_z";
-    data.members[31].type_name = "float";
-    data.members[32].name = "should_jump";
-    data.members[32].type_name = "bool";
+    data.members[31].name = "last_move";
+    data.members[31].type_name = "int";
+    data.members[32].name = "last_gun_time";
+    data.members[32].type_name = "float";
+    data.members[33].name = "last_jump_z";
+    data.members[33].type_name = "float";
+    data.members[34].name = "should_jump";
+    data.members[34].type_name = "bool";
     return data;
 }
 StructMetaData get_struct_Camera_info() {
@@ -1553,7 +1547,7 @@ StructMetaData get_struct_SoundState_info() {
 StructMetaData get_struct_State_info() {
     StructMetaData data = {};
     data.name = "State";
-    data.member_count = 4;
+    data.member_count = 5;
     data.members[0].name = "p";
     data.members[0].type_name = "v3i";
     data.members[1].name = "jump";
@@ -1562,6 +1556,8 @@ StructMetaData get_struct_State_info() {
     data.members[2].type_name = "int";
     data.members[3].name = "operator";
     data.members[3].type_name = "bool";
+    data.members[4].name = "operator";
+    data.members[4].type_name = "bool";
     return data;
 }
 static void imgui_edit_enum_GameButtonType(GameButtonType &x,
@@ -2039,42 +2035,6 @@ static void imgui_edit_enum_EntityType(EntityType &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 6);
     x = items_type[curr];
 }
-static void imgui_edit_enum_AnimationType(AnimationType &x, const char *name) {
-    const char *items[7];
-    AnimationType items_type[7];
-    int curr = 0;
-    items[0] = "ANIMATION_JUMP";
-    items_type[0] = ANIMATION_JUMP;
-    if (x == ANIMATION_JUMP)
-        curr = 0;
-    items[1] = "ANIMATION_SHOOT";
-    items_type[1] = ANIMATION_SHOOT;
-    if (x == ANIMATION_SHOOT)
-        curr = 1;
-    items[2] = "ANIMATION_RUN";
-    items_type[2] = ANIMATION_RUN;
-    if (x == ANIMATION_RUN)
-        curr = 2;
-    items[3] = "ANIMATION_FORWARD_GUN_WALK";
-    items_type[3] = ANIMATION_FORWARD_GUN_WALK;
-    if (x == ANIMATION_FORWARD_GUN_WALK)
-        curr = 3;
-    items[4] = "ANIMATION_BACKWARD_GUN_WALK";
-    items_type[4] = ANIMATION_BACKWARD_GUN_WALK;
-    if (x == ANIMATION_BACKWARD_GUN_WALK)
-        curr = 4;
-    items[5] = "ANIMATION_GUN_IDLE";
-    items_type[5] = ANIMATION_GUN_IDLE;
-    if (x == ANIMATION_GUN_IDLE)
-        curr = 5;
-    items[6] = "ANIMATION_COUNT";
-    items_type[6] = ANIMATION_COUNT;
-    if (x == ANIMATION_COUNT)
-        curr = 6;
-    if (ImGui::CollapsingHeader(name))
-        ImGui::ListBox(name, &curr, items, 7);
-    x = items_type[curr];
-}
 static void imgui_edit_enum_CameraType(CameraType &x, const char *name) {
     const char *items[2];
     CameraType items_type[2];
@@ -2127,12 +2087,12 @@ static void imgui_edit_enum_GizmoMode(GizmoMode &x, const char *name) {
         ImGui::ListBox(name, &curr, items, 3);
     x = items_type[curr];
 }
-static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena = 0) {}
 static void serialize_ThreadWork(FILE *fd, bool w, ThreadWork &x,
                                  Arena *arena = 0) {}
 static void serialize_Mesh(FILE *fd, bool w, Mesh &x, Arena *arena = 0) {}
 static void serialize_memory_block(FILE *fd, bool w, memory_block &x,
                                    Arena *arena = 0) {}
+static void serialize_Mutex(FILE *fd, bool w, Mutex &x, Arena *arena = 0) {}
 static void serialize_Material(FILE *fd, bool w, Material &x,
                                Arena *arena = 0) {}
 static void serialize_RenderPass(FILE *fd, bool w, RenderPass &x,
@@ -2154,6 +2114,10 @@ static void serialize_SoundPlaying(FILE *fd, bool w, SoundPlaying &x,
                                    Arena *arena = 0) {}
 static void serialize_Platform(FILE *fd, bool w, Platform &x,
                                Arena *arena = 0) {}
+static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
+                                        Arena *arena = 0) {}
+static void serialize_StringHasher(FILE *fd, bool w, StringHasher &x,
+                                   Arena *arena = 0) {}
 static void serialize_Texture(FILE *fd, bool w, Texture &x, Arena *arena = 0) {}
 static void serialize_ShadowMap(FILE *fd, bool w, ShadowMap &x,
                                 Arena *arena = 0) {}
@@ -2176,8 +2140,6 @@ static void serialize_ConstantBufferElement(FILE *fd, bool w,
                                             Arena *arena = 0) {}
 static void serialize_RasterizerState(FILE *fd, bool w, RasterizerState &x,
                                       Arena *arena = 0) {}
-static void serialize_VertexInputLayout(FILE *fd, bool w, VertexInputLayout &x,
-                                        Arena *arena = 0) {}
 static void serialize_RenderContext(FILE *fd, bool w, RenderContext &x,
                                     Arena *arena = 0) {}
 static void serialize_CollisionInfo(FILE *fd, bool w, CollisionInfo &x,
@@ -2375,6 +2337,16 @@ static void imgui_edit_struct_Entity(Entity &x, const char *name,
             bool tmp = x.disable_collision;
             ImGui::Checkbox("disable_collision", &tmp);
             x.disable_collision = tmp;
+        }
+        {
+            bool tmp = x.walk_backward;
+            ImGui::Checkbox("walk_backward", &tmp);
+            x.walk_backward = tmp;
+        }
+        {
+            bool tmp = x.jumped;
+            ImGui::Checkbox("jumped", &tmp);
+            x.jumped = tmp;
         }
         ImGui::InputFloat("height_above_ground", &x.height_above_ground);
         ImGui::InputFloat("point_light_scale", &x.point_light_scale);

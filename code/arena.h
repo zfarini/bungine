@@ -13,7 +13,7 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 		return 0;
 	assert (alignement > 0 && (alignement & (alignement - 1)) == 0);
 	if (arena->thread_safe) {
-		platform.lock_mutex(platform.memory_mutex);
+		platform.lock_mutex(arena->mutex);
 		alignement = max(alignement, CACHE_LINE_SIZE);
 	}
 	int misalign = 0;
@@ -53,7 +53,7 @@ function void *_arena_alloc(const char *filename, const char *func, int line, Ar
 	if (clear)
 		memset(ptr, 0, size);
 	if (arena->thread_safe)
-		platform.unlock_mutex(platform.memory_mutex);
+		platform.unlock_mutex(arena->mutex);
 	return ptr;	
 }
 

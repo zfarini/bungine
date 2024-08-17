@@ -22,6 +22,17 @@ template <typename T> struct Array {
         assert(count);
         return data[count - 1];
     }
+
+    bool operator==(const Array<T> &other) const
+    {
+        if (count != other.count)
+            return false;
+        for (int i = 0; i < count; i++) {
+            if (data[i] != other.data[i])
+                return false;
+        }
+        return true;
+    }
 };
 
 template <typename T> Array<T> make_array_max(Arena *arena, usize capacity) {
@@ -202,3 +213,15 @@ uint64_t rdtsc() {
     //);
     //return ((unsigned long long)hi << 32) | lo;
 }
+
+struct StringHasher {
+    std::size_t operator()(const String& s) const
+    {
+        // TODO: pushcleanup
+        std::size_t hash = 5381;
+        for (int i = 0; i < s.count; ++i) {
+            hash = ((hash << 5) + hash) + s.data[i];
+        }
+        return hash;
+    }
+};

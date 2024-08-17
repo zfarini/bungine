@@ -64,6 +64,7 @@ function void end_temp_memory()
 #include "scene.h"
 #include "game.h"
 #include "scene.cpp"
+#include "pathfinding.h"
 
 Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
 {
@@ -160,7 +161,6 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		init_render_context(*platform.render_context);
 
 
-		game.scenes = make_array_max<Scene>(&game.arena, 1024);
 
 		game.world = new World(); // TODO: cleanup using unordered_map for now
 		World &world = *game.world;
@@ -271,35 +271,24 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 			game.constant_buffer = create_constant_buffer(elems);
 			end_temp_memory();
 		}
-		
+		game.scenes = make_array_max<Scene>(&game.arena, 1024);
+		game.loaded_animations = make_array_max<Animation>(&game.arena, 128);
+
+
 		load_scene(&game.asset_arena, game, "data/parking/zma_carpark_b2.obj");
 		load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
 		load_scene(&game.asset_arena, game, "data/cube.fbx");
 		load_scene(&game.asset_arena, game, "data/sphere.fbx");
 		//load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
 		//load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
-
-#if 1
 		load_scene(&game.asset_arena, game, "data/Ybot.fbx");
 
-		// TODO: cleanup
-		game.animations[ANIMATION_JUMP] = load_animation(&game.asset_arena, game, "data/jump.fbx");
-		game.animations[ANIMATION_SHOOT] = load_animation(&game.asset_arena, game, "data/shoot.fbx");
-		// TODO: cleanup remove this
-		game.animations[ANIMATION_SHOOT].duration *= 0.6;
-		game.animations[ANIMATION_RUN] = load_animation(&game.asset_arena, game, "data/run.fbx");
-		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
-		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
-		game.animations[ANIMATION_GUN_IDLE] = load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
-#else
-		game.scenes[SCENE_PLAYER] = load_scene(&game.asset_arena, "data/Swat.fbx");
-		game.animations[ANIMATION_JUMP] = load_scene(&game.asset_arena, "data/SwatRifleJump.fbx").animations[0];
-		game.animations[ANIMATION_SHOOT] = load_scene(&game.asset_arena, "data/SwatRiffleShoot.fbx").animations[0];
-		game.animations[ANIMATION_RUN] = load_scene(&game.asset_arena, "data/SwatRunning.fbx").animations[0];
-		game.animations[ANIMATION_FORWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/SwatRifleWalk.fbx").animations[0];
-		game.animations[ANIMATION_BACKWARD_GUN_WALK] = load_scene(&game.asset_arena, "data/SwatBackwardRifleWalk.fbx").animations[0];
-		game.animations[ANIMATION_GUN_IDLE] = load_scene(&game.asset_arena, "data/SwatRifleIdle.fbx").animations[0];
-#endif
+		load_animation(&game.asset_arena, game, "data/jump.fbx");
+		load_animation(&game.asset_arena, game, "data/shoot.fbx");
+		load_animation(&game.asset_arena, game, "data/run.fbx");
+		load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
+		load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
+		load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
 
 		FILE *fd = fopen("world.bin", "rb");
 		if (!fd) {

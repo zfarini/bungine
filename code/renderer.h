@@ -174,6 +174,9 @@ struct RenderContext {
     Array<v3> debug_lines;
 
     uintptr_t active_framebuffer_id;
+
+    // TODO: cleanup remove this
+    Mutex texture_mutex;
 };
 
 usize get_input_element_size(int type) {

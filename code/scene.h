@@ -89,6 +89,8 @@ struct NodeAnimation {
 };
 
 struct Animation {
+    String name;
+    
     float timebegin;
     float duration;
 

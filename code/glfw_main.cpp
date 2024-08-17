@@ -81,6 +81,7 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	}
 }
 
+#ifdef PLATFORM_WIN32
 int get_thread_id()
 {
 	return (int)(GetCurrentThreadId());
@@ -161,7 +162,7 @@ DWORD thread_func(LPVOID param)
 	}
 	return 0;
 }
-
+#endif
 
 int main()
 {
@@ -244,7 +245,8 @@ int main()
 	}
 	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
 
-#define THREAD_COUNT 1
+	// TODO: cleanup
+#define THREAD_COUNT 3
 	DWORD thread_ids[THREAD_COUNT];
 
 	for (int i = 0; i < THREAD_COUNT; i++) {
@@ -260,7 +262,7 @@ int main()
 		if (IsDown(game_input, BUTTON_ESCAPE))
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		glfwGetFramebufferSize(window, &render_context.window_width, &render_context.window_height);
-		// TODO: cleanup https://gafferongames.com/post/fix_your_timestep
+		// TODO: https://gafferongames.com/post/fix_your_timestep
 		float dt = 1.f / 60;
 		game_update_and_render(game, game_input, dt);
 

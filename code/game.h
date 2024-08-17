@@ -66,6 +66,9 @@ struct Entity {
 
 	meta(ui, serialize) bool disable_collision;
 
+    meta(ui) bool walk_backward;
+    meta(ui) bool jumped;
+
     // Animation *animation;
     Animation *curr_anim;
     Animation *next_anim;
@@ -88,15 +91,15 @@ struct Entity {
 	bool should_jump;
 };
 
-enum AnimationType {
-    ANIMATION_JUMP,
-    ANIMATION_SHOOT,
-    ANIMATION_RUN,
-    ANIMATION_FORWARD_GUN_WALK,
-    ANIMATION_BACKWARD_GUN_WALK,
-    ANIMATION_GUN_IDLE,
-    ANIMATION_COUNT
-};
+// enum AnimationType {
+//     ANIMATION_JUMP,
+//     ANIMATION_SHOOT,
+//     ANIMATION_RUN,
+//     ANIMATION_FORWARD_GUN_WALK,
+//     ANIMATION_BACKWARD_GUN_WALK,
+//     ANIMATION_GUN_IDLE,
+//     ANIMATION_COUNT
+// };
 
 struct ShadowMap {
     FrameBuffer framebuffer;
@@ -348,7 +351,6 @@ struct Game {
 	meta(ui) Array<Scene> scenes;
 	usize next_scene_id;
 
-    Animation animations[ANIMATION_COUNT];
 
     b32 in_editor;
     meta(ui) bool debug_collision;
@@ -366,7 +368,11 @@ struct Game {
     SoundState sound_state;
     
     SoundPlaying *first_playing_sound;
+
     LoadedSound loaded_sounds[32];
+
+    std::unordered_map<String, int, StringHasher> animations;
+    Array<Animation> loaded_animations;
 
 	Scene default_scene;
 
@@ -407,100 +413,3 @@ struct Constants {
 Entity *get_entity(World &world, entity_id id);
 mat4 get_entity_transform(World &world, Entity &e);
 v3 get_world_p(World &world, entity_id id);
-
-
-
-#define ASTART_CELL_DIM (0.8)
-
-v3i get_cell(v3 p)
-{
-	v3i res;
-
-	res.x = roundf(p.x / (ASTART_CELL_DIM));
-	res.y = roundf(p.y / (ASTART_CELL_DIM));
-	res.z = roundf(p.z / (ASTART_CELL_DIM));
-	return res;
-}
-
-const u64 MAX_CELL_POW = 10;
-const u64 MAX_CELL = (1 << MAX_CELL_POW);
-
-uint64_t pack_cell(v3i c)
-{
-	assert(abs(c.x) < MAX_CELL/2 && abs(c.y) < MAX_CELL/2 && abs(c.z) < MAX_CELL/2);
-	return ((uint64_t)(c.x + MAX_CELL/2)) | ((c.y + MAX_CELL/2) << MAX_CELL_POW) | ((c.z+ MAX_CELL/2) << (MAX_CELL_POW*2));
-}
-v3i unpack_cell(uint64_t x)
-{
-	v3i res;
-
-	res.x = (x >> 0) & (MAX_CELL - 1);
-	res.y = (x >> MAX_CELL_POW) & (MAX_CELL - 1);
-	res.z = (x >> (MAX_CELL_POW * 2)) & (MAX_CELL - 1);
-	return res - V3i(MAX_CELL/2, MAX_CELL/2, MAX_CELL/2);
-};
-
-v3 get_closest_point_in_cell(v3i cell, v3 p)
-{
-	v3 box_min = V3(cell) * ASTART_CELL_DIM - 0.5f * V3(ASTART_CELL_DIM);
-	v3 box_max = V3(cell) * ASTART_CELL_DIM + 0.5f * V3(ASTART_CELL_DIM);
-
-	v3 result;
-	result.x = (p.x >= box_min.x && p.x <= box_max.x ? p.x : 
-			   (p.x <= box_min.x ? box_min.x : box_max.x));
-	result.y = (p.y >= box_min.y && p.y <= box_max.y ? p.y : 
-			   (p.y <= box_min.y ? box_min.y : box_max.y));
-	result.z = (p.z >= box_min.z && p.z <= box_max.z ? p.z : 
-			   (p.z <= box_min.z ? box_min.z : box_max.z));
-	return result;
-}
-
-void render_cell(v3i x, float s = 1, v3 color = V3(1, 1, 0))
-{
-	//push_cube_outline(V3(x) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.5f * s), color);
-}
-
-struct State
-{
-	v3i p;
-	// -1 => can't jump unless i'm on the ground
-	// 0 
-	int jump;
-	int fscore;
-	//bool operator<(State& rhs) const 
-	//{
-	//   return pack_cell(p) < pack_cell(rhs.p);
-	//}
-	bool operator==(const State &rhs) const
-	{
-		return p.x == rhs.p.x && p.y == rhs.p.y && p.z == rhs.p.z && jump == rhs.jump;
-	}
-	bool operator<(const State &rhs) const
-	{
-		if (fscore == rhs.fscore) {
-            auto p1 = pack_cell(p);
-            auto p2 = pack_cell(rhs.p);
-            if (p1 == p2)
-                return jump < rhs.jump;
-            return p1 < p2;
-        }
-		return fscore < rhs.fscore;
-	}
-};
-
-
-struct StateHasher
-{
-  std::size_t operator()(const State& k) const
-  {
-        std::size_t h1 = std::hash<int>{}(k.p.x);
-        std::size_t h2 = std::hash<int>{}(k.p.y);
-        std::size_t h3 = std::hash<int>{}(k.p.z);
-        std::size_t h4 = std::hash<int>{}(k.jump);
-        
-        // Combine the hash values
-        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
-
-	  //return pack_cell(k.p) | ((uint64_t)(k.jump + 1) << (3 * MAX_CELL_POW));
-  }
-};

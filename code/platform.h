@@ -89,11 +89,6 @@ struct ThreadWork {
 	void *data;
 };
 
-
-struct Mutex {
-    volatile int value;
-};
-
 #ifdef PLATFORM_WIN32
 #define MEMORY_BARRIER() MemoryBarrier()
 #elif defined PLATFORM_LINUX
@@ -131,7 +126,5 @@ struct Platform {
     PlatformFreeFn *free_memory;
     LockMutexFn *lock_mutex;
     UnlockMutexFn *unlock_mutex;
-
-    Mutex memory_mutex;
 };
 

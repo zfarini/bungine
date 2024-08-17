@@ -36,8 +36,7 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 	assert(utex->type == UFBX_TEXTURE_FILE);
 	
 	String name = {};
-	// void *data;
-	// int width, height, n_channels;
+
 	Arena *temp = begin_temp_memory();
 	if (utex->content.size) {
 		assert(!"TODO: copy utex->content.data to arena then send it");
@@ -56,40 +55,33 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 
 		String path = concact_string(temp, scene.path, make_string(temp, utex->filename.length - last_slash, utex->filename.data + last_slash));
 		name = concact_string(temp, path, make_string(temp, 1, ""));
-
-
-		//add_thread_work(stb_load_texture_work, );
-		//data = stbi_load(path.data, &width, &height, &n_channels, 4);
-		//if (!data)
-		//	printf("failed to load texture file: %s\n", path.data);
 	}
 	//TODO: cleanup, if no name give it something like "unamed_1"
 	assert(name.count);
 
-	platform.lock_mutex(platform.memory_mutex);
+	platform.lock_mutex(platform.render_context->texture_mutex);
+
+	Texture texture = {};
 
 	for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
 		if (strings_equal(platform.render_context->loaded_textures[i].name, name)) {
-			end_temp_memory();
-			platform.unlock_mutex(platform.memory_mutex);
-			return platform.render_context->loaded_textures[i].id;
+			texture = platform.render_context->loaded_textures[i];
+			break ;
 		}
 	}
 
-	Texture texture = {};
-	texture.id = platform.render_context->loaded_textures.count + 1;
-	texture.name = clone_array(arena, name);
+	if (!texture.id) {
+		texture.id = platform.render_context->loaded_textures.count + 1;
+		texture.name = clone_array(arena, name);
 
-	texture.state = TEXTURE_STATE_UNLOADED;
-	texture.valid = true;
-	texture.gen_mipmaps = true;
-	texture.srgb = srgb;
-	//assert(data);
-	//Texture texture = create_texture(name, 0, width, height, srgb);
+		texture.state = TEXTURE_STATE_UNLOADED;
+		texture.valid = true;
+		texture.gen_mipmaps = true;
+		texture.srgb = srgb;
 
-	//thread_safe_linked_list_push(platform.render_context->loaded_textures, texture);
-	platform.render_context->loaded_textures.push(texture);
-	platform.unlock_mutex(platform.memory_mutex);
+		platform.render_context->loaded_textures.push(texture);
+	}
+	platform.unlock_mutex(platform.render_context->texture_mutex);
 
 	end_temp_memory();
 
@@ -425,10 +417,11 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 
 	end_temp_memory();
 
+
 	return anim;
 }
 
-Animation load_animation(Arena *arena, Game &game, const char *filename)
+Animation *load_animation(Arena *arena, Game &game, const char *filename)
 {
 	Scene scene = {};
 
@@ -452,9 +445,33 @@ Animation load_animation(Arena *arena, Game &game, const char *filename)
 		assert(0);
 	}
 	assert(uscene->anim_stacks.count);
-	return load_animation(arena, uscene, uscene->anim_stacks.data[0]);
-}
 
+	Animation anim = load_animation(arena, uscene, uscene->anim_stacks.data[0]);
+	// TODO: pushcleanup
+	anim.name = make_cstring(filename);
+	anim.name = clone_array(arena, anim.name);
+
+	int i = (int)anim.name.count - 1;
+
+	while (i >= 0 && anim.name[i] != '.')
+		i--;
+
+	if (i >= 0) {
+		anim.name.count = i;
+		i--;
+	}
+	while (i >= 0 && anim.name[i] != '/')
+		i--;
+	if (i >= 0) {
+		anim.name.count = anim.name.count - (i + 1);
+		anim.name.data += i + 1;
+	}
+
+	game.loaded_animations.push(anim);
+	game.animations[anim.name] = (int)game.loaded_animations.count - 1;
+
+	return &game.loaded_animations[game.loaded_animations.count - 1];
+}
 
 THREAD_WORK_FUNC(load_scene_work)
 {

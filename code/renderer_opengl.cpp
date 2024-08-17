@@ -40,10 +40,11 @@ TextureID create_texture(String name, void *data, int width, int height, bool sr
 	texture.opengl_id = tex;
 	texture.in_gpu = true;
 	texture.state = TEXTURE_STATE_LOADED;
-	platform.lock_mutex(platform.memory_mutex);
+	platform.lock_mutex(platform.render_context->texture_mutex);
 	texture.id = platform.render_context->loaded_textures.count + 1;
 	platform.render_context->loaded_textures.push(texture);
-	platform.unlock_mutex(platform.memory_mutex);
+	platform.unlock_mutex(platform.render_context->texture_mutex);
+
 	return texture.id;
 }
 
@@ -604,13 +605,14 @@ TextureID create_depth_texture(int width, int height)
 	result.opengl_id = texture;
 	result.valid = true;
 	result.name = make_cstring("shadow map depth texture");
-	platform.lock_mutex(platform.memory_mutex);
+	
+	platform.lock_mutex(platform.render_context->texture_mutex);
 
 	result.id = platform.render_context->loaded_textures.count + 1;
 	result.state = TEXTURE_STATE_LOADED;
 	result.in_gpu = true;
 	platform.render_context->loaded_textures.push(result);
-	platform.unlock_mutex(platform.memory_mutex);
+	platform.unlock_mutex(platform.render_context->texture_mutex);
 
 	return result.id;
 }

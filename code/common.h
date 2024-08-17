@@ -40,6 +40,11 @@ template <typename T> void swap(T &a, T &b) {
 }
 
 // TODO: cleanup
+
+struct Mutex {
+    volatile int value;
+};
+
 struct memory_block {
 	void *data;
 	usize used;
@@ -52,4 +57,5 @@ struct Arena
 	memory_block *block;
 	usize minimum_block_size;
 	b32 thread_safe;
+	Mutex mutex;
 };
