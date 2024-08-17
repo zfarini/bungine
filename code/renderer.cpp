@@ -254,6 +254,7 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 {
 	if (!scene_id)
 		return ;
+	
 	Scene &scene = get_scene_by_id(game, scene_id);
 	if (scene.state == SCENE_UNLOADED) {
 		scene.state = SCENE_LOADING;
@@ -278,37 +279,68 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 	if (anim)
 		anim_time = fmod(anim_time, anim->duration);
 
-	for (usize mesh_idx = 0; mesh_idx < scene.meshes.count; mesh_idx++) {
-		Mesh &mesh = scene.meshes[mesh_idx];
+	Constants constants = {};
+	
+	constants.view = camera.view;
+	constants.projection = camera.projection;
+	constants.camera_p = camera.position;
+	constants.light_transform = game.shadow_map.projection * game.shadow_map.view;
+	constants.color = color;
+	constants.player_p = get_entity(*game.world, game.world->player_id)->position;
+	constants.show_normals = game.show_normals;
+	// TODO: cleanup
+	{
+		for (int i = 0; i < game.world->entities.count; i++) {
+			Entity &e = game.world->entities[i];
 
-		Constants constants = {};
-		constants.view = camera.view;
-		constants.projection = camera.projection;
-		constants.camera_p = camera.position;
-		constants.light_transform = game.shadow_map.projection * game.shadow_map.view;
-		constants.color = color;
-		constants.player_p = get_entity(*game.world, game.world->player_id)->position;
-		constants.show_normals = game.show_normals;
-
-		// TODO: cleanup
-		{
-			for (int i = 0; i < game.world->entities.count; i++) {
-				Entity &e = game.world->entities[i];
-
-				if (constants.point_light_count == ARRAY_SIZE(constants.point_light_color))
-					break ;
-				if (e.type == EntityType_PointLight) {
-					int j = constants.point_light_count++;
-					constants.point_light_position[j].xyz = e.position;
-					constants.point_light_color[j].xyz = e.color * e.point_light_scale;
-				}
+			if (constants.point_light_count == ARRAY_SIZE(constants.point_light_color))
+				break ;
+			if (e.type == EntityType_PointLight) {
+				int j = constants.point_light_count++;
+				constants.point_light_position[j].xyz = e.position;
+				constants.point_light_color[j].xyz = e.color * e.point_light_scale;
 			}
 		}
+	}
+
+	
+	v3 frustum_points[8];
+
+	float zfar_width, zfar_height;
+
+	if (camera.type == CAMERA_TYPE_ORTHOGRAPHIC)
+		zfar_width = camera.width, zfar_height = camera.height;
+	else
+		zfar_width = camera.width * (camera.zfar / camera.znear), zfar_height = camera.height * (camera.zfar /camera.znear);
+
+	
+	frustum_points[0] = V3(-0.5f * camera.width, -0.5f * camera.height, -camera.znear);
+	frustum_points[1] = V3(+0.5f * camera.width, -0.5f * camera.height, -camera.znear);
+	frustum_points[2] = V3(+0.5f * camera.width, +0.5f * camera.height, -camera.znear);
+	frustum_points[3] = V3(-0.5f * camera.width, +0.5f * camera.height, -camera.znear);
+	
+	frustum_points[4] = V3(-0.5f * zfar_width, -0.5f * zfar_height, -camera.zfar);
+	frustum_points[5] = V3(+0.5f * zfar_width, -0.5f * zfar_height, -camera.zfar);
+	frustum_points[6] = V3(+0.5f * zfar_width, +0.5f * zfar_height, -camera.zfar);
+	frustum_points[7] = V3(-0.5f * zfar_width, +0.5f * zfar_height, -camera.zfar);
+	// points are counter clockwise, normal points out of the frustum
+	v3 frustum_planes[6][3] = {
+		{frustum_points[0], frustum_points[3], frustum_points[4]}, // left
+		{frustum_points[2], frustum_points[1], frustum_points[5]}, // right
+		{frustum_points[3], frustum_points[2], frustum_points[6]}, // up
+		{frustum_points[1], frustum_points[0], frustum_points[4]}, // down
+		{frustum_points[0], frustum_points[1], frustum_points[2]}, // front
+		{frustum_points[5], frustum_points[4], frustum_points[6]}, // back
+	};
+	
+	for (usize mesh_idx = 0; mesh_idx < scene.meshes.count; mesh_idx++) {
+		Mesh &mesh = scene.meshes[mesh_idx];
 
 		mat4 mesh_transform = transform * mesh.transform;
 		
 		constants.model = mesh_transform;
-		//constants.normal_transform = inverse(transpose(constants.model));
+		constants.skinned = 0;
+
 		if (mesh.bones.count && anim) {
 			constants.skinned = 1;
 			Arena *temp  = begin_temp_memory();
@@ -321,53 +353,19 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 				render_bones(bones, mesh_transform, anim, anim_time);
 			end_temp_memory();
 		}
-		// 14950
-		// 14350
 
 		// cull meshes outside of view frustum
 		bool cull_mesh = false;
 		
 		if (!constants.skinned && game.frustum_culling)
 		{
-			Camera cam = camera;
-			// cam = world.last_game_camera;
-
 			v3 c[2] = {mesh.box_min, mesh.box_max};
 			v3 p[8];
-			mat4 to_camera = cam.view * mesh_transform;
+			mat4 to_camera = camera.view * mesh_transform;
 			for (int x = 0; x < 2; x++)
 			for (int y = 0; y < 2; y++)
 			for (int z = 0; z < 2; z++)
 				p[(x<<2)|(y<<1)|z] = (to_camera * V4(c[x].x, c[y].y, c[z].z, 1)).xyz;
-
-			v3 frustum_points[8];
-
-			float zfar_width, zfar_height;
-
-			if (cam.type == CAMERA_TYPE_ORTHOGRAPHIC)
-				zfar_width = cam.width, zfar_height = cam.height;
-			else
-				zfar_width = cam.width * (cam.zfar / cam.znear), zfar_height = cam.height * (cam.zfar /cam.znear);
-
-			
-			frustum_points[0] = V3(-0.5f * cam.width, -0.5f * cam.height, -cam.znear);
-			frustum_points[1] = V3(+0.5f * cam.width, -0.5f * cam.height, -cam.znear);
-			frustum_points[2] = V3(+0.5f * cam.width, +0.5f * cam.height, -cam.znear);
-			frustum_points[3] = V3(-0.5f * cam.width, +0.5f * cam.height, -cam.znear);
-			
-			frustum_points[4] = V3(-0.5f * zfar_width, -0.5f * zfar_height, -cam.zfar);
-			frustum_points[5] = V3(+0.5f * zfar_width, -0.5f * zfar_height, -cam.zfar);
-			frustum_points[6] = V3(+0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
-			frustum_points[7] = V3(-0.5f * zfar_width, +0.5f * zfar_height, -cam.zfar);
-			// points are counter clockwise, normal points out of the frustum
-			v3 frustum_planes[6][3] = {
-				{frustum_points[0], frustum_points[3], frustum_points[4]}, // left
-				{frustum_points[2], frustum_points[1], frustum_points[5]}, // right
-				{frustum_points[3], frustum_points[2], frustum_points[6]}, // up
-				{frustum_points[1], frustum_points[0], frustum_points[4]}, // down
-				{frustum_points[0], frustum_points[1], frustum_points[2]}, // front
-				{frustum_points[5], frustum_points[4], frustum_points[6]}, // back
-			};
 
 			for (int i = 0; i < ARRAY_SIZE(frustum_planes); i++) {
 				v3 normal = cross(frustum_planes[i][1] - frustum_planes[i][0], frustum_planes[i][2] - frustum_planes[i][0]);

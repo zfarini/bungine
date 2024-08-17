@@ -1,5 +1,3 @@
-arenas
-cleanup strings and paths
 fix sound
 make collision mesh be saved as its own file for each asset and just load it at runtime
 
@@ -9,9 +7,6 @@ bug: when the game is slow try look at sponza texture while going moving camera 
 make your own std::unordered_map and std::set
 improve pathfinding
 
-cleanup animation
-
-async asset loading
 fix rotation when the plane of rotation is ..
 improve collision
 spatial partition
@@ -23,7 +18,6 @@ improve camera for up & down
 fix sponza on windows
 d3d11
 serialization version
-make levels to showcase
 
 other:
 	profiler in imgui

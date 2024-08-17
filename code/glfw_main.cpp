@@ -164,8 +164,35 @@ DWORD thread_func(LPVOID param)
 }
 #endif
 
+void set_working_directory()
+{
+	Arena *temp = begin_temp_memory();
+
+#ifdef PLATFORM_WIN32
+	char exe_path[MAX_PATH];
+    if (GetModuleFileNameA(NULL, exe_path, MAX_PATH) == 0)
+        fatal_error("failed to get executable full path");
+
+	String path = exe_path;
+	path = substring(path, 0, find_last_occurence(path, '\\'));
+	path = substring(path, 0, find_last_occurence(path, '\\'));
+
+	if (SetCurrentDirectoryA(make_zero_string(temp, path).data) == 0)
+		fatal_error("failed to set working directory");
+#endif
+	end_temp_memory();
+}
+
 int main()
 {
+	platform.allocate_memory = (PlatformAllocateFn *)malloc;
+	platform.free_memory = (PlatformFreeFn *)free;
+	platform.lock_mutex = lock_mutex;
+	platform.unlock_mutex = unlock_mutex;
+	platform.add_thread_work = add_thread_work;
+
+	set_working_directory();
+
 	Game game = {};
 
 	ma_device sound_device;
@@ -236,12 +263,6 @@ int main()
 	{
 		platform.render_context = &render_context;
 		platform.imgui_context = ImGui::GetCurrentContext();
-		platform.allocate_memory = (PlatformAllocateFn *)malloc;
-		platform.free_memory = (PlatformFreeFn *)free;
-		platform.lock_mutex = lock_mutex;
-		platform.unlock_mutex = unlock_mutex;
-		platform.add_thread_work = add_thread_work;
-
 	}
 	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
 

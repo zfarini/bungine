@@ -220,7 +220,8 @@ enum LogType {
 	LOG_TYPE_FATAL
 };
 
-#define LOG_FILENAME "log.txt"
+// TODO: cleanup
+#define LOG_FILENAME "build/log.txt"
 
 void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
 {

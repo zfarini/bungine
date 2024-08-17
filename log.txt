@@ -1,9 +1,0 @@
-[info]: OpenGL backend
-[info]: Vendor: NVIDIA Corporation
-[info]: Renderer: NVIDIA GeForce GTX 1650/PCIe/SSE2
-[info]: loaded sound data/music.wav, 9216000 samples
-[info]: loaded sound data/jump.wav, 72000 samples
-[info]: loading scene data/cube.fbx (1 meshes, 12 triangles)
-[info]: loading scene data/sphere.fbx (1 meshes, 3072 triangles)
-[info]: loading scene data/Ybot.fbx (2 meshes, 55320 triangles)
-[info]: loading scene data/Sponza/Sponza.fbx (381 meshes, 262267 triangles)
