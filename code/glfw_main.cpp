@@ -144,8 +144,6 @@ DWORD thread_func(LPVOID param)
 {
 	int idx = *(DWORD *)param;
 
-	printf("lanched thread %d\n", idx);
-
 	while (1) {
 		int entry_idx = thread_work_queue_read_index;
 		_ReadWriteBarrier(); // propably not necessary
@@ -270,6 +268,7 @@ int main()
 #define THREAD_COUNT 3
 	DWORD thread_ids[THREAD_COUNT];
 
+	LOG_INFO("lanching %d threads", THREAD_COUNT);
 	for (int i = 0; i < THREAD_COUNT; i++) {
 		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
 	}

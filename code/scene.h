@@ -5,26 +5,12 @@
 typedef usize SceneID;
 
 // TODO: send indices/weights in another buffer?
-struct Vertex {
+struct MeshVertex {
     v3 position;
     v3 normal;
     v2 uv;
-    // v4 weights;
-	// TODO: cleanup, don't send these with non-skinned meshes & 
-	// in the case of skinned meshes send only one int/float
     float weights[MAX_BONE_WEIGHTS];
-    float indices[MAX_BONE_WEIGHTS]; //[MAX_BONE_WEIGHTS];
-};
-
-// TODO: cleanup
-VertexInputElement g_vertex_input_elements[] = {
-    {offsetof(Vertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
-    {offsetof(Vertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
-    {offsetof(Vertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
-    {offsetof(Vertex, weights), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT,
-     "BLENDWEIGHT"},
-    {offsetof(Vertex, indices), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT,
-     "BLENDINDICES"},
+    float indices[MAX_BONE_WEIGHTS];
 };
 
 struct Material {
@@ -72,7 +58,7 @@ struct Mesh {
     Array<v3> vertices;
 	Array<u32> indices;
 
-    Array<Vertex> full_vertices;
+    Array<MeshVertex> full_vertices;
 };
 
 struct NodeAnimation {

@@ -287,7 +287,7 @@ void update_player(Game &game, World &world, GameInput &input, float dt)
 	{
 		v3 delta_p = 0.5f * dt * dt * a + dt * player.dp;
 
-		move_entity(world, player, delta_p);
+		move_entity(game, world, player, delta_p);
 		player.dp += a * dt;
 	}
 
@@ -353,7 +353,7 @@ void update_enemies(Game &game, World &world, GameInput &input, float dt)
 		{
 			v3 delta_p = 0.5f * dt * dt * a + dt * e.dp;
 			v3 old_p = e.position;
-			move_entity(world, e, delta_p);
+			move_entity(game, world, e, delta_p);
 			if (length(e.position - old_p) < 0.1f * length(delta_p))
 				e.should_jump = true;
 			e.dp += a * dt;
@@ -484,8 +484,6 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 		}
 	}
 
-	// TODO: why does changing translation to first doesn't change anything wtf?
-
 	mat4 camera_transform;
 	if (game.in_editor)
 		camera_transform = translate(world.editor_camera_p) * zrotation(camera_rot.z) * xrotation(camera_rot.x);
@@ -531,23 +529,8 @@ Camera update_camera(Game &game, World &world, GameInput &input, float dt)
 	v3 p = game.in_editor ? world.editor_camera_p : world.player_camera_p;
 	mat4 view = rotation * translate(-p);
 
-
 	camera = make_perspective_camera(view, 0.1f, 100, 100, (float)platform.render_context->window_height / platform.render_context->window_width);
 
-	// float fov = 100;
-	// camera.znear = 0.1f;
-	// camera.zfar = 100;
-	// camera.width = 2 * camera.znear * tanf(DEG2RAD * (fov / 2));
-	// camera.height = camera.width *  (float)platform.render_context->window_height / platform.render_context->window_width;
-	// camera.forward = -camera_z;
-	// camera.right = camera_x;
-	// camera.up = camera_y;
-
-	// mat4 projection = perspective_projection(camera.znear, camera.zfar, fov, (float)platform.render_context->window_height / platform.render_context->window_width);
-
-	// camera.position = p;
-	// camera.view = view;
-	// camera.projection = projection;
 	return camera;
 }
 

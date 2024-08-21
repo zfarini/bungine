@@ -54,31 +54,30 @@ TextureID load_texture(Arena *arena, Scene &scene, ufbx_texture *utex, bool srgb
 
 	platform.lock_mutex(platform.render_context->texture_mutex);
 
-	Texture texture = {};
-
-	for (int i = 0; i < platform.render_context->loaded_textures.count; i++) {
-		if (platform.render_context->loaded_textures[i].name == name) {
-			texture = platform.render_context->loaded_textures[i];
-			break ;
-		}
-	}
-
-	if (!texture.id) {
+	TextureID texture_id = 0;
+	
+	auto it = platform.render_context->textures_map.find(name);
+	if (it == platform.render_context->textures_map.end()) {
+		Texture texture = {};
 		texture.id = platform.render_context->loaded_textures.count + 1;
 		texture.name = duplicate_string(arena, name);
 
 		texture.state = TEXTURE_STATE_UNLOADED;
-		texture.valid = true;
 		texture.gen_mipmaps = true;
 		texture.srgb = srgb;
 
 		platform.render_context->loaded_textures.push(texture);
+		platform.render_context->textures_map[texture.name] = texture.id;
+		texture_id = texture.id;
 	}
+	else
+		texture_id = it->second;
+	
 	platform.unlock_mutex(platform.render_context->texture_mutex);
 
 	end_temp_memory();
 
-	return texture.id;
+	return texture_id;
 }
 
 Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)
@@ -103,9 +102,9 @@ Material load_material(Arena *arena, Scene &scene, ufbx_material *umat)
 	return mat;
 }
 
-Vertex get_ufbx_vertex(ufbx_mesh *umesh, ufbx_skin_deformer *skin, int index)
+MeshVertex get_ufbx_vertex(ufbx_mesh *umesh, ufbx_skin_deformer *skin, int index)
 {
-	Vertex v = {};
+	MeshVertex v = {};
 
 	v.position = ufbx_to_v3(ufbx_get_vertex_vec3(&umesh->vertex_position, index));
 	v.normal = ufbx_to_v3(ufbx_get_vertex_vec3(&umesh->vertex_normal, index));
@@ -161,10 +160,10 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 
 	Arena *tmp_arena = begin_temp_memory();
 
-	Array<uint32_t> tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
+	auto tri_indices = make_array<uint32_t>(tmp_arena, umesh->max_face_triangles * 3);
 
-	Array<Vertex> vertices = make_array_max<Vertex>(arena, umesh->num_triangles * 3);
-	Array<uint32_t> indices = make_array_max<uint32_t>(tmp_arena, umesh->num_triangles * 3);
+	auto vertices = make_array_max<MeshVertex>(arena, umesh->num_triangles * 3);
+	auto indices = make_array_max<uint32_t>(tmp_arena, umesh->num_triangles * 3);
 
 	ufbx_skin_deformer *skin = 0;
 	
@@ -248,7 +247,6 @@ Mesh load_mesh(Arena *arena, Scene &scene, ufbx_node *unode)
 	
 	mesh.vertices = make_array<v3>(arena, vertices.count);
 	
-
 	for (usize i = 0; i < vertices.count; i++) {
 		mesh.vertices[i] = vertices[i].position;
 	}
@@ -349,9 +347,9 @@ Animation load_animation(Arena *arena, ufbx_scene *uscene, ufbx_anim_stack *stac
 		anim.frame_count = 2;
 	anim.frametime = anim.duration / (anim.frame_count - 1);
 
-	Array<v3> position = make_array<v3>(temp, anim.frame_count);
-	Array<quat> rotation = make_array<quat>(temp, anim.frame_count);
-	Array<v3> scale = make_array<v3>(temp, anim.frame_count);
+	auto position = make_array<v3>(temp, anim.frame_count);
+	auto rotation = make_array<quat>(temp, anim.frame_count);
+	auto scale = make_array<v3>(temp, anim.frame_count);
 
 	anim.nodes = make_array_max<NodeAnimation>(arena, uscene->nodes.count);
 	for (usize j = 0; j < uscene->nodes.count; j++) {
@@ -491,44 +489,47 @@ THREAD_WORK_FUNC(load_scene_work)
 
 	ufbx_error error;
 	ufbx_scene *uscene = ufbx_load_file(filename.data, &opts, &error);
-	if (!uscene) {
-		LOG_ERROR("failed to load %s: %s", filename.data, error.description.data);
-		assert(0);
-	}
+	if (uscene) {
+		usize total_num_triangles = 0;
+		for (size_t i = 0; i < uscene->nodes.count; i++)
+			if (uscene->nodes.data[i]->mesh)
+				total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
+		
+		LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename.data, uscene->meshes.count, total_num_triangles);
 
-	usize total_num_triangles = 0;
-	for (size_t i = 0; i < uscene->nodes.count; i++)
-		if (uscene->nodes.data[i]->mesh)
-			total_num_triangles += uscene->nodes.data[i]->mesh->num_triangles;
-	
-	LOG_INFO("loading scene %s (%zd meshes, %zd triangles)", filename.data, uscene->meshes.count, total_num_triangles);
+		mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
 
-	mat4 root_transform = ufbx_to_mat4(uscene->root_node->node_to_parent);
+		scene.meshes = make_array_max<Mesh>(arena, uscene->meshes.count);
 
-	scene.meshes = make_array_max<Mesh>(arena, uscene->meshes.count);
+		for (usize i = 0; i < uscene->nodes.count; i++) {
+			if (uscene->nodes.data[i]->mesh) {
+				Mesh mesh = load_mesh(arena, scene, uscene->nodes.data[i]);
+				mesh.transform = ufbx_to_mat4(uscene->nodes.data[i]->geometry_to_world);
 
-	for (usize i = 0; i < uscene->nodes.count; i++) {
-		if (uscene->nodes.data[i]->mesh) {
-			Mesh mesh = load_mesh(arena, scene, uscene->nodes.data[i]);
-			mesh.transform = ufbx_to_mat4(uscene->nodes.data[i]->geometry_to_world);
-
-			double center[3] = {};
-			for (usize j = 0; j < mesh.vertices.count; j++)
+				double center[3] = {};
+				for (usize j = 0; j < mesh.vertices.count; j++)
+					for (int k = 0; k < 3; k++)
+						center[k] += mesh.vertices[j].e[k];
 				for (int k = 0; k < 3; k++)
-					center[k] += mesh.vertices[j].e[k];
-			for (int k = 0; k < 3; k++)
-				center[k] /= mesh.vertices.count;
+					center[k] /= mesh.vertices.count;
 
-			mesh.default_transform = root_transform * translate(-V3(center[0], center[1], center[2]));
+				mesh.default_transform = root_transform * translate(-V3(center[0], center[1], center[2]));
 
-			scene.meshes.push(mesh);
+				scene.meshes.push(mesh);
+			}
 		}
 	}
-
+	else {
+		LOG_ERROR("failed to load scene %.*s", str_format(filename));
+	}
 	end_temp_memory();
 	MEMORY_BARRIER();
 	scene.state = SCENE_LOADED;
 }
+
+// TODO: cleanup
+String get_cmesh_filename(Arena *arena, String asset_filename);
+CollisionMesh load_cmesh(Arena *arena, String filename);
 
 SceneID load_scene(Arena *arena, Game &game, String filename)
 {
@@ -537,13 +538,17 @@ SceneID load_scene(Arena *arena, Game &game, String filename)
 	scene.id = ++game.next_scene_id;
 	scene.filename = filename;
 	game.scenes.push(scene);
+	Arena *temp = begin_temp_memory();
+	String cmesh_filename = get_cmesh_filename(temp, filename);
+	game.collision_meshes[scene.id] = load_cmesh(&game.arena, cmesh_filename);
+	end_temp_memory();
 	return scene.id;
 }
 
 SceneID get_scene_id_by_name(Game &game, String name)
 {
     for (int i = 0; i < game.scenes.count; i++) {
-		if (game.scenes[i].name == name)
+		if (game.scenes[i].filename == name)
 			return game.scenes[i].id;
 	}
 	LOG_WARN("couldn't find scene %.*s", str_format(name));
@@ -557,4 +562,25 @@ Scene &get_scene_by_id(Game &game, SceneID id)
 			return game.scenes[i];
 	}
 	return game.default_scene;
+}
+
+THREAD_WORK_FUNC(load_texture_work)
+{
+	Texture *texture = (Texture *)data;
+	
+	int width, height, n_channels;
+	Arena *temp = begin_temp_memory();
+	void *image = stbi_load(make_zero_string(temp, texture->name).data, &width, &height,  &n_channels, 4);
+	assert(image);
+	usize size = width * height * sizeof(uint32_t);
+	void *copy = arena_alloc(&platform.render_context->arena, size);
+	memcpy(copy, image, size);
+
+	texture->width = width;
+	texture->height = height;
+	texture->data = copy;
+
+	end_temp_memory();
+	MEMORY_BARRIER();
+	texture->state = TEXTURE_STATE_LOADED;
 }

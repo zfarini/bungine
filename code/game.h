@@ -233,6 +233,9 @@ struct Editor {
     meta(ui) entity_id copied_entity;
 
     meta(ui) v3 last_camera_p;
+
+    CollisionMesh cmesh;
+    SceneID cmesh_scene;
 };
 
 struct World {
@@ -245,7 +248,6 @@ struct World {
     meta(ui, serialize) Array<Entity> entities;
 
     std::unordered_map<entity_id, usize> entities_id_map;
-	std::unordered_map<SceneID, int> scene_collision_mesh;
 
     meta(serialize) entity_id next_entity_id;
 
@@ -263,8 +265,6 @@ struct World {
     Camera last_game_camera;
 
     float aim_camera_transition_t;
-
-	meta(serialize) Array<CollisionMesh> collision_meshes;
 };
 
 struct LoadedSound
@@ -290,42 +290,6 @@ struct SoundState
 	std::atomic_int32_t read_index;
 	std::atomic_int32_t write_index;
 };
-
-struct ProfilerBlockStat
-{
-	const char *name;
-	uint64_t cycle_count;
-	uint32_t call_count;
-};
-
-global ProfilerBlockStat profiler_block_stats[512];
-
-#if 1
-struct ProfilerBlock
-{
-	uint64_t start_cycle;
-	uint32_t id;
-	const char *name;
-
-	ProfilerBlock(const char *name, uint32_t id) : name(name), id(id)
-	{
-		profiler_block_stats[id].name = name;
-		start_cycle = rdtsc();
-	}
-
-	~ProfilerBlock()
-	{
-		uint64_t cycle_count = rdtsc() - start_cycle;
-
-		assert(id < ARRAY_SIZE(profiler_block_stats));
-		profiler_block_stats[id].cycle_count += cycle_count;
-		profiler_block_stats[id].call_count++;
-	}
-};
-
-#define PROFILE_BLOCK(name) ProfilerBlock _block_##__LINE__(name, __COUNTER__);
-#define PROFILE_FUNCTION() ProfilerBlock _block_##__LINE__(__FUNCTION__, __COUNTER__);
-#endif
 
 struct Game {
     Arena arena;
@@ -373,6 +337,8 @@ struct Game {
 
     std::unordered_map<String, int, StringHasher> animations;
     Array<Animation> loaded_animations;
+
+	std::unordered_map<SceneID, CollisionMesh> collision_meshes;
 
 	Scene default_scene;
 

@@ -17,101 +17,27 @@
 #include "math.h"
 #include "platform.h"
 Platform platform;
-
 thread_local TempMemory g_temp_memory;
-
-function Arena *begin_temp_memory()
-{
-	assert(g_temp_memory.last_used_count < ARRAY_SIZE(g_temp_memory.last_used));
-	g_temp_memory.last_used[g_temp_memory.last_used_count].block = g_temp_memory.arena.block;
-	if (g_temp_memory.arena.block)
-		g_temp_memory.last_used[g_temp_memory.last_used_count].used = g_temp_memory.arena.block->used;
-	else
-		g_temp_memory.last_used[g_temp_memory.last_used_count].used = 0;
-	g_temp_memory.last_used_count++;
-	return &g_temp_memory.arena;
-}
-
-function void end_temp_memory()
-{
-	assert(g_temp_memory.last_used_count > 0);
-
-	memory_block *block = g_temp_memory.arena.block;
-
-	while (block != g_temp_memory.last_used[g_temp_memory.last_used_count - 1].block) {
-		memory_block *next = block->next;
-		// TODO: cleanup DON'T free here instead just keep the blocks around??
-		platform.free_memory(block->data);
-		block = next;
-	}
-	g_temp_memory.arena.block = block;
-	if (block)
-		g_temp_memory.arena.block->used =  g_temp_memory.last_used[g_temp_memory.last_used_count - 1].used;
-	g_temp_memory.last_used_count--;
-}
 
 #include "arena.h"
 #include "utils.h"
 #include "renderer.h"
+#include "scene.h"
+#include "game.h"
+#include "pathfinding.h"
 
+#ifndef DISABLE_PREPROCESSOR
+#include "generated.h"
+#endif
 
+#include "utils.cpp"
+#include "scene.cpp"
 
 #define RENDERER_DEBUG
 #ifdef RENDERER_DX11
 #include "renderer_dx11.cpp"
 #else
 #include "renderer_opengl.cpp"
-#endif
-
-#include "scene.h"
-#include "game.h"
-#include "scene.cpp"
-#include "pathfinding.h"
-
-Camera make_perspective_camera(mat4 view, float znear, float zfar, float width_fov_degree, float height_over_width)
-{
-	Camera camera = {};
-
-	camera.type = CAMERA_TYPE_PERSPECTIVE;
-	camera.znear = znear;
-	camera.zfar = zfar;
-	camera.width = 2 * znear * tanf(DEG2RAD * (width_fov_degree / 2));
-	camera.height = camera.width * height_over_width;
-	camera.view = view;
-	camera.projection = perspective_projection(znear, zfar, camera.width, camera.height);
-	//TODO: remove inverse
-	mat4 inv_view = inverse(view);
-	camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
-	camera.right	= V3(inv_view.e[0][0], inv_view.e[1][0], inv_view.e[2][0]);
-	camera.up 		= V3(inv_view.e[0][1], inv_view.e[1][1], inv_view.e[2][1]);
-	camera.forward	= -V3(inv_view.e[0][2], inv_view.e[1][2], inv_view.e[2][2]);
-
-	return camera;
-}
-// TODO: merge this with the perspective function
-Camera make_orthographic_camera(mat4 view, float znear, float zfar, float width, float height)
-{
-	Camera camera = {};
-
-	camera.type = CAMERA_TYPE_ORTHOGRAPHIC;
-	camera.znear = znear;
-	camera.zfar = zfar;
-	camera.width = width;
-	camera.height = height;
-	camera.view = view;
-	camera.projection = orthographic_projection(znear, zfar, width, height);
-	mat4 inv_view = inverse(view);
-	camera.position = V3(inv_view.e[0][3], inv_view.e[1][3], inv_view.e[2][3]);
-	camera.right	= V3(inv_view.e[0][0], inv_view.e[0][1], inv_view.e[0][2]);
-	camera.up 		= V3(inv_view.e[1][0], inv_view.e[1][1], inv_view.e[1][2]);
-	camera.forward	= V3(inv_view.e[2][0], inv_view.e[2][1], inv_view.e[2][2]);
-
-	return camera;
-}
-
-
-#ifndef DISABLE_PREPROCESSOR
-#include "generated.h"
 #endif
 
 #include "sound.cpp"
@@ -151,10 +77,6 @@ ShadowMap create_shadow_map(int texture_width, int texture_height,
 
 void game_update_and_render(Game &game, GameInput &input, float dt)
 {
-	//ImGui::SetCurrentContext((ImGuiContext *)platform.imgui_context);
-
-	//Game &game = *((Game *)memory->data);
-
 	if (!game.is_initialized) {
         stbi_set_flip_vertically_on_load(true);
 
@@ -162,34 +84,36 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 		init_render_context(*platform.render_context);
 
-
-
 		game.world = new World(); // TODO: cleanup using unordered_map for now
 		World &world = *game.world;
 
+		// TODO: clenaup
 		world.editor.ops = make_array_max<EditorOp>(&world.arena, 8192);
 		world.editor.undos = make_array_max<EditorOp>(&world.arena, 8192);
+		world.editor.cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 4096);
 
 
 		game.default_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_SOLID, RASTERIZER_CULL_NONE);
 		game.default_depth_stencil_state = create_depth_stencil_state(true);
 		game.disable_depth_state = create_depth_stencil_state(false);
 		game.wireframe_rasterizer_state = create_rasterizer_state(RASTERIZER_FILL_WIREFRAME, RASTERIZER_CULL_NONE);
-
-
 		//game.default_rasterizer_state = game.wireframe_rasterizer_state;
 
-		VertexInputLayout input_layout = create_vertex_input_layout(g_vertex_input_elements, 
-				ARRAY_SIZE(g_vertex_input_elements), sizeof(Vertex));
+		// TODO: cleanup
+		VertexInputElement mesh_vertex_input_elements[] = {
+			{offsetof(MeshVertex, position), 3, INPUT_ELEMENT_FLOAT, "POSITION"},
+			{offsetof(MeshVertex, normal), 3, INPUT_ELEMENT_FLOAT, "NORMAL"},
+			{offsetof(MeshVertex, uv), 2, INPUT_ELEMENT_FLOAT, "TEXCOORD"},
+			{offsetof(MeshVertex, weights), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT, "BLENDWEIGHT"},
+			{offsetof(MeshVertex, indices), MAX_BONE_WEIGHTS, INPUT_ELEMENT_FLOAT, "BLENDINDICES"},
+		};
+
+		VertexInputLayout input_layout = create_vertex_input_layout(mesh_vertex_input_elements, 
+				ARRAY_SIZE(mesh_vertex_input_elements), sizeof(MeshVertex));
 
 		game.mesh_render_pass = create_render_pass(
-#ifdef RENDERER_DX11
-				load_shader("code\\shader.hlsl", SHADER_TYPE_VERTEX, "vs_main"),
-				load_shader("code\\shader.hlsl", SHADER_TYPE_FRAGMENT, "ps_main"),
-#else
 				load_shader("shaders/vertex.glsl", SHADER_TYPE_VERTEX),
 				load_shader("shaders/fragment.glsl", SHADER_TYPE_FRAGMENT),
-#endif
 				PRIMITIVE_TRIANGLES, game.default_depth_stencil_state, game.default_rasterizer_state,
 				input_layout);
 
@@ -217,13 +141,8 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 					sizeof(v3) * 2);
 
 			game.debug_lines_render_pass = create_render_pass(
-#ifdef RENDERER_DX11
-					load_shader("code/debug_line_shader.hlsl", SHADER_TYPE_VERTEX, "vs_main"),
-					load_shader("code/debug_line_shader.hlsl", SHADER_TYPE_FRAGMENT, "ps_main"),
-#else
 					load_shader("shaders/debug_lines_vs.glsl", SHADER_TYPE_VERTEX),
 					load_shader("shaders/debug_lines_fs.glsl", SHADER_TYPE_FRAGMENT),
-#endif
 					PRIMITIVE_LINES, game.default_depth_stencil_state, game.default_rasterizer_state,
 					line_input_layout);
 
@@ -278,29 +197,30 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 
 		load_scene(&game.asset_arena, game, "data/parking/zma_carpark_b2.obj");
-		load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
-		load_scene(&game.asset_arena, game, "data/cube.fbx");
-		load_scene(&game.asset_arena, game, "data/sphere.fbx");
+		load_scene(&game.asset_arena, game, "data/skip/Sponza/Sponza.fbx");
+		load_scene(&game.asset_arena, game, "data/push/cube.fbx");
+		load_scene(&game.asset_arena, game, "data/push/sphere.fbx");
 		//load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
 		//load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
-		load_scene(&game.asset_arena, game, "data/Ybot.fbx");
+		load_scene(&game.asset_arena, game, "data/push/Ybot.fbx");
 
-		load_animation(&game.asset_arena, game, "data/jump.fbx");
-		load_animation(&game.asset_arena, game, "data/shoot.fbx");
-		load_animation(&game.asset_arena, game, "data/run.fbx");
-		load_animation(&game.asset_arena, game, "data/forward_gun_walk.fbx");
-		load_animation(&game.asset_arena, game, "data/backward_gun_walk.fbx");
-		load_animation(&game.asset_arena, game, "data/gun_idle.fbx");
+		load_animation(&game.asset_arena, game, "data/push/jump.fbx");
+		load_animation(&game.asset_arena, game, "data/push/shoot.fbx");
+		load_animation(&game.asset_arena, game, "data/push/run.fbx");
+		load_animation(&game.asset_arena, game, "data/push/forward_gun_walk.fbx");
+		load_animation(&game.asset_arena, game, "data/push/backward_gun_walk.fbx");
+		load_animation(&game.asset_arena, game, "data/push/gun_idle.fbx");
 
 		FILE *fd = fopen("world.bin", "rb");
 		if (!fd) {
+			//TODO: this should be variable
 			world.entities = make_array_max<Entity>(&world.arena, 4096);
 
-			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, "cube.fbx"), V3(0, 0, -0.5));
+			Entity *ground = make_entity(world, EntityType_Static, get_scene_id_by_name(game, "data/push/cube.fbx"), V3(0, 0, -0.5));
 			ground->scale = V3(100, 100, 0.5);
 			ground->color = V3(0.3f);
 
-			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, "Ybot.fbx"),
+			Entity *player = make_entity(world, EntityType_Player, get_scene_id_by_name(game, "data/push/Ybot.fbx"),
 					V3(0, 0, 4));
 			player->ellipsoid_radius = V3(0.55f, 0.55f, 0.95f);
 			player->ellipsoid_collision_shape = true;
@@ -309,45 +229,21 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 			world.player_id = player->id;
 			world.editor_camera_p = V3(0, 0, 3);
-
-			world.collision_meshes = make_array_max<CollisionMesh>(&world.arena, game.scenes.capacity);
 		}
 		else {
 			serialize_World(fd, false, world, &world.arena);
 			for (int i = 0; i < world.entities.count; i++)
 				world.entities_id_map[world.entities[i].id] = i;
-			for (int i = 0; i < world.collision_meshes.count; i++)
-				world.scene_collision_mesh[world.collision_meshes[i].scene] = i;
-
 			fclose(fd);
 		}
-		
-		// {
-		// 	game.debug_asset_fb = create_frame_buffer(false, true);
-
-		// 	Texture texture = get_texture(create_texture(make_cstring("Debug Asset"), 0, 128, 128,
-		// 			true, false));
-		// 	Texture depth = get_texture(create_depth_texture(texture.width, texture.height));
-		// 	bind_framebuffer_color(game.debug_asset_fb, texture);
-		// 	bind_framebuffer_depthbuffer(game.debug_asset_fb, depth);
-
-		// 	game.debug_asset_tex = create_texture(make_cstring("debug asset temp"),
-		// 				0, texture.width, texture.height, 1, 0);
-		// 	// TODO:
-		// 	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER)
-		// 			== GL_FRAMEBUFFER_COMPLETE);
-		// }
-
+		// TODO: cleanup sound
 		game.sound_state.sample_count = SOUND_SAMPLE_RATE*10;
 		game.sound_state.buffer = (float *)arena_alloc_zero(&game.arena, game.sound_state.sample_count * SOUND_CHANNEL_COUNT * sizeof(float));
-
-		// TODO: cleanup
 		game.loaded_sounds[0] = load_wav_file(&game.arena, "data/music.wav");
 		game.loaded_sounds[1] = load_wav_file(&game.arena, "data/jump.wav");
 
 		game.master_volume = 1;
 		game.frustum_culling = true;
-
 		game.is_initialized = 1;
 		game.background_color = V3(0.392f, 0.584f, 0.929f);
 	}
@@ -360,25 +256,17 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 	if (IsDownFirstTime(input, TOGGLE_EDITOR_BUTTON))
 		game.in_editor = !game.in_editor;
 
-	if (ImGui::GetIO().WantCaptureKeyboard) {
-		//for (int i = 0; i < BUTTON_COUNT; i++)
-		//	if (IsKeyboardButton(i))
-		//		input.buttons[i].is_down = false;
-	}
-
 	begin_render_frame();
 
-	for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
-		profiler_block_stats[i] = {};
-	std::unordered_map<uint64_t, bool> occupied;
-
+	// TODO: this should only happen if we add/remove an entity
+	world.occupied.clear();
 	int itr_count = 0;
 	for (int i = 0; i < world.entities.count; i++) {
 		Entity &e = world.entities[i];
-		if (e.disable_collision || e.ellipsoid_collision_shape || !world.scene_collision_mesh.count(e.scene_id))
+		if (e.disable_collision || e.ellipsoid_collision_shape || !game.collision_meshes.count(e.scene_id))
 			continue ;
 		
-		CollisionMesh cmesh = world.collision_meshes[world.scene_collision_mesh[e.scene_id]];
+		CollisionMesh cmesh = game.collision_meshes[e.scene_id];
 
 		mat4 transform = get_entity_transform(world, e) * e.scene_transform;
 		for (int j = 0; j + 2 < cmesh.vertices.count; j += 3) {
@@ -404,29 +292,28 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 						v3 p = p0 + (p1 - p0) * U + (p2 - p0) * V;
 						v3i cell = get_cell(p);
 
-						occupied[pack_cell(cell)] = true;
+						world.occupied[pack_cell(cell)] = true;
 						itr_count++;
 						//push_cube_outline(V3(get_cell(p)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
 				}
 			}
 		}
 	}
-	world.occupied = occupied;
 
-	for (auto [x, y] : occupied) {
-		//auto p = unpack_cell(x);
-		//push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
-	}
+	// for (auto [x, y] : world.occupied) {
+	//  	auto p = unpack_cell(x);
+	//  	push_cube_outline(V3(unpack_cell(x)) * ASTART_CELL_DIM, V3(ASTART_CELL_DIM*0.4f), V3(1, 1, 0));
+	// }
 
 	if (!game.in_editor || game.play_in_editor) {
 		update_player(game, world, input, dt);
 		update_enemies(game, world, input, dt);
 	}
+
 	Camera game_camera = update_camera(game, world, input, dt);
 
 	if (!game.in_editor)
 		world.last_game_camera = game_camera;
-
 
 	update_editor(game, world, world.editor, input, game_camera);
 	if (game.in_editor) {
@@ -471,12 +358,6 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 		bind_texture(4, game.shadow_map.depth_texture.id);
 		render_entities(game, world, game_camera, false);
-
-	
-
-		// clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
-		// bind_rasterizer_state(game.wireframe_rasterizer_state);
-		// render_entities(game, world, game_camera, false);
 	}
 	end_render_pass();
 
@@ -486,7 +367,7 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 	begin_render_pass(game.debug_lines_render_pass);
 	{
-		// TODO:!!!
+		// TODO: cleanup!!!
 		clear_framebuffer_depth(platform.render_context->window_framebuffer, 1);
 		update_vertex_buffer(game.debug_lines_vertex_buffer, (int)platform.render_context->debug_lines.count * sizeof(v3),
 				platform.render_context->debug_lines.data);
@@ -498,7 +379,6 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 	}
 	end_render_pass();
 
-
 	{
 		ImGuiIO &io = ImGui::GetIO();
 		ImGui::Begin("debug");
@@ -508,13 +388,13 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		ImGui::Text("entity count: %ld", world.entities.count);
 		if (ImGui::Button("new cube")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene_id_by_name(game, "cube.fbx"), game_camera.position
+					get_scene_id_by_name(game, "data/push/cube.fbx"), game_camera.position
 					+ game_camera.forward * 4);
 			world.editor.selected_entity = entity->id;
 		}
 		if (ImGui::Button("new sphere")) {
 			Entity *entity = make_entity(world, EntityType_Static,
-					get_scene_id_by_name(game, "sphere.fbx"), game_camera.position
+					get_scene_id_by_name(game, "data/push/sphere.fbx"), game_camera.position
 					+ game_camera.forward * 4);
 			entity->ellipsoid_radius = V3(1);
 			entity->ellipsoid_collision_shape = true;
@@ -544,14 +424,6 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 	end_render_frame();
 
 	update_sound(game, world);
-
-	////for (int i = 0; i < ARRAY_SIZE(profiler_block_stats); i++)
-	//{
-	//	ProfilerBlockStat &stat = profiler_block_stats[i];
-	//	if (!stat.name)
-	//		break ;
-	//	LOG_DEBUG("profiler block %s: (%zu cycles, %u calls)", stat.name, stat.cycle_count, stat.call_count);
-	//}
 
 	game.time += dt;
 	// @HACK

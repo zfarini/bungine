@@ -18,15 +18,12 @@ struct Texture {
     String name;
     int width;
     int height;
-    b32 valid; // TODO: remove this
-
 
     void *data;
-    b32 gen_mipmaps;
-    b32 srgb;
-
-    b32 in_gpu;
-
+    bool gen_mipmaps;
+    bool srgb;
+    bool in_gpu;
+    // TODO: cleanup multithreading
     volatile int state;
 };
 
@@ -167,6 +164,7 @@ struct RenderContext {
 #endif
 
     Array<Texture> loaded_textures;
+    std::unordered_map<String, TextureID, StringHasher> textures_map;
 
     RenderPass *render_pass;
     TextureID white_texture, purple_texture;

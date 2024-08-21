@@ -212,7 +212,7 @@ v3 find_path_astar(World &world, Entity &e, v3 target_p) {
     }
     v3 result_dir = {};
     if (parent.count(best_cell)) {
-        Array<v3i> path = make_array_max<v3i>(temp, 1024);
+        auto path = make_array_max<v3i>(temp, 1024);
 
         State curr = best_cell;
 

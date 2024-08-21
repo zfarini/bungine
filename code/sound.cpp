@@ -1,15 +1,20 @@
 #define SOUND_CHANNEL_COUNT 2
 #define SOUND_SAMPLE_RATE 48000
 
+// TODO: this should be a thread function
 LoadedSound load_wav_file(Arena *arena, const char *filename)
 {
+	LoadedSound sound = {};
+
     ma_decoder_config config = ma_decoder_config_init(ma_format_f32, SOUND_CHANNEL_COUNT, SOUND_SAMPLE_RATE);
 	config.encodingFormat = ma_encoding_format_wav;
 
     ma_decoder decoder;
     ma_result result = ma_decoder_init_file(filename, &config, &decoder);
-    if (result != MA_SUCCESS)
-        assert(0);
+    if (result != MA_SUCCESS) {
+		LOG_ERROR("failed to load sound %s", filename);
+		return sound;
+	}
 
 	ma_uint64 samples_to_read = SOUND_SAMPLE_RATE;
 
@@ -30,7 +35,6 @@ LoadedSound load_wav_file(Arena *arena, const char *filename)
 	}
 	//ma_decoder_init_file(filename, &config, &decoder);
 
-	LoadedSound sound = {};
 	sound.samples = (float *)arena_alloc(arena, sample_count * sizeof(float) * SOUND_CHANNEL_COUNT);
 	assert(ma_decoder_seek_to_pcm_frame(&decoder, 0) == MA_SUCCESS);
     while (1) {

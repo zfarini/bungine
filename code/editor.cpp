@@ -95,14 +95,12 @@ void do_editor_op(Game &game, World &world, Editor &editor, EditorOp &op)
 		else if (op.type == EDITOR_OP_SCALE_ENTITY)
 			e->scale = op.scale.new_scale;
 		else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
-			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
-			cmesh.vertices.push(op.place_collision_vertex.pos);
+			editor.cmesh.vertices.push(op.place_collision_vertex.pos);
 		}
 		else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
-			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
-			for (int i = op.delete_collision_triangle.index + 3; i < cmesh.vertices.count; i++)
-				cmesh.vertices[i - 3] = cmesh.vertices[i];
-			cmesh.vertices.count -= 3;
+			for (int i = op.delete_collision_triangle.index + 3; i < editor.cmesh.vertices.count; i++)
+				editor.cmesh.vertices[i - 3] = editor.cmesh.vertices[i];
+			editor.cmesh.vertices.count -= 3;
 		}
 	}
 	if (op.type == EDITOR_OP_PASTE_ENTITY) {
@@ -180,20 +178,17 @@ void undo_editor_op(Game &game, World &world, Editor &editor)
 		else if (op.type == EDITOR_OP_SCALE_ENTITY)
 			e->scale = op.scale.prev_scale;
 		else if (op.type == EDITOR_OP_CREATE_MESH_COLLISION_VERTEX) {
-			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
-			assert(cmesh.vertices.count > 0);
-			cmesh.vertices.count--;
+			assert(editor.cmesh.vertices.count > 0);
+			editor.cmesh.vertices.count--;
 		}
 		else if (op.type == EDITOR_OP_DELETE_MESH_COLLISION_TRIANGLE) {
-			CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+			editor.cmesh.vertices.count += 3;
+			for (usize i = editor.cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
+				editor.cmesh.vertices[i] = editor.cmesh.vertices[i - 3];
 
-			cmesh.vertices.count += 3;
-			for (usize i = cmesh.vertices.count - 1; i >= op.delete_collision_triangle.index + 3; i--)
-				cmesh.vertices[i] = cmesh.vertices[i - 3];
-
-			cmesh.vertices[op.delete_collision_triangle.index + 0] = op.delete_collision_triangle.v0;
-			cmesh.vertices[op.delete_collision_triangle.index + 1] = op.delete_collision_triangle.v1;
-			cmesh.vertices[op.delete_collision_triangle.index + 2] = op.delete_collision_triangle.v2;
+			editor.cmesh.vertices[op.delete_collision_triangle.index + 0] = op.delete_collision_triangle.v0;
+			editor.cmesh.vertices[op.delete_collision_triangle.index + 1] = op.delete_collision_triangle.v1;
+			editor.cmesh.vertices[op.delete_collision_triangle.index + 2] = op.delete_collision_triangle.v2;
 		}
 	}
 	if (op.type == EDITOR_OP_PASTE_ENTITY)
@@ -468,6 +463,63 @@ void editor_push_entity_op(Game &game, World &world, Editor &editor)
 	editor.gizmo.active = false;
 }
 
+String get_cmesh_filename(Arena *arena, String asset_filename)
+{
+	int dot = find_last_occurence(asset_filename, '.');
+	if (dot == -1)
+		dot = (int)asset_filename.count;
+	return concact_string(arena, substring(asset_filename, 0, dot), ".cmesh");
+}
+
+void save_cmesh(Game &game, Editor &editor)
+{
+	if (!editor.cmesh_scene)
+		return ;
+	Scene &scene = get_scene_by_id(game, editor.cmesh_scene);
+
+	// TODO: leak
+	game.collision_meshes[scene.id].vertices = clone_array(&game.arena, editor.cmesh.vertices);
+
+	{
+		Arena *temp = begin_temp_memory();
+		String filename_zero = make_zero_string(temp, get_cmesh_filename(temp, scene.filename));
+
+		FILE *file = fopen(filename_zero.data, "w");
+		if (!file) {
+			LOG_ERROR("failed to open file %.*s for saving collision mesh", str_format(filename_zero));
+		}
+		else {
+			//serialize_CollisionMesh();
+			fwrite(&editor.cmesh.vertices.count, sizeof(editor.cmesh.vertices.count), 1, file);
+			fwrite(editor.cmesh.vertices.data, sizeof(*editor.cmesh.vertices.data), editor.cmesh.vertices.count, file);
+			fclose(file);
+		}
+
+		end_temp_memory();
+	}
+}
+
+CollisionMesh load_cmesh(Arena *arena, String filename)
+{
+	Arena *temp = begin_temp_memory();
+	String filename_zero = make_zero_string(temp, filename);
+
+	CollisionMesh cmesh = {};
+	FILE *file = fopen(filename_zero.data, "rb");
+	if (file) {
+		fread(&cmesh.vertices.count, sizeof(cmesh.vertices.count), 1, file);
+		cmesh.vertices = make_array<v3>(arena, cmesh.vertices.count);
+		fread(cmesh.vertices.data, sizeof(*cmesh.vertices.data), cmesh.vertices.count, file);
+		fclose(file);
+	}
+	else 
+		LOG_WARN("failed to load collision mesh %.*s", str_format(filename));
+
+	end_temp_memory();
+	return cmesh;
+}
+
+// TODO: there is gonna be a problem with undo for collision meshes if we switched to editing another one
 void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Editor &editor, Camera &camera, v3 camera_ray_origin,
 		v3 camera_ray_dir)
 {
@@ -481,19 +533,21 @@ void editor_edit_collision_mesh(Game &game, GameInput &input, World &world, Edit
 	if (!e || !e->scene_id)
 		return ;
 
+	if (e->scene_id != editor.cmesh_scene) {
+		save_cmesh(game, editor);
+
+		CollisionMesh &cmesh = game.collision_meshes[e->scene_id];
+		editor.cmesh.vertices.count = cmesh.vertices.count;
+		for (int i = 0; i < cmesh.vertices.count; i++)
+			editor.cmesh.vertices[i] = cmesh.vertices[i];
+		editor.cmesh_scene = e->scene_id;
+	}
+
 	mat4 to_world = get_entity_transform(world, *e) * e->scene_transform;
 	mat4 to_object = inverse(to_world);
 
-	if (!world.scene_collision_mesh.count(e->scene_id)) {
-		CollisionMesh cmesh = {};
-		// TODO: cleanup
-		cmesh.vertices = make_array_max<v3>(&world.arena, 3 * 1000);
-		cmesh.scene = e->scene_id;
-		world.collision_meshes.push(cmesh);
-		world.scene_collision_mesh[e->scene_id] = (int)(world.collision_meshes.count - 1);
-	}
 
-	CollisionMesh &cmesh = world.collision_meshes[world.scene_collision_mesh[e->scene_id]];
+	CollisionMesh &cmesh = editor.cmesh;
 
 	v3 hit_p = camera_ray_origin + min_hit_t * camera_ray_dir;
 
@@ -593,8 +647,11 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 		}
 	}
 
-	if (!game.in_editor)
+	if (!game.in_editor) {
+		save_cmesh(game, editor);
+		editor.cmesh_scene = 0;
 		return ;
+	}
 
 	v3 camera_ray_origin, camera_ray_dir;
 
@@ -611,6 +668,11 @@ void update_editor(Game &game, World &world, Editor &editor, GameInput &input, C
 
 	if (IsDown(input, BUTTON_LEFT_CONTROL) && IsDownFirstTime(input, BUTTON_Q))
 		editor.mode = (editor.mode == EDITOR_MODE_COLLISION_MESH ? EDITOR_MODE_GIZMO : EDITOR_MODE_COLLISION_MESH);
+	
+	if (editor.mode != EDITOR_MODE_COLLISION_MESH && editor.cmesh_scene) {
+		save_cmesh(game, editor);
+		editor.cmesh_scene = 0;
+	}
 
 	switch (editor.mode) {
 		case EDITOR_MODE_GIZMO: {

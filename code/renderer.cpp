@@ -267,7 +267,7 @@ void render_scene(Game &game, World &world, SceneID scene_id, Camera camera, mat
 			for (int i = 0; i < scene.meshes.count; i++) {
 				Mesh &mesh = scene.meshes[i];
 				mesh.vertex_buffer = create_vertex_buffer(VERTEX_BUFFER_IMMUTABLE,
-				mesh.full_vertices.count * sizeof(Vertex), mesh.full_vertices.data);
+				mesh.full_vertices.count * sizeof(MeshVertex), mesh.full_vertices.data);
 				mesh.index_buffer = create_index_buffer(mesh.indices.count, mesh.indices.data);
 			}
 			scene.in_gpu = true;

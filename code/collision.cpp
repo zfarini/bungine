@@ -309,14 +309,13 @@ CollisionInfo move_entity(World &world, Entity &e, v3 delta_p, Array<CollisionSh
 	return first_hit;
 }
 
-void move_entity(World &world, Entity &e, v3 delta_p)
+void move_entity(Game &game, World &world, Entity &e, v3 delta_p)
 {
-	PROFILE_FUNCTION();
 	assert(e.ellipsoid_collision_shape);
 
 	Arena *temp = begin_temp_memory();
 
-	Array<CollisionShape> shapes = make_array_max<CollisionShape>(temp, world.entities.count + 64);
+	auto shapes = make_array_max<CollisionShape>(temp, world.entities.count + 64);
 
 	for (int i = 0; i < world.entities.count; i++) {
 		Entity &test = world.entities[i];
@@ -332,23 +331,17 @@ void move_entity(World &world, Entity &e, v3 delta_p)
 			shape.scale = test.scale;
 		}
 		else {
-			if (!world.scene_collision_mesh.count(test.scene_id))
+			if (!game.collision_meshes.count(test.scene_id))
 				continue ;
-			shape.collision_mesh = world.collision_meshes[world.scene_collision_mesh[test.scene_id]];
+			shape.collision_mesh = game.collision_meshes[test.scene_id];
 			shape.transform = get_entity_transform(world, test) * test.scene_transform;
 		}
 		shapes.push(shape);
 	}
-	// {
-	// 	CollisionShape shape = {};
-	// 	shape.type = COLLISION_SHAPE_ELLIPSOID;
-	// 	shape.ellipsoid_radius = e.shape.ellipsoid_radius;
-	// 	shape.offset = V3(0, 3, 1);
-	// 	shapes.push(shape);
-	// }
 
 	v3 old_p = e.position;
 
+	// TODO: avoid iterations!!...
 #if 1
 	{
 		int itr = floorf(length(delta_p.xy) / (MIN_COLLISION_DIST));

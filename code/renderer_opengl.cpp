@@ -1,3 +1,4 @@
+// TODO: cleanup remove this
 TextureID create_texture(String name, void *data, int width, int height, bool srgb = true,
 		bool mipmapping = true)
 {
@@ -6,7 +7,6 @@ TextureID create_texture(String name, void *data, int width, int height, bool sr
 	texture.width = width;
 	texture.height = height;
 	texture.name = name;
-	texture.valid = true;
 
 	uint32_t internal_format, format;
 
@@ -17,10 +17,9 @@ TextureID create_texture(String name, void *data, int width, int height, bool sr
 
 	format = GL_RGBA;
 
-	uint32_t tex;
-	glGenTextures(1, &tex);
+	glGenTextures(1, &texture.opengl_id);
 
-	glBindTexture(GL_TEXTURE_2D, tex);
+	glBindTexture(GL_TEXTURE_2D, texture.opengl_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	if (mipmapping)
@@ -37,7 +36,6 @@ TextureID create_texture(String name, void *data, int width, int height, bool sr
 	if (mipmapping)
 		glGenerateMipmap(GL_TEXTURE_2D);
 
-	texture.opengl_id = tex;
 	texture.in_gpu = true;
 	texture.state = TEXTURE_STATE_LOADED;
 	platform.lock_mutex(platform.render_context->texture_mutex);
@@ -48,36 +46,10 @@ TextureID create_texture(String name, void *data, int width, int height, bool sr
 	return texture.id;
 }
 
-/*
-	TODO: thread safe linked list for textures
-	make render context & asset arena thread safe
-
-*/
-
-THREAD_WORK_FUNC(load_texture_work)
-{
-	Texture *texture = (Texture *)data;
-	
-	int width, height, n_channels;
-	Arena *temp = begin_temp_memory();
-	void *image = stbi_load(make_zero_string(temp, texture->name).data, &width, &height,  &n_channels, 4);
-	assert(image);
-	usize size = width * height * sizeof(uint32_t);
-	void *copy = arena_alloc(&platform.render_context->arena, size);
-	memcpy(copy, image, size);
-
-	texture->width = width;
-	texture->height = height;
-	texture->data = copy;
-
-	end_temp_memory();
-	MEMORY_BARRIER();
-	texture->state = TEXTURE_STATE_LOADED;
-}
-
+// NOTE: right now I'm using the id just as an index to the array (I skip the zero entry)
 Texture &get_texture(TextureID id)
 {
-	assert (id <= platform.render_context->loaded_textures.count);
+	assert(id <= platform.render_context->loaded_textures.count);
 	if (!id)
 		return platform.render_context->loaded_textures[platform.render_context->purple_texture];
 	return  platform.render_context->loaded_textures[id - 1];
@@ -126,7 +98,6 @@ void bind_texture(int index, TextureID id)
 	else if (texture.state == TEXTURE_STATE_UNLOADED) {
 		texture.state = TEXTURE_STATE_LOADING;
 		platform.add_thread_work(load_texture_work, &texture);
-		//load_texture_work(&texture);
 	}
 	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, get_texture(platform.render_context->purple_texture).opengl_id);
@@ -468,7 +439,6 @@ ConstantBuffer create_constant_buffer(Array<ConstantBufferElement> elements)
 
 	glGenBuffers(1, &result.id);
 	glBindBuffer(GL_UNIFORM_BUFFER, result.id);
-	// TODO: why do we do this?
 	glBufferData(GL_UNIFORM_BUFFER, result.size, 0, GL_DYNAMIC_DRAW);
 
 	return result;
@@ -588,12 +558,10 @@ void init_render_context_opengl(RenderContext &rc)
 // TODO: merge this with create_texture
 TextureID create_depth_texture(int width, int height)
 {
-	Texture result = {};
+	Texture texture = {};
 
-	uint32_t texture;
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glGenTextures(1, &texture.opengl_id);
+	glBindTexture(GL_TEXTURE_2D, texture.opengl_id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height,
 			0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	// TODO: cleanup, give the ability to change these
@@ -602,19 +570,17 @@ TextureID create_depth_texture(int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	result.opengl_id = texture;
-	result.valid = true;
-	result.name = "shadow map depth texture";
 	
 	platform.lock_mutex(platform.render_context->texture_mutex);
 
-	result.id = platform.render_context->loaded_textures.count + 1;
-	result.state = TEXTURE_STATE_LOADED;
-	result.in_gpu = true;
-	platform.render_context->loaded_textures.push(result);
+	texture.id = platform.render_context->loaded_textures.count + 1;
+	texture.state = TEXTURE_STATE_LOADED;
+	texture.in_gpu = true;
+	platform.render_context->loaded_textures.push(texture);
+
 	platform.unlock_mutex(platform.render_context->texture_mutex);
 
-	return result.id;
+	return texture.id;
 }
 
 FrameBuffer create_frame_buffer(bool depth_only = false, bool read = false)

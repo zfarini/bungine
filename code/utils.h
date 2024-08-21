@@ -70,97 +70,15 @@ template <typename T> Array<T> clone_array(Arena *arena, Array<T> &array) {
     return result;
 }
 
-// template<>
-// bool operator==(const Array<char> &a, const Array<char> &b)
-// {
-// 	return true;
-// }
-
 struct String {
     char *data;
     usize count;
-    String() {
-        data = 0;
-        count = 0;
-    }
-    String(const char *cstr) {
-        data = (char *)cstr;
-        count = 0;
-        while (cstr[count])
-            count++;
-    }
 
-    char &operator[](int index) {
-        assert(index >= 0 && index < count);
-        return data[index];
-    }
-
-    bool operator==(const String &other) const {
-        if (count != other.count)
-            return false;
-        for (int i = 0; i < count; i++)
-            if (data[i] != other.data[i])
-                return false;
-        return true;
-    }
+    String();
+    String(const char *cstr);
+    char &operator[](int index);
+    bool operator==(const String &other) const;
 };
-
-String make_string(Arena *arena, usize count, const char *data = 0)
-{
-    String s = {};
-
-    s.data = (char *)arena_alloc(arena, count * sizeof(char));
-    s.count = count;
-    if (data)
-        memcpy(s.data, data, count * sizeof(char));
-
-    return s;
-}
-
-String duplicate_string(Arena *arena, String s)
-{
-    return make_string(arena, s.count, s.data);
-}
-
-String concact_string(Arena *arena, String a, String b)
-{
-    String result = make_string(arena, a.count + b.count);
-
-    memcpy(result.data, a.data, a.count);
-    memcpy(result.data + a.count, b.data, b.count);
-    return result;
-}
-
-String make_zero_string(Arena *arena, String s)
-{
-    bool add = !s.count || s.data[s.count - 1];
-    String result = make_string(arena, s.count + add);
-
-    memcpy(result.data, s.data, s.count);
-    if (add)
-        result.data[result.count - 1] = 0;
-    return result;
-}
-
-int find_last_occurence(String s, char c)
-{
-    for (int i = (int)s.count - 1; i >= 0; i--) {
-        if (s[i] == c)
-            return i;
-    }
-    return -1;
-}
-
-String substring(String s, int start, int length = -1)
-{
-    assert(start >= 0 && start <= s.count);
-    String result;
-
-    result.data = s.data + start;
-    result.count = length == -1 ? s.count - start : length;
-
-    return result;
-}
 
 struct StringHasher {
     std::size_t operator()(const String& s) const
@@ -176,42 +94,6 @@ struct StringHasher {
 
 #define str_format(str) (int)str.count, str.data
 
-String load_entire_file(Arena *arena, String filename) {
-    Arena *temp = begin_temp_memory();
-
-    String result = {};
-
-    String filename_zero = make_zero_string(temp, filename);
-
-    FILE *file = fopen(filename_zero.data, "rb");
-
-    end_temp_memory();
-
-    if (!file) {
-        printf("failed to open file %.*s\n", str_format(filename));
-        assert(0);
-        return result;
-    }
-    fseek(file, 0, SEEK_END);
-    usize size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    result = make_string(arena, size);
-
-    while (size > 0) {
-        size_t bytes_read = fread(result.data, 1, size, file);
-        if (bytes_read <= 0)
-            assert(0);
-        size -= bytes_read;
-    }
-    return result;
-}
-
-// returns first multiple of alignement bigger than or equal to x
-int align_to(int x, int alignement) {
-    return alignement * ((x + alignement - 1) / alignement);
-}
-
 enum LogType {
 	LOG_TYPE_DEBUG,
 	LOG_TYPE_INFO,
@@ -222,7 +104,7 @@ enum LogType {
 
 // TODO: cleanup
 #define LOG_FILENAME "build/log.txt"
-
+// TODO: this should work on multiple threads!
 void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
 {
 	static FILE *log_file = fopen(LOG_FILENAME, "w");
@@ -264,7 +146,3 @@ DEFINE_LOG_TYPE(INFO);
 DEFINE_LOG_TYPE(WARN);
 DEFINE_LOG_TYPE(ERROR);
 DEFINE_LOG_TYPE(FATAL);
-
-uint64_t rdtsc() {
-	return __rdtsc();
-}
