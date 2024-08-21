@@ -21,9 +21,13 @@
 #undef near
 #undef far
 #else
+#include <sys/types.h>
+#include <unistd.h>
+
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 #endif
 
+// TODO: cleanup, query this
 #define THREAD_COUNT 3
 
 void fatal_error(const char* message)
@@ -32,7 +36,7 @@ void fatal_error(const char* message)
 
 #ifdef PLATFORM_WIN32
 	MessageBox(0, message, 0, MB_OK|MB_ICONERROR);
-#elif defined PLATFORM_LINUX
+#else
     char cmd[1024];
     snprintf(cmd, sizeof(cmd), "zenity --error --no-wrap --text=\"%s\"", message);
     system(cmd);
@@ -81,9 +85,13 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	}
 }
 
-int get_thread_id()
+size_t get_thread_id()
 {
-	return (int)(GetCurrentThreadId());
+#ifdef PLATFORM_WIN32
+	return (size_t)(GetCurrentThreadId());
+#else
+	return (size_t)gettid();
+#endif
 }
 
 // returns the old value of ptr
@@ -92,7 +100,7 @@ int compare_exchange(volatile int *ptr, int new_value, int old_value)
 #ifdef PLATFORM_WIN32
 	return InterlockedCompareExchange((LONG *)ptr, new_value, old_value);
 #else
-#error "todo"
+	return __sync_val_compare_and_swap(ptr, old_value, new_value);
 #endif
 }
 
@@ -115,7 +123,11 @@ void unlock_mutex(Mutex &mutex)
 
 void release_semaphore(void *semaphore)
 {
+#ifdef PLATFORM_WIN32
 	ReleaseSemaphore(semaphore, 1, 0);
+#else
+
+#endif
 }
 
 #define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
@@ -171,16 +183,33 @@ DWORD thread_func(LPVOID param)
 	return 0;
 }
 #else
-#error "todo"
+void* thread_func(void* param)
+{
+	while (1) {
+		int entry_idx = thread_work_queue_read_index;
+		MEMORY_BARRIER();
+		if (entry_idx != thread_work_queue_write_index) {
+			if (compare_exchange(&thread_work_queue_read_index, entry_idx + 1, entry_idx) == entry_idx) 
+			{
+				ThreadWork *work = &thread_work_queue[THREAD_MASK(entry_idx)];
+				work->callback(work->data);
+			}
+		}
+		//else
+		//	WaitForSingleObject(thread_work_semaphore, INFINITE);
+	}
+    return 0;
+}
+
 #endif
 
 void set_working_directory()
 {
 	Arena *temp = begin_temp_memory();
 
+	char exe_path[2048];
 #ifdef PLATFORM_WIN32
-	char exe_path[MAX_PATH];
-    if (GetModuleFileNameA(NULL, exe_path, MAX_PATH) == 0)
+    if (GetModuleFileNameA(NULL, exe_path, sizeof(exe_path)) == 0)
         fatal_error("failed to get executable full path");
 
 	String path = exe_path;
@@ -190,7 +219,15 @@ void set_working_directory()
 	if (SetCurrentDirectoryA(make_zero_string(temp, path).data) == 0)
 		fatal_error("failed to set working directory");
 #else
-#error "todo"
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+	if (len == -1)
+		fatal_error("failed to get executable full path");
+	exe_path[len] = 0;
+
+	String path = exe_path;
+	path = substring(path, 0, find_last_occurence(path, '/'));
+	if (chdir(make_zero_string(temp, path).data))
+		fatal_error("failed to set working directory");
 #endif
 	end_temp_memory();
 }
@@ -283,7 +320,9 @@ int main()
 	for (int i = 0; i < THREAD_COUNT; i++)
 		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
 #else
-	#error "todo"
+	pthread_t threads[THREAD_COUNT];
+	for (int i = 0; i < THREAD_COUNT; i++)
+		pthread_create(&threads[i], 0, thread_func, 0);
 #endif
 
 	int frame = 0;

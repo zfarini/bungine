@@ -109,6 +109,8 @@ void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
 {
 	static FILE *log_file = fopen(LOG_FILENAME, "w");
 
+
+
 	const char *log_type_str[] = {
 		"debug",
 		"info",
@@ -127,9 +129,11 @@ void _log(LogType log_type, const char *fmt, va_list args1, va_list args2)
 	vprintf(fmt, args1);
 	printf("\n");
 
-	fprintf(log_file, "[%s]: ", log_type_str[log_type]);
-	vfprintf(log_file, fmt, args2);
-	fprintf(log_file, "\n");
+    if (log_file) {
+	    fprintf(log_file, "[%s]: ", log_type_str[log_type]);
+	    vfprintf(log_file, fmt, args2);
+	    fprintf(log_file, "\n");
+    }
 }
 
 #define DEFINE_LOG_TYPE(name) void LOG_##name(const char *fmt, ...) {\

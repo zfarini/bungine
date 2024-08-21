@@ -171,7 +171,7 @@ v3 find_path_astar(World &world, Entity &e, v3 target_p) {
     set.insert(istate);
     visited[istate] = true;
 
-    const int max_iterations = 4096;
+    const int max_iterations = 1024;
 
     for (int itr = 0; itr < max_iterations && !set.empty(); itr++) {
         auto state = *set.begin();

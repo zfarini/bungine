@@ -538,16 +538,16 @@ void APIENTRY gl_debug_output(GLenum source, GLenum type, unsigned int id,
 
 void init_render_context_opengl(RenderContext &rc)
 {
-#ifndef _WIN32
-	int flags;
-	glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(gl_debug_output, 0);
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
-				0, GL_TRUE);
-	}
+#ifndef PLATFORM_WIN32
+	// int flags;
+	// glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	// if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+	// 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	// 	glEnable(GL_DEBUG_OUTPUT);
+	// 	glDebugMessageCallback(gl_debug_output, 0);
+	// 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0,
+	// 			0, GL_TRUE);
+	// }
 #endif
 	rc.window_framebuffer.id = 0;
 	glEnable(GL_FRAMEBUFFER_SRGB);

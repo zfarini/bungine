@@ -123,7 +123,7 @@ String load_entire_file(Arena *arena, String filename) {
     end_temp_memory();
 
     if (!file) {
-        printf("failed to open file %.*s\n", str_format(filename));
+        LOG_ERROR("failed to open file %.*s", str_format(filename));
         assert(0);
         return result;
     }

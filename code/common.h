@@ -5,6 +5,8 @@
 #undef swap
 #undef near
 #undef far
+#undef function
+#undef global
 
 #define function static
 #define global static

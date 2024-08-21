@@ -27,12 +27,18 @@
 #define UFBX_IMPLEMENTATION
 #include <ufbx.h>
 
+
+#define MA_NO_MP3
+#define MA_NO_FLAC
+#define MINIAUDIO_IMPLEMENTATION
+#include <miniaudio.h>
 // TODO: cleanup do I really have to include these here?
 #include <math.h>
 #include <float.h>
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
+
 
 #include "common.h"
 #include "math.h"
@@ -63,8 +69,3 @@ function void *stb_arena_realloc(void *ptr, usize prevsize, usize newsize)
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-
-#define MA_NO_MP3
-#define MA_NO_FLAC
-#define MINIAUDIO_IMPLEMENTATION
-#include <miniaudio.h>

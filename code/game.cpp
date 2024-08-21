@@ -202,7 +202,7 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 		load_scene(&game.asset_arena, game, "data/push/sphere.fbx");
 		//load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");
 		//load_scene(&game.asset_arena, game, "data/PrivacyFencePack/PrivacyFencePack.fbx");
-		load_scene(&game.asset_arena, game, "data/push/Ybot.fbx");
+		load_scene(&game.asset_arena, game, "data/push/YBot.fbx");
 
 		load_animation(&game.asset_arena, game, "data/push/jump.fbx");
 		load_animation(&game.asset_arena, game, "data/push/shoot.fbx");

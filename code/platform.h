@@ -91,8 +91,8 @@ struct ThreadWork {
 
 #ifdef PLATFORM_WIN32
 #define MEMORY_BARRIER() MemoryBarrier()
-#elif defined PLATFORM_LINUX
-
+#else
+#define MEMORY_BARRIER() __sync_synchronize()
 #endif
 
 typedef void LockMutexFn(Mutex &mutex);
