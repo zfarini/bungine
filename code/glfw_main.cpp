@@ -23,7 +23,7 @@
 #else
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <semaphore.h>
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 #endif
 
@@ -126,7 +126,7 @@ void release_semaphore(void *semaphore)
 #ifdef PLATFORM_WIN32
 	ReleaseSemaphore(semaphore, 1, 0);
 #else
-
+    sem_post((sem_t *)semaphore);
 #endif
 }
 
@@ -195,8 +195,8 @@ void* thread_func(void* param)
 				work->callback(work->data);
 			}
 		}
-		//else
-		//	WaitForSingleObject(thread_work_semaphore, INFINITE);
+		else
+			sem_wait((sem_t *)thread_work_semaphore);
 	}
     return 0;
 }
@@ -320,6 +320,9 @@ int main()
 	for (int i = 0; i < THREAD_COUNT; i++)
 		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
 #else
+	sem_t sem;
+	sem_init(&sem, 0, 0);
+	thread_work_semaphore = (void *)&sem;
 	pthread_t threads[THREAD_COUNT];
 	for (int i = 0; i < THREAD_COUNT; i++)
 		pthread_create(&threads[i], 0, thread_func, 0);
