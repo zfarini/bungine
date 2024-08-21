@@ -478,18 +478,20 @@ void save_cmesh(Game &game, Editor &editor)
 	Scene &scene = get_scene_by_id(game, editor.cmesh_scene);
 
 	// TODO: leak
-	game.collision_meshes[scene.id].vertices = clone_array(&game.arena, editor.cmesh.vertices);
+	CollisionMesh &cmesh = game.collision_meshes[scene.id];
+	cmesh.vertices = make_array<v3>(&game.arena, editor.cmesh.vertices.count);
+	for (int i = 0; i < editor.cmesh.vertices.count; i++)
+		cmesh.vertices[i] = editor.cmesh.vertices[i];
 
 	{
 		Arena *temp = begin_temp_memory();
 		String filename_zero = make_zero_string(temp, get_cmesh_filename(temp, scene.filename));
 
-		FILE *file = fopen(filename_zero.data, "w");
+		FILE *file = fopen(filename_zero.data, "wb");
 		if (!file) {
 			LOG_ERROR("failed to open file %.*s for saving collision mesh", str_format(filename_zero));
 		}
 		else {
-			//serialize_CollisionMesh();
 			fwrite(&editor.cmesh.vertices.count, sizeof(editor.cmesh.vertices.count), 1, file);
 			fwrite(editor.cmesh.vertices.data, sizeof(*editor.cmesh.vertices.data), editor.cmesh.vertices.count, file);
 			fclose(file);
@@ -514,7 +516,7 @@ CollisionMesh load_cmesh(Arena *arena, String filename)
 	}
 	else 
 		LOG_WARN("failed to load collision mesh %.*s", str_format(filename));
-
+	LOG_DEBUG("loaded collision mesh %.*s %d", str_format(filename), cmesh.vertices.count);
 	end_temp_memory();
 	return cmesh;
 }

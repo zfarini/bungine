@@ -29,6 +29,6 @@ cl /std:c++17 %RootDir%\code\preprocessor.cpp /EHsc -nologo
 cl  -DDISABLE_PREPROCESSOR %MSVCFlags%  %RootDir%\code\game.cpp /P /Fipreprocessor_input.e 
 preprocessor.exe preprocessor_input.e temp_generated.h
 clang-format temp_generated.h > %RootDir%\code\generated.h
-cl -Od %RootDir%\code\glfw_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
+cl -O2 %RootDir%\code\glfw_main.cpp precompiled.obj %MSVCFlags% %LinkerFlags%
 
 popd
