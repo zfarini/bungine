@@ -1,4 +1,6 @@
-data
+data/*
+!data/push
+!data/push/**
 build
 .nfs*
 *.o

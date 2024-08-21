@@ -197,7 +197,7 @@ void game_update_and_render(Game &game, GameInput &input, float dt)
 
 
 		load_scene(&game.asset_arena, game, "data/parking/zma_carpark_b2.obj");
-		load_scene(&game.asset_arena, game, "data/skip/Sponza/Sponza.fbx");
+		load_scene(&game.asset_arena, game, "data/Sponza/Sponza.fbx");
 		load_scene(&game.asset_arena, game, "data/push/cube.fbx");
 		load_scene(&game.asset_arena, game, "data/push/sphere.fbx");
 		//load_scene(&game.asset_arena, game, "data/wood-crates/source/BoxPack1.fbx");

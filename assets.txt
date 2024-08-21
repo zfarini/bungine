@@ -1,0 +1,2 @@
+player/animations: https://www.mixamo.com
+sponza: https://github.com/TheRealMJP/DeferredTexturing/blob/master/Content/Models/Sponza/Sponza.fbx
