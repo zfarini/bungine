@@ -6,11 +6,12 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
-// TODO: cleanup replace this
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
 #include <map>
+
+#include "game.cpp"
 
 #ifdef PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -19,12 +20,11 @@
 #undef max
 #undef near
 #undef far
-#elif defined PLATFORM_LINUX
-#include <sys/mman.h>
+#else
 extern "C" const char *__asan_default_options() { return "detect_leaks=0"; }
 #endif
 
-#include "game.cpp"
+#define THREAD_COUNT 3
 
 void fatal_error(const char* message)
 {
@@ -41,7 +41,7 @@ void fatal_error(const char* message)
     exit(1);
 }
 
-bool g_hide_mouse = true;
+global bool g_hide_mouse = true;
 
 void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 {
@@ -81,10 +81,19 @@ void update_game_input(GLFWwindow *window, GameInput &input, int frame)
 	}
 }
 
-#ifdef PLATFORM_WIN32
 int get_thread_id()
 {
 	return (int)(GetCurrentThreadId());
+}
+
+// returns the old value of ptr
+int compare_exchange(volatile int *ptr, int new_value, int old_value)
+{
+#ifdef PLATFORM_WIN32
+	return InterlockedCompareExchange((LONG *)ptr, new_value, old_value);
+#else
+#error "todo"
+#endif
 }
 
 void lock_mutex(Mutex &mutex)
@@ -92,19 +101,22 @@ void lock_mutex(Mutex &mutex)
 	int id = get_thread_id();
 	if (mutex.value == id)
 		return ;
-	while (InterlockedCompareExchange((LONG *)&mutex.value, id, 0))
+	while (compare_exchange(&mutex.value, id, 0))
 		;
 }
 
 void unlock_mutex(Mutex &mutex)
 {
-	if (!mutex.value)
-		return ;
+	//if (!mutex.value)
+	//	return ;
 	int id = get_thread_id();
-	assert(InterlockedCompareExchange((LONG *)&mutex.value, 0, id) == id);
+	assert(compare_exchange(&mutex.value, 0, id) == id);
 }
 
-#include <intrin.h>
+void release_semaphore(void *semaphore)
+{
+	ReleaseSemaphore(semaphore, 1, 0);
+}
 
 #define THREAD_MASK(x) ((x) & (ARRAY_SIZE(thread_work_queue) - 1))
 ThreadWork thread_work_queue[256];
@@ -123,8 +135,7 @@ bool add_thread_work(ThreadWorkFn *callback, void *data)
 			return false;
 		}
 		
-		if (InterlockedCompareExchange((LONG *)&thread_work_queue_occupied_index, 
-			index + 1, index) == index)
+		if (compare_exchange(&thread_work_queue_occupied_index, index + 1, index) == index)
 			break ;
 	}
 
@@ -133,13 +144,13 @@ bool add_thread_work(ThreadWorkFn *callback, void *data)
 	work->callback = callback;
 	work->data = data;
 
-	while (InterlockedCompareExchange((LONG *)&thread_work_queue_write_index,
-			index + 1, index) != index)
+	while (compare_exchange(&thread_work_queue_write_index, index + 1, index) != index)
 		;
-	ReleaseSemaphore(thread_work_semaphore, 1, 0);
+	release_semaphore(thread_work_semaphore);
 	return true;
 }
 
+#ifdef PLATFORM_WIN32
 DWORD thread_func(LPVOID param)
 {
 	int idx = *(DWORD *)param;
@@ -148,8 +159,7 @@ DWORD thread_func(LPVOID param)
 		int entry_idx = thread_work_queue_read_index;
 		_ReadWriteBarrier(); // propably not necessary
 		if (entry_idx != thread_work_queue_write_index) {
-			if (InterlockedCompareExchange((LONG *)&thread_work_queue_read_index, 
-				entry_idx + 1, entry_idx) == entry_idx) 
+			if (compare_exchange(&thread_work_queue_read_index, entry_idx + 1, entry_idx) == entry_idx) 
 			{
 				ThreadWork *work = &thread_work_queue[THREAD_MASK(entry_idx)];
 				work->callback(work->data);
@@ -160,6 +170,8 @@ DWORD thread_func(LPVOID param)
 	}
 	return 0;
 }
+#else
+#error "todo"
 #endif
 
 void set_working_directory()
@@ -177,6 +189,8 @@ void set_working_directory()
 
 	if (SetCurrentDirectoryA(make_zero_string(temp, path).data) == 0)
 		fatal_error("failed to set working directory");
+#else
+#error "todo"
 #endif
 	end_temp_memory();
 }
@@ -245,7 +259,6 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-
 	GameInput game_input = {};
 	{
 		double mouse_x, mouse_y;
@@ -256,22 +269,22 @@ int main()
 	if (g_hide_mouse)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
 	RenderContext render_context = {};
 	{
 		platform.render_context = &render_context;
 		platform.imgui_context = ImGui::GetCurrentContext();
 	}
-	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
-
-	// TODO: cleanup
-#define THREAD_COUNT 3
-	DWORD thread_ids[THREAD_COUNT];
 
 	LOG_INFO("lanching %d threads", THREAD_COUNT);
-	for (int i = 0; i < THREAD_COUNT; i++) {
+
+#ifdef PLATFORM_WIN32
+	thread_work_semaphore = CreateSemaphoreA(0, 0, ARRAY_SIZE(thread_work_queue), 0);
+	DWORD thread_ids[THREAD_COUNT];
+	for (int i = 0; i < THREAD_COUNT; i++)
 		CreateThread(0, 0, thread_func, &thread_ids[i], 0, &thread_ids[i]);
-	}
+#else
+	#error "todo"
+#endif
 
 	int frame = 0;
 
